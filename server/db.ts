@@ -1,11 +1,10 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, policies, InsertPolicy, Policy, strategies, InsertStrategy, Strategy, chatMessages, InsertChatMessage } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -89,4 +88,74 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ---- Policy helpers ----
+
+export async function createPolicy(data: InsertPolicy): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(policies).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function updatePolicy(id: number, userId: number, data: Partial<InsertPolicy>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(policies).set(data).where(and(eq(policies.id, id), eq(policies.userId, userId)));
+}
+
+export async function getPolicyByUserId(userId: number): Promise<Policy | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(policies).where(eq(policies.userId, userId)).orderBy(desc(policies.updatedAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getPolicyById(id: number): Promise<Policy | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(policies).where(eq(policies.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ---- Strategy helpers ----
+
+export async function createStrategy(data: InsertStrategy): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(strategies).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getStrategyByPolicyId(policyId: number, userId: number): Promise<Strategy | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(strategies).where(and(eq(strategies.policyId, policyId), eq(strategies.userId, userId))).orderBy(desc(strategies.generatedAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getStrategyById(id: number): Promise<Strategy | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(strategies).where(eq(strategies.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateStrategy(id: number, data: Partial<InsertStrategy>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(strategies).set(data).where(eq(strategies.id, id));
+}
+
+// ---- Chat helpers ----
+
+export async function saveChatMessage(data: InsertChatMessage): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(chatMessages).values(data);
+}
+
+export async function getChatHistory(sessionId: string, limit = 50): Promise<typeof chatMessages.$inferSelect[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(chatMessages).where(eq(chatMessages.sessionId, sessionId)).orderBy(chatMessages.createdAt).limit(limit);
+}
