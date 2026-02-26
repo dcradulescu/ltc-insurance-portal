@@ -14,9 +14,11 @@ import { invokeLLM } from "./_core/llm";
 import { notifyOwner } from "./_core/notification";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
+import { policyFormRouter } from "./routers/policyForm";
 
 export const appRouter = router({
   system: systemRouter,
+  policyForm: policyFormRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

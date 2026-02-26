@@ -125,6 +125,7 @@ export default function PolicyForm() {
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: isAuthenticated });
   const saveMutation = trpc.policy.save.useMutation();
+  const submitFormMutation = trpc.policyForm.submitForm.useMutation();
 
   const completionPct = useMemo(() => {
     const fields = Object.entries(form).filter(([k]) => k !== "adlLimitations");
@@ -199,6 +200,16 @@ export default function PolicyForm() {
     try {
       const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
       if (!policyId) setPolicyId(result.id);
+      
+      // Send to Zapier webhook
+      if (user) {
+        try {
+          await submitFormMutation.mutateAsync(form as any);
+        } catch (zapierError) {
+          console.error("Zapier submission error (non-blocking):", zapierError);
+        }
+      }
+      
       toast.success("Policy information saved successfully");
     } catch (e) { toast.error("Failed to save. Please try again."); }
     finally { setSaving(false); }

@@ -1,93 +1,8 @@
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
-import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, AlertTriangle, CheckCircle, Info, FileText, Heart, Shield, ClipboardList, Phone, Users } from "lucide-react";
-
-const glossary = [
-  { term: "Claim / Pre-Claim Number", definition: "When a claim is initiated, a pre-claim number is issued prior to approval. When approved, it becomes the actual claim number." },
-  { term: "Elimination Period", definition: "The number of service days you must pay out of pocket before your LTC policy begins to pay. This counts days of service, not calendar days since illness. Think of it like a deductible measured in time." },
-  { term: "Daily Maximum", definition: "The maximum amount the insurance company will pay per day of service. Any amount above this is the client's responsibility." },
-  { term: "Monthly Maximum", definition: "The maximum amount the insurance company will pay per month of service." },
-  { term: "Lifetime Maximum", definition: "The total amount the policy will pay over its entire lifetime. Once exhausted, no further benefits are available." },
-  { term: "Activities of Daily Living (ADLs)", definition: "Six fundamental self-care activities: Bathing, Dressing, Toileting, Feeding, Continence, and Transferring. Most policies require 2-3 ADLs to be in deficit to qualify for benefits." },
-  { term: "Case Manager", definition: "Assigned by the LTC insurance company to determine approved hours of care. They monitor the case regularly and serve as your primary contact at the insurance company." },
-  { term: "Third-Party Assessment", definition: "An independent RN assessment to verify the patient's condition and ADL deficits. The assessor looks for inconsistencies between documentation and observed condition." },
-  { term: "Waiver of Premium", definition: "A policy feature that waives (stops) premium payments once care begins under the policy. Not all policies include this benefit." },
-  { term: "Payment Cycle", definition: "The review cycle for invoices and logsheets — typically monthly or at another interval set by the LTC company." },
-  { term: "CNA (Certified Nursing Assistant)", definition: "Some LTC companies require a CNA to provide care, or the care may be disallowed. Check your policy requirements." },
-  { term: "Assignment of Benefits (AOB)", definition: "Directs the insurance company to send payment directly to the care provider instead of the insured. This means the provider submits claims and gets paid directly." },
-  { term: "Plan of Care", definition: "A documented plan outlining the care services needed, typically created by a healthcare provider. Required for most LTC insurance claims." },
-  { term: "Power of Attorney (POA)", definition: "A legal document authorizing someone to act on behalf of the insured person in legal and financial matters, including insurance claims." },
-  { term: "Cognitive Impairment Trigger", definition: "Some policies allow benefits to be triggered by cognitive impairment (e.g., Alzheimer's, dementia) even if physical ADLs are not in deficit." },
-  { term: "Benefit Trigger", definition: "The conditions that must be met for the policy to begin paying benefits. Typically requires a certain number of ADL deficits or cognitive impairment." },
-];
-
-const adlList = [
-  { name: "Bathing", description: "The ability to wash oneself, including getting in and out of the tub or shower. Deficit means the person needs hands-on assistance to bathe safely.", icon: "🚿" },
-  { name: "Dressing", description: "The ability to put on and take off clothing, including fasteners, braces, and prosthetic devices.", icon: "👔" },
-  { name: "Eating / Feeding", description: "The ability to feed oneself, not including meal preparation. The person cannot get food from plate to mouth without assistance.", icon: "🍽️" },
-  { name: "Toileting", description: "The ability to use the toilet, including getting on and off, and performing associated personal hygiene.", icon: "🚽" },
-  { name: "Transferring", description: "The ability to move in and out of a bed, chair, or wheelchair without assistance.", icon: "🪑" },
-  { name: "Continence", description: "The ability to maintain control of bowel and bladder function, or the ability to perform associated personal hygiene.", icon: "💧" },
-];
-
-const threeStages = [
-  {
-    stage: 1,
-    title: "Prior to Claim — Preparation",
-    color: "bg-teal/5 border-teal/20",
-    icon: <ClipboardList className="w-6 h-6 text-teal" />,
-    items: [
-      "Contact the insurance company and request a claims packet by mail",
-      "DO NOT initiate the claim yet — only request information",
-      "Request an Assignment of Benefits (AOB) form",
-      "Evaluate the long-term care need and identify physical/cognitive decline",
-      "Identify all healthcare providers and notify them IN WRITING",
-      "Request documented decline records from all providers",
-      "Secure a home care provider experienced with LTC insurance",
-      "Collect all required documents: provider license, Plan of Care, W-9",
-      "Begin services to trigger the elimination period",
-      "Gather personal identifiers: SSN, Medicare/Medicaid numbers",
-      "Obtain Power of Attorney documentation if applicable",
-    ],
-    critical: "NEVER initiate the claim until ALL preparation is complete. The insurance company will start the clock once a claim is filed.",
-  },
-  {
-    stage: 2,
-    title: "Filing the Claim — Submission",
-    color: "bg-amber-50 border-amber-200",
-    icon: <FileText className="w-6 h-6 text-amber-600" />,
-    items: [
-      "Complete the claim packet thoroughly — leave nothing blank",
-      "Create a document index listing all attachments",
-      "Attach all supporting documents in ONE complete submission",
-      "Ensure the policy number appears on EVERY page",
-      "Prepare for third-party nurse evaluation (if required)",
-      "Understand: inconsistencies between documentation and evaluation may lead to denial",
-      "Expect a 30-day review period after submission",
-    ],
-    critical: "Submit ALL documents in ONE packet. Never send documents piecemeal. Appeals after denial have very low success rates — get it right the first time.",
-  },
-  {
-    stage: 3,
-    title: "Post-Approval — Ongoing Management",
-    color: "bg-green-50 border-green-200",
-    icon: <CheckCircle className="w-6 h-6 text-green-600" />,
-    items: [
-      "Continue paying for services during the elimination period",
-      "Organize and retain all paid invoices",
-      "Ensure care notes document minimum ADL assistance",
-      "Submit invoices and care logs per the payment cycle",
-      "Ensure the policy number appears on every submitted page",
-      "Maintain ongoing communication with your case manager",
-      "Keep all records organized for potential audits",
-    ],
-    critical: "If you have Assignment of Benefits, the provider submits claims directly. If not, you pay the provider and submit for reimbursement.",
-  },
-];
+import { BookOpen, AlertTriangle, CheckCircle, Info, FileText, Heart, Shield, ClipboardList, Phone, Users, Lightbulb, TrendingUp, Lock, Clock } from "lucide-react";
 
 export default function Education() {
   return (
@@ -98,182 +13,302 @@ export default function Education() {
           <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/PwkXeMqqVgTuSYuq.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 to-[#1a2a3a]/80" />
         </div>
-        <div className="container relative">
-          <div className="flex items-center gap-3 mb-3">
-            <BookOpen className="w-6 h-6 text-teal" />
-            <span className="text-sm uppercase tracking-wider text-white/60 font-medium">Education Center</span>
+        <div className="relative container mx-auto px-4 py-12">
+          <div className="max-w-2xl">
+            <div className="inline-block mb-4 px-4 py-2 bg-teal/20 rounded-full border border-teal/40">
+              <span className="text-teal-light text-sm font-semibold flex items-center gap-2"><BookOpen className="w-4 h-4" /> EDUCATION & GLOSSARY</span>
+            </div>
+            <h1 className="font-serif text-5xl font-bold mb-4">Understanding Long-Term Care Insurance</h1>
+            <p className="text-lg text-white/90">Master the terminology, concepts, and strategies you need to successfully navigate your LTC insurance claim.</p>
           </div>
-          <h1 className="font-serif text-3xl md:text-4xl font-bold mb-3">Understanding Long-Term Care Insurance</h1>
-          <p className="text-white/80 max-w-2xl">Everything you need to know about LTC insurance, the claims process, and how to protect your family's interests. Knowledge is your most powerful tool.</p>
         </div>
       </section>
 
-      {/* Video */}
-      <section className="py-8 bg-secondary">
-        <div className="container max-w-4xl">
-          <VideoPlaceholder title="LTC Insurance Education Overview" description="A comprehensive introduction to long-term care insurance and the claims process" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lWGNhdOVPEktQuAP.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/HjrQwJlefzrKTvbR.mp4" />
-        </div>
-      </section>
-
-      {/* Tabbed Content */}
-      <section className="py-12 bg-white">
-        <div className="container max-w-5xl">
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto">
-              <TabsTrigger value="overview" className="text-xs md:text-sm">Overview</TabsTrigger>
-              <TabsTrigger value="stages" className="text-xs md:text-sm">3 Stages</TabsTrigger>
-              <TabsTrigger value="adls" className="text-xs md:text-sm">ADLs</TabsTrigger>
-              <TabsTrigger value="glossary" className="text-xs md:text-sm">Glossary</TabsTrigger>
-              <TabsTrigger value="tips" className="text-xs md:text-sm">Tips & Pitfalls</TabsTrigger>
+      {/* Main Content */}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="glossary">Glossary</TabsTrigger>
+              <TabsTrigger value="tips">Tips & Pitfalls</TabsTrigger>
             </TabsList>
 
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-8">
-              <div className="prose prose-lg max-w-none">
-                <h2 className="font-serif text-2xl font-bold text-foreground">What is Long-Term Care Insurance?</h2>
-                <p className="text-muted-foreground leading-relaxed">Long-term care insurance is a type of insurance specifically designed to cover the costs of long-term care services that are not typically covered by regular health insurance, Medicare, or Medicaid. These services include assistance with Activities of Daily Living (ADLs), skilled nursing care, and support for cognitive impairments such as Alzheimer's disease or dementia.</p>
-
-                <h3 className="font-serif text-xl font-bold text-foreground">Why Does This Matter?</h3>
-                <p className="text-muted-foreground leading-relaxed">The average cost of long-term care can be staggering — a private room in a nursing home can exceed $100,000 per year, and home health aide services average $50,000+ annually. Without proper insurance coverage, these costs can quickly deplete a family's savings. If you or a loved one has an LTC policy, understanding how to properly file a claim is critical to accessing the benefits you've been paying for.</p>
-
-                <h3 className="font-serif text-xl font-bold text-foreground">The Challenge</h3>
-                <p className="text-muted-foreground leading-relaxed">Filing an LTC insurance claim is notoriously complex. Insurance companies have specific requirements, documentation standards, and evaluation processes that can be overwhelming for families already dealing with the stress of a loved one's declining health. <strong>Studies show that a significant percentage of LTC claims are initially denied</strong> — often due to incomplete documentation, procedural errors, or misunderstanding of policy requirements.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  { icon: <Shield className="w-8 h-8 text-teal" />, title: "Know Your Policy", desc: "Understanding your specific policy terms, benefit triggers, and coverage limits is the foundation of a successful claim." },
-                  { icon: <ClipboardList className="w-8 h-8 text-amber-600" />, title: "Document Everything", desc: "Thorough documentation of care needs, ADL deficits, and medical conditions is essential for claim approval." },
-                  { icon: <Users className="w-8 h-8 text-green-600" />, title: "Build Your Team", desc: "Work with experienced care providers, physicians, and advocates who understand LTC insurance requirements." },
-                ].map((card, i) => (
-                  <div key={i} className="p-6 bg-secondary rounded-lg border border-border">
-                    <div className="mb-3">{card.icon}</div>
-                    <h3 className="font-serif font-bold text-foreground mb-2">{card.title}</h3>
-                    <p className="text-sm text-muted-foreground">{card.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
-
-            {/* 3 Stages Tab */}
-            <TabsContent value="stages" className="space-y-8">
-              <div className="prose max-w-none mb-6">
-                <h2 className="font-serif text-2xl font-bold text-foreground">The 3-Stage Claims Process</h2>
-                <p className="text-muted-foreground">Successfully filing an LTC insurance claim follows a structured 3-stage process. Each stage must be completed thoroughly before moving to the next. <strong>Rushing through stages or skipping steps is the primary cause of claim denials.</strong></p>
-              </div>
-
-              {threeStages.map(stage => (
-                <div key={stage.stage} className={`p-6 rounded-lg border ${stage.color}`}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">{stage.icon}</div>
-                    <div>
-                      <h3 className="font-serif text-lg font-bold text-foreground">Stage {stage.stage}: {stage.title}</h3>
+            {/* Overview Tab - Creative Layout */}
+            <TabsContent value="overview" className="space-y-12">
+              {/* What is LTC Insurance - Feature Block */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div className="space-y-4">
+                  <h2 className="font-serif text-3xl font-bold text-foreground">What is Long-Term Care Insurance?</h2>
+                  <p className="text-lg text-muted-foreground">Long-term care insurance helps pay for the costs of extended care services when you need assistance with daily activities due to aging, illness, or injury. Unlike health insurance, LTC insurance focuses on custodial and supportive care rather than medical treatment.</p>
+                  <div className="space-y-3 pt-4">
+                    <div className="flex items-start gap-3">
+                      <Heart className="w-5 h-5 text-teal flex-shrink-0 mt-1" />
+                      <div>
+                        <h4 className="font-semibold text-foreground">Covers Daily Living Assistance</h4>
+                        <p className="text-sm text-muted-foreground">Help with bathing, dressing, eating, toileting, and more</p>
+                      </div>
                     </div>
-                  </div>
-                  <ul className="space-y-2 mb-4">
-                    {stage.items.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="p-3 bg-white/60 rounded-lg border border-amber-300">
-                    <p className="text-sm font-semibold text-amber-800"><AlertTriangle className="w-4 h-4 inline mr-1" /> {stage.critical}</p>
+                    <div className="flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-teal flex-shrink-0 mt-1" />
+                      <div>
+                        <h4 className="font-semibold text-foreground">Financial Protection</h4>
+                        <p className="text-sm text-muted-foreground">Protects your assets from devastating care costs</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Users className="w-5 h-5 text-teal flex-shrink-0 mt-1" />
+                      <div>
+                        <h4 className="font-semibold text-foreground">Multiple Care Settings</h4>
+                        <p className="text-sm text-muted-foreground">Home care, assisted living, or nursing facilities</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </TabsContent>
-
-            {/* ADLs Tab */}
-            <TabsContent value="adls" className="space-y-6">
-              <div className="prose max-w-none mb-4">
-                <h2 className="font-serif text-2xl font-bold text-foreground">Activities of Daily Living (ADLs)</h2>
-                <p className="text-muted-foreground">ADLs are the fundamental self-care activities that determine eligibility for LTC insurance benefits. Most policies require that <strong>2 to 3 ADLs be in deficit</strong> (meaning the person needs hands-on assistance) to qualify for benefits.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {adlList.map(adl => (
-                  <div key={adl.name} className="p-5 bg-secondary rounded-lg border border-border hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">{adl.icon}</span>
-                      <h3 className="font-serif font-bold text-foreground">{adl.name}</h3>
+                <div className="bg-gradient-to-br from-teal/10 to-blue/10 rounded-xl p-8 border border-teal/20">
+                  <div className="space-y-4">
+                    <div className="text-5xl font-bold text-teal">$100K+</div>
+                    <p className="text-sm text-muted-foreground">Average annual cost of home care in the US</p>
+                    <div className="h-2 bg-teal/20 rounded-full overflow-hidden mt-4">
+                      <div className="h-full bg-gradient-to-r from-teal to-blue w-3/4" />
                     </div>
-                    <p className="text-sm text-muted-foreground">{adl.description}</p>
+                    <p className="text-xs text-muted-foreground pt-2">Why planning ahead matters</p>
                   </div>
-                ))}
+                </div>
               </div>
 
-              <div className="p-4 bg-teal/5 border border-teal/20 rounded-lg">
-                <h4 className="font-semibold text-teal-dark mb-2"><Info className="w-4 h-4 inline mr-1" /> Important Note About ADL Assessment</h4>
-                <p className="text-sm text-foreground/80">During a third-party assessment, an independent nurse will evaluate each ADL. They observe the insured performing tasks and look for <strong>consistency</strong> between what is documented and what they observe. Any inconsistencies can lead to claim denial. Be honest and thorough in documenting limitations.</p>
+              {/* Three Stages - Timeline */}
+              <div className="space-y-6">
+                <h2 className="font-serif text-3xl font-bold text-foreground">The Three Stages of Your LTC Journey</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Stage 1 */}
+                  <div className="relative">
+                    <div className="absolute -left-4 top-0 w-8 h-8 bg-teal rounded-full flex items-center justify-center text-white font-bold">1</div>
+                    <Card className="p-6 border-l-4 border-l-teal bg-teal/5">
+                      <h3 className="font-serif text-xl font-bold text-foreground mb-3">Prior to Claim</h3>
+                      <p className="text-sm text-muted-foreground mb-4">Gather documentation, contact your carrier, and prepare everything before filing.</p>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
+                          <span>Request claims packet</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
+                          <span>Gather all documents</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
+                          <span>Begin care services</span>
+                        </li>
+                      </ul>
+                    </Card>
+                  </div>
+
+                  {/* Stage 2 */}
+                  <div className="relative">
+                    <div className="absolute -left-4 top-0 w-8 h-8 bg-blue rounded-full flex items-center justify-center text-white font-bold">2</div>
+                    <Card className="p-6 border-l-4 border-l-blue bg-blue/5">
+                      <h3 className="font-serif text-xl font-bold text-foreground mb-3">Filing the Claim</h3>
+                      <p className="text-sm text-muted-foreground mb-4">Submit complete documentation and prepare for the insurance company's evaluation.</p>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-blue flex-shrink-0 mt-0.5" />
+                          <span>Complete claim packet</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-blue flex-shrink-0 mt-0.5" />
+                          <span>Submit all documents</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-blue flex-shrink-0 mt-0.5" />
+                          <span>Prepare for assessment</span>
+                        </li>
+                      </ul>
+                    </Card>
+                  </div>
+
+                  {/* Stage 3 */}
+                  <div className="relative">
+                    <div className="absolute -left-4 top-0 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">3</div>
+                    <Card className="p-6 border-l-4 border-l-green-600 bg-green-50">
+                      <h3 className="font-serif text-xl font-bold text-foreground mb-3">Post-Approval</h3>
+                      <p className="text-sm text-muted-foreground mb-4">Manage ongoing benefits and maintain compliance with policy requirements.</p>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Submit invoices</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Maintain care logs</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Track benefits</span>
+                        </li>
+                      </ul>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+
+              {/* ADLs - Interactive Cards */}
+              <div className="space-y-6">
+                <h2 className="font-serif text-3xl font-bold text-foreground">Activities of Daily Living (ADLs)</h2>
+                <p className="text-muted-foreground">Most LTC policies require deficits in 2-3 ADLs to trigger benefits. Understanding these is critical to your claim.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { name: "Bathing", icon: "🚿", desc: "Washing oneself, including getting in/out of tub or shower" },
+                    { name: "Dressing", icon: "👔", desc: "Putting on and taking off clothing and fasteners" },
+                    { name: "Eating/Feeding", icon: "🍽️", desc: "Feeding oneself from plate to mouth" },
+                    { name: "Toileting", icon: "🚽", desc: "Using the toilet and performing hygiene" },
+                    { name: "Transferring", icon: "🪑", desc: "Moving in/out of bed, chair, or wheelchair" },
+                    { name: "Continence", icon: "💧", desc: "Controlling bowel/bladder or performing hygiene" },
+                  ].map((adl, i) => (
+                    <Card key={i} className="p-4 hover:shadow-lg transition-shadow cursor-pointer border-teal/20 hover:border-teal/50">
+                      <div className="text-3xl mb-2">{adl.icon}</div>
+                      <h4 className="font-semibold text-foreground mb-1">{adl.name}</h4>
+                      <p className="text-sm text-muted-foreground">{adl.desc}</p>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key Concepts - Stat Blocks */}
+              <div className="space-y-6">
+                <h2 className="font-serif text-3xl font-bold text-foreground">Key Concepts You Need to Know</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gradient-to-br from-teal/10 to-transparent rounded-xl p-6 border border-teal/20">
+                    <div className="flex items-start gap-4">
+                      <Clock className="w-8 h-8 text-teal flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-2">Elimination Period</h4>
+                        <p className="text-sm text-muted-foreground">The number of days you pay out-of-pocket before insurance kicks in. Think of it as a deductible measured in time.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue/10 to-transparent rounded-xl p-6 border border-blue/20">
+                    <div className="flex items-start gap-4">
+                      <TrendingUp className="w-8 h-8 text-blue flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-2">Daily/Monthly/Lifetime Maximums</h4>
+                        <p className="text-sm text-muted-foreground">The maximum amounts your insurance will pay per day, month, or over the lifetime of the policy.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-amber-100/30 to-transparent rounded-xl p-6 border border-amber-200">
+                    <div className="flex items-start gap-4">
+                      <Lightbulb className="w-8 h-8 text-amber-600 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-2">Assignment of Benefits (AOB)</h4>
+                        <p className="text-sm text-muted-foreground">Directs payment directly to your care provider instead of you. Simplifies cash flow but requires provider cooperation.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-100/30 to-transparent rounded-xl p-6 border border-green-200">
+                    <div className="flex items-start gap-4">
+                      <Lock className="w-8 h-8 text-green-600 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-2">Waiver of Premium</h4>
+                        <p className="text-sm text-muted-foreground">A valuable feature that stops premium payments once care begins. Check if your policy includes this.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Video Section */}
+              <div className="space-y-4">
+                <h2 className="font-serif text-2xl font-bold text-foreground">Watch: LTC Insurance Explained</h2>
+                <VideoPlaceholder title="Understanding LTC Insurance" description="Learn the key concepts and terminology you need to know" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/video-education.mp4" />
               </div>
             </TabsContent>
 
-            {/* Glossary Tab */}
-            <TabsContent value="glossary" className="space-y-4">
-              <div className="prose max-w-none mb-4">
-                <h2 className="font-serif text-2xl font-bold text-foreground">LTC Insurance Glossary</h2>
-                <p className="text-muted-foreground">Understanding the terminology used in LTC insurance is essential for navigating the claims process. Here are the key terms you need to know.</p>
+            {/* Glossary Tab - Comprehensive Terms */}
+            <TabsContent value="glossary" className="space-y-6">
+              <div className="prose max-w-none mb-6">
+                <h2 className="font-serif text-3xl font-bold text-foreground">Complete LTC Insurance Glossary</h2>
+                <p className="text-muted-foreground">A comprehensive guide to the terminology you'll encounter throughout your LTC insurance journey.</p>
               </div>
 
-              <Accordion type="multiple" className="space-y-2">
-                {glossary.map((item, i) => (
-                  <AccordionItem key={i} value={`glossary-${i}`} className="border rounded-lg px-4">
-                    <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline">{item.term}</AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground pb-4">{item.definition}</AccordionContent>
-                  </AccordionItem>
+              <div className="space-y-4">
+                {[
+                  { term: "Claim / Pre-Claim Number", def: "When a claim is initiated, a pre-claim number is issued prior to approval. When approved, it becomes the actual claim number." },
+                  { term: "Elimination Period", def: "The number of service days you must pay out of pocket before your LTC policy begins to pay. This counts days of service, not calendar days since illness." },
+                  { term: "Daily Maximum", def: "The maximum amount the insurance company will pay per day of service. Any amount above this is the client's responsibility." },
+                  { term: "Monthly Maximum", def: "The maximum amount the insurance company will pay per month of service." },
+                  { term: "Lifetime Maximum", def: "The total amount the policy will pay over its entire lifetime. Once exhausted, no further benefits are available." },
+                  { term: "Activities of Daily Living (ADLs)", def: "Six fundamental self-care activities: Bathing, Dressing, Toileting, Feeding, Continence, and Transferring. Most policies require 2-3 ADLs to be in deficit." },
+                  { term: "Case Manager", def: "Assigned by the LTC insurance company to determine approved hours of care. They monitor the case regularly and serve as your primary contact." },
+                  { term: "Third-Party Assessment", def: "An independent RN assessment to verify the patient's condition and ADL deficits. The assessor looks for inconsistencies between documentation and observed condition." },
+                  { term: "Waiver of Premium", def: "A policy feature that waives (stops) premium payments once care begins under the policy. Not all policies include this benefit." },
+                  { term: "Payment Cycle", def: "The review cycle for invoices and logsheets — typically monthly or at another interval set by the LTC company." },
+                  { term: "CNA (Certified Nursing Assistant)", def: "Some LTC companies require a CNA to provide care, or the care may be disallowed. Check your policy requirements." },
+                  { term: "Assignment of Benefits (AOB)", def: "Directs the insurance company to send payment directly to the care provider instead of the insured. This means the provider submits claims and gets paid directly." },
+                  { term: "Plan of Care", def: "A documented plan outlining the care services needed, typically created by a healthcare provider. Required for most LTC insurance claims." },
+                  { term: "Power of Attorney (POA)", def: "A legal document authorizing someone to act on behalf of the insured person in legal and financial matters, including insurance claims." },
+                  { term: "Cognitive Impairment Trigger", def: "Some policies allow benefits to be triggered by cognitive impairment (e.g., Alzheimer's, dementia) even if physical ADLs are not in deficit." },
+                ].map((item, i) => (
+                  <Card key={i} className="p-4 border-l-4 border-l-teal">
+                    <h4 className="font-semibold text-foreground mb-1">{item.term}</h4>
+                    <p className="text-sm text-muted-foreground">{item.def}</p>
+                  </Card>
                 ))}
-              </Accordion>
+              </div>
             </TabsContent>
 
             {/* Tips & Pitfalls Tab */}
             <TabsContent value="tips" className="space-y-8">
-              <div className="prose max-w-none mb-4">
-                <h2 className="font-serif text-2xl font-bold text-foreground">Tips & Common Pitfalls</h2>
+              <div className="prose max-w-none mb-6">
+                <h2 className="font-serif text-3xl font-bold text-foreground">Tips & Common Pitfalls</h2>
                 <p className="text-muted-foreground">Learn from the experiences of others. These tips and warnings can mean the difference between a successful claim and a denial.</p>
               </div>
 
-              <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-foreground flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500" /> Do's</h3>
-                {[
-                  "Read your entire policy before starting the claims process",
-                  "Request the claims packet by mail — do NOT initiate the claim over the phone",
-                  "Gather ALL documentation before submitting anything",
-                  "Submit everything in ONE complete packet — never piecemeal",
-                  "Put the policy number on EVERY page of submitted documents",
-                  "Keep copies of everything you submit",
-                  "Notify all healthcare providers IN WRITING of your intent to file",
-                  "Choose a home care provider experienced with LTC insurance",
-                  "Document ADL deficits thoroughly and consistently",
-                  "Maintain detailed daily care logs and notes",
-                ].map((tip, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-green-800">{tip}</span>
-                  </div>
-                ))}
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <h3 className="font-serif text-2xl font-bold text-foreground flex items-center gap-2"><CheckCircle className="w-6 h-6 text-green-500" /> Do's</h3>
+                  {[
+                    "Read your entire policy before starting the claims process",
+                    "Request the claims packet by mail — do NOT initiate the claim over the phone",
+                    "Gather ALL documentation before submitting anything",
+                    "Submit everything in ONE complete packet — never piecemeal",
+                    "Put the policy number on EVERY page of submitted documents",
+                    "Keep copies of everything you submit",
+                    "Notify all healthcare providers IN WRITING of your intent to file",
+                    "Choose a home care provider experienced with LTC insurance",
+                    "Document ADL deficits thoroughly and consistently",
+                    "Maintain detailed daily care logs and notes",
+                  ].map((tip, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                      <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-green-800">{tip}</span>
+                    </div>
+                  ))}
+                </div>
 
-              <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-foreground flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-red-500" /> Don'ts</h3>
-                {[
-                  "DON'T initiate the claim before all documentation is gathered",
-                  "DON'T send documents in pieces — submit everything at once",
-                  "DON'T forget to include the policy number on every page",
-                  "DON'T accept a denial without understanding why",
-                  "DON'T assume the insurance company will guide you through the process",
-                  "DON'T wait too long to begin the elimination period",
-                  "DON'T use a care provider unfamiliar with LTC insurance requirements",
-                  "DON'T be inconsistent between documentation and third-party evaluation",
-                  "DON'T underestimate the importance of the third-party nurse assessment",
-                  "DON'T rely on verbal communication — get everything in writing",
-                ].map((tip, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-                    <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-red-800">{tip}</span>
-                  </div>
-                ))}
+                <div className="space-y-4">
+                  <h3 className="font-serif text-2xl font-bold text-foreground flex items-center gap-2"><AlertTriangle className="w-6 h-6 text-red-500" /> Don'ts</h3>
+                  {[
+                    "DON'T initiate the claim before all documentation is gathered",
+                    "DON'T send documents in pieces — submit everything at once",
+                    "DON'T forget to include the policy number on every page",
+                    "DON'T accept a denial without understanding why",
+                    "DON'T assume the insurance company will guide you through the process",
+                    "DON'T wait too long to begin the elimination period",
+                    "DON'T use a care provider unfamiliar with LTC insurance requirements",
+                    "DON'T be inconsistent between documentation and third-party evaluation",
+                    "DON'T underestimate the importance of the third-party nurse assessment",
+                    "DON'T rely on verbal communication — get everything in writing",
+                  ].map((tip, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                      <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-red-800">{tip}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </TabsContent>
           </Tabs>
