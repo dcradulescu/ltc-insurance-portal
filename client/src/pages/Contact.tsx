@@ -38,8 +38,12 @@ export default function Contact() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-[#2c3e50] to-[#34495e] text-white py-12">
-        <div className="container">
+      <section className="relative text-white py-12">
+        <div className="absolute inset-0">
+          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ybTvcuNvIxVRebPd.jpg" alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-[#1a2a3a]/80" />
+        </div>
+        <div className="container relative">
           <div className="flex items-center gap-3 mb-3">
             <MessageCircle className="w-6 h-6 text-primary" />
             <span className="text-sm uppercase tracking-wider text-white/60 font-medium">Get in Touch</span>

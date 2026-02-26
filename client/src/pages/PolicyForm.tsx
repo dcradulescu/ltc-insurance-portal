@@ -216,8 +216,12 @@ export default function PolicyForm() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-slate-800 via-slate-700 to-primary/80 text-white py-12">
-        <div className="container">
+      <section className="relative text-white py-12">
+        <div className="absolute inset-0">
+          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/TlLdtWuMnzKTLvjM.jpg" alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-[#1a2a3a]/80" />
+        </div>
+        <div className="container relative">
           <div className="flex items-center gap-2 text-primary-foreground/70 text-sm mb-3">
             <ClipboardList className="w-4 h-4" /> POLICY INTAKE FORM
           </div>

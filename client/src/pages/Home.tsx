@@ -73,10 +73,10 @@ export default function Home() {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#2c3e50] via-[#34495e] to-[#2c3e50] text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-20 w-96 h-96 bg-blue-400 rounded-full blur-3xl" />
+      <section className="relative text-white overflow-hidden">
+        <div className="absolute inset-0">
+          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg" alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-[#1a2a3a]/75" />
         </div>
         <div className="container relative py-20 md:py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

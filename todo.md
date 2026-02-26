@@ -30,3 +30,13 @@
 - [x] Generate explainer video thumbnails for each page
 - [x] Add Tips & Pitfalls section on Education page
 - [x] Add denial warning logic and third-party evaluation prep on Strategy page
+
+## Hero Background Images
+- [x] Generate hero background image for Home page (family/caregiving theme)
+- [x] Generate hero background image for Education page (learning/knowledge theme)
+- [x] Generate hero background image for Policy Form page (documents/forms theme)
+- [x] Generate hero background image for Strategy page (planning/roadmap theme)
+- [x] Generate hero background image for Contact page (support/communication theme)
+- [x] Upload all images to CDN
+- [x] Add dark overlay masks to all hero sections
+- [x] Update all page components with background images
