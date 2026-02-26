@@ -111,7 +111,7 @@ export default function Education() {
       {/* Video */}
       <section className="py-8 bg-secondary">
         <div className="container max-w-4xl">
-          <VideoPlaceholder title="LTC Insurance Education Overview" description="A comprehensive introduction to long-term care insurance and the claims process" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lWGNhdOVPEktQuAP.jpg" />
+          <VideoPlaceholder title="LTC Insurance Education Overview" description="A comprehensive introduction to long-term care insurance and the claims process" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lWGNhdOVPEktQuAP.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/HjrQwJlefzrKTvbR.mp4" />
         </div>
       </section>
 

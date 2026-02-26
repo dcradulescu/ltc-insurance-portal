@@ -40,3 +40,13 @@
 - [x] Upload all images to CDN
 - [x] Add dark overlay masks to all hero sections
 - [x] Update all page components with background images
+
+## Explainer Videos
+- [x] Generate explainer video for Home page with Visiting Angels dove logo
+- [x] Generate explainer video for Education page with Visiting Angels dove logo
+- [x] Generate explainer video for Policy Form page with Visiting Angels dove logo
+- [x] Generate explainer video for Strategy page with Visiting Angels dove logo
+- [x] Generate explainer video for Contact page with Visiting Angels dove logo
+- [x] Upload all videos to CDN
+- [x] Update VideoPlaceholder component to support actual video playback
+- [x] Replace all placeholder references with real video URLs

@@ -56,7 +56,7 @@ export default function Contact() {
       {/* Video */}
       <section className="py-8 bg-secondary">
         <div className="container max-w-4xl">
-          <VideoPlaceholder title="How We Can Help" description="Learn about our support services and how we assist families with LTC insurance claims" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/BCGoGYVjjQPMxhEc.jpg" />
+          <VideoPlaceholder title="How We Can Help" description="Learn about our support services and how we assist families with LTC insurance claims" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/BCGoGYVjjQPMxhEc.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NiJblCFJqXDChprB.mp4" />
         </div>
       </section>
 

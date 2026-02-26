@@ -222,7 +222,7 @@ export default function Strategy() {
       {/* Video */}
       <section className="py-8 bg-secondary">
         <div className="container max-w-4xl">
-          <VideoPlaceholder title="Understanding Your Strategy" description="Learn how to use your personalized 3-stage strategy to navigate the claims process" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NXdvbYzcqmcgIfxG.jpg" />
+          <VideoPlaceholder title="Understanding Your Strategy" description="Learn how to use your personalized 3-stage strategy to navigate the claims process" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NXdvbYzcqmcgIfxG.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/QlCyvRbUBXkLwOND.mp4" />
         </div>
       </section>
 
