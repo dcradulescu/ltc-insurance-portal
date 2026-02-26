@@ -178,7 +178,7 @@ export default function PolicyForm() {
     }
   }, [policyQuery.data]);
 
-  if (authLoading) return <Layout><div className="flex justify-center py-20"><Loader2 className="animate-spin w-8 h-8 text-primary" /></div></Layout>;
+  if (authLoading) return <Layout><div className="flex justify-center py-20"><Loader2 className="animate-spin w-8 h-8 text-teal" /></div></Layout>;
   if (!isAuthenticated) {
     return (
       <Layout>
@@ -219,7 +219,7 @@ export default function PolicyForm() {
       <section className="relative text-white py-12">
         <div className="absolute inset-0">
           <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/TlLdtWuMnzKTLvjM.jpg" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[#1a2a3a]/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 to-[#1a2a3a]/80" />
         </div>
         <div className="container relative">
           <div className="flex items-center gap-2 text-primary-foreground/70 text-sm mb-3">
@@ -244,14 +244,14 @@ export default function PolicyForm() {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-slate-500">Step {step + 1} of {steps.length}</span>
-              <span className="text-sm font-medium text-primary">{completionPct}% Complete</span>
+              <span className="text-sm font-medium text-teal">{completionPct}% Complete</span>
             </div>
             <div className="w-full bg-slate-200 rounded-full h-2">
-              <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${((step + 1) / steps.length) * 100}%` }} />
+              <div className="bg-teal h-2 rounded-full transition-all" style={{ width: `${((step + 1) / steps.length) * 100}%` }} />
             </div>
             <div className="flex justify-between mt-3">
               {steps.map((s, i) => (
-                <button key={i} onClick={() => setStep(i)} className={`text-xs text-center flex-1 px-1 ${i === step ? "text-primary font-semibold" : i < step ? "text-green-600" : "text-slate-400"}`}>
+                <button key={i} onClick={() => setStep(i)} className={`text-xs text-center flex-1 px-1 ${i === step ? "text-teal font-semibold" : i < step ? "text-green-600" : "text-slate-400"}`}>
                   <span className="block text-lg mb-0.5">{s.icon}</span>
                   <span className="hidden sm:block">{s.title}</span>
                 </button>
@@ -485,7 +485,7 @@ export default function PolicyForm() {
                 <Label className="text-sm font-medium text-slate-700 mb-3 block">ADL Limitations (Select all that apply — minimum {form.minAdlsRequired || "2"} required)</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {adlOptions.map(adl => (
-                    <label key={adl} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${form.adlLimitations.includes(adl) ? "bg-primary/10 border-primary" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                    <label key={adl} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${form.adlLimitations.includes(adl) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                       <Checkbox checked={form.adlLimitations.includes(adl)} onCheckedChange={checked => {
                         update("adlLimitations", checked ? [...form.adlLimitations, adl] : form.adlLimitations.filter(a => a !== adl));
                       }} />

@@ -135,13 +135,13 @@ export default function Strategy() {
 
   const toggleCategory = (cat: string) => setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
 
-  if (authLoading) return <Layout><div className="flex justify-center py-20"><Loader2 className="animate-spin w-8 h-8 text-primary" /></div></Layout>;
+  if (authLoading) return <Layout><div className="flex justify-center py-20"><Loader2 className="animate-spin w-8 h-8 text-teal" /></div></Layout>;
   if (!isAuthenticated) {
     return (
       <Layout>
         <section className="py-20 bg-secondary">
           <div className="container max-w-lg text-center">
-            <Shield className="w-16 h-16 text-primary mx-auto mb-6" />
+            <Shield className="w-16 h-16 text-teal mx-auto mb-6" />
             <h1 className="font-serif text-3xl font-bold text-foreground mb-4">Sign In Required</h1>
             <p className="text-muted-foreground mb-8">Please sign in to view your personalized strategy.</p>
             <Button asChild size="lg"><a href={getLoginUrl()}>Sign In to Continue</a></Button>
@@ -207,11 +207,11 @@ export default function Strategy() {
       <section className="relative text-white py-12">
         <div className="absolute inset-0">
           <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/gwMDIGGTHLJRGnPt.jpg" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[#1a2a3a]/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 to-[#1a2a3a]/80" />
         </div>
         <div className="container relative">
           <div className="flex items-center gap-3 mb-3">
-            <ClipboardCheck className="w-6 h-6 text-primary" />
+            <ClipboardCheck className="w-6 h-6 text-teal" />
             <span className="text-sm uppercase tracking-wider text-white/60 font-medium">Your Strategy</span>
           </div>
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-3">Your Customized Claim Strategy</h1>
@@ -238,7 +238,7 @@ export default function Strategy() {
             </div>
           ) : isGenerating ? (
             <div className="text-center py-16">
-              <Loader2 className="w-16 h-16 text-primary mx-auto mb-6 animate-spin" />
+              <Loader2 className="w-16 h-16 text-teal mx-auto mb-6 animate-spin" />
               <h2 className="font-serif text-2xl font-bold text-foreground mb-4">Generating Your Strategy</h2>
               <p className="text-muted-foreground max-w-md mx-auto">Analyzing your policy details and care needs to create a comprehensive, personalized strategy. This may take a moment...</p>
             </div>
@@ -279,9 +279,9 @@ export default function Strategy() {
                   { num: 2, title: "Filing the Claim", tasks: stage2Tasks, desc: "Submit complete claim packet" },
                   { num: 3, title: "Post-Approval", tasks: stage3Tasks, desc: "Manage ongoing care & reimbursement" },
                 ].map(s => (
-                  <div key={s.num} className={`p-4 rounded-lg border-2 transition-colors ${currentStage === s.num ? "border-primary bg-primary/5" : currentStage > s.num ? "border-green-300 bg-green-50" : "border-slate-200"}`}>
+                  <div key={s.num} className={`p-4 rounded-lg border-2 transition-colors ${currentStage === s.num ? "border-teal bg-teal/5" : currentStage > s.num ? "border-green-300 bg-green-50" : "border-slate-200"}`}>
                     <div className="flex items-center gap-2 mb-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage === s.num ? "bg-primary text-white" : currentStage > s.num ? "bg-green-500 text-white" : "bg-slate-200 text-slate-500"}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage === s.num ? "bg-teal text-white" : currentStage > s.num ? "bg-green-500 text-white" : "bg-slate-200 text-slate-500"}`}>
                         {currentStage > s.num ? <CheckCircle2 className="w-5 h-5" /> : s.num}
                       </div>
                       <div>
@@ -343,7 +343,7 @@ export default function Strategy() {
                 <TabsContent value="strategy">
                   <div
                     ref={strategyContentRef}
-                    className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-h2:text-2xl prose-h2:border-b-2 prose-h2:border-primary prose-h2:pb-2 prose-h2:mt-10 prose-h3:text-xl prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-primary"
+                    className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-h2:text-2xl prose-h2:border-b-2 prose-h2:border-teal prose-h2:pb-2 prose-h2:mt-10 prose-h3:text-xl prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-teal"
                     dangerouslySetInnerHTML={{ __html: strategy?.strategyHtml || "" }}
                   />
                 </TabsContent>
@@ -351,7 +351,7 @@ export default function Strategy() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <Target className="w-16 h-16 text-primary/30 mx-auto mb-6" />
+              <Target className="w-16 h-16 text-teal/30 mx-auto mb-6" />
               <h2 className="font-serif text-2xl font-bold text-foreground mb-4">Ready to Generate Your Strategy</h2>
               <p className="text-muted-foreground mb-8 max-w-md mx-auto">We have your policy information. Click below to generate your personalized LTC insurance claim strategy.</p>
               <Button size="lg" onClick={handleGenerate}><Target className="w-4 h-4 mr-2" /> Generate My Strategy</Button>

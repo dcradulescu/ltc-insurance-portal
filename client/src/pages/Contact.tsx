@@ -41,11 +41,11 @@ export default function Contact() {
       <section className="relative text-white py-12">
         <div className="absolute inset-0">
           <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ybTvcuNvIxVRebPd.jpg" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[#1a2a3a]/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 to-[#1a2a3a]/80" />
         </div>
         <div className="container relative">
           <div className="flex items-center gap-3 mb-3">
-            <MessageCircle className="w-6 h-6 text-primary" />
+            <MessageCircle className="w-6 h-6 text-teal" />
             <span className="text-sm uppercase tracking-wider text-white/60 font-medium">Get in Touch</span>
           </div>
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-3">Contact Us</h1>
@@ -71,9 +71,9 @@ export default function Contact() {
 
               <div className="space-y-4">
                 {[
-                  { icon: <Phone className="w-5 h-5 text-primary" />, label: "Phone", value: "Contact us for phone support", sub: "Mon-Fri, 9am-5pm EST" },
-                  { icon: <Mail className="w-5 h-5 text-primary" />, label: "Email", value: "Send us a message using the form", sub: "We respond within 24 hours" },
-                  { icon: <Clock className="w-5 h-5 text-primary" />, label: "Response Time", value: "Within 24 business hours", sub: "Urgent matters prioritized" },
+                  { icon: <Phone className="w-5 h-5 text-teal" />, label: "Phone", value: "Contact us for phone support", sub: "Mon-Fri, 9am-5pm EST" },
+                  { icon: <Mail className="w-5 h-5 text-teal" />, label: "Email", value: "Send us a message using the form", sub: "We respond within 24 hours" },
+                  { icon: <Clock className="w-5 h-5 text-teal" />, label: "Response Time", value: "Within 24 business hours", sub: "Urgent matters prioritized" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 bg-secondary rounded-lg">
                     <div className="mt-0.5">{item.icon}</div>
@@ -86,7 +86,7 @@ export default function Contact() {
                 ))}
               </div>
 
-              <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <div className="p-4 bg-teal/5 rounded-lg border border-teal/20">
                 <h3 className="font-semibold text-sm text-foreground mb-2">Need Immediate Help?</h3>
                 <p className="text-xs text-muted-foreground">Use the chat widget in the bottom-right corner for instant assistance with common questions about LTC insurance.</p>
               </div>

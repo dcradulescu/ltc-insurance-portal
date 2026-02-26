@@ -4,17 +4,16 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Link } from "wouter";
+import { useState, useEffect, useRef } from "react";
 import {
-  Shield,
-  FileText,
-  BookOpen,
-  Target,
   Heart,
-  Users,
-  CheckCircle,
   ArrowRight,
-  Phone,
+  BookOpen,
   ClipboardList,
+  Target,
+  Phone,
+  Quote,
+  Star,
 } from "lucide-react";
 
 const features = [
@@ -23,52 +22,92 @@ const features = [
     title: "Education & Resources",
     description:
       "Comprehensive guides to help you understand your long-term care insurance policy, benefits, and coverage options.",
+    color: "bg-teal/10 text-teal group-hover:bg-teal/20",
   },
   {
     icon: ClipboardList,
     title: "Policy Intake Form",
     description:
       "Our interactive form captures your specific policy details so we can provide tailored guidance for your situation.",
+    color: "bg-primary/10 text-primary group-hover:bg-primary/20",
   },
   {
     icon: Target,
     title: "Customized Strategy",
     description:
       "Receive a personalized, step-by-step strategy designed specifically for your policy and care needs.",
+    color: "bg-teal/10 text-teal group-hover:bg-teal/20",
   },
   {
     icon: Phone,
     title: "Live Support Chat",
     description:
       "Get instant answers to your questions about long-term care insurance through our intelligent support chat.",
+    color: "bg-primary/10 text-primary group-hover:bg-primary/20",
   },
 ];
 
-const steps = [
+const testimonials = [
   {
-    number: "01",
-    title: "Create Your Account",
-    description: "Sign up to securely save your information and access personalized features.",
+    name: "Margaret S.",
+    relation: "Daughter of policyholder",
+    text: "When my father needed home care, I had no idea where to start with his LTC policy. Visiting Angels walked us through every step. Within weeks, we had a clear strategy and the claim was approved.",
+    rating: 5,
   },
   {
-    number: "02",
-    title: "Enter Policy Details",
-    description: "Complete our comprehensive policy intake form with your insurance information.",
+    name: "Robert & Linda K.",
+    relation: "Policyholders",
+    text: "We had been paying premiums for 15 years and were terrified of the claims process. The personalized strategy made everything so clear. We couldn't have done it without this guidance.",
+    rating: 5,
   },
   {
-    number: "03",
-    title: "Get Your Strategy",
-    description: "Receive a customized claim filing strategy tailored to your specific situation.",
+    name: "Susan T.",
+    relation: "Caregiver for her mother",
+    text: "Mom's insurance company kept asking for more paperwork. Visiting Angels helped us understand exactly what was needed and organized everything. The claim was approved on the second submission.",
+    rating: 5,
   },
   {
-    number: "04",
-    title: "File With Confidence",
-    description: "Follow your personalized guide to successfully submit your LTC insurance claim.",
+    name: "James & Patricia W.",
+    relation: "Family caregivers",
+    text: "The education resources alone were worth it. We finally understood what ADLs meant, what our policy actually covered, and how to document everything properly. A true lifesaver for our family.",
+    rating: 5,
   },
+  {
+    name: "Carol D.",
+    relation: "Wife of policyholder",
+    text: "After my husband's stroke, I was overwhelmed. The step-by-step checklist kept me on track. Every task was clear, and I always knew what to do next. I felt supported the entire time.",
+    rating: 5,
+  },
+  {
+    name: "Thomas M.",
+    relation: "Son of policyholder",
+    text: "Dad's claim was initially denied. Using the strategy from this portal, we appealed with the right documentation and it was overturned. This service literally saved us tens of thousands of dollars.",
+    rating: 5,
+  },
+];
+
+const storyQuotes = [
+  "Years ago, Jim told me it was smart to take out this policy. I called the insurance company, but we couldn't make heads or tails of what to do.",
+  "Jim was starting to decline and we needed home care services to help keep him at home, but I felt completely overwhelmed!",
+  "We have paid on this long-term care policy for years, and it made sense at the time, but now it's so hard to understand.",
+  "Not only did I have to coordinate care, take over all of the additional things that Jim was doing, but now I had this on top of it! I felt hopeless…",
+  "Thankfully, Visiting Angels was able to help us to understand what the policy is, how to start and file a claim and even created a specific strategy just for us!",
+  "If it wasn't for Visiting Angels, I would have given up. Who knows if we could have kept Jim home.",
+  "Now there is light at the end of the tunnel. Jim is getting great care and the insurance company is providing the financial safety net it was meant to.",
+  "What an absolute blessing to have Visiting Angels figure all of this out with us! There is no way we could have done this without you!",
 ];
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
+  const [activeQuote, setActiveQuote] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveQuote((prev) => (prev + 1) % storyQuotes.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Layout>
@@ -76,29 +115,29 @@ export default function Home() {
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
           <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[#1a2a3a]/75" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/85 via-[#1a2a3a]/70 to-[#1a2a3a]/50" />
         </div>
         <div className="container relative py-20 md:py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-white/10">
-                <Heart className="w-4 h-4 text-red-400" />
+              <div className="inline-flex items-center gap-2 bg-teal/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-teal/30">
+                <Heart className="w-4 h-4 text-teal-light" />
                 <span className="text-sm text-white/90">Supportive Guidance for Families</span>
               </div>
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 Navigate Your LTC Insurance Claim{" "}
-                <span className="text-primary">With Confidence</span>
+                <span className="text-teal">With Confidence</span>
               </h1>
               <p className="text-lg text-white/80 leading-relaxed mb-8 max-w-lg">
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
               </p>
               <div className="flex flex-wrap gap-4">
                 {isAuthenticated ? (
-                  <Button asChild size="lg" className="text-base px-8">
+                  <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
                     <Link href="/policy-form">Start Your Claim Journey</Link>
                   </Button>
                 ) : (
-                  <Button asChild size="lg" className="text-base px-8">
+                  <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
                     <a href={getLoginUrl()}>Get Started Free</a>
                   </Button>
                 )}
@@ -131,12 +170,48 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Parallax CTA Section - Moved Up */}
+      <section
+        className="parallax-section relative py-20 text-white"
+        style={{
+          backgroundImage: "url('https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg')",
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-dark/90 via-primary/85 to-[#1a2a3a]/90" />
+        <div className="container relative text-center">
+          <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
+            You Don't Have to Navigate This Alone
+          </h2>
+          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8">
+            Thousands of families have trusted us to guide them through the long-term care insurance claims process. Let us create a personalized strategy for your family too.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            {isAuthenticated ? (
+              <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90">
+                <Link href="/policy-form">
+                  Start Your Claim <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90">
+                <a href={getLoginUrl()}>
+                  Create Free Account <ArrowRight className="w-4 h-4 ml-2" />
+                </a>
+              </Button>
+            )}
+            <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/10 bg-transparent">
+              <Link href="/education">Learn More</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="container">
           <div className="text-center mb-14">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-              How We <span className="text-primary">Help</span>
+              How We <span className="text-teal">Help</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Our portal provides everything you need to understand, prepare, and successfully file your long-term care insurance claim.
@@ -146,10 +221,10 @@ export default function Home() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group p-6 rounded-xl border border-border bg-white hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+                className="group p-6 rounded-xl border border-border bg-white hover:shadow-lg hover:border-teal/30 transition-all duration-300"
               >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
-                  <feature.icon className="w-7 h-7 text-primary" />
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${feature.color}`}>
+                  <feature.icon className="w-7 h-7" />
                 </div>
                 <h3 className="font-serif font-bold text-lg mb-3 text-foreground">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
@@ -159,88 +234,147 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Our Story Section - Two Column */}
       <section className="py-20 bg-secondary">
         <div className="container">
-          <div className="text-center mb-14">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Image */}
+            <div className="relative">
+              <div className="rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/swQpXlcRmPQTVKfl.jpg"
+                  alt="Elderly couple embracing a Visiting Angels care coordinator"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-teal/10 rounded-full -z-10" />
+              <div className="absolute -top-4 -left-4 w-16 h-16 bg-primary/10 rounded-full -z-10" />
+            </div>
+
+            {/* Right: Our Story with fading quotes */}
+            <div>
+              <div className="inline-flex items-center gap-2 bg-teal/10 rounded-full px-4 py-2 mb-6">
+                <Heart className="w-4 h-4 text-teal" />
+                <span className="text-sm font-medium text-teal-dark">Real Families, Real Results</span>
+              </div>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
+                Our <span className="text-teal">Story</span>
+              </h2>
+              <div className="relative min-h-[200px] flex items-center">
+                <Quote className="absolute top-0 left-0 w-10 h-10 text-teal/20" />
+                {storyQuotes.map((quote, index) => (
+                  <p
+                    key={index}
+                    className="absolute inset-0 flex items-center text-lg md:text-xl text-foreground/80 italic leading-relaxed pl-6 transition-all duration-1000"
+                    style={{
+                      opacity: activeQuote === index ? 1 : 0,
+                      transform: activeQuote === index ? "translateY(0)" : (index < activeQuote || (activeQuote === 0 && index === storyQuotes.length - 1)) ? "translateY(-15px)" : "translateY(15px)",
+                    }}
+                  >
+                    "{quote}"
+                  </p>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-8">
+                {storyQuotes.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveQuote(index)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      activeQuote === index ? "bg-teal w-6" : "bg-teal/30 hover:bg-teal/50"
+                    }`}
+                    aria-label={`Quote ${index + 1}`}
+                  />
+                ))}
+              </div>
+              <p className="mt-6 text-sm text-muted-foreground">
+                — A Visiting Angels family
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Scrolling Testimonials */}
+      <section className="py-20 bg-white overflow-hidden">
+        <div className="container mb-12">
+          <div className="text-center">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-              How It <span className="text-primary">Works</span>
+              What <span className="text-teal">Families</span> Are Saying
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Four simple steps to get your personalized LTC insurance claim strategy.
+              Hear from families who have successfully navigated the LTC insurance claims process with our help.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map((step) => (
-              <div key={step.number} className="relative">
-                <div className="text-6xl font-serif font-bold text-primary/10 mb-2">{step.number}</div>
-                <h3 className="font-serif font-bold text-lg mb-2 text-foreground">{step.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+        </div>
+        <div className="relative">
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
+          <div
+            ref={scrollRef}
+            className="flex gap-6 animate-scroll-left"
+            style={{ width: "max-content" }}
+          >
+            {[...testimonials, ...testimonials].map((testimonial, index) => (
+              <div
+                key={index}
+                className="w-[380px] shrink-0 bg-white rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: testimonial.rating }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-foreground/80 text-sm leading-relaxed mb-4 italic">
+                  "{testimonial.text}"
+                </p>
+                <div className="border-t border-border pt-4">
+                  <div className="font-serif font-bold text-foreground">{testimonial.name}</div>
+                  <div className="text-xs text-muted-foreground">{testimonial.relation}</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Trust Section */}
-      <section className="py-20 bg-white">
+      {/* How It Works - Streamlined */}
+      <section className="py-20 bg-secondary">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Why Families <span className="text-primary">Trust Us</span>
-              </h2>
-              <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-                We understand how stressful it can be when a loved one needs long-term care. Our mission is to remove the confusion and frustration from the insurance claims process so you can focus on what matters most — caring for your family.
-              </p>
-              <ul className="space-y-4">
-                {[
-                  "Personalized strategies based on your specific policy",
-                  "Step-by-step guidance through the entire claims process",
-                  "Expert knowledge of common insurance company practices",
-                  "Downloadable and shareable strategy documents",
-                  "Live support chat for immediate assistance",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                    <span className="text-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex flex-col gap-6">
-              <div className="bg-secondary rounded-xl p-8 border border-border">
-                <div className="flex items-center gap-3 mb-4">
-                  <Users className="w-8 h-8 text-primary" />
-                  <div>
-                    <div className="font-serif text-2xl font-bold text-foreground">Families Helped</div>
-                    <div className="text-sm text-muted-foreground">And counting</div>
-                  </div>
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Every family deserves clear guidance when navigating long-term care insurance. We are committed to making this process as smooth as possible.
-                </p>
+          <div className="text-center mb-14">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Four Simple <span className="text-primary">Steps</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              From sign-up to claim approval — here's how we guide you through the process.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { num: "01", title: "Create Account", desc: "Sign up to securely save your information and access personalized features.", color: "text-teal" },
+              { num: "02", title: "Enter Policy Details", desc: "Complete our comprehensive policy intake form with your insurance information.", color: "text-primary" },
+              { num: "03", title: "Get Your Strategy", desc: "Receive a customized claim filing strategy tailored to your specific situation.", color: "text-teal" },
+              { num: "04", title: "File With Confidence", desc: "Follow your personalized guide to successfully submit your LTC insurance claim.", color: "text-primary" },
+            ].map((step) => (
+              <div key={step.num} className="relative">
+                <div className={`text-6xl font-serif font-bold ${step.color} opacity-20 mb-2`}>{step.num}</div>
+                <h3 className="font-serif font-bold text-lg mb-2 text-foreground">{step.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
               </div>
-              <div className="bg-secondary rounded-xl p-8 border border-border">
-                <div className="flex items-center gap-3 mb-4">
-                  <Shield className="w-8 h-8 text-primary" />
-                  <div>
-                    <div className="font-serif text-2xl font-bold text-foreground">Secure & Private</div>
-                    <div className="text-sm text-muted-foreground">Your data is protected</div>
-                  </div>
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  Your policy information and personal details are securely stored and never shared with third parties.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-primary text-primary-foreground">
-        <div className="container text-center">
+      {/* Bottom CTA */}
+      <section
+        className="parallax-section relative py-16 text-white"
+        style={{
+          backgroundImage: "url('https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg')",
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/90 to-teal-dark/85" />
+        <div className="container relative text-center">
           <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
             Ready to Get Started?
           </h2>
@@ -249,13 +383,13 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             {isAuthenticated ? (
-              <Button asChild size="lg" variant="outline" className="text-base px-8 border-white text-white hover:bg-white hover:text-primary bg-transparent">
+              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
                 <Link href="/policy-form">
                   Complete Policy Form <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
             ) : (
-              <Button asChild size="lg" variant="outline" className="text-base px-8 border-white text-white hover:bg-white hover:text-primary bg-transparent">
+              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
                 <a href={getLoginUrl()}>
                   Create Free Account <ArrowRight className="w-4 h-4 ml-2" />
                 </a>

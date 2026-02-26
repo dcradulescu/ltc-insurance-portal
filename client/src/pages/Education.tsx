@@ -38,8 +38,8 @@ const threeStages = [
   {
     stage: 1,
     title: "Prior to Claim — Preparation",
-    color: "bg-blue-50 border-blue-200",
-    icon: <ClipboardList className="w-6 h-6 text-blue-600" />,
+    color: "bg-teal/5 border-teal/20",
+    icon: <ClipboardList className="w-6 h-6 text-teal" />,
     items: [
       "Contact the insurance company and request a claims packet by mail",
       "DO NOT initiate the claim yet — only request information",
@@ -96,11 +96,11 @@ export default function Education() {
       <section className="relative text-white py-12">
         <div className="absolute inset-0">
           <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/PwkXeMqqVgTuSYuq.jpg" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-[#1a2a3a]/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 to-[#1a2a3a]/80" />
         </div>
         <div className="container relative">
           <div className="flex items-center gap-3 mb-3">
-            <BookOpen className="w-6 h-6 text-primary" />
+            <BookOpen className="w-6 h-6 text-teal" />
             <span className="text-sm uppercase tracking-wider text-white/60 font-medium">Education Center</span>
           </div>
           <h1 className="font-serif text-3xl md:text-4xl font-bold mb-3">Understanding Long-Term Care Insurance</h1>
@@ -142,7 +142,7 @@ export default function Education() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                  { icon: <Shield className="w-8 h-8 text-blue-600" />, title: "Know Your Policy", desc: "Understanding your specific policy terms, benefit triggers, and coverage limits is the foundation of a successful claim." },
+                  { icon: <Shield className="w-8 h-8 text-teal" />, title: "Know Your Policy", desc: "Understanding your specific policy terms, benefit triggers, and coverage limits is the foundation of a successful claim." },
                   { icon: <ClipboardList className="w-8 h-8 text-amber-600" />, title: "Document Everything", desc: "Thorough documentation of care needs, ADL deficits, and medical conditions is essential for claim approval." },
                   { icon: <Users className="w-8 h-8 text-green-600" />, title: "Build Your Team", desc: "Work with experienced care providers, physicians, and advocates who understand LTC insurance requirements." },
                 ].map((card, i) => (
@@ -204,9 +204,9 @@ export default function Education() {
                 ))}
               </div>
 
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-2"><Info className="w-4 h-4 inline mr-1" /> Important Note About ADL Assessment</h4>
-                <p className="text-sm text-blue-700">During a third-party assessment, an independent nurse will evaluate each ADL. They observe the insured performing tasks and look for <strong>consistency</strong> between what is documented and what they observe. Any inconsistencies can lead to claim denial. Be honest and thorough in documenting limitations.</p>
+              <div className="p-4 bg-teal/5 border border-teal/20 rounded-lg">
+                <h4 className="font-semibold text-teal-dark mb-2"><Info className="w-4 h-4 inline mr-1" /> Important Note About ADL Assessment</h4>
+                <p className="text-sm text-foreground/80">During a third-party assessment, an independent nurse will evaluate each ADL. They observe the insured performing tasks and look for <strong>consistency</strong> between what is documented and what they observe. Any inconsistencies can lead to claim denial. Be honest and thorough in documenting limitations.</p>
               </div>
             </TabsContent>
 

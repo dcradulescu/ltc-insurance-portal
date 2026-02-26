@@ -50,3 +50,14 @@
 - [x] Upload all videos to CDN
 - [x] Update VideoPlaceholder component to support actual video playback
 - [x] Replace all placeholder references with real video URLs
+
+## Teal Color Scheme & Home Page Redesign
+- [x] Incorporate teal into global color scheme alongside blue
+- [x] Add parallax effect to the solid blue section on Home page
+- [x] Move the solid blue section higher on the Home page
+- [x] Remove repetitive content from Home page
+- [x] Add scrolling testimonials section about helping families
+- [x] Add two-column "Our Story" section with elderly couple hugging businesswoman image
+- [x] Add fading quotes in "Our Story" section (Jim's story)
+- [x] Generate elderly couple hugging businesswoman image
+- [x] Update all pages with teal accents (Education, PolicyForm, Strategy, Contact)
