@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Education from "./pages/Education";
 import PolicyForm from "./pages/PolicyForm";
 import Strategy from "./pages/Strategy";
+import Contact from "./pages/Contact";
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path={"/education"} component={Education} />
       <Route path={"/policy-form"} component={PolicyForm} />
       <Route path={"/strategy"} component={Strategy} />
+      <Route path={"/contact"} component={Contact} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

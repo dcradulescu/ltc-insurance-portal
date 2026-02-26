@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, boolean } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -18,35 +18,64 @@ export type InsertUser = typeof users.$inferInsert;
 export const policies = mysqlTable("policies", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
-  // Policy holder info
-  holderFirstName: varchar("holderFirstName", { length: 255 }),
-  holderLastName: varchar("holderLastName", { length: 255 }),
-  holderDateOfBirth: varchar("holderDateOfBirth", { length: 32 }),
-  holderRelationship: varchar("holderRelationship", { length: 128 }),
-  // Policy details
-  insuranceCompany: varchar("insuranceCompany", { length: 255 }),
+
+  // === Insured Person Info ===
+  insuredFullName: varchar("insuredFullName", { length: 255 }),
+  insuredDob: varchar("insuredDob", { length: 32 }),
+  insuredMailingAddress: text("insuredMailingAddress"),
+  insuredSsn: varchar("insuredSsn", { length: 16 }),
+  insuredMedicareNumber: varchar("insuredMedicareNumber", { length: 64 }),
+  insuredMedicaidNumber: varchar("insuredMedicaidNumber", { length: 64 }),
+  powerOfAttorneyPresent: varchar("powerOfAttorneyPresent", { length: 8 }),
+
+  // === Carrier Info ===
+  carrierName: varchar("carrierName", { length: 255 }),
+  carrierAddress1: varchar("carrierAddress1", { length: 255 }),
+  carrierAddress2: varchar("carrierAddress2", { length: 255 }),
+  carrierCityStateZip: varchar("carrierCityStateZip", { length: 255 }),
+  carrierPhone: varchar("carrierPhone", { length: 32 }),
+  carrierFax: varchar("carrierFax", { length: 32 }),
+
+  // === Policy Identifiers ===
   policyNumber: varchar("policyNumber", { length: 128 }),
-  policyType: varchar("policyType", { length: 128 }),
-  policyStatus: varchar("policyStatus", { length: 64 }),
-  effectiveDate: varchar("effectiveDate", { length: 32 }),
-  // Benefits
-  dailyBenefitAmount: varchar("dailyBenefitAmount", { length: 64 }),
-  benefitPeriod: varchar("benefitPeriod", { length: 128 }),
+  claimPreClaimNumber: varchar("claimPreClaimNumber", { length: 128 }),
+
+  // === Coverage Details ===
   eliminationPeriod: varchar("eliminationPeriod", { length: 128 }),
-  inflationProtection: varchar("inflationProtection", { length: 128 }),
-  homeCareCoverage: varchar("homeCareCoverage", { length: 8 }),
-  facilityCareCoverage: varchar("facilityCareCoverage", { length: 8 }),
-  // Current care needs
+  dailyMaximum: varchar("dailyMaximum", { length: 64 }),
+  monthlyMaximum: varchar("monthlyMaximum", { length: 64 }),
+  lifetimeMaximum: varchar("lifetimeMaximum", { length: 64 }),
+  minAdlsRequired: varchar("minAdlsRequired", { length: 16 }),
+  waiverOfPremium: varchar("waiverOfPremium", { length: 8 }),
+  cnaRequired: varchar("cnaRequired", { length: 8 }),
+  careNotesRequired: varchar("careNotesRequired", { length: 8 }),
+  paymentCycle: varchar("paymentCycle", { length: 128 }),
+  assignmentOfBenefits: varchar("assignmentOfBenefits", { length: 8 }),
+
+  // === Medical / Administrative ===
+  caseManagerName: varchar("caseManagerName", { length: 255 }),
+  thirdPartyAssessmentRequired: varchar("thirdPartyAssessmentRequired", { length: 8 }),
+  thirdPartyAssessmentWho: varchar("thirdPartyAssessmentWho", { length: 255 }),
+  cognitiveImpairmentTrigger: varchar("cognitiveImpairmentTrigger", { length: 8 }),
+  planOfCareStatus: varchar("planOfCareStatus", { length: 128 }),
+  ltcCoordinatorAssigned: varchar("ltcCoordinatorAssigned", { length: 255 }),
+
+  // === Medical Providers (JSON arrays) ===
+  primaryCarePhysician: json("primaryCarePhysician"),
+  otherProviders: json("otherProviders"),
+  facilitiesUsed: json("facilitiesUsed"),
+  dischargeDocumentation: varchar("dischargeDocumentation", { length: 8 }),
+
+  // === Care Needs ===
   currentCareNeeds: text("currentCareNeeds"),
   diagnosisOrCondition: text("diagnosisOrCondition"),
   adlLimitations: json("adlLimitations"),
-  cognitiveImpairment: varchar("cognitiveImpairment", { length: 8 }),
-  currentCareReceiving: text("currentCareReceiving"),
   preferredCareType: varchar("preferredCareType", { length: 128 }),
-  // Additional info
-  priorClaimsFiled: varchar("priorClaimsFiled", { length: 8 }),
-  priorClaimsDetails: text("priorClaimsDetails"),
   additionalNotes: text("additionalNotes"),
+
+  // === Relationship of form filler ===
+  fillerRelationship: varchar("fillerRelationship", { length: 128 }),
+
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -58,8 +87,13 @@ export const strategies = mysqlTable("strategies", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   policyId: int("policyId").notNull(),
+  currentStage: int("currentStage").default(1).notNull(),
   strategyContent: text("strategyContent"),
   strategyHtml: text("strategyHtml"),
+  stage1Tasks: json("stage1Tasks"),
+  stage2Tasks: json("stage2Tasks"),
+  stage3Tasks: json("stage3Tasks"),
+  claimStatus: varchar("claimStatus", { length: 32 }).default("not_started"),
   generatedAt: timestamp("generatedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -67,6 +101,38 @@ export const strategies = mysqlTable("strategies", {
 
 export type Strategy = typeof strategies.$inferSelect;
 export type InsertStrategy = typeof strategies.$inferInsert;
+
+export const documentUploads = mysqlTable("documentUploads", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  policyId: int("policyId"),
+  strategyId: int("strategyId"),
+  taskId: varchar("taskId", { length: 128 }),
+  category: varchar("category", { length: 128 }).notNull(),
+  fileName: varchar("fileName", { length: 512 }).notNull(),
+  fileUrl: text("fileUrl").notNull(),
+  fileKey: varchar("fileKey", { length: 512 }).notNull(),
+  mimeType: varchar("mimeType", { length: 128 }),
+  fileSize: int("fileSize"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DocumentUpload = typeof documentUploads.$inferSelect;
+export type InsertDocumentUpload = typeof documentUploads.$inferInsert;
+
+export const userContacts = mysqlTable("userContacts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  relationship: varchar("relationship", { length: 128 }),
+  receiveCcEmails: int("receiveCcEmails").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserContact = typeof userContacts.$inferSelect;
+export type InsertUserContact = typeof userContacts.$inferInsert;
 
 export const chatMessages = mysqlTable("chatMessages", {
   id: int("id").autoincrement().primaryKey(),

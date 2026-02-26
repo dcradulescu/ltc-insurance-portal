@@ -1,6 +1,13 @@
 import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, policies, InsertPolicy, Policy, strategies, InsertStrategy, Strategy, chatMessages, InsertChatMessage } from "../drizzle/schema";
+import {
+  InsertUser, users,
+  policies, InsertPolicy, Policy,
+  strategies, InsertStrategy, Strategy,
+  chatMessages, InsertChatMessage,
+  documentUploads, InsertDocumentUpload, DocumentUpload,
+  userContacts, InsertUserContact, UserContact,
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -18,25 +25,14 @@ export async function getDb() {
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
-  }
-
+  if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
-  }
-
+  if (!db) { console.warn("[Database] Cannot upsert user: database not available"); return; }
   try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
+    const values: InsertUser = { openId: user.openId };
     const updateSet: Record<string, unknown> = {};
-
     const textFields = ["name", "email", "loginMethod"] as const;
     type TextField = (typeof textFields)[number];
-
     const assignNullable = (field: TextField) => {
       const value = user[field];
       if (value === undefined) return;
@@ -44,52 +40,24 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values[field] = normalized;
       updateSet[field] = normalized;
     };
-
     textFields.forEach(assignNullable);
-
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
-
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
-    throw error;
-  }
+    if (user.lastSignedIn !== undefined) { values.lastSignedIn = user.lastSignedIn; updateSet.lastSignedIn = user.lastSignedIn; }
+    if (user.role !== undefined) { values.role = user.role; updateSet.role = user.role; }
+    else if (user.openId === ENV.ownerOpenId) { values.role = 'admin'; updateSet.role = 'admin'; }
+    if (!values.lastSignedIn) values.lastSignedIn = new Date();
+    if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
+    await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+  } catch (error) { console.error("[Database] Failed to upsert user:", error); throw error; }
 }
 
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
-
+  if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
 
 // ---- Policy helpers ----
-
 export async function createPolicy(data: InsertPolicy): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -118,7 +86,6 @@ export async function getPolicyById(id: number): Promise<Policy | undefined> {
 }
 
 // ---- Strategy helpers ----
-
 export async function createStrategy(data: InsertStrategy): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -146,8 +113,66 @@ export async function updateStrategy(id: number, data: Partial<InsertStrategy>):
   await db.update(strategies).set(data).where(eq(strategies.id, id));
 }
 
-// ---- Chat helpers ----
+export async function getStrategyByUserId(userId: number): Promise<Strategy | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(strategies).where(eq(strategies.userId, userId)).orderBy(desc(strategies.generatedAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
 
+// ---- Document Upload helpers ----
+export async function createDocumentUpload(data: InsertDocumentUpload): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(documentUploads).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getDocumentsByUserId(userId: number): Promise<DocumentUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documentUploads).where(eq(documentUploads.userId, userId)).orderBy(desc(documentUploads.createdAt));
+}
+
+export async function getDocumentsByTaskId(taskId: string, userId: number): Promise<DocumentUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documentUploads).where(and(eq(documentUploads.taskId, taskId), eq(documentUploads.userId, userId)));
+}
+
+export async function deleteDocument(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(documentUploads).where(and(eq(documentUploads.id, id), eq(documentUploads.userId, userId)));
+}
+
+// ---- User Contacts helpers ----
+export async function createUserContact(data: InsertUserContact): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(userContacts).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getUserContacts(userId: number): Promise<UserContact[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(userContacts).where(eq(userContacts.userId, userId));
+}
+
+export async function updateUserContact(id: number, userId: number, data: Partial<InsertUserContact>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(userContacts).set(data).where(and(eq(userContacts.id, id), eq(userContacts.userId, userId)));
+}
+
+export async function deleteUserContact(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(userContacts).where(and(eq(userContacts.id, id), eq(userContacts.userId, userId)));
+}
+
+// ---- Chat helpers ----
 export async function saveChatMessage(data: InsertChatMessage): Promise<void> {
   const db = await getDb();
   if (!db) return;

@@ -3,9 +3,17 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { createPolicy, updatePolicy, getPolicyByUserId, getPolicyById, createStrategy, getStrategyByPolicyId, getStrategyById, updateStrategy, saveChatMessage, getChatHistory } from "./db";
+import {
+  createPolicy, updatePolicy, getPolicyByUserId, getPolicyById,
+  createStrategy, getStrategyByPolicyId, getStrategyById, updateStrategy, getStrategyByUserId,
+  saveChatMessage, getChatHistory,
+  createDocumentUpload, getDocumentsByUserId, getDocumentsByTaskId, deleteDocument,
+  createUserContact, getUserContacts, updateUserContact, deleteUserContact,
+} from "./db";
 import { invokeLLM } from "./_core/llm";
 import { notifyOwner } from "./_core/notification";
+import { storagePut } from "./storage";
+import { nanoid } from "nanoid";
 
 export const appRouter = router({
   system: systemRouter,
@@ -26,30 +34,54 @@ export const appRouter = router({
     save: protectedProcedure
       .input(z.object({
         id: z.number().optional(),
-        holderFirstName: z.string().optional(),
-        holderLastName: z.string().optional(),
-        holderDateOfBirth: z.string().optional(),
-        holderRelationship: z.string().optional(),
-        insuranceCompany: z.string().optional(),
+        // Insured Person
+        insuredFullName: z.string().optional(),
+        insuredDob: z.string().optional(),
+        insuredMailingAddress: z.string().optional(),
+        insuredSsn: z.string().optional(),
+        insuredMedicareNumber: z.string().optional(),
+        insuredMedicaidNumber: z.string().optional(),
+        powerOfAttorneyPresent: z.string().optional(),
+        // Carrier Info
+        carrierName: z.string().optional(),
+        carrierAddress1: z.string().optional(),
+        carrierAddress2: z.string().optional(),
+        carrierCityStateZip: z.string().optional(),
+        carrierPhone: z.string().optional(),
+        carrierFax: z.string().optional(),
+        // Policy Identifiers
         policyNumber: z.string().optional(),
-        policyType: z.string().optional(),
-        policyStatus: z.string().optional(),
-        effectiveDate: z.string().optional(),
-        dailyBenefitAmount: z.string().optional(),
-        benefitPeriod: z.string().optional(),
+        claimPreClaimNumber: z.string().optional(),
+        // Coverage Details
         eliminationPeriod: z.string().optional(),
-        inflationProtection: z.string().optional(),
-        homeCareCoverage: z.string().optional(),
-        facilityCareCoverage: z.string().optional(),
+        dailyMaximum: z.string().optional(),
+        monthlyMaximum: z.string().optional(),
+        lifetimeMaximum: z.string().optional(),
+        minAdlsRequired: z.string().optional(),
+        waiverOfPremium: z.string().optional(),
+        cnaRequired: z.string().optional(),
+        careNotesRequired: z.string().optional(),
+        paymentCycle: z.string().optional(),
+        assignmentOfBenefits: z.string().optional(),
+        // Medical / Administrative
+        caseManagerName: z.string().optional(),
+        thirdPartyAssessmentRequired: z.string().optional(),
+        thirdPartyAssessmentWho: z.string().optional(),
+        cognitiveImpairmentTrigger: z.string().optional(),
+        planOfCareStatus: z.string().optional(),
+        ltcCoordinatorAssigned: z.string().optional(),
+        // Medical Providers
+        primaryCarePhysician: z.any().optional(),
+        otherProviders: z.any().optional(),
+        facilitiesUsed: z.any().optional(),
+        dischargeDocumentation: z.string().optional(),
+        // Care Needs
         currentCareNeeds: z.string().optional(),
         diagnosisOrCondition: z.string().optional(),
         adlLimitations: z.array(z.string()).optional(),
-        cognitiveImpairment: z.string().optional(),
-        currentCareReceiving: z.string().optional(),
         preferredCareType: z.string().optional(),
-        priorClaimsFiled: z.string().optional(),
-        priorClaimsDetails: z.string().optional(),
         additionalNotes: z.string().optional(),
+        fillerRelationship: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
@@ -70,80 +102,90 @@ export const appRouter = router({
         return getStrategyByPolicyId(input.policyId, ctx.user.id);
       }),
 
+    getMine: protectedProcedure.query(async ({ ctx }) => {
+      return getStrategyByUserId(ctx.user.id);
+    }),
+
+    updateTasks: protectedProcedure
+      .input(z.object({
+        strategyId: z.number(),
+        stage: z.enum(["stage1Tasks", "stage2Tasks", "stage3Tasks"]),
+        tasks: z.any(),
+        currentStage: z.number().optional(),
+        claimStatus: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const strategy = await getStrategyById(input.strategyId);
+        if (!strategy || strategy.userId !== ctx.user.id) throw new Error("Strategy not found");
+        const updateData: Record<string, any> = { [input.stage]: input.tasks };
+        if (input.currentStage) updateData.currentStage = input.currentStage;
+        if (input.claimStatus) updateData.claimStatus = input.claimStatus;
+        await updateStrategy(input.strategyId, updateData);
+        return { success: true };
+      }),
+
     generate: protectedProcedure
       .input(z.object({ policyId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const policy = await getPolicyById(input.policyId);
-        if (!policy || policy.userId !== ctx.user.id) {
-          throw new Error("Policy not found");
-        }
+        if (!policy || policy.userId !== ctx.user.id) throw new Error("Policy not found");
 
         const adlList = Array.isArray(policy.adlLimitations) ? (policy.adlLimitations as string[]).join(", ") : "Not specified";
 
-        const systemPrompt = `You are an expert long-term care insurance claims advisor. Your role is to help families navigate the complex process of initiating and successfully submitting long-term care insurance claims.
+        // Build the 3-stage task lists based on policy data
+        const stage1Tasks = buildStage1Tasks(policy);
+        const stage2Tasks = buildStage2Tasks(policy);
+        const stage3Tasks = buildStage3Tasks(policy);
 
-Based on the policy information provided, generate a comprehensive, personalized strategy document that will help this family successfully submit their long-term care insurance claim.
+        const systemPrompt = `You are an expert long-term care insurance claims advisor. Generate a comprehensive, personalized strategy document in clean HTML.
 
-The strategy MUST include the following sections:
+The strategy MUST include:
+1. **Executive Summary** - Overview of the claim situation
+2. **Policy Analysis** - Analysis of their specific policy benefits, coverage limits, and key terms
+3. **Eligibility Assessment** - Based on ADL limitations and care needs
+4. **Stage 1: Prior to Claim** - Preparation steps before initiating the claim
+5. **Stage 2: Filing the Claim** - Step-by-step claim filing guide with documentation requirements
+6. **Stage 3: Post-Approval Management** - Ongoing claim maintenance and reimbursement
+7. **Third-Party Evaluation Preparation** - How to prepare for independent nurse evaluation
+8. **Denial Prevention Strategy** - Common pitfalls and how to avoid them
+9. **Appeal Strategy** - What to do if denied
+10. **Important Contacts & Resources**
 
-1. **Executive Summary** - A brief overview of the claim situation and key recommendations.
+${policy.assignmentOfBenefits === "yes" ? "IMPORTANT: This policy uses Assignment of Benefits - the provider will submit claims and be paid directly." : "IMPORTANT: This policy does NOT use Assignment of Benefits - the insured will pay the provider and submit for reimbursement."}
 
-2. **Policy Analysis** - Detailed analysis of their specific policy benefits, coverage limits, and important terms.
+${policy.thirdPartyAssessmentRequired === "yes" ? "IMPORTANT: A third-party assessment IS required. Include detailed preparation guidance for the independent nurse evaluation." : ""}
 
-3. **Eligibility Assessment** - Based on the care needs and ADL limitations provided, assess whether the policyholder likely meets the benefit triggers for their policy.
+Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their situation.`;
 
-4. **Step-by-Step Claim Filing Guide** - Specific, actionable steps to file the claim with their insurance company, including:
-   - Required documentation checklist
-   - Key forms to request from the insurance company
-   - Medical documentation needed
-   - Timeline expectations
+        const userPrompt = `Generate a personalized LTC insurance claim strategy:
 
-5. **Documentation Strategy** - Specific guidance on how to document care needs, including:
-   - How to document ADL limitations
-   - Physician statement requirements
-   - Care plan documentation
-   - Cognitive assessment documentation (if applicable)
+**Insured:** ${policy.insuredFullName || "Not provided"}
+**DOB:** ${policy.insuredDob || "Not provided"}
+**Carrier:** ${policy.carrierName || "Not provided"}
+**Policy #:** ${policy.policyNumber || "Not provided"}
+**Claim/Pre-Claim #:** ${policy.claimPreClaimNumber || "Not provided"}
 
-6. **Common Pitfalls to Avoid** - Insurance company tactics and common mistakes that lead to claim denials, specific to their policy type and insurance company.
-
-7. **Appeal Strategy** - Pre-emptive guidance on what to do if the initial claim is denied.
-
-8. **Care Coordination Recommendations** - Suggestions for coordinating care that aligns with policy requirements.
-
-9. **Important Contacts & Resources** - Relevant contacts including state insurance commissioner, ombudsman, and advocacy resources.
-
-10. **Timeline & Next Steps** - A clear timeline of actions with deadlines.
-
-Format the response in clean HTML with proper headings (h2, h3), paragraphs, lists, and emphasis. Use a professional, empathetic tone throughout. Make the strategy specific to their situation - reference their actual policy details, insurance company, care needs, etc.`;
-
-        const userPrompt = `Please generate a personalized LTC insurance claim strategy for the following situation:
-
-**Policy Holder:** ${policy.holderFirstName || "Not provided"} ${policy.holderLastName || ""}
-**Date of Birth:** ${policy.holderDateOfBirth || "Not provided"}
-**Relationship to User:** ${policy.holderRelationship || "Not provided"}
-
-**Insurance Company:** ${policy.insuranceCompany || "Not provided"}
-**Policy Number:** ${policy.policyNumber || "Not provided"}
-**Policy Type:** ${policy.policyType || "Not provided"}
-**Policy Status:** ${policy.policyStatus || "Not provided"}
-**Effective Date:** ${policy.effectiveDate || "Not provided"}
-
-**Daily Benefit Amount:** ${policy.dailyBenefitAmount || "Not provided"}
-**Benefit Period:** ${policy.benefitPeriod || "Not provided"}
 **Elimination Period:** ${policy.eliminationPeriod || "Not provided"}
-**Inflation Protection:** ${policy.inflationProtection || "Not provided"}
-**Home Care Coverage:** ${policy.homeCareCoverage || "Not provided"}
-**Facility Care Coverage:** ${policy.facilityCareCoverage || "Not provided"}
+**Daily Maximum:** ${policy.dailyMaximum || "Not provided"}
+**Monthly Maximum:** ${policy.monthlyMaximum || "Not provided"}
+**Lifetime Maximum:** ${policy.lifetimeMaximum || "Not provided"}
+**Min ADLs Required:** ${policy.minAdlsRequired || "Not provided"}
+**Waiver of Premium:** ${policy.waiverOfPremium || "Not provided"}
+**CNA Required:** ${policy.cnaRequired || "Not provided"}
+**Care Notes Required:** ${policy.careNotesRequired || "Not provided"}
+**Payment Cycle:** ${policy.paymentCycle || "Not provided"}
+**Assignment of Benefits:** ${policy.assignmentOfBenefits || "Not provided"}
+
+**Case Manager:** ${policy.caseManagerName || "Not assigned"}
+**Third Party Assessment:** ${policy.thirdPartyAssessmentRequired || "Not provided"}
+**Cognitive Impairment Trigger:** ${policy.cognitiveImpairmentTrigger || "Not provided"}
+**Plan of Care Status:** ${policy.planOfCareStatus || "Not provided"}
 
 **Current Care Needs:** ${policy.currentCareNeeds || "Not provided"}
 **Diagnosis/Condition:** ${policy.diagnosisOrCondition || "Not provided"}
 **ADL Limitations:** ${adlList}
-**Cognitive Impairment:** ${policy.cognitiveImpairment || "Not provided"}
-**Current Care Being Received:** ${policy.currentCareReceiving || "Not provided"}
 **Preferred Care Type:** ${policy.preferredCareType || "Not provided"}
-
-**Prior Claims Filed:** ${policy.priorClaimsFiled || "Not provided"}
-**Prior Claims Details:** ${policy.priorClaimsDetails || "Not provided"}
+**Power of Attorney:** ${policy.powerOfAttorneyPresent || "Not provided"}
 **Additional Notes:** ${policy.additionalNotes || "Not provided"}`;
 
         const result = await invokeLLM({
@@ -157,7 +199,6 @@ Format the response in clean HTML with proper headings (h2, h3), paragraphs, lis
           ? result.choices[0].message.content
           : JSON.stringify(result.choices[0].message.content);
 
-        // Check for existing strategy
         const existing = await getStrategyByPolicyId(input.policyId, ctx.user.id);
         let strategyId: number;
 
@@ -165,6 +206,11 @@ Format the response in clean HTML with proper headings (h2, h3), paragraphs, lis
           await updateStrategy(existing.id, {
             strategyContent: content,
             strategyHtml: content,
+            stage1Tasks,
+            stage2Tasks,
+            stage3Tasks,
+            currentStage: 1,
+            claimStatus: "not_started",
             generatedAt: new Date(),
           });
           strategyId = existing.id;
@@ -174,26 +220,117 @@ Format the response in clean HTML with proper headings (h2, h3), paragraphs, lis
             policyId: input.policyId,
             strategyContent: content,
             strategyHtml: content,
+            stage1Tasks,
+            stage2Tasks,
+            stage3Tasks,
+            currentStage: 1,
+            claimStatus: "not_started",
           });
         }
 
-        // Notify owner about new strategy generation
         await notifyOwner({
           title: "New LTC Strategy Generated",
           content: `User ${ctx.user.name || ctx.user.email || "Unknown"} generated a strategy for policy #${policy.policyNumber || input.policyId}.`,
         }).catch(() => {});
 
-        return { id: strategyId, content };
+        return { id: strategyId, content, stage1Tasks, stage2Tasks, stage3Tasks };
       }),
 
     get: protectedProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.id);
-        if (!strategy || strategy.userId !== ctx.user.id) {
-          throw new Error("Strategy not found");
-        }
+        if (!strategy || strategy.userId !== ctx.user.id) throw new Error("Strategy not found");
         return strategy;
+      }),
+  }),
+
+  documents: router({
+    upload: protectedProcedure
+      .input(z.object({
+        fileName: z.string(),
+        fileData: z.string(), // base64
+        mimeType: z.string(),
+        category: z.string(),
+        taskId: z.string().optional(),
+        policyId: z.number().optional(),
+        strategyId: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const buffer = Buffer.from(input.fileData, "base64");
+        const fileKey = `${ctx.user.id}-docs/${nanoid()}-${input.fileName}`;
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+
+        const docId = await createDocumentUpload({
+          userId: ctx.user.id,
+          policyId: input.policyId ?? null,
+          strategyId: input.strategyId ?? null,
+          taskId: input.taskId ?? null,
+          category: input.category,
+          fileName: input.fileName,
+          fileUrl: url,
+          fileKey: fileKey,
+          mimeType: input.mimeType,
+          fileSize: buffer.length,
+        });
+
+        return { id: docId, url, fileName: input.fileName };
+      }),
+
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return getDocumentsByUserId(ctx.user.id);
+    }),
+
+    listByTask: protectedProcedure
+      .input(z.object({ taskId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        return getDocumentsByTaskId(input.taskId, ctx.user.id);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteDocument(input.id, ctx.user.id);
+        return { success: true };
+      }),
+  }),
+
+  contacts: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return getUserContacts(ctx.user.id);
+    }),
+
+    add: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        email: z.string().email(),
+        relationship: z.string().optional(),
+        receiveCcEmails: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const id = await createUserContact({ ...input, userId: ctx.user.id });
+        return { id };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        relationship: z.string().optional(),
+        receiveCcEmails: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...data } = input;
+        await updateUserContact(id, ctx.user.id, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await deleteUserContact(input.id, ctx.user.id);
+        return { success: true };
       }),
   }),
 
@@ -208,53 +345,53 @@ Format the response in clean HTML with proper headings (h2, h3), paragraphs, lis
       }))
       .mutation(async ({ ctx, input }) => {
         const userId = ctx.user?.id;
-
-        // Save user message
         const lastUserMsg = input.messages.filter(m => m.role === "user").pop();
         if (lastUserMsg) {
-          await saveChatMessage({
-            userId: userId || null,
-            sessionId: input.sessionId,
-            role: "user",
-            content: lastUserMsg.content,
-          });
+          await saveChatMessage({ userId: userId || null, sessionId: input.sessionId, role: "user", content: lastUserMsg.content });
         }
 
         const systemMessage = {
           role: "system" as const,
-          content: `You are a friendly and knowledgeable long-term care insurance support assistant. You help families understand their long-term care insurance policies, navigate the claims process, and answer questions about long-term care.
+          content: `You are a friendly and knowledgeable long-term care insurance support assistant for the LTC Navigator portal. You help families understand their LTC insurance policies and navigate the claims process.
 
-Key areas you can help with:
-- Understanding LTC insurance policy terms and benefits
-- Explaining the claims filing process
-- Discussing Activities of Daily Living (ADLs) and benefit triggers
-- Providing guidance on documentation requirements
-- Explaining elimination periods, benefit periods, and daily benefit amounts
-- Discussing different types of care coverage (home care, facility care, etc.)
-- Answering questions about inflation protection and policy riders
-- Providing emotional support and encouragement during the claims process
+KEY KNOWLEDGE BASE (RAG Context):
 
-Always be empathetic, supportive, and clear in your explanations. If you don't know something specific about their policy, encourage them to use the Policy Intake Form on the portal to get personalized guidance. Never provide specific legal or medical advice.`,
+GLOSSARY:
+- Claim/Pre-Claim Number: When a claim is initiated, a pre-claim number is issued prior to approval. When approved, it becomes the actual claim number.
+- Elimination Period: The number of service days you must pay out of pocket before your LTC policy begins to pay. This counts days of service, not days since illness.
+- Daily Maximum: The maximum amount the insurance company will pay per day of service. Amounts above this are the client's responsibility.
+- Monthly Maximum: The maximum amount per month of service.
+- Lifetime Maximum: The total amount the policy will pay over its lifetime.
+- Min # ADLs Compromised: Activities of Daily Living (Bathing, Dressing, Toileting, Feeding, Continence, Transferring). Typically 2-3 must be in deficit to qualify.
+- Case Manager: Assigned by the LTC company to determine approved hours of care. They monitor the case regularly.
+- Third Party Assessment: An independent RN assessment to verify the patient's condition and ADL deficits.
+- Waiver of Premium: Waives premium payments once care begins under the policy.
+- Payment Cycle: The review cycle for invoices and logsheets (monthly or other interval).
+- CNA Caregiver Required: Some companies require a Certified Nursing Assistant to provide care.
+- Assignment of Benefits (AOB): Redirects insurance payment directly to the care provider instead of the insured.
+
+STRATEGY STAGES:
+- Stage 1 (Prior to Claim): Contact carrier, request claims packet (do NOT initiate claim yet), evaluate needs, identify ADL deficits, secure home care provider, gather all documentation.
+- Stage 2 (The Claim): Complete claim packet, attach all documents in ONE submission, prepare for third-party evaluation, understand 30-day review period.
+- Stage 3 (Post-Approval): Continue elimination period payments, submit invoices and care logs, ensure policy number on every page.
+
+IMPORTANT RULES:
+- NEVER initiate a claim until all documentation is gathered (Stage 1 complete)
+- Submit ALL documents in ONE packet - never in pieces
+- Policy number MUST appear on every page of submitted documents
+- Third-party evaluations look for inconsistencies - be honest and thorough
+- Appeals after denial have low success rates - prevention is key
+
+Always be empathetic and supportive. If you don't know something specific, encourage them to use the Policy Form or contact the team.`,
         };
 
         const messagesForLLM = [systemMessage, ...input.messages.filter(m => m.role !== "system")];
-
-        const result = await invokeLLM({
-          messages: messagesForLLM,
-        });
-
+        const result = await invokeLLM({ messages: messagesForLLM });
         const assistantContent = typeof result.choices[0].message.content === "string"
           ? result.choices[0].message.content
           : JSON.stringify(result.choices[0].message.content);
 
-        // Save assistant response
-        await saveChatMessage({
-          userId: userId || null,
-          sessionId: input.sessionId,
-          role: "assistant",
-          content: assistantContent,
-        });
-
+        await saveChatMessage({ userId: userId || null, sessionId: input.sessionId, role: "assistant", content: assistantContent });
         return assistantContent;
       }),
   }),
@@ -267,21 +404,146 @@ Always be empathetic, supportive, and clear in your explanations. If you don't k
       }))
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
-        if (!strategy || strategy.userId !== ctx.user.id) {
-          throw new Error("Strategy not found");
-        }
-
-        // Use the notification service to notify the owner about the email request
-        // In a production environment, this would integrate with an email service
+        if (!strategy || strategy.userId !== ctx.user.id) throw new Error("Strategy not found");
         const recipientList = input.recipients.join(", ");
         await notifyOwner({
           title: "Strategy Email Request",
           content: `User ${ctx.user.name || ctx.user.email || "Unknown"} requested their LTC strategy (ID: ${input.strategyId}) to be emailed to: ${recipientList}`,
         }).catch(() => {});
-
         return { success: true, message: `Strategy has been queued for delivery to ${input.recipients.length} recipient(s).` };
+      }),
+
+    sendPageContent: protectedProcedure
+      .input(z.object({
+        pageName: z.string(),
+        content: z.string(),
+        recipients: z.array(z.string().email()),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const recipientList = input.recipients.join(", ");
+        await notifyOwner({
+          title: `Page Content Email: ${input.pageName}`,
+          content: `User ${ctx.user.name || ctx.user.email || "Unknown"} requested ${input.pageName} content to be emailed to: ${recipientList}`,
+        }).catch(() => {});
+        return { success: true, message: `Content has been queued for delivery.` };
+      }),
+
+    sendContactForm: publicProcedure
+      .input(z.object({
+        name: z.string(),
+        email: z.string().email(),
+        phone: z.string().optional(),
+        subject: z.string(),
+        message: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await notifyOwner({
+          title: `Contact Form: ${input.subject}`,
+          content: `From: ${input.name} (${input.email}${input.phone ? ", " + input.phone : ""})\n\n${input.message}`,
+        }).catch(() => {});
+        return { success: true };
       }),
   }),
 });
 
 export type AppRouter = typeof appRouter;
+
+// ---- Strategy Task Builders ----
+
+type StrategyTask = { id: string; label: string; completed: boolean; category: string; critical?: boolean; uploadRequired?: boolean };
+
+function buildStage1Tasks(policy: any): StrategyTask[] {
+  const tasks: StrategyTask[] = [
+    { id: "s1-1", label: "Contact insurance company and request claims packet by mail", completed: false, category: "carrier-contact" },
+    { id: "s1-2", label: "DO NOT initiate the claim yet — only request information", completed: false, category: "carrier-contact", critical: true },
+    { id: "s1-3", label: "Request Assignment of Benefits (AOB) form from carrier", completed: false, category: "carrier-contact" },
+    { id: "s1-4", label: "Evaluate long-term care need and identify physical/cognitive decline", completed: false, category: "medical-evaluation" },
+    { id: "s1-5", label: "Identify ADL deficits (minimum " + (policy.minAdlsRequired || "2") + " ADLs required)", completed: false, category: "medical-evaluation" },
+    { id: "s1-6", label: "Identify all healthcare providers (PCP, specialists, facilities)", completed: false, category: "provider-setup" },
+    { id: "s1-7", label: "Notify all providers IN WRITING of intent to file LTC claim", completed: false, category: "provider-setup" },
+    { id: "s1-8", label: "Request documented decline records from providers", completed: false, category: "provider-setup" },
+    { id: "s1-9", label: "Schedule visit with PCP to document current condition", completed: false, category: "provider-setup" },
+    { id: "s1-10", label: "Request chart documentation from all providers", completed: false, category: "provider-setup" },
+    { id: "s1-11", label: "Secure home care provider with LTC insurance experience", completed: false, category: "provider-setup" },
+    { id: "s1-12", label: "Confirm provider is familiar with LTC insurance requirements", completed: false, category: "provider-setup" },
+    { id: "s1-13", label: "Collect provider license", completed: false, category: "documents", uploadRequired: true },
+    { id: "s1-14", label: "Obtain Plan of Care from provider", completed: false, category: "documents", uploadRequired: true },
+    { id: "s1-15", label: "Collect provider W-9", completed: false, category: "documents", uploadRequired: true },
+    { id: "s1-16", label: "Ensure invoicing and daily care log system is in place", completed: false, category: "documents" },
+    { id: "s1-17", label: "Begin services to trigger elimination period (" + (policy.eliminationPeriod || "check policy") + ")", completed: false, category: "elimination-period" },
+    { id: "s1-18", label: "Gather insured's personal identifiers (SSN, Medicare/Medicaid #)", completed: false, category: "personal-info" },
+    { id: "s1-19", label: "Obtain Power of Attorney documentation (if applicable)", completed: false, category: "personal-info", uploadRequired: true },
+    { id: "s1-20", label: "Collect insurance declaration page", completed: false, category: "documents", uploadRequired: true },
+    { id: "s1-21", label: "Gather discharge paperwork (if applicable)", completed: false, category: "documents", uploadRequired: true },
+  ];
+  return tasks;
+}
+
+function buildStage2Tasks(policy: any): StrategyTask[] {
+  const tasks: StrategyTask[] = [
+    { id: "s2-1", label: "Complete the claim packet thoroughly", completed: false, category: "claim-packet" },
+    { id: "s2-2", label: "Create document index listing all attachments", completed: false, category: "claim-packet" },
+    { id: "s2-3", label: "Attach Power of Attorney (POA)", completed: false, category: "claim-packet", uploadRequired: true },
+    { id: "s2-4", label: "Attach privacy authorization form", completed: false, category: "claim-packet", uploadRequired: true },
+  ];
+
+  if (policy.assignmentOfBenefits === "yes") {
+    tasks.push({ id: "s2-5", label: "Attach signed Assignment of Benefits (AOB) form", completed: false, category: "claim-packet", uploadRequired: true });
+  }
+
+  tasks.push(
+    { id: "s2-6", label: "Attach provider license", completed: false, category: "claim-packet", uploadRequired: true },
+    { id: "s2-7", label: "Attach insurance declaration page", completed: false, category: "claim-packet", uploadRequired: true },
+    { id: "s2-8", label: "Attach Plan of Care", completed: false, category: "claim-packet", uploadRequired: true },
+    { id: "s2-9", label: "Attach all Stage 1 supporting documentation", completed: false, category: "claim-packet" },
+    { id: "s2-10", label: "VERIFY: Policy number appears on EVERY page", completed: false, category: "verification", critical: true },
+    { id: "s2-11", label: "SUBMIT: Send ALL documents in ONE complete packet", completed: false, category: "submission", critical: true },
+  );
+
+  if (policy.thirdPartyAssessmentRequired === "yes") {
+    tasks.push(
+      { id: "s2-12", label: "Prepare for third-party nurse evaluation", completed: false, category: "evaluation" },
+      { id: "s2-13", label: "Review ADL demonstration expectations", completed: false, category: "evaluation" },
+      { id: "s2-14", label: "Review mobility demonstration expectations", completed: false, category: "evaluation" },
+      { id: "s2-15", label: "Prepare for cognitive questioning (if applicable)", completed: false, category: "evaluation" },
+      { id: "s2-16", label: "Understand: inconsistencies may lead to denial", completed: false, category: "evaluation", critical: true },
+    );
+  }
+
+  tasks.push(
+    { id: "s2-17", label: "Note: Expect 30-day review period after submission", completed: false, category: "post-submission" },
+    { id: "s2-18", label: "Understand: Appeals have low success probability — get it right the first time", completed: false, category: "post-submission", critical: true },
+  );
+
+  return tasks;
+}
+
+function buildStage3Tasks(policy: any): StrategyTask[] {
+  const tasks: StrategyTask[] = [
+    { id: "s3-1", label: "Continue paying for services during elimination period", completed: false, category: "ongoing" },
+    { id: "s3-2", label: "Organize and retain all paid invoices", completed: false, category: "ongoing" },
+    { id: "s3-3", label: "Confirm care notes document minimum ADL assistance (" + (policy.minAdlsRequired || "2") + "+ ADLs)", completed: false, category: "ongoing" },
+    { id: "s3-4", label: "Submit invoices and care logs per payment cycle (" + (policy.paymentCycle || "check policy") + ")", completed: false, category: "submission" },
+    { id: "s3-5", label: "Ensure policy number appears on every submitted page", completed: false, category: "submission", critical: true },
+  ];
+
+  if (policy.assignmentOfBenefits === "yes") {
+    tasks.push(
+      { id: "s3-6", label: "Provider submits claims directly to insurance company", completed: false, category: "aob-flow" },
+      { id: "s3-7", label: "Verify provider is receiving direct payments", completed: false, category: "aob-flow" },
+    );
+  } else {
+    tasks.push(
+      { id: "s3-6", label: "Pay provider directly for services", completed: false, category: "reimbursement-flow" },
+      { id: "s3-7", label: "Submit paid invoices and documentation to insurance company", completed: false, category: "reimbursement-flow" },
+      { id: "s3-8", label: "Track reimbursement payments from insurance company", completed: false, category: "reimbursement-flow" },
+    );
+  }
+
+  tasks.push(
+    { id: "s3-9", label: "Maintain ongoing communication with case manager", completed: false, category: "ongoing" },
+    { id: "s3-10", label: "Keep all records organized for potential audits", completed: false, category: "ongoing" },
+  );
+
+  return tasks;
+}

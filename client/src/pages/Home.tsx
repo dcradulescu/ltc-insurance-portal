@@ -111,6 +111,7 @@ export default function Home() {
               <VideoPlaceholder
                 title="Welcome to LTC Navigator"
                 description="Watch our brief introduction to learn how we can help your family"
+                thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg"
               />
             </div>
           </div>
@@ -123,6 +124,7 @@ export default function Home() {
           <VideoPlaceholder
             title="Welcome to LTC Navigator"
             description="Watch our brief introduction to learn how we can help your family"
+            thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg"
           />
         </div>
       </section>

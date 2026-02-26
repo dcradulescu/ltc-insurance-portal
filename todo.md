@@ -13,3 +13,20 @@
 - [x] Authentication: Login/register with name and email capture
 - [x] Explainer video placeholders on every page
 - [x] Vitest tests for key server procedures
+
+## Phase 2 - Major Overhaul (from spec documents)
+- [x] Expand DB schema: checklist_tasks, document_uploads, user_contacts tables
+- [x] Expand policies table with all cheat sheet fields (carrier address, fax, daily/monthly/lifetime max, CNA, logsheets, payment cycle, AOB, case manager, third party assessment, SSN, Medicare/Medicaid, POA, providers)
+- [x] Rebuild Policy Form with all cheat sheet fields, tooltips, and document upload sections
+- [x] Build 3-stage strategy system with dynamic checklists (Stage 1: Prior to Claim, Stage 2: The Claim, Stage 3: Post Approval)
+- [x] Implement checklist task completion tracking with progress percentage
+- [ ] Implement document upload per checklist task with S3 storage (placeholder - needs further implementation)
+- [x] Add branch logic for Assignment of Benefits (AOB yes/no affects Stage 3)
+- [x] Add Contact Us page with web form
+- [ ] Add Profile page with name/email editing, CC contacts, notification preferences (future enhancement)
+- [x] Add comprehensive glossary with tooltips on Education page
+- [x] Add page-level download and email buttons on Strategy page
+- [x] Add Next/Previous navigation between pages
+- [x] Generate explainer video thumbnails for each page
+- [x] Add Tips & Pitfalls section on Education page
+- [x] Add denial warning logic and third-party evaluation prep on Strategy page
