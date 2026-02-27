@@ -3,7 +3,7 @@ import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 
 export const policyFormRouter = router({
-  submitForm: protectedProcedure
+  submitForm: publicProcedure
     .input(
       z.object({
         insuredFullName: z.string().min(1, "Insured name is required"),
@@ -64,10 +64,10 @@ export const policyFormRouter = router({
         const payload = {
           timestamp: new Date().toISOString(),
           user: {
-            id: ctx.user.id,
-            name: ctx.user.name,
-            email: ctx.user.email,
-            openId: ctx.user.openId,
+            id: 1, // Default public user
+            name: "Guest",
+            email: "guest@example.com",
+            openId: null,
           },
           formData: input,
         };

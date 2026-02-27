@@ -74,10 +74,9 @@
 
 
 ## Auth Loop Bug Fix
-- [ ] Investigate browser console logs and network requests
-- [ ] Check OAuth callback flow and session cookie
-- [ ] Verify context.ts properly authenticates users
-- [ ] Test full sign-in → Policy Form flow
+- [x] Fixed "Please login" errors by converting all protected procedures to public
+- [x] Verified all pages work without authentication
+- [x] Tested Policy Form navigation through all 6 steps without redirects
 
 
 ## Remove Authentication Module
@@ -87,3 +86,5 @@
 - [x] Update Policy Form to not require authentication
 - [x] Update Strategy page to ask for email when sending report
 - [x] Test all pages work without login
+- [x] Convert all protected procedures to public procedures (documents, contacts, email, policyForm)
+- [x] Verify no "Please login" errors in browser console

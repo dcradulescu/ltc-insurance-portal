@@ -257,7 +257,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
   }),
 
   documents: router({
-    upload: protectedProcedure
+    upload: publicProcedure
       .input(z.object({
         fileName: z.string(),
         fileData: z.string(), // base64
@@ -269,11 +269,12 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       }))
       .mutation(async ({ ctx, input }) => {
         const buffer = Buffer.from(input.fileData, "base64");
-        const fileKey = `${ctx.user.id}-docs/${nanoid()}-${input.fileName}`;
+        const userId = 1; // Default public user
+        const fileKey = `${userId}-docs/${nanoid()}-${input.fileName}`;
         const { url } = await storagePut(fileKey, buffer, input.mimeType);
 
         const docId = await createDocumentUpload({
-          userId: ctx.user.id,
+          userId: userId,
           policyId: input.policyId ?? null,
           strategyId: input.strategyId ?? null,
           taskId: input.taskId ?? null,
@@ -288,30 +289,30 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         return { id: docId, url, fileName: input.fileName };
       }),
 
-    list: protectedProcedure.query(async ({ ctx }) => {
-      return getDocumentsByUserId(ctx.user.id);
+    list: publicProcedure.query(async ({ ctx }) => {
+      return getDocumentsByUserId(1); // Default public user
     }),
 
-    listByTask: protectedProcedure
+    listByTask: publicProcedure
       .input(z.object({ taskId: z.string() }))
       .query(async ({ ctx, input }) => {
-        return getDocumentsByTaskId(input.taskId, ctx.user.id);
+        return getDocumentsByTaskId(input.taskId, 1); // Default public user
       }),
 
-    delete: protectedProcedure
+    delete: publicProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await deleteDocument(input.id, ctx.user.id);
+        await deleteDocument(input.id, 1); // Default public user
         return { success: true };
       }),
   }),
 
   contacts: router({
-    list: protectedProcedure.query(async ({ ctx }) => {
-      return getUserContacts(ctx.user.id);
+    list: publicProcedure.query(async ({ ctx }) => {
+      return getUserContacts(1); // Default public user
     }),
 
-    add: protectedProcedure
+    add: publicProcedure
       .input(z.object({
         name: z.string(),
         email: z.string().email(),
@@ -319,11 +320,11 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         receiveCcEmails: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const id = await createUserContact({ ...input, userId: ctx.user.id });
+        const id = await createUserContact({ ...input, userId: 1 }); // Default public user
         return { id };
       }),
 
-    update: protectedProcedure
+    update: publicProcedure
       .input(z.object({
         id: z.number(),
         name: z.string().optional(),
@@ -333,14 +334,14 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
-        await updateUserContact(id, ctx.user.id, data);
+        await updateUserContact(id, 1, data); // Default public user
         return { success: true };
       }),
 
-    delete: protectedProcedure
+    delete: publicProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await deleteUserContact(input.id, ctx.user.id);
+        await deleteUserContact(input.id, 1); // Default public user
         return { success: true };
       }),
   }),
@@ -408,7 +409,7 @@ Always be empathetic and supportive. If you don't know something specific, encou
   }),
 
   email: router({
-    sendStrategy: protectedProcedure
+    sendStrategy: publicProcedure
       .input(z.object({
         strategyId: z.number(),
         recipients: z.array(z.string().email()),
@@ -419,12 +420,12 @@ Always be empathetic and supportive. If you don't know something specific, encou
         const recipientList = input.recipients.join(", ");
         await notifyOwner({
           title: "Strategy Email Request",
-          content: `User ${ctx.user.name || ctx.user.email || "Unknown"} requested their LTC strategy (ID: ${input.strategyId}) to be emailed to: ${recipientList}`,
+          content: `User requested their LTC strategy (ID: ${input.strategyId}) to be emailed to: ${recipientList}`,
         }).catch(() => {});
         return { success: true, message: `Strategy has been queued for delivery to ${input.recipients.length} recipient(s).` };
       }),
 
-    sendPageContent: protectedProcedure
+    sendPageContent: publicProcedure
       .input(z.object({
         pageName: z.string(),
         content: z.string(),
@@ -434,7 +435,7 @@ Always be empathetic and supportive. If you don't know something specific, encou
         const recipientList = input.recipients.join(", ");
         await notifyOwner({
           title: `Page Content Email: ${input.pageName}`,
-          content: `User ${ctx.user.name || ctx.user.email || "Unknown"} requested ${input.pageName} content to be emailed to: ${recipientList}`,
+          content: `User requested ${input.pageName} content to be emailed to: ${recipientList}`,
         }).catch(() => {});
         return { success: true, message: `Content has been queued for delivery.` };
       }),
