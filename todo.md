@@ -111,3 +111,5 @@
 - [x] Fixed: Added zapierWebhookUrl to ENV config in server/_core/env.ts
 - [x] Fixed: Updated policyForm router to use ENV.zapierWebhookUrl instead of process.env
 - [x] Verified: Form submission now works without Zapier errors
+- [x] CONFIRMED: Zapier webhook returning 200 OK with success status
+- [x] Added detailed logging to track webhook requests and responses

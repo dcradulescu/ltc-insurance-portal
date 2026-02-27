@@ -74,6 +74,7 @@ export const policyFormRouter = router({
         };
 
         // Send to Zapier webhook
+        console.log("Sending to Zapier:", webhookUrl);
         const response = await fetch(webhookUrl, {
           method: "POST",
           headers: {
@@ -82,8 +83,12 @@ export const policyFormRouter = router({
           body: JSON.stringify(payload),
         });
 
+        console.log("Zapier response status:", response.status, response.statusText);
+        const responseText = await response.text();
+        console.log("Zapier response body:", responseText);
+
         if (!response.ok) {
-          console.error("Zapier webhook error:", response.status, response.statusText);
+          console.error("Zapier webhook error:", response.status, response.statusText, responseText);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to submit form to Zapier",
