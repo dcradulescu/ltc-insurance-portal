@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
+import { ENV } from "../_core/env";
 
 export const policyFormRouter = router({
   submitForm: publicProcedure
@@ -51,7 +52,7 @@ export const policyFormRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const webhookUrl = process.env.VITE_ZAPIER_WEBHOOK_URL;
+        const webhookUrl = ENV.zapierWebhookUrl;
 
         if (!webhookUrl) {
           throw new TRPCError({

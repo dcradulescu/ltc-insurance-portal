@@ -101,3 +101,13 @@
 - [x] Prevent form submission when required fields are empty
 - [x] Show validation errors in UI before Zapier submission
 - [x] Test form submission with empty fields
+
+## Zapier Submission Error Fix
+- [x] Check VITE_ZAPIER_WEBHOOK_URL environment variable is set
+- [x] Verify webhook URL is valid and accessible
+- [x] Check server-side error handling in policyForm router
+- [x] Verify form data is being sent correctly to Zapier
+- [x] Test Zapier webhook with sample data
+- [x] Fixed: Added zapierWebhookUrl to ENV config in server/_core/env.ts
+- [x] Fixed: Updated policyForm router to use ENV.zapierWebhookUrl instead of process.env
+- [x] Verified: Form submission now works without Zapier errors
