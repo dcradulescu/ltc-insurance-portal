@@ -31,7 +31,10 @@ export const appRouter = router({
   policy: router({
     get: publicProcedure.query(async ({ ctx }) => {
       // Allow public access - return first policy for public user
-      return getPolicyById(1) || null;
+      const policy = await getPolicyById(1);
+      if (policy) return policy;
+      // Return empty policy object if none exists
+      return { id: 0 } as any;
     }),
 
     save: publicProcedure
