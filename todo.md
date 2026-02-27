@@ -71,3 +71,10 @@
 - [x] Implement local data persistence for Strategy page use
 - [x] Policy Form page already has comprehensive form with all spec fields
 - [x] Test all validation and form submission
+
+
+## Auth Loop Bug Fix
+- [ ] Investigate browser console logs and network requests
+- [ ] Check OAuth callback flow and session cookie
+- [ ] Verify context.ts properly authenticates users
+- [ ] Test full sign-in → Policy Form flow

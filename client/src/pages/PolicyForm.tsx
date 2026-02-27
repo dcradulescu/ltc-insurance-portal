@@ -187,7 +187,7 @@ export default function PolicyForm() {
           <ClipboardList className="w-16 h-16 mx-auto text-slate-300 mb-4" />
           <h2 className="text-2xl font-bold text-slate-800 mb-2">Sign In Required</h2>
           <p className="text-slate-600 mb-6">Please sign in to access the policy intake form.</p>
-          <a href={getLoginUrl()}><Button>Sign In to Continue</Button></a>
+          <a href={getLoginUrl('/policy-form')}><Button>Sign In to Continue</Button></a>
         </div>
       </Layout>
     );

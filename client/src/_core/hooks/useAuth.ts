@@ -43,15 +43,28 @@ export function useAuth(options?: UseAuthOptions) {
   }, [logoutMutation, utils]);
 
   const state = useMemo(() => {
+    const userData = meQuery.data ?? null;
+    const isAuth = Boolean(userData);
+    
+    // Debug logging
+    if (typeof window !== "undefined") {
+      console.log("[Auth Debug]", {
+        isLoading: meQuery.isLoading,
+        isAuthenticated: isAuth,
+        userData: userData ? { id: userData.id, email: userData.email } : null,
+        error: meQuery.error?.message,
+      });
+    }
+    
     localStorage.setItem(
       "manus-runtime-user-info",
-      JSON.stringify(meQuery.data)
+      JSON.stringify(userData)
     );
     return {
-      user: meQuery.data ?? null,
+      user: userData,
       loading: meQuery.isLoading || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
+      isAuthenticated: isAuth,
     };
   }, [
     meQuery.data,
