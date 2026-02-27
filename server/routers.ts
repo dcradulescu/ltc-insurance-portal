@@ -29,11 +29,12 @@ export const appRouter = router({
   }),
 
   policy: router({
-    get: protectedProcedure.query(async ({ ctx }) => {
-      return getPolicyByUserId(ctx.user.id);
+    get: publicProcedure.query(async ({ ctx }) => {
+      // Allow public access - return first policy for public user
+      return getPolicyById(1) || null;
     }),
 
-    save: protectedProcedure
+    save: publicProcedure
       .input(z.object({
         id: z.number().optional(),
         // Insured Person
@@ -87,28 +88,32 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
+        // Use a default userId for public access
+        const userId = 1; // Default public user
         if (id) {
-          await updatePolicy(id, ctx.user.id, data);
+          await updatePolicy(id, userId, data);
           return { id };
         } else {
-          const newId = await createPolicy({ ...data, userId: ctx.user.id });
+          const newId = await createPolicy({ ...data, userId });
           return { id: newId };
         }
       }),
   }),
 
   strategy: router({
-    getByPolicy: protectedProcedure
+    getByPolicy: publicProcedure
       .input(z.object({ policyId: z.number() }))
       .query(async ({ ctx, input }) => {
-        return getStrategyByPolicyId(input.policyId, ctx.user.id);
+        // Allow public access
+        return getStrategyByPolicyId(input.policyId, 1);
       }),
 
-    getMine: protectedProcedure.query(async ({ ctx }) => {
-      return getStrategyByUserId(ctx.user.id);
+    getMine: publicProcedure.query(async ({ ctx }) => {
+      // Allow public access
+      return getStrategyByUserId(1);
     }),
 
-    updateTasks: protectedProcedure
+    updateTasks: publicProcedure
       .input(z.object({
         strategyId: z.number(),
         stage: z.enum(["stage1Tasks", "stage2Tasks", "stage3Tasks"]),
@@ -118,7 +123,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
-        if (!strategy || strategy.userId !== ctx.user.id) throw new Error("Strategy not found");
+        if (!strategy) throw new Error("Strategy not found");
         const updateData: Record<string, any> = { [input.stage]: input.tasks };
         if (input.currentStage) updateData.currentStage = input.currentStage;
         if (input.claimStatus) updateData.claimStatus = input.claimStatus;
@@ -126,11 +131,11 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    generate: protectedProcedure
+    generate: publicProcedure
       .input(z.object({ policyId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const policy = await getPolicyById(input.policyId);
-        if (!policy || policy.userId !== ctx.user.id) throw new Error("Policy not found");
+        if (!policy) throw new Error("Policy not found");
 
         const adlList = Array.isArray(policy.adlLimitations) ? (policy.adlLimitations as string[]).join(", ") : "Not specified";
 
@@ -201,7 +206,8 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
           ? result.choices[0].message.content
           : JSON.stringify(result.choices[0].message.content);
 
-        const existing = await getStrategyByPolicyId(input.policyId, ctx.user.id);
+        const userId = 1; // Default public user
+        const existing = await getStrategyByPolicyId(input.policyId, userId);
         let strategyId: number;
 
         if (existing) {
@@ -218,7 +224,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
           strategyId = existing.id;
         } else {
           strategyId = await createStrategy({
-            userId: ctx.user.id,
+            userId,
             policyId: input.policyId,
             strategyContent: content,
             strategyHtml: content,
@@ -232,17 +238,17 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
 
         await notifyOwner({
           title: "New LTC Strategy Generated",
-          content: `User ${ctx.user.name || ctx.user.email || "Unknown"} generated a strategy for policy #${policy.policyNumber || input.policyId}.`,
+          content: `Strategy generated for policy #${policy.policyNumber || input.policyId}.`,
         }).catch(() => {});
 
         return { id: strategyId, content, stage1Tasks, stage2Tasks, stage3Tasks };
       }),
 
-    get: protectedProcedure
+    get: publicProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.id);
-        if (!strategy || strategy.userId !== ctx.user.id) throw new Error("Strategy not found");
+        if (!strategy) throw new Error("Strategy not found");
         return strategy;
       }),
   }),
@@ -406,7 +412,7 @@ Always be empathetic and supportive. If you don't know something specific, encou
       }))
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
-        if (!strategy || strategy.userId !== ctx.user.id) throw new Error("Strategy not found");
+        if (!strategy || strategy.userId !== 1) throw new Error("Strategy not found");
         const recipientList = input.recipients.join(", ");
         await notifyOwner({
           title: "Strategy Email Request",

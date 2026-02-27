@@ -131,7 +131,7 @@ export default function PolicyForm() {
   }, [form]);
 
   useEffect(() => {
-    if (policyQuery.data) {
+    if (policyQuery.data && policyQuery.data !== null) {
       const p = policyQuery.data;
       setPolicyId(p.id);
       setForm({
