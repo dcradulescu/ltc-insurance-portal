@@ -196,7 +196,26 @@ export default function PolicyForm() {
 
   const update = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
+  // Validation function
+  const validateForm = () => {
+    const errors: string[] = [];
+    
+    // Required fields
+    if (!form.insuredFullName?.trim()) errors.push("Insured full name is required");
+    if (!form.carrierName?.trim()) errors.push("Carrier name is required");
+    if (!form.policyNumber?.trim()) errors.push("Policy number is required");
+    
+    return errors;
+  };
+
   const handleSave = async () => {
+    // Validate form before saving
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => toast.error(error));
+      return;
+    }
+
     setSaving(true);
     try {
       const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });

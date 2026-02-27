@@ -94,3 +94,10 @@
 - [x] Verified all tooltips display correctly with help icons
 - [x] Tested all form steps navigate without errors
 - [x] No console errors detected on any form step
+
+## Form Validation Bug Fix
+- [x] Implement required field validation (carrierName, policyNumber, etc.)
+- [x] Add error messages for empty required fields
+- [x] Prevent form submission when required fields are empty
+- [x] Show validation errors in UI before Zapier submission
+- [x] Test form submission with empty fields
