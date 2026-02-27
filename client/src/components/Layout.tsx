@@ -1,8 +1,6 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { ChatWidget } from "./ChatWidget";
 
@@ -15,7 +13,6 @@ const navLinks = [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, logout } = useAuth();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -26,22 +23,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container flex justify-between items-center py-2">
           <div className="flex items-center gap-4">
             <span className="hidden sm:inline opacity-80">Helping families navigate long-term care insurance</span>
-          </div>
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <User className="w-3.5 h-3.5 opacity-70" />
-                <span className="opacity-90">{user?.name || user?.email || "Account"}</span>
-                <button onClick={() => logout()} className="opacity-70 hover:opacity-100 transition-opacity flex items-center gap-1">
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Sign Out</span>
-                </button>
-              </div>
-            ) : (
-              <a href={getLoginUrl()} className="opacity-90 hover:opacity-100 transition-opacity">
-                Sign In
-              </a>
-            )}
           </div>
         </div>
       </div>
@@ -69,94 +50,91 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {link.label}
               </Link>
             ))}
-            {!isAuthenticated && (
-              <Button asChild size="sm" className="ml-2 bg-teal hover:bg-teal-dark text-white">
-                <a href={getLoginUrl()}>Get Started</a>
-              </Button>
-            )}
+            <Button asChild size="sm" className="ml-2 bg-teal hover:bg-teal-dark text-white">
+              <Link href="/policy-form">Get Started</Link>
+            </Button>
           </nav>
 
           {/* Mobile menu toggle */}
           <button
-            className="md:hidden p-2 text-foreground"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 hover:bg-slate-100 rounded-md transition-colors"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
-        {/* Mobile nav */}
+        {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-white">
-            <nav className="container py-4 flex flex-col gap-1">
+            <nav className="flex flex-col">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-4 py-3 text-sm font-medium rounded-md no-underline ${
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-4 py-3 text-sm font-medium transition-colors no-underline border-b border-border ${
                     location === link.href
                       ? "text-teal bg-teal/5"
-                      : "text-muted-foreground hover:text-teal"
+                      : "text-muted-foreground hover:text-teal hover:bg-teal/5"
                   }`}
-                  onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-              {!isAuthenticated && (
-                <Button asChild size="sm" className="mt-2 bg-teal hover:bg-teal-dark text-white">
-                  <a href={getLoginUrl()}>Get Started</a>
+              <div className="p-4">
+                <Button asChild className="w-full bg-teal hover:bg-teal-dark text-white">
+                  <Link href="/policy-form">Get Started</Link>
                 </Button>
-              )}
+              </div>
             </nav>
           </div>
         )}
       </header>
 
       {/* Main content */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-[#1a3a4a] to-[#2c3e50] text-white">
-        <div className="container py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <footer className="bg-slate-900 text-white py-12 mt-20">
+        <div className="container">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                 <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png" alt="Visiting Angels" className="w-6 h-6 object-contain" />
-                <span className="font-serif text-lg font-bold">LTC Navigator</span>
-              </div>
-              <p className="text-sm text-white/70 leading-relaxed">
-                A Visiting Angels service — helping families navigate the complexities of long-term care insurance claims with expert guidance and personalized strategies.
-              </p>
+                Visiting Angels
+              </h3>
+              <p className="text-slate-400 text-sm">Helping families navigate long-term care insurance with confidence and clarity.</p>
             </div>
             <div>
-              <h4 className="font-serif font-bold text-sm uppercase tracking-wider mb-4 text-teal-light">Quick Links</h4>
-              <ul className="space-y-2">
-                {navLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-white/70 hover:text-teal-light transition-colors no-underline">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/" className="text-slate-400 hover:text-teal transition-colors no-underline">Home</Link></li>
+                <li><Link href="/education" className="text-slate-400 hover:text-teal transition-colors no-underline">Education</Link></li>
+                <li><Link href="/policy-form" className="text-slate-400 hover:text-teal transition-colors no-underline">Policy Form</Link></li>
+                <li><Link href="/strategy" className="text-slate-400 hover:text-teal transition-colors no-underline">Strategy</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-serif font-bold text-sm uppercase tracking-wider mb-4 text-teal-light">Support</h4>
-              <p className="text-sm text-white/70 leading-relaxed">
-                Have questions? Use our live chat widget or reach out through the portal. We are here to help you every step of the way.
-              </p>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/contact" className="text-slate-400 hover:text-teal transition-colors no-underline">Contact Us</Link></li>
+                <li><a href="#" className="text-slate-400 hover:text-teal transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="text-slate-400 hover:text-teal transition-colors">Terms of Service</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Support</h4>
+              <p className="text-slate-400 text-sm mb-2">Have questions?</p>
+              <p className="text-slate-400 text-sm">Contact us anytime through our support page.</p>
             </div>
           </div>
-          <div className="border-t border-white/10 mt-8 pt-8 text-center">
-            <p className="text-sm text-white/50">&copy; {new Date().getFullYear()} Visiting Angels — LTC Navigator. All rights reserved.</p>
+          <div className="border-t border-slate-700 pt-8 text-center text-slate-400 text-sm">
+            <p>&copy; {new Date().getFullYear()} Visiting Angels. All rights reserved.</p>
           </div>
         </div>
       </footer>
 
-      {/* Chat Widget */}
       <ChatWidget />
     </div>
   );

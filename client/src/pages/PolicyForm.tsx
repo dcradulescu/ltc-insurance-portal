@@ -1,7 +1,5 @@
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,14 +114,13 @@ function TooltipField({ label, name, children }: { label: string; name: string; 
 }
 
 export default function PolicyForm() {
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(defaultForm);
   const [policyId, setPolicyId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: isAuthenticated });
+  const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
   const saveMutation = trpc.policy.save.useMutation();
   const submitFormMutation = trpc.policyForm.submitForm.useMutation();
 
@@ -179,19 +176,7 @@ export default function PolicyForm() {
     }
   }, [policyQuery.data]);
 
-  if (authLoading) return <Layout><div className="flex justify-center py-20"><Loader2 className="animate-spin w-8 h-8 text-teal" /></div></Layout>;
-  if (!isAuthenticated) {
-    return (
-      <Layout>
-        <div className="text-center py-20">
-          <ClipboardList className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">Sign In Required</h2>
-          <p className="text-slate-600 mb-6">Please sign in to access the policy intake form.</p>
-          <a href={getLoginUrl('/policy-form')}><Button>Sign In to Continue</Button></a>
-        </div>
-      </Layout>
-    );
-  }
+
 
   const update = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -202,12 +187,10 @@ export default function PolicyForm() {
       if (!policyId) setPolicyId(result.id);
       
       // Send to Zapier webhook
-      if (user) {
-        try {
-          await submitFormMutation.mutateAsync(form as any);
-        } catch (zapierError) {
-          console.error("Zapier submission error (non-blocking):", zapierError);
-        }
+      try {
+        await submitFormMutation.mutateAsync(form as any);
+      } catch (zapierError) {
+        console.error("Zapier submission error (non-blocking):", zapierError);
       }
       
       toast.success("Policy information saved successfully");

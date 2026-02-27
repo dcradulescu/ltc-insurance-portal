@@ -78,3 +78,12 @@
 - [ ] Check OAuth callback flow and session cookie
 - [ ] Verify context.ts properly authenticates users
 - [ ] Test full sign-in → Policy Form flow
+
+
+## Remove Authentication Module
+- [x] Remove auth guards from all pages (Home, Education, Policy Form, Strategy, Contact)
+- [x] Remove useAuth hook calls from pages
+- [x] Remove login/logout buttons from navbar
+- [x] Update Policy Form to not require authentication
+- [x] Update Strategy page to ask for email when sending report
+- [x] Test all pages work without login
