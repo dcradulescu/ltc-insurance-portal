@@ -15,6 +15,7 @@ import { notifyOwner } from "./_core/notification";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { policyFormRouter } from "./routers/policyForm";
+import { ENV } from "./_core/env";
 
 export const appRouter = router({
   system: systemRouter,
@@ -417,12 +418,35 @@ Always be empathetic and supportive. If you don't know something specific, encou
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
         if (!strategy || strategy.userId !== 1) throw new Error("Strategy not found");
-        const recipientList = input.recipients.join(", ");
-        await notifyOwner({
-          title: "Strategy Email Request",
-          content: `User requested their LTC strategy (ID: ${input.strategyId}) to be emailed to: ${recipientList}`,
-        }).catch(() => {});
-        return { success: true, message: `Strategy has been queued for delivery to ${input.recipients.length} recipient(s).` };
+        
+        const zapierUrl = ENV.zapierWebhookUrl;
+        if (!zapierUrl) throw new Error("Zapier webhook URL not configured");
+        
+        try {
+          const response = await fetch(zapierUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "strategy_email",
+              strategyId: input.strategyId,
+              recipients: input.recipients,
+              strategyContent: strategy.strategyContent,
+              timestamp: new Date().toISOString(),
+            }),
+          });
+          
+          if (!response.ok) {
+            console.error(`Zapier webhook error: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to submit strategy to Zapier: ${response.statusText}`);
+          }
+          
+          console.log("Strategy sent to Zapier successfully");
+        } catch (error) {
+          console.error("Strategy Zapier submission error:", error);
+          throw new Error("Failed to submit strategy to Zapier");
+        }
+        
+        return { success: true, message: `Strategy has been sent to ${input.recipients.length} recipient(s).` };
       }),
 
     sendPageContent: publicProcedure
