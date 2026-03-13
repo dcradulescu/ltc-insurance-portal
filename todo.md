@@ -136,3 +136,6 @@
 - [x] Test Strategy page form submission
 - [x] Fixed: Updated sendStrategy to send strategy data directly to Zapier webhook
 - [x] Verified: Strategy submissions now return 200 OK with success messages
+
+## Home Page Layout Adjustments
+- [x] Decreased image height in Our Story section to match content height (h-[400px])

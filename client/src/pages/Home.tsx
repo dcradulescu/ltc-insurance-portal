@@ -240,11 +240,11 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Image */}
             <div className="relative">
-              <div className="rounded-2xl overflow-hidden shadow-2xl">
+              <div className="rounded-2xl overflow-hidden shadow-2xl h-[400px]">
                 <img
                   src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/swQpXlcRmPQTVKfl.jpg"
                   alt="Elderly couple embracing a Visiting Angels care coordinator"
-                  className="w-full h-auto object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-teal/10 rounded-full -z-10" />
