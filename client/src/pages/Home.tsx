@@ -125,8 +125,8 @@ export default function Home() {
                 <span className="text-sm text-white/90">Supportive Guidance for Families</span>
               </div>
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                Navigate Your LTC Insurance Claim{" "}
-                <span className="text-teal">With Confidence</span>
+                Navigating Long Term Care insurance{" "}
+                <span className="text-teal">with Confidence!</span>
               </h1>
               <p className="text-lg text-white/80 leading-relaxed mb-8 max-w-lg">
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.

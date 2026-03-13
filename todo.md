@@ -139,3 +139,6 @@
 
 ## Home Page Layout Adjustments
 - [x] Decreased image height in Our Story section to match content height (h-[400px])
+
+## Hero Section Text Updates
+- [x] Changed hero heading from "Navigate Your LTC Insurance Claim With Confidence" to "Navigating Long Term Care insurance with Confidence!"
