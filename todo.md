@@ -177,3 +177,8 @@
 - [x] Added colored left borders and numbered badges to each step
 - [x] Added downward arrow connectors between steps
 - [x] Included substeps for Step 3 (Organize documentation, Prepare for insurance call, Set timeline)
+
+## Strategy Workflow Arrow Styling
+- [x] Make arrows between steps larger (text-3xl)
+- [x] Change arrow color to gray (text-gray-400)
+- [x] Verify arrows display correctly

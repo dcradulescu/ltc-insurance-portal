@@ -358,8 +358,8 @@ export default function Home() {
                   </div>
                   
                   {/* Connector Arrow */}
-                  <div className="flex justify-center py-1">
-                    <div className="text-blue-300 text-lg">↓</div>
+                  <div className="flex justify-center py-2">
+                    <div className="text-gray-400 text-3xl">↓</div>
                   </div>
                   
                   {/* Step 2 - Discover Your Policy Benefits */}
@@ -374,8 +374,8 @@ export default function Home() {
                   </div>
                   
                   {/* Connector Arrow */}
-                  <div className="flex justify-center py-1">
-                    <div className="text-green-300 text-lg">↓</div>
+                  <div className="flex justify-center py-2">
+                    <div className="text-gray-400 text-3xl">↓</div>
                   </div>
                   
                   {/* Step 3 - Develop Custom Strategy */}
@@ -395,8 +395,8 @@ export default function Home() {
                   </div>
                   
                   {/* Connector Arrow */}
-                  <div className="flex justify-center py-1">
-                    <div className="text-purple-300 text-lg">↓</div>
+                  <div className="flex justify-center py-2">
+                    <div className="text-gray-400 text-3xl">↓</div>
                   </div>
                   
                   {/* Step 4 - Initiate a Claim */}
