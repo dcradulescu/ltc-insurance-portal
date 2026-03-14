@@ -284,14 +284,50 @@ export default function Home() {
             {/* Right: Visual */}
             <div className="relative hidden lg:block">
               <div className="bg-white rounded-2xl shadow-xl p-8 border border-border">
-                <div className="space-y-4">
-                  <div className="h-4 bg-primary/20 rounded w-3/4" />
-                  <div className="h-4 bg-primary/20 rounded w-full" />
-                  <div className="h-4 bg-primary/20 rounded w-5/6" />
-                  <div className="border-t border-border pt-4 mt-4">
-                    <div className="h-3 bg-primary/10 rounded w-1/2 mb-3" />
-                    <div className="h-3 bg-primary/10 rounded w-2/3" />
+                {/* Form Header */}
+                <div className="mb-6 pb-4 border-b-2 border-primary/20">
+                  <div className="h-3 bg-primary rounded w-1/3 mb-2" />
+                </div>
+                
+                {/* Form Fields */}
+                <div className="space-y-5">
+                  {/* Field 1 */}
+                  <div>
+                    <div className="h-2.5 bg-primary/30 rounded w-1/4 mb-2" />
+                    <div className="h-8 bg-primary/10 rounded border border-primary/20" />
                   </div>
+                  
+                  {/* Field 2 */}
+                  <div>
+                    <div className="h-2.5 bg-primary/30 rounded w-1/3 mb-2" />
+                    <div className="h-8 bg-primary/10 rounded border border-primary/20" />
+                  </div>
+                  
+                  {/* Field 3 */}
+                  <div>
+                    <div className="h-2.5 bg-primary/30 rounded w-1/4 mb-2" />
+                    <div className="h-8 bg-primary/10 rounded border border-primary/20" />
+                  </div>
+                  
+                  {/* Checkboxes */}
+                  <div className="pt-2">
+                    <div className="h-2.5 bg-primary/30 rounded w-1/3 mb-3" />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-primary rounded" />
+                        <div className="h-2 bg-primary/20 rounded w-1/2" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-primary/20 rounded border border-primary/30" />
+                        <div className="h-2 bg-primary/20 rounded w-2/3" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Submit Button */}
+                <div className="mt-6 pt-4 border-t border-primary/20">
+                  <div className="h-8 bg-primary rounded w-1/2" />
                 </div>
               </div>
               <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/10 rounded-full -z-10" />
