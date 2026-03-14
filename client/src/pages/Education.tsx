@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Layout } from "@/components/Layout";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { 
   BookOpen, CheckCircle, Info, Shield, Heart, Users, 
   ArrowRight, Sparkles, Brain, DollarSign, Clock, TrendingUp, 
@@ -440,6 +441,82 @@ export default function Education() {
                   </div>
                   <h3 className="font-serif font-bold text-lg mb-3 text-foreground">{benefit.title}</h3>
                   <p className="text-sm text-muted-foreground">{benefit.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Success Metrics Section */}
+      <section className="py-20 bg-white">
+        <div className="container">
+          <div className="text-center mb-14">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Our <span className="text-teal">Track Record</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Families across the country trust us to guide them through the LTC insurance claims process. Here's what we've accomplished together.
+            </p>
+          </div>
+
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            <AnimatedCounter
+              end={500}
+              duration={2500}
+              label="Families Helped"
+              suffix="+"
+            />
+            <AnimatedCounter
+              end={95}
+              duration={2500}
+              label="Claims Approved"
+              suffix="%"
+            />
+            <AnimatedCounter
+              end={30}
+              duration={2500}
+              label="Average Days to Approval"
+              suffix=" days"
+            />
+          </div>
+
+          {/* Metrics Description Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Users,
+                title: "Trusted by Families",
+                desc: "Families nationwide rely on our platform to navigate the complex LTC insurance claims process with confidence.",
+                color: "text-teal"
+              },
+              {
+                icon: CheckCircle,
+                title: "High Success Rate",
+                desc: "Our personalized strategies and expert guidance result in significantly higher approval rates compared to industry averages.",
+                color: "text-primary"
+              },
+              {
+                icon: TrendingUp,
+                title: "Faster Approvals",
+                desc: "By organizing documentation and following our proven process, families get their claims approved faster.",
+                color: "text-teal"
+              },
+            ].map((metric, i) => {
+              const Icon = metric.icon;
+              return (
+                <div
+                  key={i}
+                  className="group p-6 rounded-xl border border-border bg-white hover:shadow-lg hover:border-teal/30 transition-all duration-300"
+                >
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${
+                    metric.color === 'text-teal' ? 'bg-teal/10 text-teal group-hover:bg-teal/20' : 'bg-primary/10 text-primary group-hover:bg-primary/20'
+                  }`}>
+                    <Icon className="w-7 h-7" />
+                  </div>
+                  <h3 className="font-serif font-bold text-lg mb-3 text-foreground">{metric.title}</h3>
+                  <p className="text-sm text-muted-foreground">{metric.desc}</p>
                 </div>
               );
             })}
