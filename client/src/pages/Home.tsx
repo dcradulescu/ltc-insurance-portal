@@ -343,28 +343,71 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Visual */}
             <div className="relative hidden lg:block order-2 lg:order-1">
-              <div className="bg-gradient-to-br from-teal/10 to-teal/5 rounded-2xl shadow-xl p-8 border border-teal/20">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold">1</div>
-                    <div className="h-3 bg-teal/20 rounded w-2/3" />
+              <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+                {/* Workflow Steps */}
+                <div className="space-y-4">
+                  {/* Step 1 - Pastel Blue */}
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-200 text-blue-700 font-bold text-sm">1</div>
+                    </div>
+                    <div className="flex-grow">
+                      <div className="h-3 bg-blue-100 rounded w-4/5" />
+                      <div className="h-2 bg-blue-50 rounded w-3/5 mt-2" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold">2</div>
-                    <div className="h-3 bg-teal/20 rounded w-3/4" />
+                  
+                  {/* Connector */}
+                  <div className="flex justify-center">
+                    <div className="w-1 h-4 bg-gradient-to-b from-blue-200 to-green-200" />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold">3</div>
-                    <div className="h-3 bg-teal/20 rounded w-2/3" />
+                  
+                  {/* Step 2 - Pastel Green */}
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-green-200 text-green-700 font-bold text-sm">2</div>
+                    </div>
+                    <div className="flex-grow">
+                      <div className="h-3 bg-green-100 rounded w-4/5" />
+                      <div className="h-2 bg-green-50 rounded w-3/5 mt-2" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold">✓</div>
-                    <div className="h-3 bg-teal/20 rounded w-1/2" />
+                  
+                  {/* Connector */}
+                  <div className="flex justify-center">
+                    <div className="w-1 h-4 bg-gradient-to-b from-green-200 to-purple-200" />
+                  </div>
+                  
+                  {/* Step 3 - Pastel Purple */}
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-200 text-purple-700 font-bold text-sm">3</div>
+                    </div>
+                    <div className="flex-grow">
+                      <div className="h-3 bg-purple-100 rounded w-4/5" />
+                      <div className="h-2 bg-purple-50 rounded w-3/5 mt-2" />
+                    </div>
+                  </div>
+                  
+                  {/* Connector */}
+                  <div className="flex justify-center">
+                    <div className="w-1 h-4 bg-gradient-to-b from-purple-200 to-pink-200" />
+                  </div>
+                  
+                  {/* Step 4 - Pastel Pink */}
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-pink-200 text-pink-700 font-bold text-sm">✓</div>
+                    </div>
+                    <div className="flex-grow">
+                      <div className="h-3 bg-pink-100 rounded w-4/5" />
+                      <div className="h-2 bg-pink-50 rounded w-3/5 mt-2" />
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-teal/10 rounded-full -z-10" />
-              <div className="absolute -top-4 -right-4 w-16 h-16 bg-primary/10 rounded-full -z-10" />
+              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-blue-100 rounded-full -z-10 opacity-50" />
+              <div className="absolute -top-4 -right-4 w-16 h-16 bg-pink-100 rounded-full -z-10 opacity-50" />
             </div>
 
             {/* Right: Content */}

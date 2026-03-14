@@ -158,3 +158,11 @@
 - [x] Verify the graphic displays correctly on the Home page
 - [x] Added form header, input fields, checkboxes, and submit button
 - [x] All elements use primary blue color scheme
+
+## Strategy Graphic Workflow Update
+- [x] Update the Strategy graphic to show a workflow with multiple steps
+- [x] Use different pastel colors for each step (blue, green, purple, pink)
+- [x] Add visual connectors between steps
+- [x] Verify the graphic displays correctly on the Home page
+- [x] Added 4-step workflow with gradient connectors
+- [x] All steps use pastel color palette
