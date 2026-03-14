@@ -677,7 +677,7 @@ export default function Home() {
 
       {/* Bottom CTA */}
       <section
-        className="parallax-section relative py-16 text-white"
+        className="parallax-section relative py-8 text-white"
         style={{
           backgroundImage: "url('https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg')",
         }}
