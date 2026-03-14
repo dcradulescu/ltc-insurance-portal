@@ -14,6 +14,9 @@ import {
   Phone,
   Quote,
   Star,
+  CheckCircle,
+  MessageSquare,
+  Zap,
 } from "lucide-react";
 
 const features = [
@@ -170,7 +173,35 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Parallax CTA Section - Moved Up */}
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container">
+          <div className="text-center mb-14">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
+              How We <span className="text-teal">Help</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Our portal provides everything you need to understand, prepare, and successfully file your long-term care insurance claim.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature) => (
+              <div
+                key={feature.title}
+                className="group p-6 rounded-xl border border-border bg-white hover:shadow-lg hover:border-teal/30 transition-all duration-300"
+              >
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${feature.color}`}>
+                  <feature.icon className="w-7 h-7" />
+                </div>
+                <h3 className="font-serif font-bold text-lg mb-3 text-foreground">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* You Don't Have to Navigate This Alone - Moved Section */}
       <section
         className="parallax-section relative py-20 text-white"
         style={{
@@ -206,36 +237,230 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Policy Intake Form Section */}
+      <section className="py-20 bg-secondary">
+        <div className="container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-6">
+                <ClipboardList className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-primary-dark">Smart Preparation</span>
+              </div>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
+                The <span className="text-primary">Intake Form</span>
+              </h2>
+              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+                Our comprehensive policy intake form is designed to gather all the essential information about your long-term care insurance policy in one place. When you're ready to call your insurance company, you'll have everything organized and at your fingertips.
+              </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex gap-4">
+                  <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Complete Policy Details</h3>
+                    <p className="text-sm text-foreground/70">Capture your policy number, carrier, coverage dates, and benefit amounts</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Organized Documentation</h3>
+                    <p className="text-sm text-foreground/70">Store medical records, care assessments, and supporting documents in one secure location</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Ready for Your Call</h3>
+                    <p className="text-sm text-foreground/70">When you contact your insurance company, you'll have all the information they need to process your claim efficiently</p>
+                  </div>
+                </div>
+              </div>
+              <Button asChild size="lg" className="text-base px-8 bg-primary hover:bg-primary/90 text-white">
+                <Link href="/policy-form">Complete Your Intake Form</Link>
+              </Button>
+            </div>
+
+            {/* Right: Visual */}
+            <div className="relative hidden lg:block">
+              <div className="bg-white rounded-2xl shadow-xl p-8 border border-border">
+                <div className="space-y-4">
+                  <div className="h-4 bg-primary/20 rounded w-3/4" />
+                  <div className="h-4 bg-primary/20 rounded w-full" />
+                  <div className="h-4 bg-primary/20 rounded w-5/6" />
+                  <div className="border-t border-border pt-4 mt-4">
+                    <div className="h-3 bg-primary/10 rounded w-1/2 mb-3" />
+                    <div className="h-3 bg-primary/10 rounded w-2/3" />
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/10 rounded-full -z-10" />
+              <div className="absolute -top-4 -left-4 w-16 h-16 bg-teal/10 rounded-full -z-10" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Customized Strategy Section */}
       <section className="py-20 bg-white">
         <div className="container">
-          <div className="text-center mb-14">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-              How We <span className="text-teal">Help</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Our portal provides everything you need to understand, prepare, and successfully file your long-term care insurance claim.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="group p-6 rounded-xl border border-border bg-white hover:shadow-lg hover:border-teal/30 transition-all duration-300"
-              >
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${feature.color}`}>
-                  <feature.icon className="w-7 h-7" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Visual */}
+            <div className="relative hidden lg:block order-2 lg:order-1">
+              <div className="bg-gradient-to-br from-teal/10 to-teal/5 rounded-2xl shadow-xl p-8 border border-teal/20">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold">1</div>
+                    <div className="h-3 bg-teal/20 rounded w-2/3" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold">2</div>
+                    <div className="h-3 bg-teal/20 rounded w-3/4" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold">3</div>
+                    <div className="h-3 bg-teal/20 rounded w-2/3" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-teal flex items-center justify-center text-white text-sm font-bold">✓</div>
+                    <div className="h-3 bg-teal/20 rounded w-1/2" />
+                  </div>
                 </div>
-                <h3 className="font-serif font-bold text-lg mb-3 text-foreground">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
               </div>
-            ))}
+              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-teal/10 rounded-full -z-10" />
+              <div className="absolute -top-4 -right-4 w-16 h-16 bg-primary/10 rounded-full -z-10" />
+            </div>
+
+            {/* Right: Content */}
+            <div className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 bg-teal/10 rounded-full px-4 py-2 mb-6">
+                <Target className="w-4 h-4 text-teal" />
+                <span className="text-sm font-medium text-teal-dark">Personalized Guidance</span>
+              </div>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
+                Your <span className="text-teal">Customized Strategy</span>
+              </h2>
+              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+                Based on your specific policy details and care situation, we create a personalized, step-by-step strategy designed just for you. This roadmap guides you through every phase of the claims process with clarity and confidence.
+              </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex gap-4">
+                  <Zap className="w-6 h-6 text-teal flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Step-by-Step Roadmap</h3>
+                    <p className="text-sm text-foreground/70">Know exactly what to do and when to do it, with clear milestones and timelines</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <Zap className="w-6 h-6 text-teal flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Task Checklists</h3>
+                    <p className="text-sm text-foreground/70">Track your progress with organized checklists for each phase of your claim</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <Zap className="w-6 h-6 text-teal flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Policy-Specific Guidance</h3>
+                    <p className="text-sm text-foreground/70">Recommendations tailored to your unique coverage and care needs</p>
+                  </div>
+                </div>
+              </div>
+              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
+                <Link href="/policy-form">Get Your Strategy</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Chat Support Section */}
+      <section className="py-20 bg-secondary">
+        <div className="container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-6">
+                <MessageSquare className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-primary-dark">Always Available</span>
+              </div>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
+                <span className="text-primary">Live Chat</span> Support
+              </h2>
+              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+                Have a question about your policy, the claims process, or how to use the portal? Our intelligent support chat is available to help you find answers quickly. Get instant responses to your questions without waiting on hold.
+              </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex gap-4">
+                  <MessageSquare className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Instant Responses</h3>
+                    <p className="text-sm text-foreground/70">Get answers to common questions about LTC insurance and the claims process immediately</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <MessageSquare className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Available 24/7</h3>
+                    <p className="text-sm text-foreground/70">Chat support is available whenever you need it, day or night, to answer your questions</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <MessageSquare className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+                  <div>
+                    <h3 className="font-serif font-bold text-foreground mb-2">Personalized Help</h3>
+                    <p className="text-sm text-foreground/70">Get guidance specific to your situation and policy details</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Visual */}
+            <div className="relative hidden lg:block">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-border">
+                <div className="bg-primary/10 p-4 border-b border-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                      <MessageSquare className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-foreground">Support Chat</div>
+                      <div className="text-xs text-foreground/60">Always here to help</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 space-y-3">
+                  <div className="flex justify-end">
+                    <div className="bg-primary text-white rounded-lg px-4 py-2 text-sm max-w-xs">
+                      What does ADL mean?
+                    </div>
+                  </div>
+                  <div className="flex justify-start">
+                    <div className="bg-foreground/10 text-foreground rounded-lg px-4 py-2 text-sm max-w-xs">
+                      ADL stands for Activities of Daily Living. It includes bathing, dressing, eating, and more.
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <div className="bg-primary text-white rounded-lg px-4 py-2 text-sm max-w-xs">
+                      How does this help my claim?
+                    </div>
+                  </div>
+                  <div className="flex justify-start">
+                    <div className="bg-foreground/10 text-foreground rounded-lg px-4 py-2 text-sm max-w-xs">
+                      Insurance companies use ADL assessments to determine eligibility. We help you document these properly.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/10 rounded-full -z-10" />
+              <div className="absolute -top-4 -left-4 w-16 h-16 bg-teal/10 rounded-full -z-10" />
+            </div>
           </div>
         </div>
       </section>
 
       {/* Our Story Section - Two Column */}
-      <section className="py-20 bg-secondary">
+      <section className="py-20 bg-white">
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Image */}
@@ -296,7 +521,7 @@ export default function Home() {
       </section>
 
       {/* Scrolling Testimonials */}
-      <section className="py-20 bg-white overflow-hidden">
+      <section className="py-20 bg-secondary overflow-hidden">
         <div className="container mb-12">
           <div className="text-center">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -308,8 +533,8 @@ export default function Home() {
           </div>
         </div>
         <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10" />
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-secondary to-transparent z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-secondary to-transparent z-10" />
           <div
             ref={scrollRef}
             className="flex gap-6 animate-scroll-left"
@@ -339,7 +564,7 @@ export default function Home() {
       </section>
 
       {/* How It Works - Streamlined */}
-      <section className="py-20 bg-secondary">
+      <section className="py-20 bg-white">
         <div className="container">
           <div className="text-center mb-14">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
