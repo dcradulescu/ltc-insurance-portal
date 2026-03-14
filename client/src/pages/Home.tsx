@@ -344,64 +344,69 @@ export default function Home() {
             {/* Left: Visual */}
             <div className="relative hidden lg:block order-2 lg:order-1">
               <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                {/* Workflow Steps */}
-                <div className="space-y-4">
-                  {/* Step 1 - Pastel Blue */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-200 text-blue-700 font-bold text-sm">1</div>
-                    </div>
-                    <div className="flex-grow">
-                      <div className="h-3 bg-blue-100 rounded w-4/5" />
-                      <div className="h-2 bg-blue-50 rounded w-3/5 mt-2" />
-                    </div>
-                  </div>
-                  
-                  {/* Connector */}
-                  <div className="flex justify-center">
-                    <div className="w-1 h-4 bg-gradient-to-b from-blue-200 to-green-200" />
-                  </div>
-                  
-                  {/* Step 2 - Pastel Green */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-green-200 text-green-700 font-bold text-sm">2</div>
-                    </div>
-                    <div className="flex-grow">
-                      <div className="h-3 bg-green-100 rounded w-4/5" />
-                      <div className="h-2 bg-green-50 rounded w-3/5 mt-2" />
+                {/* Workflow Steps - Vertical Flow */}
+                <div className="space-y-3">
+                  {/* Step 1 - Learn About LTC */}
+                  <div className="bg-gradient-to-r from-blue-100 to-blue-50 border-l-4 border-blue-400 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-400 text-white font-bold text-sm">1</div>
+                      <div className="flex-grow">
+                        <div className="font-semibold text-blue-900 text-sm">Learn About LTC</div>
+                        <div className="text-xs text-blue-700 mt-0.5">Understand your policy and benefits</div>
+                      </div>
                     </div>
                   </div>
                   
-                  {/* Connector */}
-                  <div className="flex justify-center">
-                    <div className="w-1 h-4 bg-gradient-to-b from-green-200 to-purple-200" />
+                  {/* Connector Arrow */}
+                  <div className="flex justify-center py-1">
+                    <div className="text-blue-300 text-lg">↓</div>
                   </div>
                   
-                  {/* Step 3 - Pastel Purple */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-200 text-purple-700 font-bold text-sm">3</div>
-                    </div>
-                    <div className="flex-grow">
-                      <div className="h-3 bg-purple-100 rounded w-4/5" />
-                      <div className="h-2 bg-purple-50 rounded w-3/5 mt-2" />
+                  {/* Step 2 - Discover Your Policy Benefits */}
+                  <div className="bg-gradient-to-r from-green-100 to-green-50 border-l-4 border-green-400 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-green-400 text-white font-bold text-sm">2</div>
+                      <div className="flex-grow">
+                        <div className="font-semibold text-green-900 text-sm">Discover Your Policy Benefits</div>
+                        <div className="text-xs text-green-700 mt-0.5">Review coverage and eligibility</div>
+                      </div>
                     </div>
                   </div>
                   
-                  {/* Connector */}
-                  <div className="flex justify-center">
-                    <div className="w-1 h-4 bg-gradient-to-b from-purple-200 to-pink-200" />
+                  {/* Connector Arrow */}
+                  <div className="flex justify-center py-1">
+                    <div className="text-green-300 text-lg">↓</div>
                   </div>
                   
-                  {/* Step 4 - Pastel Pink */}
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-pink-200 text-pink-700 font-bold text-sm">✓</div>
+                  {/* Step 3 - Develop Custom Strategy */}
+                  <div className="bg-gradient-to-r from-purple-100 to-purple-50 border-l-4 border-purple-400 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-purple-400 text-white font-bold text-sm">3</div>
+                      <div className="flex-grow">
+                        <div className="font-semibold text-purple-900 text-sm">Develop a Custom Strategy</div>
+                        <div className="text-xs text-purple-700 mt-0.5">Create your personalized action plan</div>
+                        <div className="text-xs text-purple-600 mt-1.5 space-y-0.5">
+                          <div>• Organize documentation</div>
+                          <div>• Prepare for insurance call</div>
+                          <div>• Set timeline and milestones</div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-grow">
-                      <div className="h-3 bg-pink-100 rounded w-4/5" />
-                      <div className="h-2 bg-pink-50 rounded w-3/5 mt-2" />
+                  </div>
+                  
+                  {/* Connector Arrow */}
+                  <div className="flex justify-center py-1">
+                    <div className="text-purple-300 text-lg">↓</div>
+                  </div>
+                  
+                  {/* Step 4 - Initiate a Claim */}
+                  <div className="bg-gradient-to-r from-pink-100 to-pink-50 border-l-4 border-pink-400 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-pink-400 text-white font-bold text-sm">✓</div>
+                      <div className="flex-grow">
+                        <div className="font-semibold text-pink-900 text-sm">Initiate a Claim</div>
+                        <div className="text-xs text-pink-700 mt-0.5">File your claim with confidence</div>
+                      </div>
                     </div>
                   </div>
                 </div>

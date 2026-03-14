@@ -166,3 +166,14 @@
 - [x] Verify the graphic displays correctly on the Home page
 - [x] Added 4-step workflow with gradient connectors
 - [x] All steps use pastel color palette
+
+## Strategy Workflow Rectangular Steps Update
+- [x] Update workflow to use rectangular step cards instead of circles
+- [x] Add step 1: Learn About LTC
+- [x] Add step 2: Discover Your Policy Benefits
+- [x] Add step 3: Develop a Custom Strategy (with substeps)
+- [x] Add step 4: Initiate a Claim
+- [x] Verify the new workflow displays correctly
+- [x] Added colored left borders and numbered badges to each step
+- [x] Added downward arrow connectors between steps
+- [x] Included substeps for Step 3 (Organize documentation, Prepare for insurance call, Set timeline)
