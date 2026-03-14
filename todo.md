@@ -230,3 +230,7 @@
 - [x] Embed videos into Education page with responsive video players (16:9 aspect ratio, full controls)
 - [x] Add video titles and descriptions (titles and descriptions added to both videos)
 - [x] Test video playback on different devices (responsive design tested and working)
+
+
+## Bug Fixes
+- [x] Fix API Query Error when navigating between Policy Form pages (pattern matching issue) - Fixed field name mismatches in policyForm router schema
