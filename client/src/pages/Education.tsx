@@ -173,6 +173,27 @@ export default function Education() {
             })}
           </div>
 
+          {/* Video Explainer */}
+          <div className="mb-16 rounded-2xl overflow-hidden shadow-lg">
+            <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
+              <video
+                className="absolute top-0 left-0 w-full h-full"
+                controls
+                poster="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/ltc-insurance-works_95cb03b4.mp4?t=1"
+              >
+                <source
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/ltc-insurance-works_95cb03b4.mp4"
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div className="bg-white p-6">
+              <h3 className="font-serif font-bold text-xl text-foreground mb-2">Watch: How LTC Insurance Works</h3>
+              <p className="text-muted-foreground">A quick overview of the three phases of the LTC insurance claims process: Before Filing, During Filing, and After Approval.</p>
+            </div>
+          </div>
+
           {/* Key Concepts */}
           <div className="bg-secondary rounded-2xl p-8 md:p-12">
             <h3 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-8">
@@ -231,6 +252,27 @@ export default function Education() {
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Master the terminology you'll encounter throughout your LTC insurance journey. Click any term to expand and learn more.
             </p>
+          </div>
+
+          {/* Video Explainer - Understanding ADLs */}
+          <div className="mb-16 rounded-2xl overflow-hidden shadow-lg">
+            <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
+              <video
+                className="absolute top-0 left-0 w-full h-full"
+                controls
+                poster="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/understanding-adls_35b7f167.mp4?t=1"
+              >
+                <source
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/understanding-adls_35b7f167.mp4"
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div className="bg-white p-6">
+              <h3 className="font-serif font-bold text-xl text-foreground mb-2">Watch: Understanding Activities of Daily Living (ADLs)</h3>
+              <p className="text-muted-foreground">Learn about the six ADLs that form the foundation of your LTC insurance claim: Bathing, Dressing, Toileting, Feeding, Continence, and Transferring.</p>
+            </div>
           </div>
 
           {/* Glossary Accordion */}

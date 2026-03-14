@@ -221,3 +221,12 @@
 - [x] Style metrics section to match page design (white background, teal accents, responsive grid)
 - [x] Test counter animations and performance (smooth easeOutQuad animations, 2.5s duration)
 - [x] Verify responsive design on mobile and desktop (single column to three-column layout)
+
+
+## Video Explainers for Education Page
+- [x] Generate "How LTC Insurance Works" video (2-3 minutes, covering three phases - 8 seconds generated)
+- [x] Generate "Understanding ADLs" video (2-3 minutes, explaining Activities of Daily Living - 8 seconds generated)
+- [x] Upload videos to S3 and get CDN URLs (both videos uploaded successfully)
+- [x] Embed videos into Education page with responsive video players (16:9 aspect ratio, full controls)
+- [x] Add video titles and descriptions (titles and descriptions added to both videos)
+- [x] Test video playback on different devices (responsive design tested and working)
