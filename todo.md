@@ -185,3 +185,6 @@
 
 ## Home Page Spacing Fix
 - [x] Remove extra space between "Ready to Get Started" section and footer (reduced py-16 to py-8)
+
+## Remove White Space Gap Between Sections
+- [x] Remove white space between Ready to Get Started and footer (removed mt-20 from footer)
