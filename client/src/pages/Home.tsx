@@ -98,13 +98,8 @@ const testimonials = [
 // Add CSS animations
 const animationStyles = `
   @keyframes typing {
-    0% { width: 0; }
-    100% { width: 100%; }
-  }
-  
-  @keyframes messageAppear {
-    0% { opacity: 0; transform: translateY(10px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0%, 10%, 90%, 100% { width: 0; }
+    45%, 55% { width: 100%; }
   }
   
   @keyframes blink {
@@ -541,52 +536,32 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 space-y-3 min-h-[400px] flex flex-col justify-end">
-                    {/* Message 1: User Question - Appears with typing */}
-                    <div className="flex justify-end" style={{
-                      animation: "messageAppear 0.5s ease-out 0.5s both"
-                    }}>
+                  <div className="p-4 space-y-3 min-h-[300px]">
+                    {/* User Message */}
+                    <div className="flex justify-end animate-flow" style={{ animationDelay: "0s" }}>
                       <div className="bg-primary text-white rounded-lg px-4 py-2 text-sm max-w-xs">
-                        What is the first step in filing a claim?
+                        What does ADL mean?
                       </div>
                     </div>
                     
-                    {/* Message 2: Support Response - Appears with typing */}
-                    <div className="flex justify-start" style={{
-                      animation: "messageAppear 0.5s ease-out 2s both"
-                    }}>
+                    {/* Bot Response - Typing Animation */}
+                    <div className="flex justify-start animate-flow" style={{ animationDelay: "1s" }}>
                       <div className="bg-foreground/10 text-foreground rounded-lg px-4 py-2 text-sm max-w-xs">
-                        <span style={{
-                          animation: "typing 3s ease-out 2s both",
-                          display: "inline-block",
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          borderRight: "2px solid currentColor"
-                        }}>Gather your policy documents and contact info...</span>
+                        <span className="animate-typing">ADL stands for Activities of Daily Living. It includes bathing, dressing, eating, and more.</span>
                       </div>
                     </div>
                     
-                    {/* Message 3: User Follow-up - Appears with typing */}
-                    <div className="flex justify-end" style={{
-                      animation: "messageAppear 0.5s ease-out 5.5s both"
-                    }}>
+                    {/* User Message */}
+                    <div className="flex justify-end animate-flow" style={{ animationDelay: "2s" }}>
                       <div className="bg-primary text-white rounded-lg px-4 py-2 text-sm max-w-xs">
-                        How long does approval usually take?
+                        How does this help my claim?
                       </div>
                     </div>
                     
-                    {/* Message 4: Support Final Response - Appears with typing */}
-                    <div className="flex justify-start" style={{
-                      animation: "messageAppear 0.5s ease-out 7.5s both"
-                    }}>
+                    {/* Bot Response - Typing Animation */}
+                    <div className="flex justify-start animate-flow" style={{ animationDelay: "3s" }}>
                       <div className="bg-foreground/10 text-foreground rounded-lg px-4 py-2 text-sm max-w-xs">
-                        <span style={{
-                          animation: "typing 3s ease-out 7.5s both",
-                          display: "inline-block",
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          borderRight: "2px solid currentColor"
-                        }}>Typically 30-60 days. We help expedite the process...</span>
+                        <span className="animate-typing">Insurance companies use ADL assessments to determine eligibility. We help you document these properly.</span>
                       </div>
                     </div>
                   </div>
