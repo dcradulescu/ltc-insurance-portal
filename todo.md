@@ -274,3 +274,22 @@
 - [x] Send complete JSON to Zapier webhook on session timeout (15-min inactivity)
 - [x] Ensure JSON is sent as one complete payload, not in chunks
 - [x] Test full form flow - all 6 steps navigated with zero console errors
+
+
+## Comprehensive JSON Payload to Zapier
+- [x] Gather ALL user data: profile info, policy form fields, customized strategy plan
+- [x] Build JSON progressively as user fills out form and strategy
+- [x] Create server-side endpoint to compile complete JSON from all data sources
+- [x] Send complete JSON to Zapier on user exit (beforeunload/navigation away)
+- [x] Send complete JSON to Zapier on strategy completion (last step)
+- [x] Send complete JSON to Zapier on session timeout
+- [x] Ensure single comprehensive payload (not chunks)
+- [x] Test full flow from user registration through strategy completion
+
+
+## Test Suite Fixes
+- [x] Fix auth.logout.test.ts: Added hostname to mock request to prevent 'includes' error in getSessionCookieOptions
+- [x] Fix policy.test.ts: Updated all tests to reflect public procedures (no longer protected)
+- [x] Fix policy.test.ts: Added missing mock functions for document uploads, user contacts
+- [x] Fix policy.test.ts: Updated field names to match current schema (insuredFullName, carrierName, etc.)
+- [x] All 20 tests passing across 4 test files (auth.logout, auth.protected-routes, policy, zapier-comprehensive)

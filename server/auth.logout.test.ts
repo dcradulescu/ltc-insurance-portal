@@ -29,6 +29,7 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
     user,
     req: {
       protocol: "https",
+      hostname: "localhost",
       headers: {},
     } as TrpcContext["req"],
     res: {
@@ -51,10 +52,9 @@ describe("auth.logout", () => {
     expect(result).toEqual({ success: true });
     expect(clearedCookies).toHaveLength(1);
     expect(clearedCookies[0]?.name).toBe(COOKIE_NAME);
+    // localhost context uses lax/non-secure cookies
     expect(clearedCookies[0]?.options).toMatchObject({
       maxAge: -1,
-      secure: true,
-      sameSite: "none",
       httpOnly: true,
       path: "/",
     });

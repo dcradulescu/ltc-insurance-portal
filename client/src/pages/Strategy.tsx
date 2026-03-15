@@ -34,10 +34,47 @@ export default function Strategy() {
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
   const strategyQuery = trpc.strategy.getMine.useQuery(undefined, { enabled: true });
+  const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
+  const sessionStartRef = useRef(Date.now());
+  const zapierSentRef = useRef(false);
+
+  const sendToZapier = useCallback((trigger: "form_completed" | "strategy_completed" | "exit" | "timeout") => {
+    if (zapierSentRef.current) return;
+    zapierSentRef.current = true;
+    const sessionDurationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
+    sendComprehensiveZapier.mutate({
+      trigger,
+      currentPage: "strategy",
+      sessionDurationSeconds,
+    });
+  }, [sendComprehensiveZapier]);
+
+  // Send to Zapier on page exit
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!zapierSentRef.current) {
+        zapierSentRef.current = true;
+        const sessionDurationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
+        navigator.sendBeacon?.("/api/trpc/policyForm.sendComprehensiveToZapier", new Blob([JSON.stringify({ "0": { json: { trigger: "exit", currentPage: "strategy", sessionDurationSeconds } } })], { type: "application/json" }));
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // Also send on unmount (navigation away)
+      if (!zapierSentRef.current) {
+        sendToZapier("exit");
+      }
+    };
+  }, [sendToZapier]);
+
   const generateMutation = trpc.strategy.generate.useMutation({
     onSuccess: () => {
       strategyQuery.refetch();
       toast.success("Your personalized strategy has been generated!");
+      // Send comprehensive JSON to Zapier when strategy is completed (last step)
+      zapierSentRef.current = false; // Reset so we can send on strategy completion
+      sendToZapier("strategy_completed");
     },
     onError: () => toast.error("Failed to generate strategy. Please try again."),
   });

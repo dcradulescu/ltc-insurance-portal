@@ -227,7 +227,7 @@ export function PolicyFormComprehensive() {
     setIsSubmitting(true);
 
     try {
-      await submitFormMutation.mutateAsync({ formData, trigger: "completed" as const });
+      await submitFormMutation.mutateAsync({ formData: formData as unknown as Record<string, unknown>, trigger: "completed" as const });
       setSubmitted(true);
       toast.success("Form submitted successfully!");
       setTimeout(() => setSubmitted(false), 3000);

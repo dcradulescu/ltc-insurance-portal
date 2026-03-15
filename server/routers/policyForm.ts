@@ -1,61 +1,35 @@
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
-import { TRPCError } from "@trpc/server";
+import { publicProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
+import {
+  getPolicyByUserId, getStrategyByUserId,
+  getDocumentsByUserId, getUserContacts,
+} from "../db";
 
-const formDataSchema = z.object({
-  insuredFullName: z.string().optional().default(""),
-  insuredDob: z.string().optional().default(""),
-  insuredMailingAddress: z.string().optional().default(""),
-  insuredSsn: z.string().optional().default(""),
-  insuredMedicareNumber: z.string().optional().default(""),
-  insuredMedicaidNumber: z.string().optional().default(""),
-  powerOfAttorneyPresent: z.string().optional().default(""),
-  carrierName: z.string().optional().default(""),
-  carrierAddress1: z.string().optional().default(""),
-  carrierAddress2: z.string().optional().default(""),
-  carrierCityStateZip: z.string().optional().default(""),
-  carrierPhone: z.string().optional().default(""),
-  carrierFax: z.string().optional().default(""),
-  policyNumber: z.string().optional().default(""),
-  claimPreClaimNumber: z.string().optional().default(""),
-  eliminationPeriod: z.string().optional().default(""),
-  dailyMaximum: z.string().optional().default(""),
-  monthlyMaximum: z.string().optional().default(""),
-  lifetimeMaximum: z.string().optional().default(""),
-  minAdlsRequired: z.string().optional().default(""),
-  waiverOfPremium: z.string().optional().default(""),
-  cnaRequired: z.string().optional().default(""),
-  careNotesRequired: z.string().optional().default(""),
-  paymentCycle: z.string().optional().default(""),
-  assignmentOfBenefits: z.string().optional().default(""),
-  caseManagerName: z.string().optional().default(""),
-  thirdPartyAssessmentRequired: z.string().optional().default(""),
-  thirdPartyAssessmentWho: z.string().optional().default(""),
-  cognitiveImpairmentTrigger: z.string().optional().default(""),
-  planOfCareStatus: z.string().optional().default(""),
-  ltcCoordinatorAssigned: z.string().optional().default(""),
-  currentCareNeeds: z.string().optional().default(""),
-  diagnosisOrCondition: z.string().optional().default(""),
-  adlLimitations: z.array(z.string()).optional().default([]),
-  preferredCareType: z.string().optional().default(""),
-  additionalNotes: z.string().optional().default(""),
-  fillerRelationship: z.string().optional().default(""),
-});
-
+/**
+ * Gathers ALL user data (profile, policy form, strategy, documents, contacts)
+ * into one comprehensive JSON payload and sends it to the Zapier webhook.
+ *
+ * Triggers:
+ *  - "form_completed"    → user finishes the policy form
+ *  - "strategy_completed"→ user finishes / generates their strategy (last step)
+ *  - "exit"              → user navigates away or closes the tab
+ *  - "timeout"           → user is inactive for 15 minutes
+ */
 export const policyFormRouter = router({
   /**
-   * Send the complete form JSON to Zapier webhook.
-   * Called once when user completes, exits, or times out.
+   * Send the COMPREHENSIVE JSON to Zapier webhook.
+   * Called once when user completes strategy, exits, or times out.
    */
-  sendToZapier: publicProcedure
+  sendComprehensiveToZapier: publicProcedure
     .input(
       z.object({
-        formData: formDataSchema,
-        trigger: z.enum(["completed", "exit", "timeout", "save"]),
-        currentStep: z.number().optional(),
-        completionPercentage: z.number().optional(),
+        trigger: z.enum(["form_completed", "strategy_completed", "exit", "timeout"]),
+        currentPage: z.string().optional(),
+        formStep: z.number().optional(),
         sessionDurationSeconds: z.number().optional(),
+        // Allow passing current unsaved form data so we capture the latest state
+        unsavedFormData: z.record(z.string(), z.any()).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -63,29 +37,150 @@ export const policyFormRouter = router({
         const webhookUrl = ENV.zapierWebhookUrl;
 
         if (!webhookUrl) {
-          console.warn("Zapier webhook URL not configured — skipping send");
+          console.warn("[Zapier] Webhook URL not configured — skipping send");
           return { success: false, message: "Webhook URL not configured" };
         }
 
-        // Build the complete payload
+        // Default userId for public access
+        const userId = 1;
+
+        // ── 1. User Profile ──
+        const userProfile = ctx.user
+          ? {
+              id: ctx.user.id,
+              name: ctx.user.name,
+              email: ctx.user.email,
+              openId: ctx.user.openId,
+              role: ctx.user.role,
+              createdAt: ctx.user.createdAt,
+              lastSignedIn: ctx.user.lastSignedIn,
+            }
+          : { id: null, name: "Guest", email: null, openId: null, role: null, createdAt: null, lastSignedIn: null };
+
+        // ── 2. Policy Form Data ──
+        const policy = await getPolicyByUserId(userId);
+        const policyData = policy
+          ? {
+              id: policy.id,
+              // Insured Person
+              insuredFullName: policy.insuredFullName,
+              insuredDob: policy.insuredDob,
+              insuredMailingAddress: policy.insuredMailingAddress,
+              insuredSsn: policy.insuredSsn,
+              insuredMedicareNumber: policy.insuredMedicareNumber,
+              insuredMedicaidNumber: policy.insuredMedicaidNumber,
+              powerOfAttorneyPresent: policy.powerOfAttorneyPresent,
+              // Carrier Info
+              carrierName: policy.carrierName,
+              carrierAddress1: policy.carrierAddress1,
+              carrierAddress2: policy.carrierAddress2,
+              carrierCityStateZip: policy.carrierCityStateZip,
+              carrierPhone: policy.carrierPhone,
+              carrierFax: policy.carrierFax,
+              // Policy Identifiers
+              policyNumber: policy.policyNumber,
+              claimPreClaimNumber: policy.claimPreClaimNumber,
+              // Coverage Details
+              eliminationPeriod: policy.eliminationPeriod,
+              dailyMaximum: policy.dailyMaximum,
+              monthlyMaximum: policy.monthlyMaximum,
+              lifetimeMaximum: policy.lifetimeMaximum,
+              minAdlsRequired: policy.minAdlsRequired,
+              waiverOfPremium: policy.waiverOfPremium,
+              cnaRequired: policy.cnaRequired,
+              careNotesRequired: policy.careNotesRequired,
+              paymentCycle: policy.paymentCycle,
+              assignmentOfBenefits: policy.assignmentOfBenefits,
+              // Medical / Administrative
+              caseManagerName: policy.caseManagerName,
+              thirdPartyAssessmentRequired: policy.thirdPartyAssessmentRequired,
+              thirdPartyAssessmentWho: policy.thirdPartyAssessmentWho,
+              cognitiveImpairmentTrigger: policy.cognitiveImpairmentTrigger,
+              planOfCareStatus: policy.planOfCareStatus,
+              ltcCoordinatorAssigned: policy.ltcCoordinatorAssigned,
+              // Medical Providers
+              primaryCarePhysician: policy.primaryCarePhysician,
+              otherProviders: policy.otherProviders,
+              facilitiesUsed: policy.facilitiesUsed,
+              dischargeDocumentation: policy.dischargeDocumentation,
+              // Care Needs
+              currentCareNeeds: policy.currentCareNeeds,
+              diagnosisOrCondition: policy.diagnosisOrCondition,
+              adlLimitations: policy.adlLimitations,
+              preferredCareType: policy.preferredCareType,
+              additionalNotes: policy.additionalNotes,
+              fillerRelationship: policy.fillerRelationship,
+              // Timestamps
+              createdAt: policy.createdAt,
+              updatedAt: policy.updatedAt,
+            }
+          : null;
+
+        // ── 3. Strategy Data ──
+        const strategy = await getStrategyByUserId(userId);
+        const strategyData = strategy
+          ? {
+              id: strategy.id,
+              policyId: strategy.policyId,
+              currentStage: strategy.currentStage,
+              claimStatus: strategy.claimStatus,
+              strategyContent: strategy.strategyContent,
+              stage1Tasks: strategy.stage1Tasks,
+              stage2Tasks: strategy.stage2Tasks,
+              stage3Tasks: strategy.stage3Tasks,
+              generatedAt: strategy.generatedAt,
+              createdAt: strategy.createdAt,
+              updatedAt: strategy.updatedAt,
+            }
+          : null;
+
+        // ── 4. Documents ──
+        const documents = await getDocumentsByUserId(userId);
+        const documentsData = documents.map((doc) => ({
+          id: doc.id,
+          category: doc.category,
+          fileName: doc.fileName,
+          fileUrl: doc.fileUrl,
+          mimeType: doc.mimeType,
+          fileSize: doc.fileSize,
+          taskId: doc.taskId,
+          createdAt: doc.createdAt,
+        }));
+
+        // ── 5. Contacts ──
+        const contacts = await getUserContacts(userId);
+        const contactsData = contacts.map((c) => ({
+          id: c.id,
+          name: c.name,
+          email: c.email,
+          relationship: c.relationship,
+          receiveCcEmails: c.receiveCcEmails,
+        }));
+
+        // ── Build the comprehensive payload ──
         const payload = {
-          timestamp: new Date().toISOString(),
-          trigger: input.trigger,
-          currentStep: input.currentStep,
-          completionPercentage: input.completionPercentage,
-          sessionDurationSeconds: input.sessionDurationSeconds,
-          user: ctx.user
-            ? {
-                id: ctx.user.id,
-                name: ctx.user.name,
-                email: ctx.user.email,
-                openId: ctx.user.openId,
-              }
-            : { id: null, name: "Guest", email: null, openId: null },
-          formData: input.formData,
+          _meta: {
+            timestamp: new Date().toISOString(),
+            trigger: input.trigger,
+            currentPage: input.currentPage || null,
+            formStep: input.formStep || null,
+            sessionDurationSeconds: input.sessionDurationSeconds || null,
+            portalVersion: "1.0",
+          },
+          user: userProfile,
+          policyForm: policyData,
+          unsavedFormData: input.unsavedFormData || null,
+          strategy: strategyData,
+          documents: documentsData,
+          contacts: contactsData,
         };
 
-        console.log(`[Zapier] Sending form data (trigger: ${input.trigger}) to webhook`);
+        console.log(
+          `[Zapier] Sending COMPREHENSIVE payload (trigger: ${input.trigger}) — ` +
+            `user: ${userProfile.name}, policy: ${policyData?.id ?? "none"}, ` +
+            `strategy: ${strategyData?.id ?? "none"}, docs: ${documentsData.length}, contacts: ${contactsData.length}`
+        );
+
         const response = await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -100,10 +195,114 @@ export const policyFormRouter = router({
           return { success: false, message: "Webhook delivery failed" };
         }
 
-        return { success: true, message: "Form data sent to Zapier" };
+        return { success: true, message: "Comprehensive data sent to Zapier" };
       } catch (error) {
         console.error("[Zapier] Send error:", error);
-        // Non-blocking — don't throw, just return failure
+        return {
+          success: false,
+          message: error instanceof Error ? error.message : "Unknown error",
+        };
+      }
+    }),
+
+  /**
+   * Legacy endpoint kept for backward compatibility.
+   * Redirects to the comprehensive sender.
+   */
+  sendToZapier: publicProcedure
+    .input(
+      z.object({
+        formData: z.record(z.string(), z.any()).optional(),
+        trigger: z.enum(["completed", "exit", "timeout", "save"]),
+        currentStep: z.number().optional(),
+        completionPercentage: z.number().optional(),
+        sessionDurationSeconds: z.number().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      // Map old triggers to new triggers
+      const triggerMap: Record<string, string> = {
+        completed: "form_completed",
+        exit: "exit",
+        timeout: "timeout",
+        save: "exit",
+      };
+
+      try {
+        const webhookUrl = ENV.zapierWebhookUrl;
+        if (!webhookUrl) {
+          console.warn("[Zapier] Webhook URL not configured — skipping send");
+          return { success: false, message: "Webhook URL not configured" };
+        }
+
+        const userId = 1;
+        const policy = await getPolicyByUserId(userId);
+        const strategy = await getStrategyByUserId(userId);
+        const documents = await getDocumentsByUserId(userId);
+        const contacts = await getUserContacts(userId);
+
+        const payload = {
+          _meta: {
+            timestamp: new Date().toISOString(),
+            trigger: triggerMap[input.trigger] || input.trigger,
+            formStep: input.currentStep || null,
+            sessionDurationSeconds: input.sessionDurationSeconds || null,
+            portalVersion: "1.0",
+          },
+          user: ctx.user
+            ? {
+                id: ctx.user.id,
+                name: ctx.user.name,
+                email: ctx.user.email,
+                openId: ctx.user.openId,
+                role: ctx.user.role,
+              }
+            : { id: null, name: "Guest", email: null },
+          policyForm: policy || null,
+          unsavedFormData: input.formData || null,
+          strategy: strategy
+            ? {
+                id: strategy.id,
+                currentStage: strategy.currentStage,
+                claimStatus: strategy.claimStatus,
+                strategyContent: strategy.strategyContent,
+                stage1Tasks: strategy.stage1Tasks,
+                stage2Tasks: strategy.stage2Tasks,
+                stage3Tasks: strategy.stage3Tasks,
+                generatedAt: strategy.generatedAt,
+              }
+            : null,
+          documents: documents.map((d) => ({
+            id: d.id,
+            category: d.category,
+            fileName: d.fileName,
+            fileUrl: d.fileUrl,
+            mimeType: d.mimeType,
+          })),
+          contacts: contacts.map((c) => ({
+            id: c.id,
+            name: c.name,
+            email: c.email,
+            relationship: c.relationship,
+          })),
+        };
+
+        console.log(`[Zapier] Sending comprehensive payload (trigger: ${input.trigger})`);
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const responseText = await response.text();
+          console.error("[Zapier] Webhook error:", responseText);
+          return { success: false, message: "Webhook delivery failed" };
+        }
+
+        return { success: true, message: "Comprehensive data sent to Zapier" };
+      } catch (error) {
+        console.error("[Zapier] Send error:", error);
         return {
           success: false,
           message: error instanceof Error ? error.message : "Unknown error",

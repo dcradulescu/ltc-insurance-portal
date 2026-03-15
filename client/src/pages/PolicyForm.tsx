@@ -145,7 +145,7 @@ export default function PolicyForm() {
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
   const saveMutation = trpc.policy.save.useMutation();
-  const sendToZapierMutation = trpc.policyForm.sendToZapier.useMutation();
+  const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
 
   const completionPct = useMemo(() => {
     const fields = Object.entries(form).filter(([k]) => k !== "adlLimitations");
@@ -204,8 +204,8 @@ export default function PolicyForm() {
     }
   }, [policyQuery.data]);
 
-  // Send form data to Zapier (called once on completion, exit, or timeout)
-  const sendToZapier = useCallback(async (trigger: "completed" | "exit" | "timeout" | "save") => {
+  // Send comprehensive data to Zapier (called once on completion, exit, or timeout)
+  const sendToZapier = useCallback(async (trigger: "form_completed" | "exit" | "timeout") => {
     if (zapierSentRef.current) return; // Prevent duplicate sends
     zapierSentRef.current = true;
     setZapierSent(true);
@@ -213,18 +213,18 @@ export default function PolicyForm() {
     const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
 
     try {
-      await sendToZapierMutation.mutateAsync({
-        formData: form,
+      await sendComprehensiveZapier.mutateAsync({
         trigger,
-        currentStep: step,
-        completionPercentage: completionPct,
+        currentPage: "policy-form",
+        formStep: step,
         sessionDurationSeconds: sessionDuration,
+        unsavedFormData: form as unknown as Record<string, any>,
       });
-      console.log(`[Form] Zapier webhook sent (trigger: ${trigger})`);
+      console.log(`[Form] Comprehensive Zapier webhook sent (trigger: ${trigger})`);
     } catch (err) {
       console.error("[Form] Zapier send failed (non-blocking):", err);
     }
-  }, [form, step, completionPct, sendToZapierMutation]);
+  }, [form, step, sendComprehensiveZapier]);
 
   // Track user activity for timeout
   useEffect(() => {
@@ -255,29 +255,22 @@ export default function PolicyForm() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (!zapierSentRef.current) {
-        // Use sendBeacon for reliable delivery on page close
-        const webhookUrl = (window as any).__ZAPIER_WEBHOOK_URL;
-        if (webhookUrl) {
-          const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
-          const payload = JSON.stringify({
-            timestamp: new Date().toISOString(),
-            trigger: "exit",
-            currentStep: step,
-            completionPercentage: completionPct,
-            sessionDurationSeconds: sessionDuration,
-            user: null, // Can't access ctx here
-            formData: form,
-          });
-          navigator.sendBeacon(webhookUrl, new Blob([payload], { type: "application/json" }));
-        }
-        // Also try the mutation as fallback
-        sendToZapier("exit");
+        zapierSentRef.current = true;
+        const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
+        // Use sendBeacon for reliable delivery on page close (tRPC batch format)
+        navigator.sendBeacon?.(
+          "/api/trpc/policyForm.sendComprehensiveToZapier",
+          new Blob(
+            [JSON.stringify({ "0": { json: { trigger: "exit", currentPage: "policy-form", formStep: step, sessionDurationSeconds: sessionDuration } } })],
+            { type: "application/json" }
+          )
+        );
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [form, step, completionPct, sendToZapier]);
+  }, [step]);
 
   const update = (field: keyof FormData, value: any) => {
     lastActivityRef.current = Date.now();
@@ -332,8 +325,8 @@ export default function PolicyForm() {
       const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
       if (!policyId) setPolicyId(result.id);
 
-      // Send complete form to Zapier
-      await sendToZapier("completed");
+      // Send comprehensive data to Zapier
+      await sendToZapier("form_completed");
 
       toast.success("Form submitted successfully!");
       navigate("/strategy");
