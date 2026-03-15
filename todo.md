@@ -234,3 +234,27 @@
 
 ## Bug Fixes
 - [x] Fix API Query Error when navigating between Policy Form pages (pattern matching issue) - Fixed field name mismatches in policyForm router schema
+
+
+## Home Page Static Graphics
+- [ ] Add static image next to Education section
+- [ ] Add static image next to Policy Form section
+- [ ] Add static image next to Strategy section
+- [ ] Ensure responsive layout for mobile and desktop
+- [ ] Test visual alignment and spacing
+
+
+## Restore Original CSS-Built Graphics to Home Page
+- [ ] Restore current Home.tsx (swap back from old version)
+- [ ] Add CSS-built form graphic to Intake Form section
+- [ ] Add CSS-built strategy graphic to Customized Strategy section
+- [ ] Add CSS-built chat graphic to Live Chat Support section
+- [ ] Verify all three graphics display correctly
+
+
+## Authentication Protection for Inner Pages
+- [x] Require login/account creation for all pages beyond Home page
+- [x] Redirect unauthenticated users to login when clicking Education, Policy Form, My Strategy, Contact
+- [x] Show appropriate message explaining login is for data protection (lock icon + "Account Required" message)
+- [x] After login, redirect user back to the page they originally wanted to visit (returnPath support)
+- [x] Test authentication flow for all protected routes (vitest tests passing)
