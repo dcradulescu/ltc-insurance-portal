@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { ClipboardList, ArrowRight, ArrowLeft, Save, Loader2, HelpCircle, Info } from "lucide-react";
@@ -129,16 +129,23 @@ function TooltipField({ label, name, children }: { label: string; name: string; 
   );
 }
 
+// Inactivity timeout in milliseconds (15 minutes)
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
+
 export default function PolicyForm() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(defaultForm);
   const [policyId, setPolicyId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [zapierSent, setZapierSent] = useState(false);
+  const sessionStartRef = useRef(Date.now());
+  const lastActivityRef = useRef(Date.now());
+  const zapierSentRef = useRef(false);
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
   const saveMutation = trpc.policy.save.useMutation();
-  const submitFormMutation = trpc.policyForm.submitForm.useMutation();
+  const sendToZapierMutation = trpc.policyForm.sendToZapier.useMutation();
 
   const completionPct = useMemo(() => {
     const fields = Object.entries(form).filter(([k]) => k !== "adlLimitations");
@@ -146,8 +153,13 @@ export default function PolicyForm() {
     return Math.round((filled.length / fields.length) * 100);
   }, [form]);
 
+  // Track whether initial load has happened
+  const initialLoadDone = useRef(false);
+
+  // Load existing policy data (only on initial load, not on refetch after save)
   useEffect(() => {
-    if (policyQuery.data && policyQuery.data !== null) {
+    if (policyQuery.data && policyQuery.data !== null && !initialLoadDone.current) {
+      initialLoadDone.current = true;
       const p = policyQuery.data;
       setPolicyId(p.id);
       setForm({
@@ -192,45 +204,144 @@ export default function PolicyForm() {
     }
   }, [policyQuery.data]);
 
+  // Send form data to Zapier (called once on completion, exit, or timeout)
+  const sendToZapier = useCallback(async (trigger: "completed" | "exit" | "timeout" | "save") => {
+    if (zapierSentRef.current) return; // Prevent duplicate sends
+    zapierSentRef.current = true;
+    setZapierSent(true);
 
+    const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
 
-  const update = (field: keyof FormData, value: any) => setForm(prev => ({ ...prev, [field]: value }));
+    try {
+      await sendToZapierMutation.mutateAsync({
+        formData: form,
+        trigger,
+        currentStep: step,
+        completionPercentage: completionPct,
+        sessionDurationSeconds: sessionDuration,
+      });
+      console.log(`[Form] Zapier webhook sent (trigger: ${trigger})`);
+    } catch (err) {
+      console.error("[Form] Zapier send failed (non-blocking):", err);
+    }
+  }, [form, step, completionPct, sendToZapierMutation]);
 
-  // Validation function
-  const validateForm = () => {
-    const errors: string[] = [];
-    
-    // Required fields
-    if (!form.insuredFullName?.trim()) errors.push("Insured full name is required");
-    if (!form.carrierName?.trim()) errors.push("Carrier name is required");
-    if (!form.policyNumber?.trim()) errors.push("Policy number is required");
-    
-    return errors;
+  // Track user activity for timeout
+  useEffect(() => {
+    const resetActivity = () => { lastActivityRef.current = Date.now(); };
+    window.addEventListener("mousemove", resetActivity);
+    window.addEventListener("keydown", resetActivity);
+    window.addEventListener("click", resetActivity);
+    window.addEventListener("scroll", resetActivity);
+
+    // Check for inactivity every 60 seconds
+    const interval = setInterval(() => {
+      if (Date.now() - lastActivityRef.current > INACTIVITY_TIMEOUT_MS && !zapierSentRef.current) {
+        console.log("[Form] Inactivity timeout — sending to Zapier");
+        sendToZapier("timeout");
+      }
+    }, 60_000);
+
+    return () => {
+      window.removeEventListener("mousemove", resetActivity);
+      window.removeEventListener("keydown", resetActivity);
+      window.removeEventListener("click", resetActivity);
+      window.removeEventListener("scroll", resetActivity);
+      clearInterval(interval);
+    };
+  }, [sendToZapier]);
+
+  // Send to Zapier on page unload / navigation away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!zapierSentRef.current) {
+        // Use sendBeacon for reliable delivery on page close
+        const webhookUrl = (window as any).__ZAPIER_WEBHOOK_URL;
+        if (webhookUrl) {
+          const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
+          const payload = JSON.stringify({
+            timestamp: new Date().toISOString(),
+            trigger: "exit",
+            currentStep: step,
+            completionPercentage: completionPct,
+            sessionDurationSeconds: sessionDuration,
+            user: null, // Can't access ctx here
+            formData: form,
+          });
+          navigator.sendBeacon(webhookUrl, new Blob([payload], { type: "application/json" }));
+        }
+        // Also try the mutation as fallback
+        sendToZapier("exit");
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [form, step, completionPct, sendToZapier]);
+
+  const update = (field: keyof FormData, value: any) => {
+    lastActivityRef.current = Date.now();
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
+  // Save to database only (no validation required, no Zapier)
   const handleSave = async () => {
-    // Validate form before saving
-    const validationErrors = validateForm();
-    if (validationErrors.length > 0) {
-      validationErrors.forEach(error => toast.error(error));
-      return;
-    }
-
     setSaving(true);
     try {
       const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
       if (!policyId) setPolicyId(result.id);
-      
-      // Send to Zapier webhook
-      try {
-        await submitFormMutation.mutateAsync(form as any);
-      } catch (zapierError) {
-        console.error("Zapier submission error (non-blocking):", zapierError);
-      }
-      
-      toast.success("Policy information saved successfully");
-    } catch (e) { toast.error("Failed to save. Please try again."); }
-    finally { setSaving(false); }
+      toast.success("Progress saved");
+    } catch (e) {
+      toast.error("Failed to save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Navigate to next step — save to DB silently, no validation blocking
+  const handleNext = () => {
+    // Advance step immediately (non-blocking)
+    setStep(prev => prev + 1);
+    // Save to DB in background (fire-and-forget)
+    saveMutation.mutate({ ...form, id: policyId || undefined }, {
+      onSuccess: (result) => {
+        if (!policyId) setPolicyId(result.id);
+      },
+      onError: (e) => {
+        console.error("Background save failed:", e);
+      },
+    });
+  };
+
+  // Navigate to previous step
+  const handlePrev = () => {
+    if (step > 0) {
+      setStep(prev => prev - 1);
+    } else {
+      // Send to Zapier when navigating away from form
+      sendToZapier("exit");
+      navigate("/education");
+    }
+  };
+
+  // Final submission — save, send to Zapier, then navigate
+  const handleComplete = async () => {
+    setSaving(true);
+    try {
+      // Save to DB
+      const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
+      if (!policyId) setPolicyId(result.id);
+
+      // Send complete form to Zapier
+      await sendToZapier("completed");
+
+      toast.success("Form submitted successfully!");
+      navigate("/strategy");
+    } catch (e) {
+      toast.error("Failed to save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const steps = [
@@ -492,7 +603,7 @@ export default function PolicyForm() {
               </div>
               {form.thirdPartyAssessmentRequired === "yes" && (
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <h4 className="font-semibold text-amber-800 mb-2">⚠️ Third-Party Assessment Notice</h4>
+                  <h4 className="font-semibold text-amber-800 mb-2">Third-Party Assessment Notice</h4>
                   <p className="text-sm text-amber-700">Your policy requires a third-party assessment. An independent RN will evaluate the insured's condition, ADL deficits, mobility, and cognitive function. <strong>Any inconsistencies between your documentation and the assessment may lead to denial.</strong> Your strategy will include detailed preparation guidance.</p>
                 </div>
               )}
@@ -523,7 +634,7 @@ export default function PolicyForm() {
                   ))}
                 </div>
                 {form.minAdlsRequired && form.adlLimitations.length > 0 && form.adlLimitations.length < parseInt(form.minAdlsRequired) && (
-                  <p className="text-amber-600 text-sm mt-2">⚠️ Your policy requires at least {form.minAdlsRequired} ADLs to be in deficit. You've selected {form.adlLimitations.length}.</p>
+                  <p className="text-amber-600 text-sm mt-2">Your policy requires at least {form.minAdlsRequired} ADLs to be in deficit. You've selected {form.adlLimitations.length}.</p>
                 )}
               </div>
               <TooltipField label="Preferred Care Type" name="preferredCareType">
@@ -572,18 +683,19 @@ export default function PolicyForm() {
 
           {/* Navigation */}
           <div className="flex justify-between items-center mt-8 pt-6 border-t">
-            <Button variant="outline" onClick={() => step > 0 ? setStep(step - 1) : navigate("/education")} className="gap-1">
+            <Button variant="outline" onClick={handlePrev} className="gap-1">
               <ArrowLeft className="w-4 h-4" /> {step > 0 ? "Previous" : "Education"}
             </Button>
             <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-1">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Progress
             </Button>
             {step < steps.length - 1 ? (
-              <Button onClick={() => { handleSave(); setStep(step + 1); }} className="gap-1">
+              <Button onClick={handleNext} className="gap-1">
                 Next <ArrowRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button onClick={() => { handleSave().then(() => navigate("/strategy")); }} className="gap-1 bg-green-600 hover:bg-green-700">
+              <Button onClick={handleComplete} disabled={saving} className="gap-1 bg-green-600 hover:bg-green-700">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Generate Strategy <ArrowRight className="w-4 h-4" />
               </Button>
             )}

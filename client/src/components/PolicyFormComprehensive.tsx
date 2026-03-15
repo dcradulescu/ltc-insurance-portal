@@ -209,7 +209,7 @@ export function PolicyFormComprehensive() {
   };
 
   const { user } = useAuth();
-  const submitFormMutation = trpc.policyForm.submitForm.useMutation();
+  const submitFormMutation = trpc.policyForm.sendToZapier.useMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -227,7 +227,7 @@ export function PolicyFormComprehensive() {
     setIsSubmitting(true);
 
     try {
-      await submitFormMutation.mutateAsync(formData);
+      await submitFormMutation.mutateAsync({ formData, trigger: "completed" as const });
       setSubmitted(true);
       toast.success("Form submitted successfully!");
       setTimeout(() => setSubmitted(false), 3000);

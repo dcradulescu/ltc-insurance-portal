@@ -258,3 +258,19 @@
 - [x] Show appropriate message explaining login is for data protection (lock icon + "Account Required" message)
 - [x] After login, redirect user back to the page they originally wanted to visit (returnPath support)
 - [x] Test authentication flow for all protected routes (vitest tests passing)
+
+
+## Remember Me - Extended Session
+- [x] Already configured with 1-year session cookie (ONE_YEAR_MS = 365 days)
+- [x] Cookie maxAge set for extended persistence
+- [x] Returning users stay logged in for up to 1 year
+
+
+## Policy Form - JSON Build & Zapier Webhook
+- [x] Fix page-to-page navigation errors in Policy Form (functional state updates, fire-and-forget save, initial load guard)
+- [x] Build complete JSON object as user progresses through form pages
+- [x] Send complete JSON to Zapier webhook on form completion (Generate Strategy button)
+- [x] Send complete JSON to Zapier webhook on user exit (beforeunload + sendBeacon)
+- [x] Send complete JSON to Zapier webhook on session timeout (15-min inactivity)
+- [x] Ensure JSON is sent as one complete payload, not in chunks
+- [x] Test full form flow - all 6 steps navigated with zero console errors
