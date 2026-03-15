@@ -293,3 +293,10 @@
 - [x] Fix policy.test.ts: Added missing mock functions for document uploads, user contacts
 - [x] Fix policy.test.ts: Updated field names to match current schema (insuredFullName, carrierName, etc.)
 - [x] All 20 tests passing across 4 test files (auth.logout, auth.protected-routes, policy, zapier-comprehensive)
+
+
+## Policy Form Tooltips - Comprehensive Update
+- [x] Audit all form fields across all 6 steps for tooltip coverage
+- [x] Add clear, plain-language tooltips explaining what each field means
+- [x] Ensure tooltips are visible and accessible on all form steps
+- [x] Test tooltip display on all form steps
