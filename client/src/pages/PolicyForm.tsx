@@ -360,24 +360,31 @@ export default function PolicyForm() {
 
   return (
     <Layout>
-      {/* Hero */}
-      <section className="relative text-white py-12">
+      {/* Hero Section with Nested Video */}
+      <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
           <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/TlLdtWuMnzKTLvjM.jpg" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 to-[#1a2a3a]/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 via-[#1a3a4a]/70 to-[#1a2a3a]/50" />
         </div>
-        <div className="container relative">
-          <div className="flex items-center gap-2 text-primary-foreground/70 text-sm mb-3">
-            <ClipboardList className="w-4 h-4" /> POLICY INTAKE FORM
+        <div className="container relative py-16 md:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-2 text-primary-foreground/70 text-sm mb-4">
+                <ClipboardList className="w-4 h-4" /> POLICY INTAKE FORM
+              </div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif mb-4 leading-tight">Tell Us About Your <span className="text-teal">Policy</span></h1>
+              <p className="text-slate-300 max-w-lg text-base leading-relaxed">Complete this form to receive a personalized strategy for filing your long-term care insurance claim. All information is securely stored and can be edited at any time.</p>
+            </div>
+            <div className="hidden lg:block">
+              <VideoPlaceholder title="How to Complete the Policy Form" description="Watch this guide to understand what information you'll need and how to find it in your policy documents" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/prngCKWDVnvVgXBI.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/UZLuXdBXwBOgyGSg.mp4" />
+            </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold font-serif mb-3">Tell Us About Your Policy</h1>
-          <p className="text-slate-300 max-w-2xl">Complete this form to receive a personalized strategy for filing your long-term care insurance claim. All information is securely stored and can be edited at any time.</p>
         </div>
       </section>
 
-      {/* Video */}
-      <section className="bg-slate-50 py-8">
-        <div className="container max-w-3xl">
+      {/* Mobile video */}
+      <section className="lg:hidden py-8 bg-secondary">
+        <div className="container">
           <VideoPlaceholder title="How to Complete the Policy Form" description="Watch this guide to understand what information you'll need and how to find it in your policy documents" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/prngCKWDVnvVgXBI.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/UZLuXdBXwBOgyGSg.mp4" />
         </div>
       </section>

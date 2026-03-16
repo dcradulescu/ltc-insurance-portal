@@ -12,9 +12,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [location] = useLocation();
 
   useEffect(() => {
+    // Only redirect if we're done loading AND user is definitely not authenticated
+    // Don't redirect during the initial loading phase
     if (!loading && !isAuthenticated) {
-      // Redirect to login with returnPath so user comes back after auth
-      window.location.href = getLoginUrl(location);
+      // Small delay to prevent flash on quick auth checks
+      const timer = setTimeout(() => {
+        if (!isAuthenticated) {
+          window.location.href = getLoginUrl(location);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [loading, isAuthenticated, location]);
 

@@ -300,3 +300,15 @@
 - [x] Add clear, plain-language tooltips explaining what each field means
 - [x] Ensure tooltips are visible and accessible on all form steps
 - [x] Test tooltip display on all form steps
+
+
+## Authentication Persistence Issue
+- [x] Investigate why users are prompted to log in on every page navigation
+- [x] Fix auth session persistence across page navigations
+- [x] Test that users stay logged in when navigating between pages
+- [x] Verify auth state persists after browser refresh
+
+## Policy Form Video Placement
+- [x] Nest video into Policy Form header section matching Home page style
+- [x] Ensure video is visually integrated into the header background
+- [x] Test video placement on mobile and desktop

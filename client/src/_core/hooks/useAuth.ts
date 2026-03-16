@@ -17,6 +17,8 @@ export function useAuth(options?: UseAuthOptions) {
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: true,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   const logoutMutation = trpc.auth.logout.useMutation({
