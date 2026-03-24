@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE policies ADD COLUMN primaryDiagnosis varchar(255) AFTER diagnosisOrCondition;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3WKSMvTbzhqdMC4.root --database 7PNQfuuwdux64rdnaX8mmg --execute ALTER TABLE policies ADD COLUMN primaryDiagnosis varchar(255) AFTER diagnosisOrCondition;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1211
+}

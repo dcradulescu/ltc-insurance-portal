@@ -59,6 +59,7 @@ const tooltips: Record<string, string> = {
   // Step 4: Care Needs & ADLs
   currentCareNeeds: "Describe what kind of help the insured person needs right now. For example: 'Needs help bathing, getting dressed, and preparing meals. Cannot be left alone due to fall risk.' Be specific — this helps build your strategy.",
   diagnosisOrCondition: "List the medical conditions or diagnoses that are causing the need for care. For example: 'Alzheimer's disease, osteoarthritis, history of falls.' Include both physical and cognitive conditions.",
+  primaryDiagnosis: "Select the primary medical diagnosis driving the need for long-term care (e.g., Alzheimer's, CHF, COPD, Stroke). This helps us recommend appropriate care levels and may affect waiver of premium eligibility (e.g., hospice may waive the elimination period).",
   adlLimitations: "Activities of Daily Living (ADLs) are the basic tasks of everyday life. Check each one the insured person needs help with. Your policy requires a minimum number of ADL deficits to qualify for benefits.",
   preferredCareType: "Select the type of care the insured person prefers or is currently receiving. Home Care means a caregiver comes to the home. Assisted Living and Nursing Home are residential facilities. Your policy may cover some types but not others.",
   additionalNotes: "Use this space for anything else that might be important — special circumstances, previous claim attempts, family concerns, or questions you want addressed in your strategy. There are no wrong answers here.",
@@ -98,6 +99,7 @@ type FormData = {
   ltcCoordinatorAssigned: string;
   currentCareNeeds: string;
   diagnosisOrCondition: string;
+  primaryDiagnosis: string;
   adlLimitations: string[];
   preferredCareType: string;
   additionalNotes: string;
@@ -115,7 +117,7 @@ const defaultForm: FormData = {
   paymentCycle: "", assignmentOfBenefits: "",
   caseManagerName: "", thirdPartyAssessmentRequired: "", thirdPartyAssessmentWho: "",
   cognitiveImpairmentTrigger: "", planOfCareStatus: "", ltcCoordinatorAssigned: "",
-  currentCareNeeds: "", diagnosisOrCondition: "", adlLimitations: [],
+  currentCareNeeds: "", diagnosisOrCondition: "", primaryDiagnosis: "", adlLimitations: [],
   preferredCareType: "", additionalNotes: "", fillerRelationship: "",
 };
 
@@ -208,6 +210,7 @@ export default function PolicyForm() {
         ltcCoordinatorAssigned: p.ltcCoordinatorAssigned || "",
         currentCareNeeds: p.currentCareNeeds || "",
         diagnosisOrCondition: p.diagnosisOrCondition || "",
+        primaryDiagnosis: p.primaryDiagnosis || "",
         adlLimitations: Array.isArray(p.adlLimitations) ? (p.adlLimitations as string[]) : [],
         preferredCareType: p.preferredCareType || "",
         additionalNotes: p.additionalNotes || "",
@@ -633,6 +636,25 @@ export default function PolicyForm() {
               <TooltipField label="Diagnosis or Condition" name="diagnosisOrCondition">
                 <Textarea id="diagnosisOrCondition" value={form.diagnosisOrCondition} onChange={e => update("diagnosisOrCondition", e.target.value)} placeholder="Primary diagnosis, conditions, or cognitive impairments..." rows={3} />
               </TooltipField>
+              <TooltipField label="Primary Diagnosis" name="primaryDiagnosis">
+                <Select value={form.primaryDiagnosis} onValueChange={v => update("primaryDiagnosis", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select primary diagnosis" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">— No diagnosis selected —</SelectItem>
+                    <SelectItem value="Alzheimers">Alzheimer's Disease</SelectItem>
+                    <SelectItem value="Dementia">Dementia (other)</SelectItem>
+                    <SelectItem value="CHF">Congestive Heart Failure (CHF)</SelectItem>
+                    <SelectItem value="COPD">COPD (Chronic Obstructive Pulmonary Disease)</SelectItem>
+                    <SelectItem value="HeartAttack">Heart Attack / Cardiac Event</SelectItem>
+                    <SelectItem value="Stroke">Stroke / TIA</SelectItem>
+                    <SelectItem value="Pneumonia">Pneumonia</SelectItem>
+                    <SelectItem value="Diabetes">Diabetes</SelectItem>
+                    <SelectItem value="Cancer">Cancer</SelectItem>
+                    <SelectItem value="Parkinson">Parkinson's Disease</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TooltipField>
               <div>
                 <div className="flex items-center gap-1.5 mb-3">
                   <Label className="text-sm font-medium text-slate-700">ADL Limitations (Select all that apply — minimum {form.minAdlsRequired || "2"} required)</Label>
@@ -688,7 +710,7 @@ export default function PolicyForm() {
                   { title: "Carrier", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Policy #", form.policyNumber], ["Claim #", form.claimPreClaimNumber]] },
                   { title: "Coverage", items: [["Elimination Period", form.eliminationPeriod], ["Daily Max", form.dailyMaximum], ["Monthly Max", form.monthlyMaximum], ["Lifetime Max", form.lifetimeMaximum], ["Min ADLs", form.minAdlsRequired], ["AOB", form.assignmentOfBenefits], ["Waiver of Premium", form.waiverOfPremium]] },
                   { title: "Medical", items: [["Case Manager", form.caseManagerName], ["3rd Party Assessment", form.thirdPartyAssessmentRequired], ["Cognitive Trigger", form.cognitiveImpairmentTrigger], ["Plan of Care", form.planOfCareStatus]] },
-                  { title: "Care Needs", items: [["ADLs", form.adlLimitations.join(", ") || "None selected"], ["Preferred Care", form.preferredCareType], ["Diagnosis", form.diagnosisOrCondition]] },
+                  { title: "Care Needs", items: [["ADLs", form.adlLimitations.join(", ") || "None selected"], ["Preferred Care", form.preferredCareType], ["Diagnosis", form.diagnosisOrCondition], ["Primary Diagnosis", form.primaryDiagnosis]] },
                 ].map(section => (
                   <div key={section.title} className="bg-slate-50 rounded-lg p-4">
                     <h3 className="font-semibold text-slate-800 mb-2">{section.title}</h3>

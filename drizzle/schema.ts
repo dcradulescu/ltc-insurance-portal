@@ -69,6 +69,7 @@ export const policies = mysqlTable("policies", {
   // === Care Needs ===
   currentCareNeeds: text("currentCareNeeds"),
   diagnosisOrCondition: text("diagnosisOrCondition"),
+  primaryDiagnosis: varchar("primaryDiagnosis", { length: 255 }),
   adlLimitations: json("adlLimitations"),
   preferredCareType: varchar("preferredCareType", { length: 128 }),
   additionalNotes: text("additionalNotes"),
@@ -93,6 +94,7 @@ export const strategies = mysqlTable("strategies", {
   stage1Tasks: json("stage1Tasks"),
   stage2Tasks: json("stage2Tasks"),
   stage3Tasks: json("stage3Tasks"),
+  checklistItems: json("checklistItems"), // Array of {id, title, section, completed, expandedContent, notes}
   claimStatus: varchar("claimStatus", { length: 32 }).default("not_started"),
   generatedAt: timestamp("generatedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -101,6 +103,15 @@ export const strategies = mysqlTable("strategies", {
 
 export type Strategy = typeof strategies.$inferSelect;
 export type InsertStrategy = typeof strategies.$inferInsert;
+
+export type ChecklistItem = {
+  id: string;
+  title: string;
+  section: string; // "review", "start_care", "physician_support", "home_care_records", "claim_packet", "claim_review", "continue_care"
+  completed: boolean;
+  expandedContent?: string;
+  notes?: string;
+};
 
 export const documentUploads = mysqlTable("documentUploads", {
   id: int("id").autoincrement().primaryKey(),

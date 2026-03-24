@@ -14,7 +14,53 @@ import { toast } from "sonner";
 import {
   FileText, Download, Mail, Loader2, CheckCircle2, AlertTriangle,
   Upload, ArrowRight, Shield, ClipboardCheck, Plus, X, ChevronDown, ChevronUp, RefreshCw, Target,
+  Calculator, TrendingUp,
 } from "lucide-react";
+
+// Care recommendations by diagnosis
+const careRecommendations: Record<string, { schedule: string; prevention: string; items: string[] }> = {
+  CHF: {
+    schedule: "6 days a week for 4 hours a day minimum",
+    prevention: "92% hospital readmission prevention if following plan",
+    items: ["Prepare Low Sodium Meals", "Daily Weights / Fluid Gain monitoring", "Promote Exercise / Work Balance", "Walking / Transferring Assist", "Bathing, Grooming, Personal Care", "Medication Compliance", "Palliative / Comfort Measures", "Errands and Transportation", "Fall Prevention", "Light Housekeeping"],
+  },
+  COPD: {
+    schedule: "6 days a week for 4 hours a day minimum",
+    prevention: "94% hospital readmission prevention if following plan",
+    items: ["Oxygen Therapy", "Medication Management", "Breathing Techniques", "Pulmonary Rehabilitation", "Encourage Exercise", "Avoiding Acute Exacerbations", "Avoiding Pneumonia", "Fatigue Related Assistance", "Avoid Smoking", "Oxygen Monitoring"],
+  },
+  HeartAttack: {
+    schedule: "6 days a week for 4 hours a day minimum",
+    prevention: "92% hospital readmission prevention if following plan",
+    items: ["Transportation to Cardiac Rehab", "Intra-rehab Exercises", "Decrease Anxiety, Stress & Depression", "Help / Support to Stop Smoking", "Treatment of High BP and Cholesterol", "Managing Diabetes / Obesity", "Low Sodium / Fat diet", "Encourage / Promote Activity", "Respond to Warning Signs", "Strict Medication Management"],
+  },
+  Pneumonia: {
+    schedule: "6 days a week for 4 hours a day minimum",
+    prevention: "94% hospital readmission prevention if following plan",
+    items: ["Respiratory Monitoring", "Medication Management", "Breathing Exercises", "Chest Physiotherapy", "Nutrition Support", "Hydration Management", "Infection Prevention", "Activity Progression", "Symptom Monitoring", "Follow-up Appointments"],
+  },
+  Stroke: {
+    schedule: "6 days a week for 4 hours a day minimum",
+    prevention: "92% hospital readmission prevention if following plan",
+    items: ["Physical Therapy", "Speech Therapy Support", "Occupational Therapy", "Medication Compliance", "Fall Prevention", "Mobility Assistance", "Cognitive Rehabilitation", "Nutrition Support", "Swallowing Assessment", "Emotional Support"],
+  },
+};
+
+// Helper to check if form is complete
+function isFormComplete(policy: any) {
+  const requiredFields = [
+    policy.insuredFullName,
+    policy.carrierName,
+    policy.policyNumber,
+    policy.powerOfAttorneyPresent,
+    policy.eliminationPeriod,
+    policy.waiverOfPremium,
+    policy.careNotesRequired,
+    policy.assignmentOfBenefits,
+    policy.minAdlsRequired,
+  ];
+  return requiredFields.every(f => f && f.toString().trim() !== "");
+}
 
 type StrategyTask = {
   id: string;
@@ -30,6 +76,11 @@ export default function Strategy() {
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailRecipients, setEmailRecipients] = useState<string[]>([""]);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [dailyMax, setDailyMax] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
+  const [hoursPerDay, setHoursPerDay] = useState("");
+  const [daysPerWeek, setDaysPerWeek] = useState("");
   const strategyContentRef = useRef<HTMLDivElement>(null);
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
@@ -96,6 +147,36 @@ export default function Strategy() {
   const currentStage = strategy?.currentStage || 1;
 
   const stageProgress = (tasks: StrategyTask[]) => tasks.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
+
+  // Calculate care costs
+  const calculations = useMemo(() => {
+    if (!dailyMax || !hourlyRate || !hoursPerDay || !daysPerWeek || !policy?.lifetimeMaximum) {
+      return null;
+    }
+    const daily = parseFloat(dailyMax);
+    const hourly = parseFloat(hourlyRate);
+    const hours = parseFloat(hoursPerDay);
+    const days = parseFloat(daysPerWeek);
+    const lifetime = parseFloat(policy.lifetimeMaximum);
+    const dailyCost = hours * hourly;
+    const userPaysDaily = Math.max(0, dailyCost - daily);
+    const insurancePaysDaily = Math.min(daily, dailyCost);
+    const weeklyCost = insurancePaysDaily * days;
+    const weeksOfCare = Math.floor(lifetime / weeklyCost);
+    const yearsOfCare = (weeksOfCare / 52).toFixed(1);
+    return {
+      dailyCost: dailyCost.toFixed(2),
+      userPaysDaily: userPaysDaily.toFixed(2),
+      insurancePaysDaily: insurancePaysDaily.toFixed(2),
+      weeklyCost: weeklyCost.toFixed(2),
+      weeksOfCare,
+      yearsOfCare,
+    };
+  }, [dailyMax, hourlyRate, hoursPerDay, daysPerWeek, policy?.lifetimeMaximum]);
+
+  // Get care recommendations based on primary diagnosis
+  const primaryDiagnosis = policy?.primaryDiagnosis as keyof typeof careRecommendations | undefined;
+  const recommendations = primaryDiagnosis && careRecommendations[primaryDiagnosis] ? careRecommendations[primaryDiagnosis] : null;
 
   const handleGenerate = () => {
     if (!policy) { toast.error("Please complete the Policy Intake Form first."); navigate("/policy-form"); return; }
@@ -245,7 +326,25 @@ export default function Strategy() {
       {/* Content */}
       <section className="py-12 bg-white">
         <div className="container max-w-5xl">
-          {!policy && !policyQuery.isLoading ? (
+          {policy && !isFormComplete(policy) ? (
+            <div className="text-center py-16">
+              <AlertTriangle className="w-16 h-16 text-amber-500 mx-auto mb-6" />
+              <h2 className="font-serif text-2xl font-bold text-foreground mb-4">Complete Required Fields</h2>
+              <p className="text-muted-foreground mb-8 max-w-md mx-auto">Your strategy requires these fields to be completed in the Policy Form:</p>
+              <ul className="text-left max-w-md mx-auto mb-8 space-y-2 text-muted-foreground text-sm">
+                <li>✓ Insured's Full Name</li>
+                <li>✓ LTC Insurance Company</li>
+                <li>✓ Policy Number</li>
+                <li>✓ Power of Attorney Status</li>
+                <li>✓ Elimination Period</li>
+                <li>✓ Waiver of Premium</li>
+                <li>✓ Care Notes Required</li>
+                <li>✓ Assignment of Benefits</li>
+                <li>✓ Number of ADLs or Cognitive Decline</li>
+              </ul>
+              <Button asChild><a href="/policy-form">Complete Policy Form</a></Button>
+            </div>
+          ) : !policy && !policyQuery.isLoading ? (
             <div className="text-center py-16">
               <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-6" />
               <h2 className="font-serif text-2xl font-bold text-foreground mb-4">No Policy Information Found</h2>
@@ -286,6 +385,93 @@ export default function Strategy() {
                   </DialogContent>
                 </Dialog>
                 <Button variant="outline" onClick={handleGenerate} disabled={isGenerating}><RefreshCw className="w-4 h-4 mr-2" /> Regenerate</Button>
+              </div>
+
+              {/* Care Recommendations */}
+              {recommendations && (
+                <div className="mb-8 p-6 rounded-lg border border-teal/20 bg-teal/5">
+                  <h3 className="text-lg font-semibold text-teal mb-4 flex items-center gap-2"><Target className="w-5 h-5" /> Care Recommendations for {primaryDiagnosis}</h3>
+                  <p className="text-sm text-slate-600 mb-4">Industry-standard care levels to prevent hospital readmission</p>
+                  <div className="grid md:grid-cols-2 gap-4 mb-4">
+                    <div className="bg-white p-4 rounded-lg border border-teal/20">
+                      <p className="text-sm font-medium text-slate-600">Recommended Schedule</p>
+                      <p className="text-base font-semibold text-slate-900 mt-1">{recommendations.schedule}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border border-teal/20">
+                      <p className="text-sm font-medium text-slate-600">Hospital Readmission Prevention</p>
+                      <p className="text-base font-semibold text-green-600 mt-1">{recommendations.prevention}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-600 mb-3">Recommended Care Services</p>
+                    <div className="grid md:grid-cols-2 gap-2">
+                      {recommendations.items.map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-teal mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-slate-700">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Care Cost Calculator */}
+              <div className="mb-8 p-6 rounded-lg border border-slate-200 bg-slate-50">
+                <button onClick={() => setShowCalculator(!showCalculator)} className="w-full flex items-center justify-between hover:opacity-75 transition-opacity">
+                  <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2"><Calculator className="w-5 h-5" /> Care Cost Calculator</h3>
+                  {showCalculator ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </button>
+                <p className="text-sm text-slate-600 mt-1">Calculate how long your benefits will last at your current care level</p>
+                {showCalculator && (
+                  <div className="mt-6 space-y-6">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="dailyMax" className="text-sm font-medium">Daily Maximum ($)</Label>
+                        <Input id="dailyMax" type="number" placeholder="e.g., 100" value={dailyMax} onChange={e => setDailyMax(e.target.value)} className="mt-1" />
+                      </div>
+                      <div>
+                        <Label htmlFor="hourlyRate" className="text-sm font-medium">Hourly Care Rate ($)</Label>
+                        <Input id="hourlyRate" type="number" placeholder="e.g., 30" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} className="mt-1" />
+                      </div>
+                      <div>
+                        <Label htmlFor="hoursPerDay" className="text-sm font-medium">Hours of Care Per Day</Label>
+                        <Input id="hoursPerDay" type="number" placeholder="e.g., 4" value={hoursPerDay} onChange={e => setHoursPerDay(e.target.value)} className="mt-1" />
+                      </div>
+                      <div>
+                        <Label htmlFor="daysPerWeek" className="text-sm font-medium">Days of Care Per Week</Label>
+                        <Input id="daysPerWeek" type="number" placeholder="e.g., 4" value={daysPerWeek} onChange={e => setDaysPerWeek(e.target.value)} className="mt-1" />
+                      </div>
+                    </div>
+                    {calculations && (
+                      <div className="bg-white p-6 rounded-lg space-y-4 border border-slate-200">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="bg-slate-50 p-4 rounded border border-slate-200">
+                            <p className="text-sm text-slate-600">Daily Care Cost</p>
+                            <p className="text-2xl font-bold text-slate-900 mt-1">${calculations.dailyCost}</p>
+                          </div>
+                          <div className="bg-slate-50 p-4 rounded border border-slate-200">
+                            <p className="text-sm text-slate-600">Insurance Pays Daily</p>
+                            <p className="text-2xl font-bold text-teal mt-1">${calculations.insurancePaysDaily}</p>
+                          </div>
+                          <div className="bg-slate-50 p-4 rounded border border-slate-200">
+                            <p className="text-sm text-slate-600">You Pay Daily</p>
+                            <p className="text-2xl font-bold text-amber-600 mt-1">${calculations.userPaysDaily}</p>
+                          </div>
+                          <div className="bg-slate-50 p-4 rounded border border-slate-200">
+                            <p className="text-sm text-slate-600">Weekly Insurance Cost</p>
+                            <p className="text-2xl font-bold text-slate-900 mt-1">${calculations.weeklyCost}</p>
+                          </div>
+                        </div>
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                          <p className="text-sm text-green-700 font-medium mb-2 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Benefit Duration</p>
+                          <p className="text-3xl font-bold text-green-700">{calculations.weeksOfCare} weeks</p>
+                          <p className="text-lg text-green-600 mt-1">or approximately <strong>{calculations.yearsOfCare} years</strong> of care at this level</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Stage Overview Cards */}

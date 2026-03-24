@@ -312,3 +312,26 @@
 - [x] Nest video into Policy Form header section matching Home page style
 - [x] Ensure video is visually integrated into the header background
 - [x] Test video placement on mobile and desktop
+
+## Strategy Page - Comprehensive Build
+- [ ] Add primary diagnosis field to Policy Form (Step 5: Care Needs & ADLs)
+- [ ] Create Strategy page with form-completion validation gate (check all 9 required fields)
+- [ ] Build expandable checklist UI with persistent progress tracking per user
+- [ ] Implement care calculator (daily max, hourly rate, hours/day, weekly consumption, lifetime max projection)
+- [ ] Add condition-based care recommendations display (CHF, COPD, Heart Attack, Pneumonia, Stroke)
+- [ ] Implement PDF export for checklist with all data
+- [ ] Add hospice/waiver of premium recommendation logic
+- [ ] Test end-to-end flow from form completion through strategy generation
+
+
+## Strategy Page Enhancements - Form Validation, Calculator, Recommendations
+- [x] Add form-completion validation gate (check all 9 required fields before strategy access)
+- [x] Add primaryDiagnosis field to Policy Form Step 5 with 11 diagnosis options
+- [x] Implement care calculator with daily max, hourly rate, hours/day, days/week inputs
+- [x] Calculate and display: daily cost, insurance pays, user pays, weekly cost, benefit duration (weeks/years)
+- [x] Add condition-based care recommendations for CHF, COPD, Heart Attack, Pneumonia, Stroke
+- [x] Display recommended schedule and hospital readmission prevention rates
+- [x] Show recommended care services list for each condition
+- [x] Test all calculator formulas and condition recommendations
+- [x] Verify form validation gate prevents access without required fields
+- [x] All 20 tests pass with no regressions
