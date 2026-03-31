@@ -170,6 +170,43 @@ export default function PolicyForm() {
   // Track whether initial load has happened
   const initialLoadDone = useRef(false);
 
+  // Load form data from localStorage on component mount
+  useEffect(() => {
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      try {
+        const savedForm = localStorage.getItem('ltc_policy_form');
+        const savedStep = localStorage.getItem('ltc_policy_step');
+        if (savedForm) {
+          setForm(JSON.parse(savedForm));
+        }
+        if (savedStep) {
+          setStep(parseInt(savedStep, 10));
+        }
+      } catch (err) {
+        console.error('[Form] Failed to restore from localStorage:', err);
+      }
+    }
+  }, []);
+
+  // Save form data to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('ltc_policy_form', JSON.stringify(form));
+    } catch (err) {
+      console.error('[Form] Failed to save to localStorage:', err);
+    }
+  }, [form]);
+
+  // Save current step to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('ltc_policy_step', step.toString());
+    } catch (err) {
+      console.error('[Form] Failed to save step to localStorage:', err);
+    }
+  }, [step]);
+
   // Load existing policy data (only on initial load, not on refetch after save)
   useEffect(() => {
     if (policyQuery.data && policyQuery.data !== null && !initialLoadDone.current) {

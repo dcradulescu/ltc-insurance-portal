@@ -82,6 +82,35 @@ export default function Strategy() {
   const [hoursPerDay, setHoursPerDay] = useState("");
   const [daysPerWeek, setDaysPerWeek] = useState("");
   const strategyContentRef = useRef<HTMLDivElement>(null);
+  const initialLoadDone = useRef(false);
+
+  // Load calculator state from localStorage on mount
+  useEffect(() => {
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      try {
+        const saved = localStorage.getItem('ltc_strategy_calculator');
+        if (saved) {
+          const data = JSON.parse(saved);
+          setDailyMax(data.dailyMax || '');
+          setHourlyRate(data.hourlyRate || '');
+          setHoursPerDay(data.hoursPerDay || '');
+          setDaysPerWeek(data.daysPerWeek || '');
+        }
+      } catch (err) {
+        console.error('[Strategy] Failed to restore calculator from localStorage:', err);
+      }
+    }
+  }, []);
+
+  // Save calculator state to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('ltc_strategy_calculator', JSON.stringify({ dailyMax, hourlyRate, hoursPerDay, daysPerWeek }));
+    } catch (err) {
+      console.error('[Strategy] Failed to save calculator to localStorage:', err);
+    }
+  }, [dailyMax, hourlyRate, hoursPerDay, daysPerWeek]);
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
   const strategyQuery = trpc.strategy.getMine.useQuery(undefined, { enabled: true });

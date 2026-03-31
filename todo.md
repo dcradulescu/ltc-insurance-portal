@@ -335,3 +335,12 @@
 - [x] Test all calculator formulas and condition recommendations
 - [x] Verify form validation gate prevents access without required fields
 - [x] All 20 tests pass with no regressions
+
+
+## Browser localStorage Persistence
+- [x] Add localStorage persistence to PolicyForm (save form data on every change)
+- [x] Add localStorage persistence to Strategy page (save checklist progress and calculator state)
+- [x] Auto-restore form data when user returns to PolicyForm
+- [x] Auto-restore strategy progress when user returns to Strategy page
+- [x] Test localStorage persistence across browser sessions and page refreshes
+- [ ] Add "Clear All Data" button for users to reset localStorage (optional enhancement)
