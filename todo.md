@@ -344,3 +344,7 @@
 - [x] Auto-restore strategy progress when user returns to Strategy page
 - [x] Test localStorage persistence across browser sessions and page refreshes
 - [ ] Add "Clear All Data" button for users to reset localStorage (optional enhancement)
+
+
+## Bug Fixes - April 2026
+- [x] Fix Radix Select.Item validation error on Policy Form (empty value prop not allowed - changed to value="none")

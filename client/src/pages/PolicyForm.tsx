@@ -677,7 +677,7 @@ export default function PolicyForm() {
                 <Select value={form.primaryDiagnosis} onValueChange={v => update("primaryDiagnosis", v)}>
                   <SelectTrigger><SelectValue placeholder="Select primary diagnosis" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">— No diagnosis selected —</SelectItem>
+                    <SelectItem value="none">— No diagnosis selected —</SelectItem>
                     <SelectItem value="Alzheimers">Alzheimer's Disease</SelectItem>
                     <SelectItem value="Dementia">Dementia (other)</SelectItem>
                     <SelectItem value="CHF">Congestive Heart Failure (CHF)</SelectItem>
