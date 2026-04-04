@@ -15,17 +15,83 @@ import { ClipboardList, ArrowRight, ArrowLeft, Save, Loader2, HelpCircle, Info }
 
 const adlOptions = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
 
+// Helper function to format phone number with mask (###)###-####
+const formatPhoneNumber = (value: string): string => {
+  const cleaned = value.replace(/\D/g, '');
+  if (cleaned.length <= 3) return cleaned;
+  if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)})${cleaned.slice(3)}`;
+  return `(${cleaned.slice(0, 3)})${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+};
+
+// Helper function to capitalize first letter of each word
+const capitalizeFirstLetter = (value: string): string => {
+  return value
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+// Helper function to format currency with mask $###.##
+const formatCurrency = (value: string): string => {
+  const cleaned = value.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  let dollars = parts[0] || '0';
+  let cents = parts[1] ? parts[1].substring(0, 2) : '00';
+  
+  // Limit dollars to 3 digits (0-999)
+  if (dollars.length > 3) {
+    dollars = dollars.substring(0, 3);
+  }
+  
+  // Remove leading zeros but keep at least one digit
+  dollars = dollars.replace(/^0+/, '') || '0';
+  
+  // Pad cents to 2 digits
+  cents = (cents + '00').substring(0, 2);
+  
+  return `$${dollars}.${cents}`;
+};
+
+// Helper function to format date with MM/DD/YYYY mask
+const formatDateInput = (value: string): string => {
+  const cleaned = value.replace(/\D/g, '');
+  if (cleaned.length <= 2) return cleaned;
+  if (cleaned.length <= 4) return `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
+  return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
+};
+
+// Helper function to convert MM/DD/YYYY to YYYY-MM-DD for storage
+const convertToDateFormat = (value: string): string => {
+  const match = value.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (match) {
+    return `${match[3]}-${match[1]}-${match[2]}`;
+  }
+  return value;
+};
+
+// Convert stored YYYY-MM-DD to display MM/DD/YYYY
+const getDisplayDate = (dateValue: string): string => {
+  if (!dateValue) return '';
+  const match = dateValue.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    return `${match[2]}/${match[3]}/${match[1]}`;
+  }
+  return dateValue;
+};
+
 const tooltips: Record<string, string> = {
   // Step 0: Insured Person
   insuredFullName: "Enter the full legal name of the person who holds the LTC insurance policy. This is the person who will receive care. Use the name exactly as it appears on the policy.",
   insuredEmail: "The insured person's email address. We'll use this to send you updates, strategy recommendations, and important information about your claim. Keep it current.",
   insuredPhone: "The insured person's phone number. This is the primary contact number for the insurance company and your care team to reach you. Include the area code.",
   insuredDob: "The insured person's date of birth. This is used to verify identity with the insurance company and is required on all claim paperwork.",
-  insuredMailingAddress: "The current mailing address of the insured person. The insurance company will send all correspondence, claim packets, and checks to this address.",
+  insuredMailingAddress: "The current mailing address of the insured person. The insurance company will send all correspondence, claim packets, and checks to this address. This is also where paperwork and your long-term care strategy can be mailed.",
   insuredSsn: "The insured person's Social Security Number. Insurance companies require this to verify identity and process claims. Your data is encrypted and stored securely.",
   insuredMedicareNumber: "The insured person's Medicare ID number (found on their red, white, and blue Medicare card). Some LTC policies coordinate with Medicare, so this may be needed during the claim.",
   insuredMedicaidNumber: "The insured person's Medicaid ID number, if they are enrolled. Medicaid may be a secondary payer or become relevant if LTC benefits are exhausted.",
   powerOfAttorneyPresent: "A Power of Attorney (POA) is a legal document that lets someone make decisions on behalf of the insured. Select 'Yes' if a POA has been signed. You may need to provide a copy to the insurance company.",
+  poaName: "Enter the full name of the person designated as Power of Attorney. This person has legal authority to make decisions on behalf of the insured and will be important for your care strategy.",
+  poaRelationship: "What is the Power of Attorney's relationship to the person who is insured and needs care?",
   fillerRelationship: "Select how you are related to the insured person. If you are the insured person filling this out yourself, select 'Self.' The insurance company may ask about this relationship.",
 
   // Step 1: Carrier Info
@@ -74,9 +140,9 @@ type FormData = {
   insuredDob: string;
   insuredMailingAddress: string;
   insuredSsn: string;
-  insuredMedicareNumber: string;
-  insuredMedicaidNumber: string;
   powerOfAttorneyPresent: string;
+  poaName: string;
+  poaRelationship: string;
   carrierName: string;
   carrierAddress1: string;
   carrierAddress2: string;
@@ -90,39 +156,39 @@ type FormData = {
   monthlyMaximum: string;
   lifetimeMaximum: string;
   minAdlsRequired: string;
+  qualifyingAdls: string[];
   waiverOfPremium: string;
   cnaRequired: string;
+  approvedAgencyRequired: string;
   careNotesRequired: string;
   paymentCycle: string;
   assignmentOfBenefits: string;
+  caseManagerAssigned: string;
   caseManagerName: string;
   thirdPartyAssessmentRequired: string;
-  thirdPartyAssessmentWho: string;
   cognitiveImpairmentTrigger: string;
-  planOfCareStatus: string;
-  ltcCoordinatorAssigned: string;
-  currentCareNeeds: string;
-  diagnosisOrCondition: string;
-  primaryDiagnosis: string;
-  adlLimitations: string[];
+  careNeeds: string[];
+  careNotes: string;
+  diagnosisCheckboxes: string[];
+  diagnosisNotes: string;
   preferredCareType: string;
   additionalNotes: string;
-  fillerRelationship: string;
 };
 
 const defaultForm: FormData = {
   insuredFullName: "", insuredEmail: "", insuredPhone: "", insuredDob: "", insuredMailingAddress: "", insuredSsn: "",
-  insuredMedicareNumber: "", insuredMedicaidNumber: "", powerOfAttorneyPresent: "",
+  powerOfAttorneyPresent: "", poaName: "", poaRelationship: "",
   carrierName: "", carrierAddress1: "", carrierAddress2: "", carrierCityStateZip: "",
   carrierPhone: "", carrierFax: "",
   policyNumber: "", claimPreClaimNumber: "",
   eliminationPeriod: "", dailyMaximum: "", monthlyMaximum: "", lifetimeMaximum: "",
-  minAdlsRequired: "", waiverOfPremium: "", cnaRequired: "", careNotesRequired: "",
+  minAdlsRequired: "0", qualifyingAdls: [], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "",
   paymentCycle: "", assignmentOfBenefits: "",
-  caseManagerName: "", thirdPartyAssessmentRequired: "", thirdPartyAssessmentWho: "",
-  cognitiveImpairmentTrigger: "", planOfCareStatus: "", ltcCoordinatorAssigned: "",
-  currentCareNeeds: "", diagnosisOrCondition: "", primaryDiagnosis: "", adlLimitations: [],
-  preferredCareType: "", additionalNotes: "", fillerRelationship: "",
+  caseManagerAssigned: "", caseManagerName: "", thirdPartyAssessmentRequired: "",
+  cognitiveImpairmentTrigger: "",
+  careNeeds: [], careNotes: "",
+  diagnosisCheckboxes: [], diagnosisNotes: "",
+  preferredCareType: "", additionalNotes: "",
 };
 
 function TooltipField({ label, name, children, isRequired = false }: { label: string; name: string; children: React.ReactNode; isRequired?: boolean }) {
@@ -227,9 +293,9 @@ export default function PolicyForm() {
         insuredDob: p.insuredDob || "",
         insuredMailingAddress: p.insuredMailingAddress || "",
         insuredSsn: p.insuredSsn || "",
-        insuredMedicareNumber: p.insuredMedicareNumber || "",
-        insuredMedicaidNumber: p.insuredMedicaidNumber || "",
         powerOfAttorneyPresent: p.powerOfAttorneyPresent || "",
+        poaName: p.poaName || "",
+        poaRelationship: p.poaRelationship || "",
         carrierName: p.carrierName || "",
         carrierAddress1: p.carrierAddress1 || "",
         carrierAddress2: p.carrierAddress2 || "",
@@ -243,24 +309,23 @@ export default function PolicyForm() {
         monthlyMaximum: p.monthlyMaximum || "",
         lifetimeMaximum: p.lifetimeMaximum || "",
         minAdlsRequired: p.minAdlsRequired || "",
+        qualifyingAdls: Array.isArray(p.qualifyingAdls) ? (p.qualifyingAdls as string[]) : [],
         waiverOfPremium: p.waiverOfPremium || "",
         cnaRequired: p.cnaRequired || "",
+        approvedAgencyRequired: p.approvedAgencyRequired || "",
         careNotesRequired: p.careNotesRequired || "",
         paymentCycle: p.paymentCycle || "",
         assignmentOfBenefits: p.assignmentOfBenefits || "",
+        caseManagerAssigned: p.caseManagerAssigned || "",
         caseManagerName: p.caseManagerName || "",
         thirdPartyAssessmentRequired: p.thirdPartyAssessmentRequired || "",
-        thirdPartyAssessmentWho: p.thirdPartyAssessmentWho || "",
         cognitiveImpairmentTrigger: p.cognitiveImpairmentTrigger || "",
-        planOfCareStatus: p.planOfCareStatus || "",
-        ltcCoordinatorAssigned: p.ltcCoordinatorAssigned || "",
-        currentCareNeeds: p.currentCareNeeds || "",
-        diagnosisOrCondition: p.diagnosisOrCondition || "",
-        primaryDiagnosis: p.primaryDiagnosis || "",
-        adlLimitations: Array.isArray(p.adlLimitations) ? (p.adlLimitations as string[]) : [],
+        careNeeds: Array.isArray(p.careNeeds) ? (p.careNeeds as string[]) : [],
+        careNotes: p.careNotes || "",
+        diagnosisCheckboxes: Array.isArray(p.diagnosisCheckboxes) ? (p.diagnosisCheckboxes as string[]) : [],
+        diagnosisNotes: p.diagnosisNotes || "",
         preferredCareType: p.preferredCareType || "",
         additionalNotes: p.additionalNotes || "",
-        fillerRelationship: p.fillerRelationship || "",
       });
     }
   }, [policyQuery.data]);
@@ -335,7 +400,31 @@ export default function PolicyForm() {
 
   const update = (field: keyof FormData, value: any) => {
     lastActivityRef.current = Date.now();
+    
+    // Apply phone number formatting
+    if (field === 'insuredPhone' || field === 'carrierPhone' || field === 'carrierFax') {
+      value = formatPhoneNumber(value);
+    }
+    
+    // Apply currency formatting for dollar amounts
+    if (field === 'dailyMaximum' || field === 'monthlyMaximum' || field === 'lifetimeMaximum') {
+      value = formatCurrency(value);
+    }
+    
+    // Apply auto-capitalize for name and company fields
+    if (field === 'insuredFullName' || field === 'carrierName' || field === 'caseManagerName' || field === 'poaName') {
+      value = capitalizeFirstLetter(value);
+    }
+    
     setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle date input with MM/DD/YYYY display format
+  const handleDateChange = (displayValue: string) => {
+    lastActivityRef.current = Date.now();
+    const formatted = formatDateInput(displayValue);
+    const dateValue = convertToDateFormat(formatted);
+    setForm(prev => ({ ...prev, insuredDob: dateValue }));
   };
 
   // Save to database only (no validation required, no Zapier)
@@ -470,15 +559,15 @@ export default function PolicyForm() {
                   <Input id="insuredFullName" value={form.insuredFullName} onChange={e => update("insuredFullName", e.target.value)} placeholder="Enter full legal name" />
                 </TooltipField>
                 <TooltipField label="Date of Birth" name="insuredDob">
-                  <Input id="insuredDob" type="date" value={form.insuredDob} onChange={e => update("insuredDob", e.target.value)} />
+                  <Input id="insuredDob" type="text" value={getDisplayDate(form.insuredDob)} onChange={e => handleDateChange(e.target.value)} placeholder="MM/DD/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in format MM/DD/YYYY" maxLength={10} />
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Email Address" name="insuredEmail" isRequired>
-                  <Input id="insuredEmail" type="email" value={form.insuredEmail} onChange={e => update("insuredEmail", e.target.value)} placeholder="your.email@example.com" />
+                  <Input id="insuredEmail" type="email" value={form.insuredEmail} onChange={e => update("insuredEmail", e.target.value)} placeholder="your.email@example.com" title="Please enter a valid email address" />
                 </TooltipField>
                 <TooltipField label="Phone Number" name="insuredPhone" isRequired>
-                  <Input id="insuredPhone" type="tel" value={form.insuredPhone} onChange={e => update("insuredPhone", e.target.value)} placeholder="(000) 000-0000" />
+                  <Input id="insuredPhone" type="tel" value={form.insuredPhone} onChange={e => update("insuredPhone", e.target.value)} placeholder="(000) 000-0000" pattern="\\(\\d{3}\\)\\d{3}-\\d{4}" title="Please enter a valid phone number in format (000) 000-0000" />
                 </TooltipField>
               </div>
               <TooltipField label="Mailing Address" name="insuredMailingAddress">
@@ -488,35 +577,27 @@ export default function PolicyForm() {
                 <TooltipField label="Social Security Number" name="insuredSsn">
                   <Input id="insuredSsn" value={form.insuredSsn} onChange={e => update("insuredSsn", e.target.value)} placeholder="XXX-XX-XXXX" type="password" />
                 </TooltipField>
-                <TooltipField label="Medicare Number" name="insuredMedicareNumber">
-                  <Input id="insuredMedicareNumber" value={form.insuredMedicareNumber} onChange={e => update("insuredMedicareNumber", e.target.value)} placeholder="Medicare #" />
-                </TooltipField>
-                <TooltipField label="Medicaid Number" name="insuredMedicaidNumber">
-                  <Input id="insuredMedicaidNumber" value={form.insuredMedicaidNumber} onChange={e => update("insuredMedicaidNumber", e.target.value)} placeholder="Medicaid #" />
-                </TooltipField>
+
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Power of Attorney Present?" name="powerOfAttorneyPresent">
+                <TooltipField label="Do you have a power of attorney?" name="powerOfAttorneyPresent">
                   <Select value={form.powerOfAttorneyPresent} onValueChange={v => update("powerOfAttorneyPresent", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
-                <TooltipField label="Your Relationship to Insured" name="fillerRelationship">
-                  <Select value={form.fillerRelationship} onValueChange={v => update("fillerRelationship", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select relationship" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="self">Self (I am the insured)</SelectItem>
-                      <SelectItem value="spouse">Spouse</SelectItem>
-                      <SelectItem value="child">Adult Child</SelectItem>
-                      <SelectItem value="sibling">Sibling</SelectItem>
-                      <SelectItem value="poa">Power of Attorney</SelectItem>
-                      <SelectItem value="caregiver">Caregiver</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TooltipField>
               </div>
+              {form.powerOfAttorneyPresent === "yes" && (
+                <div className="space-y-4">
+                  <TooltipField label="POA Name" name="poaName">
+                    <Input id="poaName" value={form.poaName} onChange={e => update("poaName", e.target.value)} placeholder="Enter full name of Power of Attorney" />
+                  </TooltipField>
+                  <TooltipField label="POA Relationship to Insured" name="poaRelationship">
+                    <Input id="poaRelationship" value={form.poaRelationship} onChange={e => update("poaRelationship", e.target.value)} placeholder="e.g., Spouse, Adult Child, Sibling" />
+                  </TooltipField>
+                </div>
+              )}
+
             </div>
           )}
 
@@ -525,7 +606,7 @@ export default function PolicyForm() {
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Insurance Carrier Information</h2>
               <p className="text-sm text-slate-600">Enter the details of your LTC insurance carrier. This information can be found on your policy declaration page.</p>
-                <TooltipField label="Carrier Name" name="carrierName" isRequired>
+                <TooltipField label="LTC Insurance Company Name" name="carrierName" isRequired>
                 <Input id="carrierName" value={form.carrierName} onChange={e => update("carrierName", e.target.value)} placeholder="e.g., Genworth, John Hancock, Mutual of Omaha" />
               </TooltipField>
               <TooltipField label="Address Line 1" name="carrierAddress1">
@@ -538,10 +619,10 @@ export default function PolicyForm() {
                 <TooltipField label="City, State, Zip" name="carrierCityStateZip">
                   <Input id="carrierCityStateZip" value={form.carrierCityStateZip} onChange={e => update("carrierCityStateZip", e.target.value)} placeholder="City, ST 00000" />
                 </TooltipField>
-                <TooltipField label="Phone Number" name="carrierPhone">
+                <TooltipField label="LTC Claims Dept. Phone Number" name="carrierPhone">
                   <Input id="carrierPhone" value={form.carrierPhone} onChange={e => update("carrierPhone", e.target.value)} placeholder="(000) 000-0000" />
                 </TooltipField>
-                <TooltipField label="Fax Number" name="carrierFax">
+                <TooltipField label="LTC Claims Dept Fax Number" name="carrierFax">
                   <Input id="carrierFax" value={form.carrierFax} onChange={e => update("carrierFax", e.target.value)} placeholder="(000) 000-0000" />
                 </TooltipField>
               </div>
@@ -563,55 +644,109 @@ export default function PolicyForm() {
               <p className="text-sm text-slate-600">Enter the coverage details from your LTC insurance policy. These are critical for generating your personalized strategy.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Elimination Period" name="eliminationPeriod" isRequired>
-                  <Input id="eliminationPeriod" value={form.eliminationPeriod} onChange={e => update("eliminationPeriod", e.target.value)} placeholder="e.g., 90 days of service" />
+                  <Input id="eliminationPeriod" type="number" min="0" max="999" value={form.eliminationPeriod} onChange={e => {
+                    const val = e.target.value;
+                    if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                      update("eliminationPeriod", val);
+                    }
+                  }} placeholder="0-999" />
                 </TooltipField>
-                <TooltipField label="Daily Maximum ($)" name="dailyMaximum" isRequired>
-                  <Input id="dailyMaximum" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="$ per day" />
+                <TooltipField label="Daily Maximum" name="dailyMaximum" isRequired>
+                  <Input id="dailyMaximum" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="$0.00-$999.99" />
                 </TooltipField>
-                <TooltipField label="Monthly Maximum ($)" name="monthlyMaximum">
-                  <Input id="monthlyMaximum" value={form.monthlyMaximum} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="$ per month" />
+                <TooltipField label="Monthly Maximum" name="monthlyMaximum">
+                  <Input id="monthlyMaximum" value={form.monthlyMaximum || (() => {
+                    if (!form.dailyMaximum) return '';
+                    const dailyStr = form.dailyMaximum.replace(/[$,]/g, '');
+                    const daily = parseFloat(dailyStr);
+                    if (isNaN(daily)) return '';
+                    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+                    const monthly = daily * daysInMonth;
+                    return `$${monthly.toFixed(2)}`;
+                  })()} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="Auto-calculated or enter manually" />
                 </TooltipField>
-                <TooltipField label="Lifetime Maximum ($)" name="lifetimeMaximum" isRequired>
-                  <Input id="lifetimeMaximum" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="$ lifetime" />
+                <TooltipField label="Lifetime Maximum" name="lifetimeMaximum" isRequired>
+                  <Input id="lifetimeMaximum" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="$0.00-$999.99" />
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Min # ADLs Compromised Required" name="minAdlsRequired" isRequired>
                   <Select value={form.minAdlsRequired} onValueChange={v => update("minAdlsRequired", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
+                    <SelectContent><SelectItem value="0">0 (No ADL requirement)</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
-                <TooltipField label="Payment Cycle" name="paymentCycle">
-                  <Input id="paymentCycle" value={form.paymentCycle} onChange={e => update("paymentCycle", e.target.value)} placeholder="e.g., Monthly, Bi-weekly" />
+                <TooltipField label="Number of Days Until LTC Insurance Pays" name="paymentCycle">
+                  <Input id="paymentCycle" type="number" min="0" max="999" value={form.paymentCycle} onChange={e => {
+                    const val = e.target.value;
+                    if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                      update("paymentCycle", val);
+                    }
+                  }} placeholder="0-999" />
                 </TooltipField>
               </div>
+              {parseInt(form.minAdlsRequired || "0") > 0 && (
+                <div>
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <Label className="text-sm font-medium text-slate-700">Which ADLs qualify as valid triggers for this policy?</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                          <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs text-xs">Select which of the 6 standard ADLs your policy recognizes as valid triggers for initiating a claim.</TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {adlOptions.map(adl => {
+                      const qualifyingAdls = form.qualifyingAdls || [];
+                      return (
+                        <label key={adl} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${qualifyingAdls.includes(adl) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                          <Checkbox checked={qualifyingAdls.includes(adl)} onCheckedChange={checked => {
+                            update("qualifyingAdls", checked ? [...qualifyingAdls, adl] : qualifyingAdls.filter(a => a !== adl));
+                          }} />
+                          <span className="text-sm font-medium">{adl}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <TooltipField label="Waiver of Premium" name="waiverOfPremium" isRequired>
+                <TooltipField label="Waiver of Premium on Policy" name="waiverOfPremium" isRequired>
                   <Select value={form.waiverOfPremium} onValueChange={v => update("waiverOfPremium", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes — Stop Payments</SelectItem><SelectItem value="no">No — Continue Payments</SelectItem></SelectContent>
+                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
-                <TooltipField label="CNA Caregiver Required?" name="cnaRequired">
+                <TooltipField label="Certified Nursing Assistant Required?" name="cnaRequired">
                   <Select value={form.cnaRequired} onValueChange={v => update("cnaRequired", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
-                <TooltipField label="Care Notes / Logsheets Required?" name="careNotesRequired">
+                {form.cnaRequired === "no" && (
+                  <TooltipField label="Approved Agency Required?" name="approvedAgencyRequired">
+                    <Select value={form.approvedAgencyRequired} onValueChange={v => update("approvedAgencyRequired", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                    </Select>
+                  </TooltipField>
+                )}
+                <TooltipField label="Care Notes / Logsheets Required?" name="careNotesRequired" isRequired>
                   <Select value={form.careNotesRequired} onValueChange={v => update("careNotesRequired", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
               </div>
-              <TooltipField label="Assignment of Benefits (AOB)" name="assignmentOfBenefits">
+              <TooltipField label="Assignment of Benefits (AOB) Available?" name="assignmentOfBenefits" isRequired>
                 <Select value={form.assignmentOfBenefits} onValueChange={v => update("assignmentOfBenefits", v)}>
                   <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yes">Yes — Provider receives payment directly</SelectItem>
-                    <SelectItem value="no">No — Insured pays provider, then submits for reimbursement</SelectItem>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
                   </SelectContent>
                 </Select>
               </TooltipField>
@@ -630,43 +765,30 @@ export default function PolicyForm() {
           {step === 3 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Medical & Administrative Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Case Manager Name" name="caseManagerName">
-                  <Input id="caseManagerName" value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="If assigned" />
+              <TooltipField label="Is there a Case Manager assigned to my Claim?" name="caseManagerAssigned" isRequired>
+                <Select value={form.caseManagerAssigned} onValueChange={v => update("caseManagerAssigned", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                </Select>
+              </TooltipField>
+              {form.caseManagerAssigned === "yes" && (
+                <TooltipField label="Case Manager's Name" name="caseManagerName">
+                  <Input id="caseManagerName" value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="Enter case manager's full name" />
                 </TooltipField>
-                <TooltipField label="LTC Coordinator Assigned" name="ltcCoordinatorAssigned">
-                  <Input id="ltcCoordinatorAssigned" value={form.ltcCoordinatorAssigned} onChange={e => update("ltcCoordinatorAssigned", e.target.value)} placeholder="If assigned" />
-                </TooltipField>
-              </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Third Party Assessment Required?" name="thirdPartyAssessmentRequired">
                   <Select value={form.thirdPartyAssessmentRequired} onValueChange={v => update("thirdPartyAssessmentRequired", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem><SelectItem value="unknown">Unknown</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-                {form.thirdPartyAssessmentRequired === "yes" && (
-                  <TooltipField label="Third Party Assessor (Who?)" name="thirdPartyAssessmentWho">
-                    <Input id="thirdPartyAssessmentWho" value={form.thirdPartyAssessmentWho} onChange={e => update("thirdPartyAssessmentWho", e.target.value)} placeholder="Name of assessor if known" />
-                  </TooltipField>
-                )}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Cognitive Impairment Trigger?" name="cognitiveImpairmentTrigger">
-                  <Select value={form.cognitiveImpairmentTrigger} onValueChange={v => update("cognitiveImpairmentTrigger", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
-                <TooltipField label="Plan of Care Status" name="planOfCareStatus">
-                  <Select value={form.planOfCareStatus} onValueChange={v => update("planOfCareStatus", v)}>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TooltipField label="Is a diagnosis of Cognitive Impairment able to initiate a claim?" name="cognitiveImpairmentTrigger" isRequired>
+                  <Select value={form.cognitiveImpairmentTrigger} onValueChange={v => update("cognitiveImpairmentTrigger", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="not-started">Not Started</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="submitted">Submitted to Carrier</SelectItem>
-                    </SelectContent>
+                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
               </div>
@@ -684,66 +806,91 @@ export default function PolicyForm() {
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Care Needs & ADL Assessment</h2>
               <p className="text-sm text-slate-600">Describe the current care needs and identify which Activities of Daily Living (ADLs) are compromised.</p>
-              <TooltipField label="Current Care Needs" name="currentCareNeeds">
-                <Textarea id="currentCareNeeds" value={form.currentCareNeeds} onChange={e => update("currentCareNeeds", e.target.value)} placeholder="Describe current care needs and level of assistance required..." rows={3} />
-              </TooltipField>
-              <TooltipField label="Diagnosis or Condition" name="diagnosisOrCondition">
-                <Textarea id="diagnosisOrCondition" value={form.diagnosisOrCondition} onChange={e => update("diagnosisOrCondition", e.target.value)} placeholder="Primary diagnosis, conditions, or cognitive impairments..." rows={3} />
-              </TooltipField>
-              <TooltipField label="Primary Diagnosis" name="primaryDiagnosis">
-                <Select value={form.primaryDiagnosis} onValueChange={v => update("primaryDiagnosis", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select primary diagnosis" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">— No diagnosis selected —</SelectItem>
-                    <SelectItem value="Alzheimers">Alzheimer's Disease</SelectItem>
-                    <SelectItem value="Dementia">Dementia (other)</SelectItem>
-                    <SelectItem value="CHF">Congestive Heart Failure (CHF)</SelectItem>
-                    <SelectItem value="COPD">COPD (Chronic Obstructive Pulmonary Disease)</SelectItem>
-                    <SelectItem value="HeartAttack">Heart Attack / Cardiac Event</SelectItem>
-                    <SelectItem value="Stroke">Stroke / TIA</SelectItem>
-                    <SelectItem value="Pneumonia">Pneumonia</SelectItem>
-                    <SelectItem value="Diabetes">Diabetes</SelectItem>
-                    <SelectItem value="Cancer">Cancer</SelectItem>
-                    <SelectItem value="Parkinson">Parkinson's Disease</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TooltipField>
+              
+              {/* Care Needs Checkboxes */}
               <div>
                 <div className="flex items-center gap-1.5 mb-3">
-                  <Label className="text-sm font-medium text-slate-700">ADL Limitations (Select all that apply — minimum {form.minAdlsRequired || "2"} required)</Label>
+                  <Label className="text-sm font-medium text-slate-700">What care services are needed? (Select all that apply)</Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
                         <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-xs">{tooltips.adlLimitations}</TooltipContent>
+                    <TooltipContent className="max-w-xs text-xs">Select all home care services needed by the insured, including both ADLs (personal care) and IADLs (household/management tasks).</TooltipContent>
+                  </Tooltip>
+                  <span className="text-red-500">*</span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { category: "ADLs", items: ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"] },
+                    { category: "IADLs", items: ["Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry", "Shopping/Errands", "Transportation", "Money Management", "Telephone Use"] }
+                  ].flatMap(group => group.items).map(service => {
+                    const careNeeds = form.careNeeds || [];
+                    return (
+                      <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
+                          update("careNeeds", checked ? [...careNeeds, service] : careNeeds.filter(s => s !== service));
+                        }} />
+                        <span className="text-sm font-medium">{service}</span>
+                      </label>
+                    );
+                  })}
+                  {(() => {
+                    const careNeeds = form.careNeeds || [];
+                    return (
+                      <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes("None") ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <Checkbox checked={careNeeds.includes("None")} onCheckedChange={checked => {
+                          update("careNeeds", checked ? ["None"] : []);
+                        }} />
+                        <span className="text-sm font-medium">None - No care is needed</span>
+                      </label>
+                    );
+                  })()}
+                </div>
+              </div>
+              
+              <TooltipField label="Care Notes" name="careNotes">
+                <Textarea id="careNotes" value={form.careNotes} onChange={e => update("careNotes", e.target.value)} placeholder="Any additional notes about the care services selected..." rows={3} />
+              </TooltipField>
+              
+              {/* Diagnosis Checkboxes */}
+              <div>
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Label className="text-sm font-medium text-slate-700">What is the primary diagnosis or condition? (Select all that apply)</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs">Select the primary medical diagnosis or condition(s) that necessitate long-term care.</TooltipContent>
                   </Tooltip>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {adlOptions.map(adl => (
-                    <label key={adl} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${form.adlLimitations.includes(adl) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
-                      <Checkbox checked={form.adlLimitations.includes(adl)} onCheckedChange={checked => {
-                        update("adlLimitations", checked ? [...form.adlLimitations, adl] : form.adlLimitations.filter(a => a !== adl));
-                      }} />
-                      <span className="text-sm font-medium">{adl}</span>
-                    </label>
-                  ))}
+                  {["Arthritis", "Congestive Heart Failure (CHF)", "Heart Disease", "Diabetes", "Alzheimer's Disease", "Dementia", "COPD", "Stroke", "Cancer", "Parkinson's Disease", "Pneumonia", "Kidney Disease", "Liver Disease", "Osteoporosis", "Hypertension", "Other"].map(diagnosis => {
+                    const diagnosisCheckboxes = form.diagnosisCheckboxes || [];
+                    return (
+                      <label key={diagnosis} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${diagnosisCheckboxes.includes(diagnosis) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <Checkbox checked={diagnosisCheckboxes.includes(diagnosis)} onCheckedChange={checked => {
+                          update("diagnosisCheckboxes", checked ? [...diagnosisCheckboxes, diagnosis] : diagnosisCheckboxes.filter(d => d !== diagnosis));
+                        }} />
+                        <span className="text-sm font-medium">{diagnosis}</span>
+                      </label>
+                    );
+                  })}
                 </div>
-                {form.minAdlsRequired && form.adlLimitations.length > 0 && form.adlLimitations.length < parseInt(form.minAdlsRequired) && (
-                  <p className="text-amber-600 text-sm mt-2">Your policy requires at least {form.minAdlsRequired} ADLs to be in deficit. You've selected {form.adlLimitations.length}.</p>
-                )}
               </div>
-              <TooltipField label="Preferred Care Type" name="preferredCareType">
+              
+              <TooltipField label="Diagnosis Notes" name="diagnosisNotes">
+                <Textarea id="diagnosisNotes" value={form.diagnosisNotes} onChange={e => update("diagnosisNotes", e.target.value)} placeholder="Additional details about the diagnosis, conditions, or cognitive impairments..." rows={3} />
+              </TooltipField>
+              <TooltipField label="Is Home Care covered in my policy?" name="preferredCareType" isRequired>
                 <Select value={form.preferredCareType} onValueChange={v => update("preferredCareType", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select preferred care type" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="home-care">Home Care</SelectItem>
-                    <SelectItem value="assisted-living">Assisted Living</SelectItem>
-                    <SelectItem value="nursing-home">Nursing Home</SelectItem>
-                    <SelectItem value="adult-day-care">Adult Day Care</SelectItem>
-                    <SelectItem value="combination">Combination</SelectItem>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
                   </SelectContent>
                 </Select>
               </TooltipField>
@@ -760,11 +907,11 @@ export default function PolicyForm() {
               <p className="text-sm text-slate-600">Review the information below. You can go back to any step to make changes. Once you're satisfied, save and proceed to generate your personalized strategy.</p>
               <div className="grid gap-4">
                 {[
-                  { title: "Insured Person", items: [["Name", form.insuredFullName], ["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["Relationship", form.fillerRelationship]] },
+                  { title: "Insured Person", items: [["Name", form.insuredFullName], ["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["POA Name", form.poaName], ["POA Relationship", form.poaRelationship]] },
                   { title: "Carrier", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Policy #", form.policyNumber], ["Claim #", form.claimPreClaimNumber]] },
                   { title: "Coverage", items: [["Elimination Period", form.eliminationPeriod], ["Daily Max", form.dailyMaximum], ["Monthly Max", form.monthlyMaximum], ["Lifetime Max", form.lifetimeMaximum], ["Min ADLs", form.minAdlsRequired], ["AOB", form.assignmentOfBenefits], ["Waiver of Premium", form.waiverOfPremium]] },
-                  { title: "Medical", items: [["Case Manager", form.caseManagerName], ["3rd Party Assessment", form.thirdPartyAssessmentRequired], ["Cognitive Trigger", form.cognitiveImpairmentTrigger], ["Plan of Care", form.planOfCareStatus]] },
-                  { title: "Care Needs", items: [["ADLs", form.adlLimitations.join(", ") || "None selected"], ["Preferred Care", form.preferredCareType], ["Diagnosis", form.diagnosisOrCondition], ["Primary Diagnosis", form.primaryDiagnosis]] },
+                  { title: "Medical", items: [["Case Manager", form.caseManagerAssigned], ["Case Manager Name", form.caseManagerName], ["3rd Party Assessment", form.thirdPartyAssessmentRequired], ["Cognitive Impairment Trigger", form.cognitiveImpairmentTrigger]] },
+                  { title: "Care Needs", items: [["Care Services", (form.careNeeds || []).join(", ") || "None selected"], ["Diagnosis", (form.diagnosisCheckboxes || []).join(", ") || "None selected"], ["Home Care Covered", form.preferredCareType]] },
                 ].map(section => (
                   <div key={section.title} className="bg-slate-50 rounded-lg p-4">
                     <h3 className="font-semibold text-slate-800 mb-2">{section.title}</h3>
