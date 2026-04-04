@@ -121,12 +121,15 @@ const defaultForm: FormData = {
   preferredCareType: "", additionalNotes: "", fillerRelationship: "",
 };
 
-function TooltipField({ label, name, children }: { label: string; name: string; children: React.ReactNode }) {
+function TooltipField({ label, name, children, isRequired = false }: { label: string; name: string; children: React.ReactNode; isRequired?: boolean }) {
   const tip = tooltips[name];
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-1.5">
-        <Label htmlFor={name} className="text-sm font-medium text-slate-700">{label}</Label>
+        <Label htmlFor={name} className="text-sm font-medium text-slate-700">
+          {label}
+          {isRequired && <span className="text-red-500 ml-1">*</span>}
+        </Label>
         {tip && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -457,7 +460,7 @@ export default function PolicyForm() {
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Insured Person Information</h2>
               <p className="text-sm text-slate-600">Enter the details of the person covered by the LTC insurance policy.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Full Name of Insured" name="insuredFullName">
+                <TooltipField label="Full Name of Insured" name="insuredFullName" isRequired>
                   <Input id="insuredFullName" value={form.insuredFullName} onChange={e => update("insuredFullName", e.target.value)} placeholder="Enter full legal name" />
                 </TooltipField>
                 <TooltipField label="Date of Birth" name="insuredDob">
@@ -508,7 +511,7 @@ export default function PolicyForm() {
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Insurance Carrier Information</h2>
               <p className="text-sm text-slate-600">Enter the details of your LTC insurance carrier. This information can be found on your policy declaration page.</p>
-              <TooltipField label="Carrier Name" name="carrierName">
+                <TooltipField label="Carrier Name" name="carrierName" isRequired>
                 <Input id="carrierName" value={form.carrierName} onChange={e => update("carrierName", e.target.value)} placeholder="e.g., Genworth, John Hancock, Mutual of Omaha" />
               </TooltipField>
               <TooltipField label="Address Line 1" name="carrierAddress1">
@@ -529,7 +532,7 @@ export default function PolicyForm() {
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Policy Number" name="policyNumber">
+                <TooltipField label="Policy Number" name="policyNumber" isRequired>
                   <Input id="policyNumber" value={form.policyNumber} onChange={e => update("policyNumber", e.target.value)} placeholder="Your policy number" />
                 </TooltipField>
                 <TooltipField label="Claim / Pre-Claim Number" name="claimPreClaimNumber">
@@ -545,21 +548,21 @@ export default function PolicyForm() {
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Coverage Details</h2>
               <p className="text-sm text-slate-600">Enter the coverage details from your LTC insurance policy. These are critical for generating your personalized strategy.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Elimination Period" name="eliminationPeriod">
+                <TooltipField label="Elimination Period" name="eliminationPeriod" isRequired>
                   <Input id="eliminationPeriod" value={form.eliminationPeriod} onChange={e => update("eliminationPeriod", e.target.value)} placeholder="e.g., 90 days of service" />
                 </TooltipField>
-                <TooltipField label="Daily Maximum ($)" name="dailyMaximum">
+                <TooltipField label="Daily Maximum ($)" name="dailyMaximum" isRequired>
                   <Input id="dailyMaximum" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="$ per day" />
                 </TooltipField>
                 <TooltipField label="Monthly Maximum ($)" name="monthlyMaximum">
                   <Input id="monthlyMaximum" value={form.monthlyMaximum} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="$ per month" />
                 </TooltipField>
-                <TooltipField label="Lifetime Maximum ($)" name="lifetimeMaximum">
+                <TooltipField label="Lifetime Maximum ($)" name="lifetimeMaximum" isRequired>
                   <Input id="lifetimeMaximum" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="$ lifetime" />
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Min # ADLs Compromised Required" name="minAdlsRequired">
+                <TooltipField label="Min # ADLs Compromised Required" name="minAdlsRequired" isRequired>
                   <Select value={form.minAdlsRequired} onValueChange={v => update("minAdlsRequired", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
@@ -570,7 +573,7 @@ export default function PolicyForm() {
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <TooltipField label="Waiver of Premium" name="waiverOfPremium">
+                <TooltipField label="Waiver of Premium" name="waiverOfPremium" isRequired>
                   <Select value={form.waiverOfPremium} onValueChange={v => update("waiverOfPremium", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent><SelectItem value="yes">Yes — Stop Payments</SelectItem><SelectItem value="no">No — Continue Payments</SelectItem></SelectContent>

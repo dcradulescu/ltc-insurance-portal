@@ -48,18 +48,33 @@ const careRecommendations: Record<string, { schedule: string; prevention: string
 
 // Helper to check if form is complete
 function isFormComplete(policy: any) {
-  const requiredFields = [
-    policy.insuredFullName,
-    policy.carrierName,
-    policy.policyNumber,
-    policy.powerOfAttorneyPresent,
-    policy.eliminationPeriod,
-    policy.waiverOfPremium,
-    policy.careNotesRequired,
-    policy.assignmentOfBenefits,
-    policy.minAdlsRequired,
-  ];
-  return requiredFields.every(f => f && f.toString().trim() !== "");
+  // Check all REQUIRED fields (updated April 2026)
+  const hasInsuredName = policy.insuredFullName && policy.insuredFullName.toString().trim() !== "";
+  const hasCarrierName = policy.carrierName && policy.carrierName.toString().trim() !== "";
+  const hasPolicyNumber = policy.policyNumber && policy.policyNumber.toString().trim() !== "";
+  const hasEliminationPeriod = policy.eliminationPeriod && policy.eliminationPeriod.toString().trim() !== "";
+  const hasWaiverOfPremium = policy.waiverOfPremium && policy.waiverOfPremium.toString().trim() !== "";
+  const hasDailyMaximum = policy.dailyMaximum && policy.dailyMaximum.toString().trim() !== "";
+  const hasLifetimeMaximum = policy.lifetimeMaximum && policy.lifetimeMaximum.toString().trim() !== "";
+  
+  // Check for ADLs or cognitive decline - can be either adlLimitations array or cognitiveImpairmentTrigger
+  const hasAdlsOrCognitive = (policy.adlLimitations && Array.isArray(policy.adlLimitations) && policy.adlLimitations.length > 0) || 
+                             (policy.cognitiveImpairmentTrigger && policy.cognitiveImpairmentTrigger.toString().trim() !== "");
+  
+  // Check minAdlsRequired field
+  const hasMinAdlsRequired = policy.minAdlsRequired && policy.minAdlsRequired.toString().trim() !== "";
+  
+  // Validate: if minAdlsRequired is set, must have at least that many ADLs checked
+  let adlCountValid = true;
+  if (hasMinAdlsRequired && policy.adlLimitations && Array.isArray(policy.adlLimitations)) {
+    const minRequired = parseInt(policy.minAdlsRequired);
+    const adlCount = policy.adlLimitations.length;
+    adlCountValid = adlCount >= minRequired;
+  }
+  
+  return hasInsuredName && hasCarrierName && hasPolicyNumber && 
+         hasEliminationPeriod && hasWaiverOfPremium && hasDailyMaximum && hasLifetimeMaximum &&
+         hasAdlsOrCognitive && hasMinAdlsRequired && adlCountValid;
 }
 
 type StrategyTask = {
@@ -112,6 +127,20 @@ export default function Strategy() {
     }
   }, [dailyMax, hourlyRate, hoursPerDay, daysPerWeek]);
 
+  // Load policy data from localStorage instead of database
+  const [policyFromStorage, setPolicyFromStorage] = useState<any>(null);
+  
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('ltc_policy_form');
+      if (saved) {
+        setPolicyFromStorage(JSON.parse(saved));
+      }
+    } catch (err) {
+      console.error('[Strategy] Failed to load policy from localStorage:', err);
+    }
+  }, []);
+  
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
   const strategyQuery = trpc.strategy.getMine.useQuery(undefined, { enabled: true });
   const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
@@ -166,7 +195,8 @@ export default function Strategy() {
   const utils = trpc.useUtils();
 
   const strategy = strategyQuery.data;
-  const policy = policyQuery.data;
+  // Use localStorage policy data if available, otherwise fall back to database query
+  const policy = policyFromStorage || policyQuery.data;
 
 
 

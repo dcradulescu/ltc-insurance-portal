@@ -355,3 +355,19 @@
 - [x] Allow all pages to be accessible without authentication
 - [x] Verify Education page loads without login prompt
 - [x] Verify no "code and state are required" error
+
+
+## Strategy Page Validation Bug - April 2026
+- [ ] Fix Strategy page validation error where required fields show as incomplete
+- [ ] Verify localStorage data is being read correctly by Strategy page
+- [ ] Check field name mismatches between PolicyForm and Strategy validation
+- [ ] Test Strategy page loads after completing all required fields in form
+
+
+## Policy Form Required Fields Update - April 2026
+- [x] Update required fields list (remove Care Notes, Assignment of Benefits, Power of Attorney)
+- [x] Add Daily Maximum and Lifetime Maximum as required fields
+- [x] Add validation: if minAdlsRequired is selected, must have at least that many ADLs checked
+- [x] Update Strategy page validation logic to match new required fields
+- [x] Add red asterisks (*) to required field labels in the form
+- [x] Test validation with new required fields list
