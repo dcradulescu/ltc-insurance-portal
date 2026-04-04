@@ -1,7 +1,5 @@
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,15 +26,14 @@ type StrategyTask = {
 };
 
 export default function Strategy() {
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailRecipients, setEmailRecipients] = useState<string[]>([""]);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const strategyContentRef = useRef<HTMLDivElement>(null);
 
-  const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: isAuthenticated });
-  const strategyQuery = trpc.strategy.getMine.useQuery(undefined, { enabled: isAuthenticated });
+  const policyQuery = trpc.policy.get.useQuery();
+  const strategyQuery = trpc.strategy.getMine.useQuery();
   const generateMutation = trpc.strategy.generate.useMutation({
     onSuccess: () => {
       strategyQuery.refetch();
@@ -53,12 +50,6 @@ export default function Strategy() {
 
   const strategy = strategyQuery.data;
   const policy = policyQuery.data;
-
-  useEffect(() => {
-    if (user?.email && emailRecipients.length === 1 && emailRecipients[0] === "") {
-      setEmailRecipients([user.email]);
-    }
-  }, [user?.email]); // eslint-disable-line
 
   const stage1Tasks: StrategyTask[] = useMemo(() => (strategy?.stage1Tasks as unknown as StrategyTask[]) || [], [strategy?.stage1Tasks]);
   const stage2Tasks: StrategyTask[] = useMemo(() => (strategy?.stage2Tasks as unknown as StrategyTask[]) || [], [strategy?.stage2Tasks]);
@@ -101,10 +92,10 @@ export default function Strategy() {
     printWindow.document.write(`<!DOCTYPE html><html><head><title>LTC Insurance Claim Strategy</title>
       <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@300;400;500;700&display=swap" rel="stylesheet" />
       <style>body{font-family:'Roboto',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#333;line-height:1.6}h1,h2,h3{font-family:'Roboto Slab',serif;color:#2c3e50}h2{border-bottom:2px solid #3498db;padding-bottom:8px;margin-top:24px}ul,ol{padding-left:1.5em}li{margin:4px 0}strong{color:#2c3e50}.header{text-align:center;margin-bottom:2em;padding-bottom:1em;border-bottom:3px solid #3498db}.header h1{color:#3498db}@media print{body{padding:20px}}</style>
-    </head><body><div class="header"><h1>LTC Insurance Claim Strategy</h1><p>Generated for ${user?.name || "Policy Holder"} on ${new Date().toLocaleDateString()}</p></div>${content}</body></html>`);
+    </head><body><div class="header"><h1>LTC Insurance Claim Strategy</h1><p>Generated on ${new Date().toLocaleDateString()}</p></div>${content}</body></html>`);
     printWindow.document.close();
     printWindow.onload = () => printWindow.print();
-  }, [user?.name]);
+  }, []);
 
   const handleSendEmail = () => {
     const validEmails = emailRecipients.filter(e => e.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim()));
@@ -134,22 +125,6 @@ export default function Strategy() {
   };
 
   const toggleCategory = (cat: string) => setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
-
-  if (authLoading) return <Layout><div className="flex justify-center py-20"><Loader2 className="animate-spin w-8 h-8 text-primary" /></div></Layout>;
-  if (!isAuthenticated) {
-    return (
-      <Layout>
-        <section className="py-20 bg-secondary">
-          <div className="container max-w-lg text-center">
-            <Shield className="w-16 h-16 text-primary mx-auto mb-6" />
-            <h1 className="font-serif text-3xl font-bold text-foreground mb-4">Sign In Required</h1>
-            <p className="text-muted-foreground mb-8">Please sign in to view your personalized strategy.</p>
-            <Button asChild size="lg"><a href={getLoginUrl()}>Sign In to Continue</a></Button>
-          </div>
-        </section>
-      </Layout>
-    );
-  }
 
   const renderTaskList = (stage: "stage1Tasks" | "stage2Tasks" | "stage3Tasks", tasks: StrategyTask[]) => {
     const groups = groupByCategory(tasks);

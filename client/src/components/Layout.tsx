@@ -1,8 +1,6 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Shield, LogOut, User } from "lucide-react";
+import { Menu, X, Shield } from "lucide-react";
 import { useState } from "react";
 import { ChatWidget } from "./ChatWidget";
 
@@ -15,7 +13,6 @@ const navLinks = [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, logout } = useAuth();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -25,23 +22,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="bg-[#2c3e50] text-white text-sm">
         <div className="container flex justify-between items-center py-2">
           <div className="flex items-center gap-4">
-            <span className="hidden sm:inline opacity-80">Helping families navigate long-term care insurance</span>
-          </div>
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <User className="w-3.5 h-3.5 opacity-70" />
-                <span className="opacity-90">{user?.name || user?.email || "Account"}</span>
-                <button onClick={() => logout()} className="opacity-70 hover:opacity-100 transition-opacity flex items-center gap-1">
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Sign Out</span>
-                </button>
-              </div>
-            ) : (
-              <a href={getLoginUrl()} className="opacity-90 hover:opacity-100 transition-opacity">
-                Sign In
-              </a>
-            )}
+            <span className="opacity-80">Helping families navigate long-term care insurance</span>
           </div>
         </div>
       </div>
@@ -53,7 +34,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Shield className="w-8 h-8 text-primary" />
             <span className="font-serif text-xl font-bold text-foreground tracking-tight">LTC Navigator</span>
           </Link>
-
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
@@ -69,13 +49,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {link.label}
               </Link>
             ))}
-            {!isAuthenticated && (
-              <Button asChild size="sm" className="ml-2">
-                <a href={getLoginUrl()}>Get Started</a>
-              </Button>
-            )}
           </nav>
-
           {/* Mobile menu toggle */}
           <button
             className="md:hidden p-2 text-foreground"
@@ -84,7 +58,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
-
         {/* Mobile nav */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-white">
@@ -103,11 +76,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   {link.label}
                 </Link>
               ))}
-              {!isAuthenticated && (
-                <Button asChild size="sm" className="mt-2">
-                  <a href={getLoginUrl()}>Get Started</a>
-                </Button>
-              )}
             </nav>
           </div>
         )}

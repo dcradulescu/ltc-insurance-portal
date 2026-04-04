@@ -1,8 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { Link } from "wouter";
 import {
   Shield,
@@ -47,13 +45,13 @@ const features = [
 const steps = [
   {
     number: "01",
-    title: "Create Your Account",
-    description: "Sign up to securely save your information and access personalized features.",
+    title: "Enter Policy Details",
+    description: "Complete our comprehensive policy intake form with your insurance information.",
   },
   {
     number: "02",
-    title: "Enter Policy Details",
-    description: "Complete our comprehensive policy intake form with your insurance information.",
+    title: "Review Your Policy",
+    description: "We analyze your specific policy benefits, coverage limits, and key terms.",
   },
   {
     number: "03",
@@ -68,8 +66,6 @@ const steps = [
 ];
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
-
   return (
     <Layout>
       {/* Hero Section */}
@@ -93,15 +89,9 @@ export default function Home() {
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
               </p>
               <div className="flex flex-wrap gap-4">
-                {isAuthenticated ? (
-                  <Button asChild size="lg" className="text-base px-8">
-                    <Link href="/policy-form">Start Your Claim Journey</Link>
-                  </Button>
-                ) : (
-                  <Button asChild size="lg" className="text-base px-8">
-                    <a href={getLoginUrl()}>Get Started Free</a>
-                  </Button>
-                )}
+                <Button asChild size="lg" className="text-base px-8">
+                  <Link href="/policy-form">Start Your Claim Journey</Link>
+                </Button>
                 <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent">
                   <Link href="/education">Learn About LTC</Link>
                 </Button>
@@ -245,22 +235,14 @@ export default function Home() {
             Ready to Get Started?
           </h2>
           <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8">
-            Create your free account today and take the first step toward successfully filing your long-term care insurance claim.
+            Take the first step toward successfully filing your long-term care insurance claim — no account required.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            {isAuthenticated ? (
-              <Button asChild size="lg" variant="outline" className="text-base px-8 border-white text-white hover:bg-white hover:text-primary bg-transparent">
-                <Link href="/policy-form">
-                  Complete Policy Form <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-            ) : (
-              <Button asChild size="lg" variant="outline" className="text-base px-8 border-white text-white hover:bg-white hover:text-primary bg-transparent">
-                <a href={getLoginUrl()}>
-                  Create Free Account <ArrowRight className="w-4 h-4 ml-2" />
-                </a>
-              </Button>
-            )}
+            <Button asChild size="lg" variant="outline" className="text-base px-8 border-white text-white hover:bg-white hover:text-primary bg-transparent">
+              <Link href="/policy-form">
+                Get Started Now <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

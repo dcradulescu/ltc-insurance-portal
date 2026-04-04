@@ -184,3 +184,67 @@ export async function getChatHistory(sessionId: string, limit = 50): Promise<typ
   if (!db) return [];
   return db.select().from(chatMessages).where(eq(chatMessages.sessionId, sessionId)).orderBy(chatMessages.createdAt).limit(limit);
 }
+
+// ---- No-auth helper functions (no userId filtering) ----
+export async function getLatestPolicy(): Promise<Policy | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(policies).orderBy(desc(policies.updatedAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updatePolicyById(id: number, data: Partial<InsertPolicy>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(policies).set(data).where(eq(policies.id, id));
+}
+
+export async function getLatestStrategy(): Promise<Strategy | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(strategies).orderBy(desc(strategies.generatedAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getStrategyByPolicyIdNoAuth(policyId: number): Promise<Strategy | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(strategies).where(eq(strategies.policyId, policyId)).orderBy(desc(strategies.generatedAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAllDocuments(): Promise<DocumentUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documentUploads).orderBy(desc(documentUploads.createdAt));
+}
+
+export async function getDocumentsByTaskIdNoAuth(taskId: string): Promise<DocumentUpload[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documentUploads).where(eq(documentUploads.taskId, taskId));
+}
+
+export async function deleteDocumentById(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(documentUploads).where(eq(documentUploads.id, id));
+}
+
+export async function getAllUserContacts(): Promise<UserContact[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(userContacts);
+}
+
+export async function updateUserContactById(id: number, data: Partial<InsertUserContact>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(userContacts).set(data).where(eq(userContacts.id, id));
+}
+
+export async function deleteUserContactById(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(userContacts).where(eq(userContacts.id, id));
+}
