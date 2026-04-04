@@ -50,6 +50,8 @@ const careRecommendations: Record<string, { schedule: string; prevention: string
 function isFormComplete(policy: any) {
   // Check all REQUIRED fields (updated April 2026)
   const hasInsuredName = policy.insuredFullName && policy.insuredFullName.toString().trim() !== "";
+  const hasInsuredEmail = policy.insuredEmail && policy.insuredEmail.toString().trim() !== "";
+  const hasInsuredPhone = policy.insuredPhone && policy.insuredPhone.toString().trim() !== "";
   const hasCarrierName = policy.carrierName && policy.carrierName.toString().trim() !== "";
   const hasPolicyNumber = policy.policyNumber && policy.policyNumber.toString().trim() !== "";
   const hasEliminationPeriod = policy.eliminationPeriod && policy.eliminationPeriod.toString().trim() !== "";
@@ -72,7 +74,7 @@ function isFormComplete(policy: any) {
     adlCountValid = adlCount >= minRequired;
   }
   
-  return hasInsuredName && hasCarrierName && hasPolicyNumber && 
+  return hasInsuredName && hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber && 
          hasEliminationPeriod && hasWaiverOfPremium && hasDailyMaximum && hasLifetimeMaximum &&
          hasAdlsOrCognitive && hasMinAdlsRequired && adlCountValid;
 }
@@ -392,13 +394,14 @@ export default function Strategy() {
               <p className="text-muted-foreground mb-8 max-w-md mx-auto">Your strategy requires these fields to be completed in the Policy Form:</p>
               <ul className="text-left max-w-md mx-auto mb-8 space-y-2 text-muted-foreground text-sm">
                 <li>✓ Insured's Full Name</li>
+                <li>✓ Insured's Email Address</li>
+                <li>✓ Insured's Phone Number</li>
                 <li>✓ LTC Insurance Company</li>
                 <li>✓ Policy Number</li>
-                <li>✓ Power of Attorney Status</li>
                 <li>✓ Elimination Period</li>
                 <li>✓ Waiver of Premium</li>
-                <li>✓ Care Notes Required</li>
-                <li>✓ Assignment of Benefits</li>
+                <li>✓ Daily Maximum</li>
+                <li>✓ Lifetime Maximum</li>
                 <li>✓ Number of ADLs or Cognitive Decline</li>
               </ul>
               <Button asChild><a href="/policy-form">Complete Policy Form</a></Button>

@@ -371,3 +371,23 @@
 - [x] Update Strategy page validation logic to match new required fields
 - [x] Add red asterisks (*) to required field labels in the form
 - [x] Test validation with new required fields list
+
+
+## Add Email and Phone as Required Fields - April 2026
+- [ ] Add insuredEmail field to Policy Form Step 1
+- [ ] Add insuredPhone field to Policy Form Step 1
+- [ ] Add tooltips for email and phone fields
+- [ ] Add red asterisks (*) to email and phone field labels
+- [ ] Update FormData type to include insuredEmail and insuredPhone
+- [ ] Update Strategy validation to require email and phone
+- [ ] Update Review step to display email and phone
+- [ ] Test validation with new required fields
+
+
+## Add Email and Phone as Required Fields - April 2026
+- [x] Add insuredEmail and insuredPhone fields to Policy Form Step 0
+- [x] Add email and phone tooltips
+- [x] Update Strategy validation to require email and phone
+- [x] Add email and phone to validation error messages
+- [x] Test email and phone fields work correctly
+- [x] All 20 tests pass with no regressions

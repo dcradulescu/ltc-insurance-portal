@@ -18,6 +18,8 @@ const adlOptions = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Trans
 const tooltips: Record<string, string> = {
   // Step 0: Insured Person
   insuredFullName: "Enter the full legal name of the person who holds the LTC insurance policy. This is the person who will receive care. Use the name exactly as it appears on the policy.",
+  insuredEmail: "The insured person's email address. We'll use this to send you updates, strategy recommendations, and important information about your claim. Keep it current.",
+  insuredPhone: "The insured person's phone number. This is the primary contact number for the insurance company and your care team to reach you. Include the area code.",
   insuredDob: "The insured person's date of birth. This is used to verify identity with the insurance company and is required on all claim paperwork.",
   insuredMailingAddress: "The current mailing address of the insured person. The insurance company will send all correspondence, claim packets, and checks to this address.",
   insuredSsn: "The insured person's Social Security Number. Insurance companies require this to verify identity and process claims. Your data is encrypted and stored securely.",
@@ -67,6 +69,8 @@ const tooltips: Record<string, string> = {
 
 type FormData = {
   insuredFullName: string;
+  insuredEmail: string;
+  insuredPhone: string;
   insuredDob: string;
   insuredMailingAddress: string;
   insuredSsn: string;
@@ -107,7 +111,7 @@ type FormData = {
 };
 
 const defaultForm: FormData = {
-  insuredFullName: "", insuredDob: "", insuredMailingAddress: "", insuredSsn: "",
+  insuredFullName: "", insuredEmail: "", insuredPhone: "", insuredDob: "", insuredMailingAddress: "", insuredSsn: "",
   insuredMedicareNumber: "", insuredMedicaidNumber: "", powerOfAttorneyPresent: "",
   carrierName: "", carrierAddress1: "", carrierAddress2: "", carrierCityStateZip: "",
   carrierPhone: "", carrierFax: "",
@@ -218,6 +222,8 @@ export default function PolicyForm() {
       setPolicyId(p.id);
       setForm({
         insuredFullName: p.insuredFullName || "",
+        insuredEmail: p.insuredEmail || "",
+        insuredPhone: p.insuredPhone || "",
         insuredDob: p.insuredDob || "",
         insuredMailingAddress: p.insuredMailingAddress || "",
         insuredSsn: p.insuredSsn || "",
@@ -465,6 +471,14 @@ export default function PolicyForm() {
                 </TooltipField>
                 <TooltipField label="Date of Birth" name="insuredDob">
                   <Input id="insuredDob" type="date" value={form.insuredDob} onChange={e => update("insuredDob", e.target.value)} />
+                </TooltipField>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TooltipField label="Email Address" name="insuredEmail" isRequired>
+                  <Input id="insuredEmail" type="email" value={form.insuredEmail} onChange={e => update("insuredEmail", e.target.value)} placeholder="your.email@example.com" />
+                </TooltipField>
+                <TooltipField label="Phone Number" name="insuredPhone" isRequired>
+                  <Input id="insuredPhone" type="tel" value={form.insuredPhone} onChange={e => update("insuredPhone", e.target.value)} placeholder="(000) 000-0000" />
                 </TooltipField>
               </div>
               <TooltipField label="Mailing Address" name="insuredMailingAddress">
