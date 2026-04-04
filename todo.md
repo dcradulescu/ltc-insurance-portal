@@ -348,3 +348,10 @@
 
 ## Bug Fixes - April 2026
 - [x] Fix Radix Select.Item validation error on Policy Form (empty value prop not allowed - changed to value="none")
+
+
+## OAuth Error Fix - April 2026
+- [x] Remove ProtectedRoute wrapper from all pages (Education, Policy Form, Strategy, Contact)
+- [x] Allow all pages to be accessible without authentication
+- [x] Verify Education page loads without login prompt
+- [x] Verify no "code and state are required" error
