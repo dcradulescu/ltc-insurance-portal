@@ -42,6 +42,12 @@ export const policies = mysqlTable("policies", {
 
   // === Coverage Details ===
   eliminationPeriod: varchar("eliminationPeriod", { length: 128 }),
+  lookBackPeriodEnabled: boolean("lookBackPeriodEnabled").default(false),
+  lookBackPeriodDays: varchar("lookBackPeriodDays", { length: 16 }),
+  careCoordinatorReductionEnabled: boolean("careCoordinatorReductionEnabled").default(false),
+  careCoordinatorReducedToDays: varchar("careCoordinatorReducedToDays", { length: 16 }),
+  reductionInCareProvidedEnabled: boolean("reductionInCareProvidedEnabled").default(false),
+  reductionInCareDaysCountedAs7: varchar("reductionInCareDaysCountedAs7", { length: 16 }),
   dailyMaximum: varchar("dailyMaximum", { length: 64 }),
   monthlyMaximum: varchar("monthlyMaximum", { length: 64 }),
   lifetimeMaximum: varchar("lifetimeMaximum", { length: 64 }),

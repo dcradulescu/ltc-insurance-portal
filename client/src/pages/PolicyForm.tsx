@@ -161,6 +161,12 @@ type FormData = {
   policyNumber: string;
   claimPreClaimNumber: string;
   eliminationPeriod: string;
+  lookBackPeriodEnabled: boolean;
+  lookBackPeriodDays: string;
+  careCoordinatorReductionEnabled: boolean;
+  careCoordinatorReducedToDays: string;
+  reductionInCareProvidedEnabled: boolean;
+  reductionInCareDaysCountedAs7: string;
   dailyMaximum: string;
   monthlyMaximum: string;
   lifetimeMaximum: string;
@@ -190,7 +196,7 @@ const defaultForm: FormData = {
   carrierName: "", carrierAddress1: "", carrierAddress2: "", carrierCityStateZip: "",
   carrierPhone: "", carrierFax: "",
   policyNumber: "", claimPreClaimNumber: "",
-  eliminationPeriod: "", dailyMaximum: "", monthlyMaximum: "", lifetimeMaximum: "",
+  eliminationPeriod: "", lookBackPeriodEnabled: false, lookBackPeriodDays: "", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "", monthlyMaximum: "", lifetimeMaximum: "",
   minAdlsRequired: "0", qualifyingAdls: [], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "",
   numberOfDaysUntilPayment: "", assignmentOfBenefits: "",
   caseManagerAssigned: "", caseManagerName: "", thirdPartyAssessmentRequired: "",
@@ -314,6 +320,12 @@ export default function PolicyForm() {
         policyNumber: p.policyNumber || "",
         claimPreClaimNumber: p.claimPreClaimNumber || "",
         eliminationPeriod: p.eliminationPeriod || "",
+        lookBackPeriodEnabled: p.lookBackPeriodEnabled || false,
+        lookBackPeriodDays: p.lookBackPeriodDays || "",
+        careCoordinatorReductionEnabled: p.careCoordinatorReductionEnabled || false,
+        careCoordinatorReducedToDays: p.careCoordinatorReducedToDays || "",
+        reductionInCareProvidedEnabled: p.reductionInCareProvidedEnabled || false,
+        reductionInCareDaysCountedAs7: p.reductionInCareDaysCountedAs7 || "",
         dailyMaximum: p.dailyMaximum || "",
         monthlyMaximum: p.monthlyMaximum || "",
         lifetimeMaximum: p.lifetimeMaximum || "",
@@ -764,6 +776,55 @@ export default function PolicyForm() {
                       );
                     })}
                   </div>
+                </div>
+              )}
+              {form.eliminationPeriod && (
+                <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-sm font-medium text-slate-700">Elimination Period - Special Treatment</Label>
+                  </div>
+                  <label className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors bg-white border-slate-200 hover:border-slate-300">
+                    <Checkbox checked={form.lookBackPeriodEnabled} onCheckedChange={checked => update("lookBackPeriodEnabled", checked as boolean)} />
+                    <span className="text-sm font-medium">Look back period for qualifying out of pocket expenses</span>
+                  </label>
+                  {form.lookBackPeriodEnabled && (
+                    <div className="ml-6">
+                      <Input id="lookBackPeriodDays" type="number" min="0" max="999" value={form.lookBackPeriodDays} onChange={e => {
+                        const val = e.target.value;
+                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                          update("lookBackPeriodDays", val);
+                        }
+                      }} placeholder="## days (365 = 1 year)" />
+                    </div>
+                  )}
+                  <label className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors bg-white border-slate-200 hover:border-slate-300">
+                    <Checkbox checked={form.careCoordinatorReductionEnabled} onCheckedChange={checked => update("careCoordinatorReductionEnabled", checked as boolean)} />
+                    <span className="text-sm font-medium">Care Coordinator - Elimination Period Reduction</span>
+                  </label>
+                  {form.careCoordinatorReductionEnabled && (
+                    <div className="ml-6">
+                      <Input id="careCoordinatorReducedToDays" type="number" min="0" max="999" value={form.careCoordinatorReducedToDays} onChange={e => {
+                        const val = e.target.value;
+                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                          update("careCoordinatorReducedToDays", val);
+                        }
+                      }} placeholder="Reduced To ## Days" />
+                    </div>
+                  )}
+                  <label className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors bg-white border-slate-200 hover:border-slate-300">
+                    <Checkbox checked={form.reductionInCareProvidedEnabled} onCheckedChange={checked => update("reductionInCareProvidedEnabled", checked as boolean)} />
+                    <span className="text-sm font-medium">Reduction in Care Provided During Elimination Period</span>
+                  </label>
+                  {form.reductionInCareProvidedEnabled && (
+                    <div className="ml-6">
+                      <Input id="reductionInCareDaysCountedAs7" type="number" min="0" max="7" value={form.reductionInCareDaysCountedAs7} onChange={e => {
+                        const val = e.target.value;
+                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 7)) {
+                          update("reductionInCareDaysCountedAs7", val);
+                        }
+                      }} placeholder="## days will be counted as 7 days" />
+                    </div>
+                  )}
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

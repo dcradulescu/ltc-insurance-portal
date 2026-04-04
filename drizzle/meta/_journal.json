@@ -15,6 +15,13 @@
       "when": 1773780424598,
       "tag": "0001_nasty_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775283237679,
+      "tag": "0002_new_human_torch",
+      "breakpoints": true
     }
   ]
 }
