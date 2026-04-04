@@ -12,8 +12,17 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { ClipboardList, ArrowRight, ArrowLeft, Save, Loader2, HelpCircle, Info } from "lucide-react";
+import {
+  generateSessionId,
+  createFormSubmission,
+  type FormSubmissionData,
+} from "@/lib/formPersistence";
 
 const adlOptions = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
+
+// Initialize session ID and form start time (outside component to persist across renders)
+const SESSION_ID = generateSessionId();
+const FORM_START_TIME = new Date().toISOString();
 
 // Helper function to format phone number with mask (###)###-####
 const formatPhoneNumber = (value: string): string => {
@@ -161,7 +170,7 @@ type FormData = {
   cnaRequired: string;
   approvedAgencyRequired: string;
   careNotesRequired: string;
-  paymentCycle: string;
+  numberOfDaysUntilPayment: string;
   assignmentOfBenefits: string;
   caseManagerAssigned: string;
   caseManagerName: string;
@@ -183,7 +192,7 @@ const defaultForm: FormData = {
   policyNumber: "", claimPreClaimNumber: "",
   eliminationPeriod: "", dailyMaximum: "", monthlyMaximum: "", lifetimeMaximum: "",
   minAdlsRequired: "0", qualifyingAdls: [], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "",
-  paymentCycle: "", assignmentOfBenefits: "",
+  numberOfDaysUntilPayment: "", assignmentOfBenefits: "",
   caseManagerAssigned: "", caseManagerName: "", thirdPartyAssessmentRequired: "",
   cognitiveImpairmentTrigger: "",
   careNeeds: [], careNotes: "",
@@ -314,7 +323,7 @@ export default function PolicyForm() {
         cnaRequired: p.cnaRequired || "",
         approvedAgencyRequired: p.approvedAgencyRequired || "",
         careNotesRequired: p.careNotesRequired || "",
-        paymentCycle: p.paymentCycle || "",
+        numberOfDaysUntilPayment: p.numberOfDaysUntilPayment || "",
         assignmentOfBenefits: p.assignmentOfBenefits || "",
         caseManagerAssigned: p.caseManagerAssigned || "",
         caseManagerName: p.caseManagerName || "",
@@ -431,9 +440,32 @@ export default function PolicyForm() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Create and save form submission
+      const submission = createFormSubmission(
+        form,
+        step,
+        "manual_save",
+        SESSION_ID,
+        FORM_START_TIME
+      );
+      localStorage.setItem("ltc_form_current", JSON.stringify(submission));
+      localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
+
+      // Also save to database
       const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
       if (!policyId) setPolicyId(result.id);
-      toast.success("Progress saved");
+      
+      toast.success("Form saved successfully!");
+      
+      // Send to Zapier asynchronously (don't block on this)
+      try {
+        const blob = new Blob([JSON.stringify(submission, null, 2)], { type: "application/json" });
+        const formData = new FormData();
+        formData.append("file", blob, `ltc_form_${submission.submissionId}.json`);
+        // You can send this to Zapier webhook here
+      } catch (err) {
+        console.error("Error preparing Zapier data:", err);
+      }
     } catch (e) {
       toast.error("Failed to save. Please try again.");
     } finally {
@@ -443,6 +475,17 @@ export default function PolicyForm() {
 
   // Navigate to next step — save to DB silently, no validation blocking
   const handleNext = () => {
+    // Create and save form submission for page transition
+    const submission = createFormSubmission(
+      form,
+      step,
+      "page_transition",
+      SESSION_ID,
+      FORM_START_TIME
+    );
+    localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
+    localStorage.setItem("ltc_form_current", JSON.stringify(submission));
+
     // Advance step immediately (non-blocking)
     setStep(prev => prev + 1);
     // Save to DB in background (fire-and-forget)
@@ -459,6 +502,16 @@ export default function PolicyForm() {
   // Navigate to previous step
   const handlePrev = () => {
     if (step > 0) {
+      // Create and save form submission for page transition
+      const submission = createFormSubmission(
+        form,
+        step,
+        "page_transition",
+        SESSION_ID,
+        FORM_START_TIME
+      );
+      localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
+      localStorage.setItem("ltc_form_current", JSON.stringify(submission));
       setStep(prev => prev - 1);
     } else {
       // Send to Zapier when navigating away from form
@@ -676,11 +729,11 @@ export default function PolicyForm() {
                     <SelectContent><SelectItem value="0">0 (No ADL requirement)</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
-                <TooltipField label="Number of Days Until LTC Insurance Pays" name="paymentCycle">
-                  <Input id="paymentCycle" type="number" min="0" max="999" value={form.paymentCycle} onChange={e => {
+                <TooltipField label="Number of Days Until LTC Insurance Pays" name="numberOfDaysUntilPayment">
+                  <Input id="numberOfDaysUntilPayment" type="number" min="0" max="999" value={form.numberOfDaysUntilPayment} onChange={e => {
                     const val = e.target.value;
                     if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
-                      update("paymentCycle", val);
+                      update("numberOfDaysUntilPayment", val);
                     }
                   }} placeholder="0-999" />
                 </TooltipField>
