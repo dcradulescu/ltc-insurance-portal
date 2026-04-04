@@ -916,9 +916,17 @@ export default function PolicyForm() {
                   <div key={section.title} className="bg-slate-50 rounded-lg p-4">
                     <h3 className="font-semibold text-slate-800 mb-2">{section.title}</h3>
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      {section.items.map(([label, value]) => (
-                        <div key={label as string}><span className="text-slate-500">{label}:</span> <span className="font-medium text-slate-700">{(value as string) || "—"}</span></div>
-                      ))}
+                      {section.items.map(([label, value]) => {
+                        // Add dollar signs to monetary fields
+                        const monetaryFields = ["Daily Max", "Monthly Max", "Lifetime Max"];
+                        let displayValue = (value as string) || "—";
+                        if (monetaryFields.includes(label as string) && displayValue !== "—" && displayValue) {
+                          displayValue = `$${displayValue}`;
+                        }
+                        return (
+                          <div key={label as string}><span className="text-slate-500">{label}:</span> <span className="font-medium text-slate-700">{displayValue}</span></div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
