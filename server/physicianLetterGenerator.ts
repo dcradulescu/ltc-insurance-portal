@@ -97,7 +97,7 @@ To Whom It May Concern:
 
 I am the treating physician for the above-referenced patient and have evaluated this patient as part of ongoing medical care, including the most recent visit on ${lastVisitDate}.
 
-In my professional medical opinion, the patient has a chronic, ongoing medical condition diagnosed as ${diagnosis}, resulting in persistent cognitive and/or functional impairment. These impairments are expected to persist indefinitely and are not temporary in nature.
+In my professional medical opinion, the patient has a chronic, ongoing medical condition diagnosed as ${diagnosis}, resulting in persistent cognitive and/or functional impairment. These impairments are expected to persist ${prognosis === 'indefinitely' ? 'indefinitely' : prognosis} and are not temporary in nature.
 
 As a result of this condition, the patient requires either substantial supervision due to severe cognitive decline and associated safety risks, and/or caregiver assistance with two or more Activities of Daily Living. The patient currently requires assistance with the following:
 
