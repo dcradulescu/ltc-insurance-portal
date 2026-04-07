@@ -287,6 +287,35 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         if (!strategy) throw new Error("Strategy not found");
         return strategy;
       }),
+
+    generatePhysicianLetter: publicProcedure
+      .input(z.object({ policyId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const policy = await getPolicyById(input.policyId);
+        if (!policy) throw new Error("Policy not found");
+
+        const qualifyingAdls = Array.isArray(policy.qualifyingAdls) ? policy.qualifyingAdls as string[] : [];
+        const isCognitiveImpaired = String(policy.cognitiveImpairmentTrigger || "").toLowerCase() === "yes" || (policy.cognitiveImpairmentTrigger as any) === true;
+        const cognitiveRisks = isCognitiveImpaired ? ["Severe memory loss", "Difficulty with decision-making", "Need for supervision"] : [];
+
+        const letter = generatePhysicianLetter({
+          patientFullName: policy.insuredFullName || "",
+          patientDob: policy.insuredDob || "",
+          diagnosis: policy.diagnosisOrCondition || policy.primaryDiagnosis || "",
+          physicianName: typeof policy.primaryCarePhysician === "string" ? policy.primaryCarePhysician : "",
+          qualifyingAdls,
+          cognitiveImpairmentTrigger: isCognitiveImpaired,
+          cognitiveRisks,
+          minAdlsRequired: typeof policy.minAdlsRequired === "number" ? policy.minAdlsRequired : parseInt(String(policy.minAdlsRequired)) || 2,
+          prognosis: policy.additionalNotes || undefined,
+        });
+
+        return {
+          html: letter.html,
+          text: letter.text,
+          markdown: letter.markdown,
+        };
+      }),
   }),
 
   documents: router({
