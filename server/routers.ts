@@ -16,6 +16,7 @@ import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { policyFormRouter } from "./routers/policyForm";
 import { documentsRouter } from "./routers/documents";
+import { chatRouter } from "./routers/chat";
 import { ENV } from "./_core/env";
 import { generatePhysicianLetter } from "./physicianLetterGenerator";
 
@@ -361,67 +362,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       }),
   }),
 
-  chat: router({
-    send: publicProcedure
-      .input(z.object({
-        messages: z.array(z.object({
-          role: z.enum(["system", "user", "assistant"]),
-          content: z.string(),
-        })),
-        sessionId: z.string(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const userId = ctx.user?.id;
-        const lastUserMsg = input.messages.filter(m => m.role === "user").pop();
-        if (lastUserMsg) {
-          await saveChatMessage({ userId: userId || null, sessionId: input.sessionId, role: "user", content: lastUserMsg.content });
-        }
-
-        const systemMessage = {
-          role: "system" as const,
-          content: `You are a friendly and knowledgeable long-term care insurance support assistant for the LTC Navigator portal. You help families understand their LTC insurance policies and navigate the claims process.
-
-KEY KNOWLEDGE BASE (RAG Context):
-
-GLOSSARY:
-- Claim/Pre-Claim Number: When a claim is initiated, a pre-claim number is issued prior to approval. When approved, it becomes the actual claim number.
-- Elimination Period: The number of service days you must pay out of pocket before your LTC policy begins to pay. This counts days of service, not days since illness.
-- Daily Maximum: The maximum amount the insurance company will pay per day of service. Amounts above this are the client's responsibility.
-- Monthly Maximum: The maximum amount per month of service.
-- Lifetime Maximum: The total amount the policy will pay over its lifetime.
-- Min # ADLs Compromised: Activities of Daily Living (Bathing, Dressing, Toileting, Feeding, Continence, Transferring). Typically 2-3 must be in deficit to qualify.
-- Case Manager: Assigned by the LTC company to determine approved hours of care. They monitor the case regularly.
-- Third Party Assessment: An independent RN assessment to verify the patient's condition and ADL deficits.
-- Waiver of Premium: Waives premium payments once care begins under the policy.
-- Payment Cycle: The review cycle for invoices and logsheets (monthly or other interval).
-- CNA Caregiver Required: Some companies require a Certified Nursing Assistant to provide care.
-- Assignment of Benefits (AOB): Redirects insurance payment directly to the care provider instead of the insured.
-
-STRATEGY STAGES:
-- Stage 1 (Prior to Claim): Contact carrier, request claims packet (do NOT initiate claim yet), evaluate needs, identify ADL deficits, secure home care provider, gather all documentation.
-- Stage 2 (The Claim): Complete claim packet, attach all documents in ONE submission, prepare for third-party evaluation, understand 30-day review period.
-- Stage 3 (Post-Approval): Continue elimination period payments, submit invoices and care logs, ensure policy number on every page.
-
-IMPORTANT RULES:
-- NEVER initiate a claim until all documentation is gathered (Stage 1 complete)
-- Submit ALL documents in ONE packet - never in pieces
-- Policy number MUST appear on every page of submitted documents
-- Third-party evaluations look for inconsistencies - be honest and thorough
-- Appeals after denial have low success rates - prevention is key
-
-Always be empathetic and supportive. If you don't know something specific, encourage them to use the Policy Form or contact the team.`,
-        };
-
-        const messagesForLLM = [systemMessage, ...input.messages.filter(m => m.role !== "system")];
-        const result = await invokeLLM({ messages: messagesForLLM });
-        const assistantContent = typeof result.choices[0].message.content === "string"
-          ? result.choices[0].message.content
-          : JSON.stringify(result.choices[0].message.content);
-
-        await saveChatMessage({ userId: userId || null, sessionId: input.sessionId, role: "assistant", content: assistantContent });
-        return assistantContent;
-      }),
-  }),
+  chat: chatRouter,
 
   sms: router({
     sendNotification: publicProcedure

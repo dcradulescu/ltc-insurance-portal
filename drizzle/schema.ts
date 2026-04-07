@@ -209,3 +209,72 @@ export const chatMessages = mysqlTable("chatMessages", {
 
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = typeof chatMessages.$inferInsert;
+
+
+// ===== RAG (Retrieval-Augmented Generation) Tables =====
+
+export const ragDocuments = mysqlTable("ragDocuments", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  category: varchar("category", { length: 128 }).notNull(), // "policy_guide", "claim_process", "glossary", "faq", "best_practices"
+  content: text("content").notNull(), // Full document text (mediumtext in DB)
+  summary: text("summary"), // Brief summary for retrieval
+  keywords: json("keywords"), // Array of keywords for semantic search
+  embedding: text("embedding"), // Vector embedding (JSON stringified)
+  source: varchar("source", { length: 255 }), // Where document came from
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
+});
+
+export type RAGDocument = typeof ragDocuments.$inferSelect;
+export type InsertRAGDocument = typeof ragDocuments.$inferInsert;
+
+// Chat sessions with multi-turn memory
+export const chatSessions = mysqlTable("chatSessions", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 128 }).notNull().unique(),
+  userId: int("userId"),
+  policyId: int("policyId"), // Link to user's policy for context
+  topic: varchar("topic", { length: 255 }), // Main topic of conversation
+  summary: text("summary"), // AI-generated summary of conversation
+  messageCount: int("messageCount").default(0),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
+  expiresAt: timestamp("expiresAt"), // Auto-expire old sessions
+});
+
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = typeof chatSessions.$inferInsert;
+
+// Enhanced chat messages with metadata
+export const chatMessagesEnhanced = mysqlTable("chatMessagesEnhanced", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 128 }).notNull(),
+  userId: int("userId"),
+  role: varchar("role", { length: 16 }).notNull(), // "user", "assistant", "system"
+  content: text("content").notNull(), // mediumtext in DB
+  retrievedDocuments: json("retrievedDocuments"), // Array of {docId, title, relevanceScore}
+  userContext: json("userContext"), // Snapshot of user's policy data at message time
+  embedding: text("embedding"), // Vector embedding for semantic search
+  createdAt: timestamp("createdAt").defaultNow(),
+});
+
+export type ChatMessageEnhanced = typeof chatMessagesEnhanced.$inferSelect;
+export type InsertChatMessageEnhanced = typeof chatMessagesEnhanced.$inferInsert;
+
+// RAG document chunks for efficient retrieval
+export const ragDocumentChunks = mysqlTable("ragDocumentChunks", {
+  id: int("id").autoincrement().primaryKey(),
+  documentId: int("documentId").notNull(),
+  chunkIndex: int("chunkIndex").notNull(),
+  content: text("content").notNull(), // Chunk of text (e.g., 500 tokens)
+  embedding: text("embedding"), // Vector embedding for semantic search
+  startOffset: int("startOffset"), // Character offset in original document
+  endOffset: int("endOffset"),
+  createdAt: timestamp("createdAt").defaultNow(),
+});
+
+export type RAGDocumentChunk = typeof ragDocumentChunks.$inferSelect;
+export type InsertRAGDocumentChunk = typeof ragDocumentChunks.$inferInsert;
