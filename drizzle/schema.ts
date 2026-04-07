@@ -29,8 +29,6 @@ export const policies = mysqlTable("policies", {
   insuredMedicareNumber: varchar("insuredMedicareNumber", { length: 64 }),
   insuredMedicaidNumber: varchar("insuredMedicaidNumber", { length: 64 }),
   powerOfAttorneyPresent: varchar("powerOfAttorneyPresent", { length: 8 }),
-  poa_name: varchar("poa_name", { length: 255 }),
-  poa_relationship: varchar("poa_relationship", { length: 128 }),
 
   // === Carrier Info ===
   carrierName: varchar("carrierName", { length: 255 }),

@@ -535,7 +535,11 @@
 
 
 ## Bug Fixes - April 2026
-- [ ] Fix "failed to save" error when clicking Generate Strategy button
+- [x] Improved validation logic to handle minAdlsRequired="0" correctly
+- [x] Updated validation to check for both qualifyingAdls and adlLimitations
+- [x] Added simplified validation for localStorage-based forms
+- [ ] Fix localStorage data not persisting between page navigations (Strategy page shows "Complete Required Fields" even after form is filled)
+- [ ] Fix "Failed to save" error when clicking Generate Strategy button
 
 
 ## Remove Social Security Number Field

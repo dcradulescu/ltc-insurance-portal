@@ -57,6 +57,13 @@ const careRecommendations: Record<string, { schedule: string; prevention: string
 function isFormComplete(policy: any) {
   if (!policy) return false;
   
+  // If policy has basic required fields, consider it complete
+  // This is a simplified check for localStorage-based forms
+  const hasBasicInfo = policy.insuredFullName && policy.insuredEmail && policy.insuredPhone &&
+                       policy.carrierName && policy.policyNumber;
+  
+  if (!hasBasicInfo) return false;
+  
   // Check all REQUIRED fields (updated April 2026)
   const hasInsuredName = policy.insuredFullName && policy.insuredFullName.toString().trim() !== "";
   const hasInsuredEmail = policy.insuredEmail && policy.insuredEmail.toString().trim() !== "";
@@ -72,10 +79,10 @@ function isFormComplete(policy: any) {
   const hasQualifyingAdls = policy.qualifyingAdls && Array.isArray(policy.qualifyingAdls) && policy.qualifyingAdls.length > 0;
   const hasAdlLimitations = policy.adlLimitations && Array.isArray(policy.adlLimitations) && policy.adlLimitations.length > 0;
   const hasAdlsOrCognitive = hasQualifyingAdls || hasAdlLimitations || 
-                             (policy.cognitiveImpairmentTrigger && policy.cognitiveImpairmentTrigger.toString().trim() !== "");
+                             (policy.cognitiveImpairmentTrigger && policy.cognitiveImpairmentTrigger && policy.cognitiveImpairmentTrigger.toString().trim() !== "");
   
-  // Check minAdlsRequired field
-  const hasMinAdlsRequired = policy.minAdlsRequired && policy.minAdlsRequired.toString().trim() !== "";
+  // Check minAdlsRequired field - "0" is a valid value
+  const hasMinAdlsRequired = policy.minAdlsRequired !== undefined && policy.minAdlsRequired !== null && policy.minAdlsRequired.toString().trim() !== "";
   
   // Validate: if minAdlsRequired is set, must have at least that many ADLs checked
   let adlCountValid = true;
@@ -92,14 +99,13 @@ function isFormComplete(policy: any) {
          hasEliminationPeriod && hasWaiverOfPremium && hasDailyMaximum && hasLifetimeMaximum &&
          hasAdlsOrCognitive && hasMinAdlsRequired && adlCountValid;
   
-  // Debug logging
-  if (!isComplete) {
-    console.log('[Strategy Validation]', {
-      hasInsuredName, hasInsuredEmail, hasInsuredPhone, hasCarrierName, hasPolicyNumber,
-      hasEliminationPeriod, hasWaiverOfPremium, hasDailyMaximum, hasLifetimeMaximum,
-      hasAdlsOrCognitive, hasMinAdlsRequired, adlCountValid
-    });
-  }
+  // Debug logging - always log for debugging
+  console.log('[Strategy Validation] Full Result:', {
+    isComplete,
+    hasInsuredName, hasInsuredEmail, hasInsuredPhone, hasCarrierName, hasPolicyNumber,
+    hasEliminationPeriod, hasWaiverOfPremium, hasDailyMaximum, hasLifetimeMaximum,
+    hasAdlsOrCognitive, hasMinAdlsRequired, adlCountValid
+  });
   
   return isComplete;
 }
@@ -160,8 +166,11 @@ export default function Strategy() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('ltc_policy_form');
+      console.log('[Strategy] localStorage policy:', !!saved);
       if (saved) {
-        setPolicyFromStorage(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        console.log('[Strategy] Parsed policy keys:', Object.keys(parsed).slice(0, 5));
+        setPolicyFromStorage(parsed);
       }
     } catch (err) {
       console.error('[Strategy] Failed to load policy from localStorage:', err);
