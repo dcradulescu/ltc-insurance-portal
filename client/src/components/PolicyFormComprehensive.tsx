@@ -9,7 +9,7 @@ import { AlertCircle, HelpCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
+
 import { toast } from "sonner";
 
 interface FormData {
@@ -208,7 +208,6 @@ export function PolicyFormComprehensive() {
     }
   };
 
-  const { user } = useAuth();
   const submitFormMutation = trpc.policyForm.sendToZapier.useMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -216,11 +215,6 @@ export function PolicyFormComprehensive() {
     e.preventDefault();
 
     if (!validateForm()) {
-      return;
-    }
-
-    if (!user) {
-      toast.error("You must be logged in to submit the form");
       return;
     }
 

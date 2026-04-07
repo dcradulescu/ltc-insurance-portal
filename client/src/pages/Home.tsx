@@ -1,8 +1,7 @@
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+
 import { Link } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import {
@@ -101,7 +100,7 @@ const storyQuotes = [
 ];
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
+
   const [activeQuote, setActiveQuote] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -135,15 +134,9 @@ export default function Home() {
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
               </p>
               <div className="flex flex-wrap gap-4">
-                {isAuthenticated ? (
-                  <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
-                    <Link href="/policy-form">Start Your Claim Journey</Link>
-                  </Button>
-                ) : (
-                  <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
-                    <a href={getLoginUrl()}>Get Started Free</a>
-                  </Button>
-                )}
+                <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
+                  <Link href="/policy-form">Start Your Claim Journey</Link>
+                </Button>
                 <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent">
                   <Link href="/education">Learn About LTC</Link>
                 </Button>
@@ -217,19 +210,11 @@ export default function Home() {
             Thousands of families have trusted us to guide them through the long-term care insurance claims process. Let us create a personalized strategy for your family too.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            {isAuthenticated ? (
-              <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90">
-                <Link href="/policy-form">
-                  Start Your Claim <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-            ) : (
-              <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90">
-                <a href={getLoginUrl()}>
-                  Create Free Account <ArrowRight className="w-4 h-4 ml-2" />
-                </a>
-              </Button>
-            )}
+            <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90">
+              <Link href="/policy-form">
+                Start Your Claim <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
             <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/10 bg-transparent">
               <Link href="/education">Learn More</Link>
             </Button>
@@ -551,7 +536,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { num: "01", title: "Create Account", desc: "Sign up to securely save your information and access personalized features.", color: "text-teal" },
+              { num: "01", title: "Gather Your Information", desc: "Collect your insurance policy details and care information to prepare for the claim process.", color: "text-teal" },
               { num: "02", title: "Enter Policy Details", desc: "Complete our comprehensive policy intake form with your insurance information.", color: "text-primary" },
               { num: "03", title: "Get Your Strategy", desc: "Receive a customized claim filing strategy tailored to your specific situation.", color: "text-teal" },
               { num: "04", title: "File With Confidence", desc: "Follow your personalized guide to successfully submit your LTC insurance claim.", color: "text-primary" },
@@ -579,22 +564,14 @@ export default function Home() {
             Ready to Get Started?
           </h2>
           <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8">
-            Create your free account today and take the first step toward successfully filing your long-term care insurance claim.
+            Begin your claim filing journey today. Your information is saved locally on your device for easy access.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            {isAuthenticated ? (
-              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
-                <Link href="/policy-form">
-                  Complete Policy Form <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-            ) : (
-              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
-                <a href={getLoginUrl()}>
-                  Create Free Account <ArrowRight className="w-4 h-4 ml-2" />
-                </a>
-              </Button>
-            )}
+            <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
+              <Link href="/policy-form">
+                Complete Policy Form <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
