@@ -68,8 +68,10 @@ function isFormComplete(policy: any) {
   const hasDailyMaximum = policy.dailyMaximum && policy.dailyMaximum.toString().trim() !== "";
   const hasLifetimeMaximum = policy.lifetimeMaximum && policy.lifetimeMaximum.toString().trim() !== "";
   
-  // Check for ADLs or cognitive decline - can be either adlLimitations array or cognitiveImpairmentTrigger
-  const hasAdlsOrCognitive = (policy.adlLimitations && Array.isArray(policy.adlLimitations) && policy.adlLimitations.length > 0) || 
+  // Check for ADLs or cognitive decline - can be either qualifyingAdls/adlLimitations array or cognitiveImpairmentTrigger
+  const hasQualifyingAdls = policy.qualifyingAdls && Array.isArray(policy.qualifyingAdls) && policy.qualifyingAdls.length > 0;
+  const hasAdlLimitations = policy.adlLimitations && Array.isArray(policy.adlLimitations) && policy.adlLimitations.length > 0;
+  const hasAdlsOrCognitive = hasQualifyingAdls || hasAdlLimitations || 
                              (policy.cognitiveImpairmentTrigger && policy.cognitiveImpairmentTrigger.toString().trim() !== "");
   
   // Check minAdlsRequired field
@@ -77,10 +79,13 @@ function isFormComplete(policy: any) {
   
   // Validate: if minAdlsRequired is set, must have at least that many ADLs checked
   let adlCountValid = true;
-  if (hasMinAdlsRequired && policy.adlLimitations && Array.isArray(policy.adlLimitations)) {
-    const minRequired = parseInt(policy.minAdlsRequired);
-    const adlCount = policy.adlLimitations.length;
-    adlCountValid = adlCount >= minRequired;
+  if (hasMinAdlsRequired) {
+    const adlArray = policy.qualifyingAdls || policy.adlLimitations || [];
+    if (Array.isArray(adlArray)) {
+      const minRequired = parseInt(policy.minAdlsRequired);
+      const adlCount = adlArray.length;
+      adlCountValid = adlCount >= minRequired;
+    }
   }
   
   const isComplete = hasInsuredName && hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber && 
@@ -602,7 +607,7 @@ export default function Strategy() {
                   monthlyMaximum: policy?.monthlyMaximum ? parseInt(policy.monthlyMaximum) : 0,
                   lifetimeMaximum: policy?.lifetimeMaximum ? parseInt(policy.lifetimeMaximum) : 0,
                   diagnosis: policy?.diagnosis || "",
-                  adlLimitations: policy?.adlLimitations || [],
+                  adlLimitations: policy?.qualifyingAdls || policy?.adlLimitations || [],
                   stage1Tasks: stage1Tasks.map(t => t.label),
                   stage2Tasks: stage2Tasks.map(t => t.label),
                   stage3Tasks: stage3Tasks.map(t => t.label),

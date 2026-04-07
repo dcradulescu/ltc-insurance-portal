@@ -10,10 +10,10 @@ export interface FormData {
   insuredPhone: string;
   insuredDob: string;
   insuredMailingAddress: string;
-  insuredSsn: string;
+
   powerOfAttorneyPresent: string;
-  poaName: string;
-  poaRelationship: string;
+  poa_name?: string;
+  poa_relationship?: string;
 
   // Step 1: Insurance Carrier Information
   carrierName: string;

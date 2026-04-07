@@ -44,10 +44,19 @@ const capitalizeFirstLetter = (value: string): string => {
 
 // Helper function to format currency with mask $###.##
 const formatCurrency = (value: string): string => {
-  const cleaned = value.replace(/[^0-9.]/g, '');
+  // Remove any non-numeric characters except decimal point
+  let cleaned = value.replace(/[^0-9.]/g, '');
+  
+  // Handle multiple decimal points - keep only first one
   const parts = cleaned.split('.');
-  let dollars = parts[0] || '0';
-  let cents = parts[1] ? parts[1].substring(0, 2) : '00';
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts[1];
+  }
+  
+  // Split into dollars and cents
+  const [dollarPart, centPart] = cleaned.split('.');
+  let dollars = dollarPart || '0';
+  let cents = centPart ? centPart.substring(0, 2) : '00';
   
   // Limit dollars to 3 digits (0-999)
   if (dollars.length > 3) {
@@ -97,12 +106,12 @@ const tooltips: Record<string, string> = {
   insuredPhone: "The insured person's phone number. This is the primary contact number for the insurance company and your care team to reach you. Include the area code.",
   insuredDob: "The insured person's date of birth. This is used to verify identity with the insurance company and is required on all claim paperwork.",
   insuredMailingAddress: "The current mailing address of the insured person. The insurance company will send all correspondence, claim packets, and checks to this address. This is also where paperwork and your long-term care strategy can be mailed.",
-  insuredSsn: "The insured person's Social Security Number. Insurance companies require this to verify identity and process claims. Your data is encrypted and stored securely.",
+
   insuredMedicareNumber: "The insured person's Medicare ID number (found on their red, white, and blue Medicare card). Some LTC policies coordinate with Medicare, so this may be needed during the claim.",
   insuredMedicaidNumber: "The insured person's Medicaid ID number, if they are enrolled. Medicaid may be a secondary payer or become relevant if LTC benefits are exhausted.",
   powerOfAttorneyPresent: "A Power of Attorney (POA) is a legal document that lets someone make decisions on behalf of the insured. Select 'Yes' if a POA has been signed. You may need to provide a copy to the insurance company.",
-  poaName: "Enter the full name of the person designated as Power of Attorney. This person has legal authority to make decisions on behalf of the insured and will be important for your care strategy.",
-  poaRelationship: "What is the Power of Attorney's relationship to the person who is insured and needs care?",
+  poa_name: "Enter the full name of the person designated as Power of Attorney. This person has legal authority to make decisions on behalf of the insured and will be important for your care strategy.",
+  poa_relationship: "What is the Power of Attorney's relationship to the person who is insured and needs care?",
   fillerRelationship: "Select how you are related to the insured person. If you are the insured person filling this out yourself, select 'Self.' The insurance company may ask about this relationship.",
 
   // Step 1: Carrier Info
@@ -150,10 +159,10 @@ type FormData = {
   insuredPhone: string;
   insuredDob: string;
   insuredMailingAddress: string;
-  insuredSsn: string;
+
   powerOfAttorneyPresent: string;
-  poaName: string;
-  poaRelationship: string;
+  poa_name?: string;
+  poa_relationship?: string;
   carrierName: string;
   carrierAddress1: string;
   carrierAddress2: string;
@@ -204,8 +213,8 @@ type FormData = {
 };
 
 const defaultForm: FormData = {
-  insuredFullName: "", insuredEmail: "", insuredPhone: "", insuredDob: "", insuredMailingAddress: "", insuredSsn: "",
-  powerOfAttorneyPresent: "", poaName: "", poaRelationship: "",
+  insuredFullName: "", insuredEmail: "", insuredPhone: "", insuredDob: "", insuredMailingAddress: "",
+  powerOfAttorneyPresent: "", poa_name: "", poa_relationship: "",
   carrierName: "", carrierAddress1: "", carrierAddress2: "", carrierCityStateZip: "",
   carrierPhone: "", carrierFax: "",
   policyNumber: "", claimPreClaimNumber: "",
@@ -322,10 +331,10 @@ export default function PolicyForm() {
         insuredPhone: p.insuredPhone || "",
         insuredDob: p.insuredDob || "",
         insuredMailingAddress: p.insuredMailingAddress || "",
-        insuredSsn: p.insuredSsn || "",
+
         powerOfAttorneyPresent: p.powerOfAttorneyPresent || "",
-        poaName: p.poaName || "",
-        poaRelationship: p.poaRelationship || "",
+        poa_name: p.poa_name || "",
+        poa_relationship: p.poa_relationship || "",
         carrierName: p.carrierName || "",
         carrierAddress1: p.carrierAddress1 || "",
         carrierAddress2: p.carrierAddress2 || "",
@@ -459,7 +468,7 @@ export default function PolicyForm() {
     }
     
     // Apply auto-capitalize for name and company fields
-    if (field === 'insuredFullName' || field === 'carrierName' || field === 'caseManagerName' || field === 'poaName') {
+    if (field === 'insuredFullName' || field === 'carrierName' || field === 'caseManagerName' || field === 'poa_name') {
       value = capitalizeFirstLetter(value);
     }
     
@@ -489,8 +498,11 @@ export default function PolicyForm() {
       localStorage.setItem("ltc_form_current", JSON.stringify(submission));
       localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
 
+      // Filter out fields that don't exist in the database schema
+      const { poa_name, poa_relationship, ...validFormData } = form;
+      
       // Also save to database
-      const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
+      const result = await saveMutation.mutateAsync({ ...validFormData, id: policyId || undefined });
       if (!policyId) setPolicyId(result.id);
       
       toast.success("Form saved successfully!");
@@ -514,8 +526,9 @@ export default function PolicyForm() {
   // Navigate to next step — save to DB silently, no validation blocking
   const handleNext = () => {
     // Create and save form submission for page transition
+    const { poa_name, poa_relationship, ...validFormData } = form;
     const submission = createFormSubmission(
-      form,
+      validFormData,
       step,
       "page_transition",
       SESSION_ID,
@@ -664,12 +677,7 @@ export default function PolicyForm() {
               <TooltipField label="Mailing Address" name="insuredMailingAddress">
                 <Textarea id="insuredMailingAddress" value={form.insuredMailingAddress} onChange={e => update("insuredMailingAddress", e.target.value)} placeholder="Full mailing address" rows={2} />
               </TooltipField>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <TooltipField label="Social Security Number" name="insuredSsn">
-                  <Input id="insuredSsn" value={form.insuredSsn} onChange={e => update("insuredSsn", e.target.value)} placeholder="XXX-XX-XXXX" type="password" />
-                </TooltipField>
 
-              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Do you have a power of attorney?" name="powerOfAttorneyPresent">
                   <Select value={form.powerOfAttorneyPresent} onValueChange={v => update("powerOfAttorneyPresent", v)}>
@@ -680,11 +688,11 @@ export default function PolicyForm() {
               </div>
               {form.powerOfAttorneyPresent === "yes" && (
                 <div className="space-y-4">
-                  <TooltipField label="POA Name" name="poaName">
-                    <Input id="poaName" value={form.poaName} onChange={e => update("poaName", e.target.value)} placeholder="Enter full name of Power of Attorney" />
+                  <TooltipField label="POA Name" name="poa_name">
+                    <Input id="poa_name" value={form.poa_name} onChange={e => update("poa_name", e.target.value)} placeholder="Enter full name of Power of Attorney" />
                   </TooltipField>
-                  <TooltipField label="POA Relationship to Insured" name="poaRelationship">
-                    <Input id="poaRelationship" value={form.poaRelationship} onChange={e => update("poaRelationship", e.target.value)} placeholder="e.g., Spouse, Adult Child, Sibling" />
+                  <TooltipField label="POA Relationship to Insured" name="poa_relationship">
+                    <Input id="poa_relationship" value={form.poa_relationship} onChange={e => update("poa_relationship", e.target.value)} placeholder="e.g., Spouse, Adult Child, Sibling" />
                   </TooltipField>
                 </div>
               )}
@@ -1047,7 +1055,7 @@ export default function PolicyForm() {
               <p className="text-sm text-slate-600">Review the information below. You can go back to any step to make changes. Once you're satisfied, save and proceed to generate your personalized strategy.</p>
               <div className="grid gap-4">
                 {[
-                  { title: "Insured Person", items: [["Name", form.insuredFullName], ["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["POA Name", form.poaName], ["POA Relationship", form.poaRelationship]] },
+                  { title: "Insured Person", items: [["Name", form.insuredFullName], ["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["POA Name", form.poa_name], ["POA Relationship", form.poa_relationship]] },
                   { title: "Carrier", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Policy #", form.policyNumber], ["Claim #", form.claimPreClaimNumber]] },
                   { title: "Coverage", items: [["Elimination Period", form.eliminationPeriod], ["Daily Max", form.dailyMaximum], ["Monthly Max", form.monthlyMaximum], ["Lifetime Max", form.lifetimeMaximum], ["Min ADLs", form.minAdlsRequired], ["AOB", form.assignmentOfBenefits], ["Waiver of Premium", form.waiverOfPremium]] },
                   { title: "Medical", items: [["Case Manager", form.caseManagerAssigned], ["Case Manager Name", form.caseManagerName], ["3rd Party Assessment", form.thirdPartyAssessmentRequired], ["Cognitive Impairment Trigger", form.cognitiveImpairmentTrigger]] },

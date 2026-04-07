@@ -66,7 +66,7 @@ export const policyFormRouter = router({
               insuredFullName: policy.insuredFullName,
               insuredDob: policy.insuredDob,
               insuredMailingAddress: policy.insuredMailingAddress,
-              insuredSsn: policy.insuredSsn,
+
               insuredMedicareNumber: policy.insuredMedicareNumber,
               insuredMedicaidNumber: policy.insuredMedicaidNumber,
               powerOfAttorneyPresent: policy.powerOfAttorneyPresent,

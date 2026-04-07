@@ -25,7 +25,7 @@ export const policies = mysqlTable("policies", {
   insuredEmail: varchar("insuredEmail", { length: 320 }),
   insuredPhone: varchar("insuredPhone", { length: 32 }),
   insuredMailingAddress: text("insuredMailingAddress"),
-  insuredSsn: varchar("insuredSsn", { length: 16 }),
+
   insuredMedicareNumber: varchar("insuredMedicareNumber", { length: 64 }),
   insuredMedicaidNumber: varchar("insuredMedicaidNumber", { length: 64 }),
   powerOfAttorneyPresent: varchar("powerOfAttorneyPresent", { length: 8 }),

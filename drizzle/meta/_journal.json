@@ -1,40 +1,26 @@
 {
-  "version": "7",
+  "version": "5",
   "dialect": "mysql",
   "entries": [
     {
       "idx": 0,
-      "version": "7",
-      "when": 1704067200000,
-      "tag": "0001_nasty_tempest",
+      "version": "5",
+      "when": 1775549125285,
+      "tag": "0000_square_photon",
       "breakpoints": true
     },
     {
       "idx": 1,
-      "version": "7",
-      "when": 1704067200000,
-      "tag": "0002_new_human_torch",
+      "version": "5",
+      "when": 1775549867925,
+      "tag": "0001_worried_obadiah_stane",
       "breakpoints": true
     },
     {
       "idx": 2,
-      "version": "7",
-      "when": 1712467200000,
-      "tag": "0003_add_missing_policy_columns",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
       "version": "5",
-      "when": 1775528766353,
-      "tag": "0003_good_dorian_gray",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1775528958616,
-      "tag": "0004_glorious_captain_stacy",
+      "when": 1775550239901,
+      "tag": "0002_fuzzy_dragon_lord",
       "breakpoints": true
     }
   ]

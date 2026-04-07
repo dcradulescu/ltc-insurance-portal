@@ -532,3 +532,24 @@
 - [x] Test PDF download functionality
 - [x] Test email PDF delivery
 - [x] Verify all disclaimers display correctly
+
+
+## Bug Fixes - April 2026
+- [ ] Fix "failed to save" error when clicking Generate Strategy button
+
+
+## Remove Social Security Number Field
+- [ ] Remove SSN field from Policy Form UI
+- [ ] Remove SSN from database schema
+- [ ] Update server procedures to exclude SSN
+- [ ] Test and verify removal
+
+
+## Bug Fixes - April 2026
+- [ ] Fix Daily Maximum field only allowing 1 digit (should allow up to 999.99)
+- [ ] Fix "Failed to save" error when clicking save or generate strategy
+
+
+## Schema and Validation Fixes - April 2026
+- [x] Fix database schema mismatch for POA fields (poa_name, poa_relationship)
+- [x] Fix Strategy page validation error showing "Complete Required Fields" when form is complete

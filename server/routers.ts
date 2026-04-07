@@ -82,7 +82,7 @@ export const appRouter = router({
         insuredFullName: z.string().optional(),
         insuredDob: z.string().optional(),
         insuredMailingAddress: z.string().optional(),
-        insuredSsn: z.string().optional(),
+
         insuredMedicareNumber: z.string().optional(),
         insuredMedicaidNumber: z.string().optional(),
         powerOfAttorneyPresent: z.string().optional(),
@@ -247,7 +247,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
           ? result.choices[0].message.content
           : JSON.stringify(result.choices[0].message.content);
 
-        const userId = 1; // Default public user
+        const userId = policy.userId; // Use the policy's userId
         const existing = await getStrategyByPolicyId(input.policyId, userId);
         let strategyId: number;
 
