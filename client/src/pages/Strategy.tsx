@@ -1,6 +1,7 @@
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { StrategyChecklist } from "@/components/StrategyChecklist";
+import { GanttChart } from "@/components/GanttChart";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -561,13 +562,48 @@ export default function Strategy() {
               </div>
 
               {/* Tabbed Content */}
-              <Tabs defaultValue="tasks" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-2">
+              <Tabs defaultValue="timeline" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="timeline">Timeline</TabsTrigger>
                   <TabsTrigger value="tasks">Task Checklists</TabsTrigger>
                   <TabsTrigger value="strategy">Full Strategy Document</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="tasks" className="space-y-6">
+                <TabsContent value="timeline" className="space-y-6">
+                  <GanttChart 
+                    tasks={[
+                      ...stage1Tasks.map((t, i) => ({
+                        id: t.id,
+                        label: t.label,
+                        phase: "phase1" as const,
+                        startDay: 1 + Math.floor(i * 2),
+                        endDay: 3 + Math.floor(i * 2),
+                        critical: t.critical,
+                        completed: t.completed,
+                      })),
+                      ...stage2Tasks.map((t, i) => ({
+                        id: t.id,
+                        label: t.label,
+                        phase: "phase2" as const,
+                        startDay: 18 + Math.floor(i * 3),
+                        endDay: 20 + Math.floor(i * 3),
+                        critical: t.critical,
+                        completed: t.completed,
+                      })),
+                      ...stage3Tasks.map((t, i) => ({
+                        id: t.id,
+                        label: t.label,
+                        phase: "phase3" as const,
+                        startDay: 49 + Math.floor(i * 7),
+                        endDay: 55 + Math.floor(i * 7),
+                        critical: t.critical,
+                        completed: t.completed,
+                      })),
+                    ]}
+                  />
+                </TabsContent>
+
+                <TabsContent value="tasks" className="space-y-6" >
                   {/* Stage 1 */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
