@@ -1,4 +1,5 @@
 import { Layout } from "@/components/Layout";
+import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { StrategyChecklist } from "@/components/StrategyChecklist";
 import { GanttChart } from "@/components/GanttChart";
@@ -688,6 +689,9 @@ export default function Strategy() {
           )}
         </div>
       </section>
+
+      {/* About Home Care - with Start Home Care button */}
+      <AboutHomeCare showStartButton={true} />
     </Layout>
   );
 }

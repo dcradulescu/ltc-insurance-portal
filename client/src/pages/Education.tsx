@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { Layout } from "@/components/Layout";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { 
@@ -565,6 +566,9 @@ export default function Education() {
           </div>
         </div>
       </section>
+
+      {/* About Home Care */}
+      <AboutHomeCare />
 
       {/* CTA Section - Matching Home Page Style */}
       <section

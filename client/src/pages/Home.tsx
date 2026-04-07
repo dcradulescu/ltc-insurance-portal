@@ -1,5 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
+import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { Button } from "@/components/ui/button";
 
 import { Link } from "wouter";
@@ -550,6 +551,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* About Home Care */}
+      <AboutHomeCare />
 
       {/* Bottom CTA */}
       <section
