@@ -1,9 +1,11 @@
 import { Layout } from "@/components/Layout";
+import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { StrategyChecklist } from "@/components/StrategyChecklist";
 import { GanttChart } from "@/components/GanttChart";
 import { CareCalculator } from "@/components/CareCalculator";
+import { PdfDeliveryPanel } from '@/components/PdfDeliveryPanel';
 import { SMSNotificationManager } from "@/components/SMSNotificationManager";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -589,6 +591,25 @@ export default function Strategy() {
                 defaultDailyMax={policy?.dailyMaximum || ""}
                 lifetimeMaximum={policy?.lifetimeMaximum || ""}
               />
+              
+              {/* PDF Download & Email Section */}
+              <PdfDeliveryPanel
+                policyData={{
+                  insuredName: policy?.insuredFullName || "",
+                  policyNumber: policy?.policyNumber || "",
+                  carrierName: policy?.carrierName || "",
+                  dailyMaximum: policy?.dailyMaximum ? parseInt(policy.dailyMaximum) : 0,
+                  monthlyMaximum: policy?.monthlyMaximum ? parseInt(policy.monthlyMaximum) : 0,
+                  lifetimeMaximum: policy?.lifetimeMaximum ? parseInt(policy.lifetimeMaximum) : 0,
+                  diagnosis: policy?.diagnosis || "",
+                  adlLimitations: policy?.adlLimitations || [],
+                  stage1Tasks: stage1Tasks.map(t => t.label),
+                  stage2Tasks: stage2Tasks.map(t => t.label),
+                  stage3Tasks: stage3Tasks.map(t => t.label),
+                  careRecommendations: policy?.careRecommendations || "",
+                  strategyContent: strategy?.strategyContent || "",
+                }}
+              />
 
               {/* Tabbed Content */}
               <Tabs defaultValue="timeline" className="space-y-4">
@@ -692,6 +713,7 @@ export default function Strategy() {
 
       {/* About Home Care - with Start Home Care button */}
       <AboutHomeCare showStartButton={true} />
+          <LegalDisclaimerFooter />
     </Layout>
   );
 }

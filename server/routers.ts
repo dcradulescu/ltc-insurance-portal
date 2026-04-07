@@ -18,12 +18,14 @@ import { policyFormRouter } from "./routers/policyForm";
 import { documentsRouter } from "./routers/documents";
 import { chatRouter } from "./routers/chat";
 import { ENV } from "./_core/env";
+import { pdfDeliveryRouter } from './routers/pdfDelivery';
 import { generatePhysicianLetter } from "./physicianLetterGenerator";
 
 export const appRouter = router({
   system: systemRouter,
   policyForm: policyFormRouter,
   documents: documentsRouter,
+  pdfDelivery: pdfDeliveryRouter,
   
   physicianLetter: router({
     generate: publicProcedure

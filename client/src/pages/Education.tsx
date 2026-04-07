@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { Layout } from "@/components/Layout";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
@@ -597,6 +598,7 @@ export default function Education() {
           </div>
         </div>
       </section>
+          <LegalDisclaimerFooter />
     </Layout>
   );
 }

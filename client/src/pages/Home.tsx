@@ -1,4 +1,5 @@
 import { Layout } from "@/components/Layout";
+import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { Button } from "@/components/ui/button";
@@ -579,6 +580,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+          <LegalDisclaimerFooter />
     </Layout>
   );
 }

@@ -1,4 +1,5 @@
 import { Layout } from "@/components/Layout";
+import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { trpc } from "@/lib/trpc";
@@ -1113,6 +1114,7 @@ export default function PolicyForm() {
 
       {/* About Home Care */}
       <AboutHomeCare />
+          <LegalDisclaimerFooter />
     </Layout>
   );
 }
