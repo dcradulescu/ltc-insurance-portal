@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "648e3712-d45e-4b24-90a3-56abe04f8fbb",
-  "prevId": "421cce46-e98e-4c7d-a19d-8bcc9077960e",
+  "id": "c368603f-f53c-4948-abeb-f0e4924ef6b6",
+  "prevId": "f0afa218-7718-41bd-b4cf-108e2ac346f3",
   "tables": {
     "chatMessages": {
       "name": "chatMessages",
@@ -418,6 +418,37 @@
           "notNull": false,
           "autoincrement": false
         },
+        "inflationAdjustmentEnabled": {
+          "name": "inflationAdjustmentEnabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "inflationType": {
+          "name": "inflationType",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'none'"
+        },
+        "inflationPercentagePerYear": {
+          "name": "inflationPercentagePerYear",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "inflationContinuesAfterBenefits": {
+          "name": "inflationContinuesAfterBenefits",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
         "minAdlsRequired": {
           "name": "minAdlsRequired",
           "type": "varchar(16)",
@@ -625,7 +656,7 @@
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(now())"
         },
@@ -633,7 +664,7 @@
           "name": "updatedAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"
@@ -746,7 +777,7 @@
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(now())"
         },
@@ -754,7 +785,7 @@
           "name": "updatedAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"
