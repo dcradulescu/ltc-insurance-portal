@@ -221,7 +221,7 @@ Fax: ${fax}
 
 **Date:** ${today}
 
-**Re:** ${patientFullName}  
+**Re:** **${patientFullName}**  
 **DOB:** ${patientDob}
 
 ---

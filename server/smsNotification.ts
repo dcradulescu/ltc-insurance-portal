@@ -131,6 +131,11 @@ function isValidPhoneNumber(phoneNumber: string): boolean {
 export function formatPhoneNumber(phoneNumber: string): string {
   const cleaned = phoneNumber.replace(/[\s\-\(\)\.]/g, "");
 
+  // If already has + prefix, return as-is
+  if (cleaned.startsWith("+")) {
+    return cleaned;
+  }
+
   if (cleaned.startsWith("1")) {
     return `+${cleaned}`;
   }
