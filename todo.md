@@ -391,3 +391,27 @@
 - [x] Add email and phone to validation error messages
 - [x] Test email and phone fields work correctly
 - [x] All 20 tests pass with no regressions
+
+
+## Phase 2 - Remaining 30% Implementation (Current Sprint)
+- [ ] Integrate StrategyChecklist component into Strategy.tsx
+- [ ] Implement conditional task generation based on policy data
+- [ ] Create physician letter preview modal component
+- [ ] Add "Preview Letter" button to Strategy page
+- [ ] Implement PDF generation from HTML letter
+- [ ] Add "Download Letter" button
+- [ ] Create Gantt chart component for timeline visualization
+- [ ] Map tasks to timeline (Days 1-17, 18-48, 12+)
+- [ ] Define Stage 3 tasks (post-approval workflow)
+- [ ] Add Stage 3 to strategy generator
+- [ ] Implement PDF export of complete strategy
+- [ ] Implement email delivery of strategy
+- [ ] Create Plan of Care form component
+- [ ] Create W9 form component
+- [ ] Create State License form component
+- [ ] Integrate care provider forms into Strategy page
+- [ ] Write unit tests for all new components
+- [ ] Test complete workflow end-to-end
+- [ ] Fix any bugs or issues
+- [ ] Verify responsive design
+- [ ] Performance optimization
