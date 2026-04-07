@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "a7ad5fa3-5f81-4fb3-96f2-c8ffdb4488db",
-  "prevId": "648e3712-d45e-4b24-90a3-56abe04f8fbb",
+  "id": "f0afa218-7718-41bd-b4cf-108e2ac346f3",
+  "prevId": "a7ad5fa3-5f81-4fb3-96f2-c8ffdb4488db",
   "tables": {
     "chatMessages": {
       "name": "chatMessages",
@@ -197,69 +197,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "insuredEmail": {
-          "name": "insuredEmail",
-          "type": "varchar(320)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "insuredPhone": {
-          "name": "insuredPhone",
-          "type": "varchar(32)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "insuredMailingAddress": {
-          "name": "insuredMailingAddress",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "insuredSsn": {
-          "name": "insuredSsn",
-          "type": "varchar(16)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "insuredMedicareNumber": {
-          "name": "insuredMedicareNumber",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "insuredMedicaidNumber": {
-          "name": "insuredMedicaidNumber",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "powerOfAttorneyPresent": {
-          "name": "powerOfAttorneyPresent",
-          "type": "varchar(8)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "poa_name": {
-          "name": "poa_name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "poa_relationship": {
-          "name": "poa_relationship",
-          "type": "varchar(128)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "carrierName": {
           "name": "carrierName",
           "type": "varchar(255)",
@@ -389,66 +326,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "equipmentAllowanceEnabled": {
-          "name": "equipmentAllowanceEnabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
-        "equipmentAllowanceAmount": {
-          "name": "equipmentAllowanceAmount",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "equipmentAllowanceCoverage": {
-          "name": "equipmentAllowanceCoverage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "equipmentAllowanceDeductedFromLifetime": {
-          "name": "equipmentAllowanceDeductedFromLifetime",
-          "type": "varchar(8)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "inflationAdjustmentEnabled": {
-          "name": "inflationAdjustmentEnabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
-        "inflationType": {
-          "name": "inflationType",
-          "type": "varchar(32)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'none'"
-        },
-        "inflationPercentagePerYear": {
-          "name": "inflationPercentagePerYear",
-          "type": "varchar(16)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "inflationContinuesAfterBenefits": {
-          "name": "inflationContinuesAfterBenefits",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
         "minAdlsRequired": {
           "name": "minAdlsRequired",
           "type": "varchar(16)",
@@ -494,13 +371,6 @@
         "isHomeCareCovidInPolicy": {
           "name": "isHomeCareCovidInPolicy",
           "type": "varchar(8)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "equipmentAllowanceRelatedAdls": {
-          "name": "equipmentAllowanceRelatedAdls",
-          "type": "json",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -603,27 +473,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "qualifyingAdls": {
-          "name": "qualifyingAdls",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "careNeeds": {
-          "name": "careNeeds",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "equipmentNeeds": {
-          "name": "equipmentNeeds",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "preferredCareType": {
           "name": "preferredCareType",
           "type": "varchar(128)",
@@ -638,25 +487,11 @@
           "notNull": false,
           "autoincrement": false
         },
-        "equipmentAllowanceNotes": {
-          "name": "equipmentAllowanceNotes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "fillerRelationship": {
-          "name": "fillerRelationship",
-          "type": "varchar(128)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(now())"
         },
@@ -664,7 +499,7 @@
           "name": "updatedAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"
@@ -777,7 +612,7 @@
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(now())"
         },
@@ -785,7 +620,7 @@
           "name": "updatedAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"

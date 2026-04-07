@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "421cce46-e98e-4c7d-a19d-8bcc9077960e",
-  "prevId": "08c5fa86-bd0b-4732-b2ca-1f266259d253",
+  "id": "89cf6ede-1684-40d3-9079-f4751c0c20be",
+  "prevId": "f0afa218-7718-41bd-b4cf-108e2ac346f3",
   "tables": {
     "chatMessages": {
       "name": "chatMessages",
@@ -389,6 +389,66 @@
           "notNull": false,
           "autoincrement": false
         },
+        "equipmentAllowanceEnabled": {
+          "name": "equipmentAllowanceEnabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "equipmentAllowanceAmount": {
+          "name": "equipmentAllowanceAmount",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "equipmentAllowanceCoverage": {
+          "name": "equipmentAllowanceCoverage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "equipmentAllowanceDeductedFromLifetime": {
+          "name": "equipmentAllowanceDeductedFromLifetime",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "inflationAdjustmentEnabled": {
+          "name": "inflationAdjustmentEnabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "inflationType": {
+          "name": "inflationType",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'none'"
+        },
+        "inflationPercentagePerYear": {
+          "name": "inflationPercentagePerYear",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "inflationContinuesAfterBenefits": {
+          "name": "inflationContinuesAfterBenefits",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
         "minAdlsRequired": {
           "name": "minAdlsRequired",
           "type": "varchar(16)",
@@ -434,6 +494,13 @@
         "isHomeCareCovidInPolicy": {
           "name": "isHomeCareCovidInPolicy",
           "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "equipmentAllowanceRelatedAdls": {
+          "name": "equipmentAllowanceRelatedAdls",
+          "type": "json",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -550,6 +617,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "equipmentNeeds": {
+          "name": "equipmentNeeds",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "preferredCareType": {
           "name": "preferredCareType",
           "type": "varchar(128)",
@@ -559,6 +633,13 @@
         },
         "additionalNotes": {
           "name": "additionalNotes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "equipmentAllowanceNotes": {
+          "name": "equipmentAllowanceNotes",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -575,7 +656,7 @@
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(now())"
         },
@@ -583,7 +664,7 @@
           "name": "updatedAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"
@@ -696,7 +777,7 @@
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(now())"
         },
@@ -704,7 +785,7 @@
           "name": "updatedAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"
@@ -850,7 +931,7 @@
           "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(now())"
         },
@@ -858,7 +939,7 @@
           "name": "updatedAt",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "onUpdate": true,
           "default": "(now())"

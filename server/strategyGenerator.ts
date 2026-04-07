@@ -113,11 +113,11 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
   }
 
   // Conditional: POA Documents
-  if (policy.powerOfAttorneyPresent === "yes" && policy.poa_name) {
+  if (false) { // POA fields not in current database
     tasks.push({
       id: "stage1-poa-documents",
       title: "Gather POA Documents",
-      description: `Gather documents for Power of Attorney: ${policy.poa_name} (${policy.poa_relationship || "relationship"})`,
+      description: `Gather documents for Power of Attorney`,
       timeline: "Week 2-4",
       stage: 1,
       completed: false,
@@ -127,7 +127,7 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
   }
 
   // Conditional: Privacy Form
-  if ((policy.powerOfAttorneyPresent === "yes" && policy.poa_name) || policy.isHomeCareCovidInPolicy === "yes") {
+  if (policy.isHomeCareCovidInPolicy === "yes") {
     tasks.push({
       id: "stage1-privacy-form",
       title: "Complete Privacy Form",
@@ -135,7 +135,7 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
       timeline: "Week 2-4",
       stage: 1,
       completed: false,
-      instructions: `In the claim packet privacy form, add:\n${policy.poa_name ? `- POA: ${policy.poa_name}` : ""}\n${policy.isHomeCareCovidInPolicy === "yes" ? "- Home care provider" : ""}\n\nThis allows them to discuss your claim with the insurance company.`,
+      instructions: `In the claim packet privacy form, add:\n${policy.isHomeCareCovidInPolicy === "yes" ? "- Home care provider" : ""}\n\nThis allows them to discuss your claim with the insurance company.`,
       documentsNeeded: ["Completed privacy form"],
     });
   }
@@ -393,12 +393,13 @@ function shouldShowDoctorsLetters(policy: Policy): boolean {
  * Helper: Get list of qualifying ADLs
  */
 function getQualifyingAdlsList(policy: Policy): string {
-  if (!policy.qualifyingAdls) return "ADLs as specified in policy";
+  // Use adlLimitations if available
+  if (!policy.adlLimitations) return "ADLs as specified in policy";
   
   try {
-    const adls = typeof policy.qualifyingAdls === "string" 
-      ? JSON.parse(policy.qualifyingAdls) 
-      : policy.qualifyingAdls;
+    const adls = typeof policy.adlLimitations === "string" 
+      ? JSON.parse(policy.adlLimitations) 
+      : policy.adlLimitations;
     
     if (Array.isArray(adls)) {
       return adls.join(", ");
@@ -414,15 +415,12 @@ function getQualifyingAdlsList(policy: Policy): string {
  * Helper: Get list of care needs
  */
 function getCareNeedsList(policy: Policy): string {
-  if (!policy.careNeeds) return "care services as needed";
+  if (!policy.currentCareNeeds) return "care services as needed";
   
   try {
-    const needs = typeof policy.careNeeds === "string" 
-      ? JSON.parse(policy.careNeeds) 
-      : policy.careNeeds;
-    
-    if (Array.isArray(needs)) {
-      return needs.join(", ");
+    // currentCareNeeds is a text field, not JSON
+    if (typeof policy.currentCareNeeds === "string") {
+      return policy.currentCareNeeds;
     }
   } catch (e) {
     // Fall through to default

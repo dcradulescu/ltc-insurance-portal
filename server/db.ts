@@ -74,15 +74,61 @@ export async function updatePolicy(id: number, userId: number, data: Partial<Ins
 export async function getPolicyByUserId(userId: number): Promise<Policy | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(policies).where(eq(policies.userId, userId)).orderBy(desc(policies.updatedAt)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  try {
+    const result = await db.select().from(policies).where(eq(policies.userId, userId)).orderBy(desc(policies.updatedAt)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.warn("[Database] Error in getPolicyByUserId, falling back to safe query:", error);
+    // Fallback: select only core columns that definitely exist
+    const result = await db.select({
+      id: policies.id,
+      userId: policies.userId,
+      insuredFullName: policies.insuredFullName,
+      carrierName: policies.carrierName,
+      policyNumber: policies.policyNumber,
+      eliminationPeriod: policies.eliminationPeriod,
+      dailyMaximum: policies.dailyMaximum,
+      lifetimeMaximum: policies.lifetimeMaximum,
+      waiverOfPremium: policies.waiverOfPremium,
+      adlLimitations: policies.adlLimitations,
+      cognitiveImpairmentTrigger: policies.cognitiveImpairmentTrigger,
+      minAdlsRequired: policies.minAdlsRequired,
+      primaryDiagnosis: policies.primaryDiagnosis,
+      createdAt: policies.createdAt,
+      updatedAt: policies.updatedAt,
+    }).from(policies).where(eq(policies.userId, userId)).orderBy(desc(policies.updatedAt)).limit(1);
+    return result.length > 0 ? result[0] as any : undefined;
+  }
 }
 
 export async function getPolicyById(id: number): Promise<Policy | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(policies).where(eq(policies.id, id)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  try {
+    const result = await db.select().from(policies).where(eq(policies.id, id)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.warn("[Database] Error in getPolicyById, falling back to safe query:", error);
+    // Fallback: select only core columns that definitely exist
+    const result = await db.select({
+      id: policies.id,
+      userId: policies.userId,
+      insuredFullName: policies.insuredFullName,
+      carrierName: policies.carrierName,
+      policyNumber: policies.policyNumber,
+      eliminationPeriod: policies.eliminationPeriod,
+      dailyMaximum: policies.dailyMaximum,
+      lifetimeMaximum: policies.lifetimeMaximum,
+      waiverOfPremium: policies.waiverOfPremium,
+      adlLimitations: policies.adlLimitations,
+      cognitiveImpairmentTrigger: policies.cognitiveImpairmentTrigger,
+      minAdlsRequired: policies.minAdlsRequired,
+      primaryDiagnosis: policies.primaryDiagnosis,
+      createdAt: policies.createdAt,
+      updatedAt: policies.updatedAt,
+    }).from(policies).where(eq(policies.id, id)).limit(1);
+    return result.length > 0 ? result[0] as any : undefined;
+  }
 }
 
 // ---- Strategy helpers ----

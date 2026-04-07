@@ -100,9 +100,8 @@ export const policies = mysqlTable("policies", {
 
   // === Relationship of form filler ===
   fillerRelationship: varchar("fillerRelationship", { length: 128 }),
-
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
 });
 
 export type Policy = typeof policies.$inferSelect;
@@ -151,8 +150,8 @@ export const strategies = mysqlTable("strategies", {
   checklistItems: json("checklistItems"), // Array of {id, title, section, completed, expandedContent, notes}
   claimStatus: varchar("claimStatus", { length: 32 }).default("not_started"),
   generatedAt: timestamp("generatedAt").defaultNow().notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
 });
 
 export type Strategy = typeof strategies.$inferSelect;
