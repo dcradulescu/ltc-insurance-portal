@@ -51,6 +51,8 @@ const careRecommendations: Record<string, { schedule: string; prevention: string
 
 // Helper to check if form is complete
 function isFormComplete(policy: any) {
+  if (!policy) return false;
+  
   // Check all REQUIRED fields (updated April 2026)
   const hasInsuredName = policy.insuredFullName && policy.insuredFullName.toString().trim() !== "";
   const hasInsuredEmail = policy.insuredEmail && policy.insuredEmail.toString().trim() !== "";
@@ -77,9 +79,20 @@ function isFormComplete(policy: any) {
     adlCountValid = adlCount >= minRequired;
   }
   
-  return hasInsuredName && hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber && 
+  const isComplete = hasInsuredName && hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber && 
          hasEliminationPeriod && hasWaiverOfPremium && hasDailyMaximum && hasLifetimeMaximum &&
          hasAdlsOrCognitive && hasMinAdlsRequired && adlCountValid;
+  
+  // Debug logging
+  if (!isComplete) {
+    console.log('[Strategy Validation]', {
+      hasInsuredName, hasInsuredEmail, hasInsuredPhone, hasCarrierName, hasPolicyNumber,
+      hasEliminationPeriod, hasWaiverOfPremium, hasDailyMaximum, hasLifetimeMaximum,
+      hasAdlsOrCognitive, hasMinAdlsRequired, adlCountValid
+    });
+  }
+  
+  return isComplete;
 }
 
 type StrategyTask = {

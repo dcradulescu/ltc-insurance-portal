@@ -1074,9 +1074,25 @@ export default function PolicyForm() {
 
           {/* Navigation */}
           <div className="flex justify-between items-center mt-8 pt-6 border-t">
-            <Button variant="outline" onClick={handlePrev} className="gap-1">
-              <ArrowLeft className="w-4 h-4" /> {step > 0 ? "Previous" : "Education"}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handlePrev} className="gap-1">
+                <ArrowLeft className="w-4 h-4" /> {step > 0 ? "Previous" : "Education"}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  if (confirm('Are you sure you want to clear all form data? This cannot be undone.')) {
+                    localStorage.removeItem('ltc_policy_form');
+                    localStorage.removeItem('ltc_calculator_state');
+                    toast.success('All data cleared. Form reset.');
+                    window.location.href = '/policy-form';
+                  }
+                }} 
+                className="gap-1 text-destructive hover:text-destructive"
+              >
+                Clear All Data
+              </Button>
+            </div>
             <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-1">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Progress
             </Button>

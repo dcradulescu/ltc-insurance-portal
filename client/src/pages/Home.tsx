@@ -281,57 +281,13 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Right: Visual */}
+            {/* Right: Static Graphic */}
             <div className="relative hidden lg:block">
-              <div className="bg-white rounded-2xl shadow-xl p-8 border border-border">
-                {/* Form Header */}
-                <div className="mb-6 pb-4 border-b-2 border-primary/20">
-                  <div className="h-3 bg-primary rounded w-1/3 mb-2" />
-                </div>
-                
-                {/* Form Fields */}
-                <div className="space-y-5">
-                  {/* Field 1 */}
-                  <div>
-                    <div className="h-2.5 bg-primary/30 rounded w-1/4 mb-2" />
-                    <div className="h-8 bg-primary/10 rounded border border-primary/20" />
-                  </div>
-                  
-                  {/* Field 2 */}
-                  <div>
-                    <div className="h-2.5 bg-primary/30 rounded w-1/3 mb-2" />
-                    <div className="h-8 bg-primary/10 rounded border border-primary/20" />
-                  </div>
-                  
-                  {/* Field 3 */}
-                  <div>
-                    <div className="h-2.5 bg-primary/30 rounded w-1/4 mb-2" />
-                    <div className="h-8 bg-primary/10 rounded border border-primary/20" />
-                  </div>
-                  
-                  {/* Checkboxes */}
-                  <div className="pt-2">
-                    <div className="h-2.5 bg-primary/30 rounded w-1/3 mb-3" />
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-primary rounded" />
-                        <div className="h-2 bg-primary/20 rounded w-1/2" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-primary/20 rounded border border-primary/30" />
-                        <div className="h-2 bg-primary/20 rounded w-2/3" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Submit Button */}
-                <div className="mt-6 pt-4 border-t border-primary/20">
-                  <div className="h-8 bg-primary rounded w-1/2" />
-                </div>
-              </div>
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/10 rounded-full -z-10" />
-              <div className="absolute -top-4 -left-4 w-16 h-16 bg-teal/10 rounded-full -z-10" />
+              <img 
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/policy-form-section-graphic-eu4U3FJ29ksFNNqnG7N3ow.webp" 
+                alt="Policy Intake Process" 
+                className="w-full h-auto rounded-2xl shadow-xl"
+              />
             </div>
           </div>
         </div>
@@ -341,78 +297,13 @@ export default function Home() {
       <section className="py-20 bg-white">
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Visual */}
+            {/* Left: Static Graphic */}
             <div className="relative hidden lg:block order-2 lg:order-1">
-              <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
-                {/* Workflow Steps - Vertical Flow */}
-                <div className="space-y-3">
-                  {/* Step 1 - Learn About LTC */}
-                  <div className="bg-gradient-to-r from-blue-100 to-blue-50 border-l-4 border-blue-400 rounded-lg p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-400 text-white font-bold text-sm">1</div>
-                      <div className="flex-grow">
-                        <div className="font-semibold text-blue-900 text-sm">Learn About LTC</div>
-                        <div className="text-xs text-blue-700 mt-0.5">Understand your policy and benefits</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Connector Arrow */}
-                  <div className="flex justify-center py-2">
-                    <div className="text-gray-400 text-3xl">↓</div>
-                  </div>
-                  
-                  {/* Step 2 - Discover Your Policy Benefits */}
-                  <div className="bg-gradient-to-r from-green-100 to-green-50 border-l-4 border-green-400 rounded-lg p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-green-400 text-white font-bold text-sm">2</div>
-                      <div className="flex-grow">
-                        <div className="font-semibold text-green-900 text-sm">Discover Your Policy Benefits</div>
-                        <div className="text-xs text-green-700 mt-0.5">Review coverage and eligibility</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Connector Arrow */}
-                  <div className="flex justify-center py-2">
-                    <div className="text-gray-400 text-3xl">↓</div>
-                  </div>
-                  
-                  {/* Step 3 - Develop Custom Strategy */}
-                  <div className="bg-gradient-to-r from-purple-100 to-purple-50 border-l-4 border-purple-400 rounded-lg p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-purple-400 text-white font-bold text-sm">3</div>
-                      <div className="flex-grow">
-                        <div className="font-semibold text-purple-900 text-sm">Develop a Custom Strategy</div>
-                        <div className="text-xs text-purple-700 mt-0.5">Create your personalized action plan</div>
-                        <div className="text-xs text-purple-600 mt-1.5 space-y-0.5">
-                          <div>• Organize documentation</div>
-                          <div>• Prepare for insurance call</div>
-                          <div>• Set timeline and milestones</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Connector Arrow */}
-                  <div className="flex justify-center py-2">
-                    <div className="text-gray-400 text-3xl">↓</div>
-                  </div>
-                  
-                  {/* Step 4 - Initiate a Claim */}
-                  <div className="bg-gradient-to-r from-pink-100 to-pink-50 border-l-4 border-pink-400 rounded-lg p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-pink-400 text-white font-bold text-sm">✓</div>
-                      <div className="flex-grow">
-                        <div className="font-semibold text-pink-900 text-sm">Initiate a Claim</div>
-                        <div className="text-xs text-pink-700 mt-0.5">File your claim with confidence</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-blue-100 rounded-full -z-10 opacity-50" />
-              <div className="absolute -top-4 -right-4 w-16 h-16 bg-pink-100 rounded-full -z-10 opacity-50" />
+              <img 
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/strategy-section-graphic-fKyAWv2ExFCBbFDYZkXKKx.webp" 
+                alt="Strategy Roadmap" 
+                className="w-full h-auto rounded-2xl shadow-xl"
+              />
             </div>
 
             {/* Right: Content */}
