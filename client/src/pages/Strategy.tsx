@@ -2,6 +2,7 @@ import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { StrategyChecklist } from "@/components/StrategyChecklist";
 import { GanttChart } from "@/components/GanttChart";
+import { CareCalculator } from "@/components/CareCalculator";
 import { SMSNotificationManager } from "@/components/SMSNotificationManager";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -581,6 +582,12 @@ export default function Strategy() {
                   </div>
                 ))}
               </div>
+
+              {/* Care Calculator */}
+              <CareCalculator 
+                defaultDailyMax={policy?.dailyMaximum || ""}
+                lifetimeMaximum={policy?.lifetimeMaximum || ""}
+              />
 
               {/* Tabbed Content */}
               <Tabs defaultValue="timeline" className="space-y-4">

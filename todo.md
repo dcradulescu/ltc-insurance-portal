@@ -484,3 +484,12 @@
 - [x] Organize content into 6 categories: glossary, claim_process, best_practices, policy_guide
 - [x] Document includes: 14 glossary terms, 3 strategy stages, 5 best practices guides, 2 policy guides
 - [x] Ready for database population when deployed
+
+
+## Care Calculator Feature - Complete
+- [x] Create CareCalculator component with input fields
+- [x] Extract daily max from policy form data
+- [x] Implement calculation logic (daily max / hourly rate = hours available)
+- [x] Add to Strategy page as 4th section (after Checklist, Gantt, Documents)
+- [x] Test with sample policy data
+- [x] Verify calculations are accurate
