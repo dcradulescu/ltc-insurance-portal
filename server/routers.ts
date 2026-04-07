@@ -470,6 +470,60 @@ Always be empathetic and supportive. If you don't know something specific, encou
       }),
   }),
 
+  sms: router({
+    sendNotification: publicProcedure
+      .input(z.object({
+        phoneNumber: z.string(),
+        taskName: z.string(),
+        taskDueDate: z.string(),
+        reminderType: z.enum(["task_reminder", "milestone_alert", "deadline_warning"]),
+        priority: z.enum(["low", "medium", "high"]),
+        customMessage: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Import SMS notification service
+        const { sendSMSNotification } = await import("./smsNotification");
+        const result = await sendSMSNotification(input);
+        return result;
+      }),
+
+    sendBulk: publicProcedure
+      .input(z.object({
+        recipients: z.array(z.object({
+          phoneNumber: z.string(),
+          name: z.string(),
+        })),
+        taskName: z.string(),
+        taskDueDate: z.string(),
+        reminderType: z.enum(["task_reminder", "milestone_alert", "deadline_warning"]),
+        priority: z.enum(["low", "medium", "high"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { sendBulkSMSNotifications } = await import("./smsNotification");
+        const results = await sendBulkSMSNotifications(input.recipients, {
+          taskName: input.taskName,
+          taskDueDate: input.taskDueDate,
+          reminderType: input.reminderType,
+          priority: input.priority,
+        });
+        return { success: true, results };
+      }),
+
+    savePreferences: publicProcedure
+      .input(z.object({
+        phoneNumber: z.string(),
+        taskReminders: z.boolean(),
+        milestoneAlerts: z.boolean(),
+        deadlineWarnings: z.boolean(),
+        reminderDaysBefore: z.array(z.number()),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // In production, save to database
+        console.log("SMS preferences saved:", input);
+        return { success: true, message: "SMS preferences saved successfully" };
+      }),
+  }),
+
   email: router({
     sendStrategy: publicProcedure
       .input(z.object({

@@ -2,6 +2,7 @@ import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { StrategyChecklist } from "@/components/StrategyChecklist";
 import { GanttChart } from "@/components/GanttChart";
+import { SMSNotificationManager } from "@/components/SMSNotificationManager";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,7 +17,7 @@ import { toast } from "sonner";
 import {
   FileText, Download, Mail, Loader2, CheckCircle2, AlertTriangle,
   Upload, ArrowRight, Shield, ClipboardCheck, Plus, X, ChevronDown, ChevronUp, RefreshCw, Target,
-  Calculator, TrendingUp,
+  Calculator, TrendingUp, MessageCircle,
 } from "lucide-react";
 
 // Care recommendations by diagnosis
@@ -426,6 +427,13 @@ export default function Strategy() {
               {/* Action Bar */}
               <div className="flex flex-wrap gap-3 mb-6 p-4 bg-secondary rounded-lg border border-border">
                 <Button onClick={handleDownloadPDF} variant="outline"><Download className="w-4 h-4 mr-2" /> Download PDF</Button>
+                <Dialog>
+                  <DialogTrigger asChild><Button variant="outline"><MessageCircle className="w-4 h-4 mr-2" /> SMS Notifications</Button></DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader><DialogTitle className="font-serif">SMS Task Reminders</DialogTitle></DialogHeader>
+                    <SMSNotificationManager policyId={policy?.id || 0} insuredName={policy?.insuredFullName || ""} insuredPhone={policy?.insuredPhone} />
+                  </DialogContent>
+                </Dialog>
                 <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
                   <DialogTrigger asChild><Button variant="outline"><Mail className="w-4 h-4 mr-2" /> Email Strategy</Button></DialogTrigger>
                   <DialogContent>
