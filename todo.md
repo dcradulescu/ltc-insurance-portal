@@ -457,3 +457,21 @@
 - Documentation provided
 - Error handling in place
 - Data persistence verified
+
+
+## Document Upload Tracking Feature - In Progress
+- [x] Design document schema and database tables
+- [x] Create document upload API endpoints
+- [x] Build tRPC procedures for document operations
+- [x] Implement file upload to S3 storage
+- [x] Create document management UI component
+- [x] Add document status tracking (pending, uploaded, verified, rejected)
+- [x] Implement document validation (file type, size, format)
+- [x] Build document list view with filtering and search
+- [x] Add document download functionality
+- [x] Create document deletion with confirmation
+- [x] Implement document metadata storage
+- [x] Add progress indicators for uploads
+- [ ] Write unit tests for document operations
+- [ ] Test document upload workflows
+- [ ] Integrate with existing policy form

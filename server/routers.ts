@@ -15,12 +15,14 @@ import { notifyOwner } from "./_core/notification";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { policyFormRouter } from "./routers/policyForm";
+import { documentsRouter } from "./routers/documents";
 import { ENV } from "./_core/env";
 import { generatePhysicianLetter } from "./physicianLetterGenerator";
 
 export const appRouter = router({
   system: systemRouter,
   policyForm: policyFormRouter,
+  documents: documentsRouter,
   
   physicianLetter: router({
     generate: publicProcedure
@@ -318,56 +320,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       }),
   }),
 
-  documents: router({
-    upload: publicProcedure
-      .input(z.object({
-        fileName: z.string(),
-        fileData: z.string(), // base64
-        mimeType: z.string(),
-        category: z.string(),
-        taskId: z.string().optional(),
-        policyId: z.number().optional(),
-        strategyId: z.number().optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const buffer = Buffer.from(input.fileData, "base64");
-        const userId = 1; // Default public user
-        const fileKey = `${userId}-docs/${nanoid()}-${input.fileName}`;
-        const { url } = await storagePut(fileKey, buffer, input.mimeType);
 
-        const docId = await createDocumentUpload({
-          userId: userId,
-          policyId: input.policyId ?? null,
-          strategyId: input.strategyId ?? null,
-          taskId: input.taskId ?? null,
-          category: input.category,
-          fileName: input.fileName,
-          fileUrl: url,
-          fileKey: fileKey,
-          mimeType: input.mimeType,
-          fileSize: buffer.length,
-        });
-
-        return { id: docId, url, fileName: input.fileName };
-      }),
-
-    list: publicProcedure.query(async ({ ctx }) => {
-      return getDocumentsByUserId(1); // Default public user
-    }),
-
-    listByTask: publicProcedure
-      .input(z.object({ taskId: z.string() }))
-      .query(async ({ ctx, input }) => {
-        return getDocumentsByTaskId(input.taskId, 1); // Default public user
-      }),
-
-    delete: publicProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ ctx, input }) => {
-        await deleteDocument(input.id, 1); // Default public user
-        return { success: true };
-      }),
-  }),
 
   contacts: router({
     list: publicProcedure.query(async ({ ctx }) => {
