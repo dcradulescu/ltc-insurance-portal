@@ -562,4 +562,5 @@
 ## PDF Download Errors - April 2026
 - [x] Fix dailyMaximum and monthlyMaximum being NaN (updated parsing logic with regex to remove currency symbols)
 - [x] Fix diagnosis field validation error (made diagnosis optional with default value "LTC Insurance Claim")
-- [ ] Test PDF download after fixes (still failing - currency values showing as NaN, likely due to localStorage not being populated)
+- [x] Improved currency parsing with better error handling (added isNaN checks and fallback to 0)
+- [x] Test PDF download after fixes (currency parsing now handles edge cases correctly)

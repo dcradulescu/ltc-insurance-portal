@@ -165,12 +165,15 @@ export default function Strategy() {
   
   useEffect(() => {
     try {
+      console.log('[Strategy] useEffect running');
       const saved = localStorage.getItem('ltc_policy_form');
-      console.log('[Strategy] localStorage policy:', !!saved);
+      console.log('[Strategy] localStorage policy exists:', !!saved);
       if (saved) {
         const parsed = JSON.parse(saved);
-        console.log('[Strategy] Parsed policy keys:', Object.keys(parsed).slice(0, 5));
+        console.log('[Strategy] Parsed policy:', parsed);
         setPolicyFromStorage(parsed);
+      } else {
+        console.log('[Strategy] No policy in localStorage');
       }
     } catch (err) {
       console.error('[Strategy] Failed to load policy from localStorage:', err);
@@ -612,9 +615,9 @@ export default function Strategy() {
                   insuredName: policy?.insuredFullName || "",
                   policyNumber: policy?.policyNumber || "",
                   carrierName: policy?.carrierName || "",
-                  dailyMaximum: policy?.dailyMaximum ? parseFloat(policy.dailyMaximum.toString().replace(/[^0-9.]/g, '')) || 0 : 0,
-                  monthlyMaximum: policy?.monthlyMaximum ? parseFloat(policy.monthlyMaximum.toString().replace(/[^0-9.]/g, '')) || 0 : 0,
-                  lifetimeMaximum: policy?.lifetimeMaximum ? parseFloat(policy.lifetimeMaximum.toString().replace(/[^0-9.]/g, '')) || 0 : 0,
+                  dailyMaximum: (() => { const val = parseFloat((policy?.dailyMaximum || '0').toString().replace(/[^0-9.]/g, '')); return isNaN(val) ? 0 : val; })(),
+                  monthlyMaximum: (() => { const val = parseFloat((policy?.monthlyMaximum || '0').toString().replace(/[^0-9.]/g, '')); return isNaN(val) ? 0 : val; })(),
+                  lifetimeMaximum: (() => { const val = parseFloat((policy?.lifetimeMaximum || '0').toString().replace(/[^0-9.]/g, '')); return isNaN(val) ? 0 : val; })(),
                   diagnosis: "LTC Insurance Claim",
                   adlLimitations: policy?.qualifyingAdls || policy?.adlLimitations || [],
                   stage1Tasks: stage1Tasks.map(t => t.label),
