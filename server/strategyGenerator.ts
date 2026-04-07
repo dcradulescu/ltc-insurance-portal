@@ -337,8 +337,211 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
     documentsNeeded: ["Determination letter"],
   });
 
-  // ===== STAGE 3: POST APPROVAL (Weeks 12+) =====
-  // TODO: Define Stage 3 tasks
+  // ===== STAGE 3: POST APPROVAL (Day 49+) =====
+
+  // Always shown: Receive Approval Letter
+  tasks.push({
+    id: "stage3-receive-approval",
+    title: "Receive Approval Letter & Reimbursement Authorization",
+    description: "Insurance company sends formal approval with reimbursement details.",
+    timeline: "Day 49",
+    stage: 3,
+    completed: false,
+    critical: true,
+    instructions: "File approval letter in permanent records. Verify approved benefit amounts match your policy and claim submission. Confirm reimbursement payment schedule.",
+    documentsNeeded: ["Approval letter", "Authorization documentation"],
+  });
+
+  // Always shown: Set Up Reimbursement
+  tasks.push({
+    id: "stage3-setup-reimbursement",
+    title: "Set Up Reimbursement Process",
+    description: `Establish mechanism for receiving reimbursements${policy.assignmentOfBenefits === "yes" ? " (Insurance pays provider directly)" : " (Family pays, then seeks reimbursement)"}.`,
+    timeline: "Day 50-55",
+    stage: 3,
+    completed: false,
+    critical: true,
+    instructions: policy.assignmentOfBenefits === "yes" 
+      ? "Verify home care agency has received authorization. Confirm agency has insurance company information. Establish invoice submission process."
+      : "Open dedicated account for tracking expenses. Establish documentation process for invoices and receipts. Set up submission process to insurance company.",
+    documentsNeeded: ["Reimbursement authorization", "Payment instructions"],
+  });
+
+  // Always shown: Care Documentation
+  tasks.push({
+    id: "stage3-care-documentation",
+    title: "Establish Care Documentation & Tracking System",
+    description: "Create system for tracking all care provided, expenses, and compliance.",
+    timeline: "Day 50-56",
+    stage: 3,
+    completed: false,
+    critical: true,
+    instructions: "Set up care tracking system. Track daily care logs, medical appointments, medication changes, hospitalizations, and expenses. Establish filing system for receipts and confirmations.",
+    documentsNeeded: ["Care tracking templates", "Expense tracking forms"],
+  });
+
+  // Conditional: Confirm Elimination Period
+  if (policy.eliminationPeriod && parseInt(policy.eliminationPeriod) > 0) {
+    tasks.push({
+      id: "stage3-confirm-elimination",
+      title: "Confirm Elimination Period Completion & Benefit Start",
+      description: `Verify ${calculateEffectiveEliminationPeriod(policy)}-day elimination period has been satisfied.`,
+      timeline: "Day 51-60",
+      stage: 3,
+      completed: false,
+      critical: true,
+      instructions: `Calculate total days of care provided. Verify elimination period has been met. Confirm benefit start date with insurance company. Ensure first reimbursement includes all eligible care.`,
+      documentsNeeded: ["Care documentation", "Benefit start confirmation"],
+    });
+  }
+
+  // Conditional: Monitor Waiver of Premium
+  if (policy.waiverOfPremium === "yes") {
+    tasks.push({
+      id: "stage3-waiver-premium",
+      title: "Monitor Waiver of Premium Status",
+      description: "Confirm premiums have been waived and monitor throughout care.",
+      timeline: "Day 52-60 (Ongoing)",
+      stage: 3,
+      completed: false,
+      critical: true,
+      instructions: "Confirm waiver has been activated. Verify no premium payments are being charged. Review monthly statements to ensure premiums remain waived. Report any premium charges immediately.",
+      documentsNeeded: ["Waiver confirmation", "Monthly billing statements"],
+    });
+  }
+
+  // Conditional: Track Inflation Rider
+  if (policy.inflationAdjustmentEnabled === true) {
+    tasks.push({
+      id: "stage3-inflation-rider",
+      title: `Track Inflation Rider Application (${policy.inflationType === "cpi" ? "CPI-based" : "Fixed Percentage"})`,
+      description: `Monitor and verify annual benefit increases${policy.inflationContinuesAfterBenefits ? " (continues after benefits begin)" : " (may stop when benefits begin)"}.`,
+      timeline: "Day 53-65 (Annually)",
+      stage: 3,
+      completed: false,
+      instructions: policy.inflationType === "cpi"
+        ? "Annually verify benefit increase matches published CPI rates. Request adjustment if not applied."
+        : `Annually verify benefit increases by ${policy.inflationPercentagePerYear}%. Confirm increases compound year-over-year. Track benefit growth for long-term planning.`,
+      documentsNeeded: ["Inflation rider documentation", "Annual benefit statements"],
+    });
+  }
+
+  // Conditional: Equipment Allowance
+  if (policy.equipmentAllowanceEnabled === true) {
+    tasks.push({
+      id: "stage3-equipment-allowance",
+      title: "Manage Equipment Allowance Claims",
+      description: `Claim reimbursement for approved equipment (${policy.equipmentAllowanceAmount || "amount"} available${policy.equipmentAllowanceDeductedFromLifetime ? ", deducted from lifetime max" : ""}).`,
+      timeline: "Day 55-90 (As needed)",
+      stage: 3,
+      completed: false,
+      instructions: `Identify needed equipment based on ADL limitations. Verify equipment is covered. Obtain pre-approval if required. Purchase approved equipment. Submit invoice and proof of payment. Track usage toward allowance limit.`,
+      documentsNeeded: ["Equipment allowance documentation", "Invoices", "Proof of payment"],
+    });
+  }
+
+  // Always shown: Medical Appointments
+  tasks.push({
+    id: "stage3-medical-appointments",
+    title: "Schedule & Attend Follow-up Medical Appointments",
+    description: "Maintain ongoing medical management with physician follow-ups.",
+    timeline: "Day 60-90 (Ongoing)",
+    stage: 3,
+    completed: false,
+    critical: true,
+    instructions: "Schedule follow-up appointments with primary care physician and specialists. Ensure care provider assists with transportation. Maintain records of all appointments. Communicate any condition changes to physician.",
+    documentsNeeded: ["Appointment confirmations", "Medical records"],
+  });
+
+  // Conditional: Review Care Plan
+  tasks.push({
+    id: "stage3-review-care-plan",
+    title: "Review & Adjust Care Plan (if needed)",
+    description: "Periodically review care plan and adjust if condition changes.",
+    timeline: "Day 75-90 (As needed)",
+    stage: 3,
+    completed: false,
+    instructions: "Schedule care plan review if significant changes in ADL function, new diagnosis, medication changes, hospitalization, or living situation changes. Modify care plan and submit updated version to insurance company.",
+    documentsNeeded: ["Updated care plan", "Medical records"],
+  });
+
+  // Always shown: Monitor Lifetime Maximum
+  tasks.push({
+    id: "stage3-lifetime-maximum",
+    title: "Monitor Lifetime Maximum Usage",
+    description: `Track cumulative reimbursements against lifetime maximum (${policy.lifetimeMaximum || "amount"} available).`,
+    timeline: "Day 80-120 (Ongoing)",
+    stage: 3,
+    completed: false,
+    critical: true,
+    instructions: "Maintain running total of all reimbursements. Calculate remaining balance. Project how long remaining benefits will last. Plan for care continuation if benefits approach maximum.",
+    documentsNeeded: ["Monthly reimbursement statements", "Benefit calculations"],
+  });
+
+  // Conditional: Premium Payments
+  if (policy.waiverOfPremium !== "yes") {
+    tasks.push({
+      id: "stage3-premium-payments",
+      title: "Maintain Premium Payment Records",
+      description: "Continue paying premiums to maintain policy in force.",
+      timeline: "Day 85-365 (Ongoing)",
+      stage: 3,
+      completed: false,
+      critical: true,
+      instructions: "Set up automatic premium payments if available. Maintain records of all payments. Verify premiums are being applied correctly. Report any discrepancies immediately.",
+      documentsNeeded: ["Premium payment confirmations", "Policy statements"],
+    });
+  }
+
+  // Always shown: Annual Review
+  tasks.push({
+    id: "stage3-annual-review",
+    title: "Prepare for Annual Policy Review",
+    description: "Prepare documentation for insurance company annual review.",
+    timeline: "Day 300-365 (Annually)",
+    stage: 3,
+    completed: false,
+    instructions: "Gather all care documentation for the year. Compile medical records and physician statements. Prepare summary of care provided and benefits received. Organize all documentation for accessibility.",
+    documentsNeeded: ["Complete care documentation", "Medical records", "Reimbursement statements"],
+  });
+
+  // Conditional: Claim Disputes
+  tasks.push({
+    id: "stage3-claim-disputes",
+    title: "Handle Claim Disputes or Denials (if applicable)",
+    description: "Follow dispute process if insurance company disputes or denies claims.",
+    timeline: "As needed (30-60 days)",
+    stage: 3,
+    completed: false,
+    critical: true,
+    instructions: "Request detailed explanation from insurance company. Gather all supporting documentation. Prepare written response with evidence. Submit appeal with all documentation. Follow up on appeal status. Consider external review or legal consultation if needed.",
+    documentsNeeded: ["Dispute letter", "Supporting documentation", "Appeal letter"],
+  });
+
+  // Always shown: Communication
+  tasks.push({
+    id: "stage3-communication",
+    title: "Maintain Regular Communication",
+    description: "Keep in touch with care provider, family, and insurance company.",
+    timeline: "Day 90-365 (Ongoing)",
+    stage: 3,
+    completed: false,
+    instructions: "Schedule regular check-ins with care provider. Discuss care quality and any concerns. Review care documentation together. Communicate with family about care progress. Address issues promptly. Maintain positive relationship with provider.",
+    documentsNeeded: ["Communication logs"],
+  });
+
+  // Always shown: Plan Beyond Benefits
+  tasks.push({
+    id: "stage3-plan-beyond",
+    title: "Plan for Care Continuation Beyond Benefits",
+    description: "Begin planning for care funding when lifetime maximum is approached.",
+    timeline: "Day 365-730 (As benefits approach maximum)",
+    stage: 3,
+    completed: false,
+    critical: true,
+    instructions: "Calculate projected date when lifetime maximum will be reached. Research Medicaid eligibility if applicable. Explore other funding sources. Discuss care continuation options with family. Develop transition plan for when benefits end.",
+    documentsNeeded: ["Benefit projections", "Medicaid information", "Care continuation plan"],
+  });
 
   return tasks;
 }
