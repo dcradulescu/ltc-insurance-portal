@@ -1,5 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
+import { StrategyChecklist } from "@/components/StrategyChecklist";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

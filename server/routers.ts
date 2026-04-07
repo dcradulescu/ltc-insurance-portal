@@ -16,10 +16,42 @@ import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { policyFormRouter } from "./routers/policyForm";
 import { ENV } from "./_core/env";
+import { generatePhysicianLetter } from "./physicianLetterGenerator";
 
 export const appRouter = router({
   system: systemRouter,
   policyForm: policyFormRouter,
+  
+  physicianLetter: router({
+    generate: publicProcedure
+      .input(z.object({
+        patientFullName: z.string(),
+        patientDob: z.string(),
+        diagnosis: z.string(),
+        lastVisitDate: z.string().optional(),
+        physicianName: z.string().optional(),
+        physicianCredentials: z.string().optional(),
+        practiceName: z.string().optional(),
+        streetAddress: z.string().optional(),
+        cityStateZip: z.string().optional(),
+        phone: z.string().optional(),
+        fax: z.string().optional(),
+        qualifyingAdls: z.array(z.string()),
+        cognitiveImpairmentTrigger: z.boolean(),
+        cognitiveRisks: z.array(z.string()).optional(),
+        minAdlsRequired: z.number(),
+        prognosis: z.string().optional(),
+      }))
+      .mutation(({ input }) => {
+        const letter = generatePhysicianLetter(input);
+        return {
+          html: letter.html,
+          text: letter.text,
+          markdown: letter.markdown,
+        };
+      }),
+  }),
+
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

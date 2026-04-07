@@ -178,6 +178,17 @@ type FormData = {
   careNotesRequired: string;
   numberOfDaysUntilPayment: string;
   assignmentOfBenefits: string;
+  equipmentAllowanceEnabled: boolean;
+  equipmentAllowanceAmount: string;
+  equipmentAllowanceCoverage: string;
+  equipmentAllowanceDeductedFromLifetime: string;
+  equipmentAllowanceRelatedAdls: string[];
+  equipmentNeeds: string[];
+  equipmentAllowanceNotes: string;
+  inflationAdjustmentEnabled: boolean;
+  inflationType: string;
+  inflationPercentagePerYear: string;
+  inflationContinuesAfterBenefits: boolean;
   caseManagerAssigned: string;
   caseManagerName: string;
   thirdPartyAssessmentRequired: string;
@@ -199,6 +210,8 @@ const defaultForm: FormData = {
   eliminationPeriod: "", lookBackPeriodEnabled: false, lookBackPeriodDays: "", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "", monthlyMaximum: "", lifetimeMaximum: "",
   minAdlsRequired: "0", qualifyingAdls: [], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "",
   numberOfDaysUntilPayment: "", assignmentOfBenefits: "",
+  equipmentAllowanceEnabled: false, equipmentAllowanceAmount: "", equipmentAllowanceCoverage: "", equipmentAllowanceDeductedFromLifetime: "", equipmentAllowanceRelatedAdls: [], equipmentNeeds: [], equipmentAllowanceNotes: "",
+  inflationAdjustmentEnabled: false, inflationType: "none", inflationPercentagePerYear: "", inflationContinuesAfterBenefits: false,
   caseManagerAssigned: "", caseManagerName: "", thirdPartyAssessmentRequired: "",
   cognitiveImpairmentTrigger: "",
   careNeeds: [], careNotes: "",
@@ -337,6 +350,17 @@ export default function PolicyForm() {
         careNotesRequired: p.careNotesRequired || "",
         numberOfDaysUntilPayment: p.numberOfDaysUntilPayment || "",
         assignmentOfBenefits: p.assignmentOfBenefits || "",
+        equipmentAllowanceEnabled: p.equipmentAllowanceEnabled || false,
+        equipmentAllowanceAmount: p.equipmentAllowanceAmount || "",
+        equipmentAllowanceCoverage: p.equipmentAllowanceCoverage || "",
+        equipmentAllowanceDeductedFromLifetime: p.equipmentAllowanceDeductedFromLifetime || "",
+        equipmentAllowanceRelatedAdls: Array.isArray(p.equipmentAllowanceRelatedAdls) ? (p.equipmentAllowanceRelatedAdls as string[]) : [],
+        equipmentNeeds: Array.isArray(p.equipmentNeeds) ? (p.equipmentNeeds as string[]) : [],
+        equipmentAllowanceNotes: p.equipmentAllowanceNotes || "",
+        inflationAdjustmentEnabled: p.inflationAdjustmentEnabled || false,
+        inflationType: p.inflationType || "none",
+        inflationPercentagePerYear: p.inflationPercentagePerYear || "",
+        inflationContinuesAfterBenefits: p.inflationContinuesAfterBenefits || false,
         caseManagerAssigned: p.caseManagerAssigned || "",
         caseManagerName: p.caseManagerName || "",
         thirdPartyAssessmentRequired: p.thirdPartyAssessmentRequired || "",

@@ -7,8 +7,8 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
@@ -22,11 +22,15 @@ export const policies = mysqlTable("policies", {
   // === Insured Person Info ===
   insuredFullName: varchar("insuredFullName", { length: 255 }),
   insuredDob: varchar("insuredDob", { length: 32 }),
+  insuredEmail: varchar("insuredEmail", { length: 320 }),
+  insuredPhone: varchar("insuredPhone", { length: 32 }),
   insuredMailingAddress: text("insuredMailingAddress"),
   insuredSsn: varchar("insuredSsn", { length: 16 }),
   insuredMedicareNumber: varchar("insuredMedicareNumber", { length: 64 }),
   insuredMedicaidNumber: varchar("insuredMedicaidNumber", { length: 64 }),
   powerOfAttorneyPresent: varchar("powerOfAttorneyPresent", { length: 8 }),
+  poa_name: varchar("poa_name", { length: 255 }),
+  poa_relationship: varchar("poa_relationship", { length: 128 }),
 
   // === Carrier Info ===
   carrierName: varchar("carrierName", { length: 255 }),
@@ -51,12 +55,22 @@ export const policies = mysqlTable("policies", {
   dailyMaximum: varchar("dailyMaximum", { length: 64 }),
   monthlyMaximum: varchar("monthlyMaximum", { length: 64 }),
   lifetimeMaximum: varchar("lifetimeMaximum", { length: 64 }),
+  equipmentAllowanceEnabled: boolean("equipmentAllowanceEnabled").default(false),
+  equipmentAllowanceAmount: varchar("equipmentAllowanceAmount", { length: 64 }),
+  equipmentAllowanceCoverage: text("equipmentAllowanceCoverage"),
+  equipmentAllowanceDeductedFromLifetime: varchar("equipmentAllowanceDeductedFromLifetime", { length: 8 }),
+  inflationAdjustmentEnabled: boolean("inflationAdjustmentEnabled").default(false),
+  inflationType: varchar("inflationType", { length: 32 }).default("none"),
+  inflationPercentagePerYear: varchar("inflationPercentagePerYear", { length: 16 }),
+  inflationContinuesAfterBenefits: boolean("inflationContinuesAfterBenefits").default(false),
   minAdlsRequired: varchar("minAdlsRequired", { length: 16 }),
   waiverOfPremium: varchar("waiverOfPremium", { length: 8 }),
   cnaRequired: varchar("cnaRequired", { length: 8 }),
   careNotesRequired: varchar("careNotesRequired", { length: 8 }),
   paymentCycle: varchar("paymentCycle", { length: 128 }),
   assignmentOfBenefits: varchar("assignmentOfBenefits", { length: 8 }),
+  isHomeCareCovidInPolicy: varchar("isHomeCareCovidInPolicy", { length: 8 }),
+  equipmentAllowanceRelatedAdls: json("equipmentAllowanceRelatedAdls"),
 
   // === Medical / Administrative ===
   caseManagerName: varchar("caseManagerName", { length: 255 }),
@@ -77,8 +91,12 @@ export const policies = mysqlTable("policies", {
   diagnosisOrCondition: text("diagnosisOrCondition"),
   primaryDiagnosis: varchar("primaryDiagnosis", { length: 255 }),
   adlLimitations: json("adlLimitations"),
+  qualifyingAdls: json("qualifyingAdls"),
+  careNeeds: json("careNeeds"),
+  equipmentNeeds: json("equipmentNeeds"),
   preferredCareType: varchar("preferredCareType", { length: 128 }),
   additionalNotes: text("additionalNotes"),
+  equipmentAllowanceNotes: text("equipmentAllowanceNotes"),
 
   // === Relationship of form filler ===
   fillerRelationship: varchar("fillerRelationship", { length: 128 }),
@@ -89,6 +107,36 @@ export const policies = mysqlTable("policies", {
 
 export type Policy = typeof policies.$inferSelect;
 export type InsertPolicy = typeof policies.$inferInsert;
+
+export type EquipmentAllowance = {
+  enabled: boolean;
+  amount: string;
+  coverage: string;
+  deductedFromLifetime: boolean;
+  relatedAdls: string[];
+  equipmentNeeds: string[];
+  notes: string;
+};
+
+export type InflationAdjustment = {
+  enabled: boolean;
+  type: "none" | "cpi" | "fixed_percentage";
+  percentagePerYear?: number;
+  continuesAfterBenefits: boolean;
+};
+
+// Helper function to extract equipment allowance from policy
+export function getEquipmentAllowance(policy: Policy): EquipmentAllowance {
+  return {
+    enabled: policy.equipmentAllowanceEnabled || false,
+    amount: policy.equipmentAllowanceAmount || "",
+    coverage: policy.equipmentAllowanceCoverage || "",
+    deductedFromLifetime: policy.equipmentAllowanceDeductedFromLifetime === "yes",
+    relatedAdls: policy.equipmentAllowanceRelatedAdls ? (typeof policy.equipmentAllowanceRelatedAdls === "string" ? JSON.parse(policy.equipmentAllowanceRelatedAdls) : policy.equipmentAllowanceRelatedAdls) : [],
+    equipmentNeeds: policy.equipmentNeeds ? (typeof policy.equipmentNeeds === "string" ? JSON.parse(policy.equipmentNeeds) : policy.equipmentNeeds) : [],
+    notes: policy.equipmentAllowanceNotes || "",
+  };
+}
 
 export const strategies = mysqlTable("strategies", {
   id: int("id").autoincrement().primaryKey(),

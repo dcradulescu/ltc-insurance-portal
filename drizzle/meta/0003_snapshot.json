@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "7c372e3e-ba0e-4b52-8df0-dd9f123be6cc",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "421cce46-e98e-4c7d-a19d-8bcc9077960e",
+  "prevId": "08c5fa86-bd0b-4732-b2ca-1f266259d253",
   "tables": {
     "chatMessages": {
       "name": "chatMessages",
@@ -197,6 +197,20 @@
           "notNull": false,
           "autoincrement": false
         },
+        "insuredEmail": {
+          "name": "insuredEmail",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "insuredPhone": {
+          "name": "insuredPhone",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "insuredMailingAddress": {
           "name": "insuredMailingAddress",
           "type": "text",
@@ -228,6 +242,20 @@
         "powerOfAttorneyPresent": {
           "name": "powerOfAttorneyPresent",
           "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "poa_name": {
+          "name": "poa_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "poa_relationship": {
+          "name": "poa_relationship",
+          "type": "varchar(128)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -295,6 +323,51 @@
           "notNull": false,
           "autoincrement": false
         },
+        "lookBackPeriodEnabled": {
+          "name": "lookBackPeriodEnabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "lookBackPeriodDays": {
+          "name": "lookBackPeriodDays",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "careCoordinatorReductionEnabled": {
+          "name": "careCoordinatorReductionEnabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "careCoordinatorReducedToDays": {
+          "name": "careCoordinatorReducedToDays",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reductionInCareProvidedEnabled": {
+          "name": "reductionInCareProvidedEnabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "reductionInCareDaysCountedAs7": {
+          "name": "reductionInCareDaysCountedAs7",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "dailyMaximum": {
           "name": "dailyMaximum",
           "type": "varchar(64)",
@@ -353,6 +426,13 @@
         },
         "assignmentOfBenefits": {
           "name": "assignmentOfBenefits",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isHomeCareCovidInPolicy": {
+          "name": "isHomeCareCovidInPolicy",
           "type": "varchar(8)",
           "primaryKey": false,
           "notNull": false,
@@ -442,8 +522,29 @@
           "notNull": false,
           "autoincrement": false
         },
+        "primaryDiagnosis": {
+          "name": "primaryDiagnosis",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "adlLimitations": {
           "name": "adlLimitations",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "qualifyingAdls": {
+          "name": "qualifyingAdls",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "careNeeds": {
+          "name": "careNeeds",
           "type": "json",
           "primaryKey": false,
           "notNull": false,
@@ -563,6 +664,13 @@
         },
         "stage3Tasks": {
           "name": "stage3Tasks",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "checklistItems": {
+          "name": "checklistItems",
           "type": "json",
           "primaryKey": false,
           "notNull": false,

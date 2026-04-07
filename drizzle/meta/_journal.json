@@ -5,22 +5,36 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1772139714530,
-      "tag": "0000_black_grey_gargoyle",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
       "when": 1773780424598,
       "tag": "0001_nasty_tempest",
       "breakpoints": true
     },
     {
-      "idx": 2,
+      "idx": 1,
       "version": "5",
       "when": 1775283237679,
       "tag": "0002_new_human_torch",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775477885488,
+      "tag": "0003_thick_quentin_quire",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1775515603770,
+      "tag": "0004_fearless_klaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1775516460071,
+      "tag": "0005_mushy_roulette",
       "breakpoints": true
     }
   ]
