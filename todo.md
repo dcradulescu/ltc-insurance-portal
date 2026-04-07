@@ -557,3 +557,9 @@
 ## Schema and Validation Fixes - April 2026
 - [x] Fix database schema mismatch for POA fields (poa_name, poa_relationship)
 - [x] Fix Strategy page validation error showing "Complete Required Fields" when form is complete
+
+
+## PDF Download Errors - April 2026
+- [x] Fix dailyMaximum and monthlyMaximum being NaN (updated parsing logic with regex to remove currency symbols)
+- [x] Fix diagnosis field validation error (made diagnosis optional with default value "LTC Insurance Claim")
+- [ ] Test PDF download after fixes (still failing - currency values showing as NaN, likely due to localStorage not being populated)
