@@ -475,3 +475,12 @@
 - [ ] Write unit tests for document operations
 - [ ] Test document upload workflows
 - [ ] Integrate with existing policy form
+
+
+## RAG Knowledge Base Population - Complete
+- [x] Extract all project information (definitions, strategies, tooltips, notes)
+- [x] Create RAG seed data file with 20 comprehensive documents (rag-seed-data.mjs)
+- [x] Create seed script to populate database (server/seed-rag.mjs)
+- [x] Organize content into 6 categories: glossary, claim_process, best_practices, policy_guide
+- [x] Document includes: 14 glossary terms, 3 strategy stages, 5 best practices guides, 2 policy guides
+- [x] Ready for database population when deployed
