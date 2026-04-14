@@ -11,13 +11,14 @@ interface CareCalculatorProps {
 export function CareCalculator({ defaultDailyMax = "", lifetimeMaximum = "" }: CareCalculatorProps) {
   const [showCalculator, setShowCalculator] = useState(true);
   const [dailyMax, setDailyMax] = useState(defaultDailyMax.toString());
+  const [lifetimeMax, setLifetimeMax] = useState(lifetimeMaximum.toString());
   const [hourlyRate, setHourlyRate] = useState("");
   const [hoursPerDay, setHoursPerDay] = useState("");
   const [daysPerWeek, setDaysPerWeek] = useState("");
 
   // Calculate care metrics
   const calculations = useMemo(() => {
-    if (!dailyMax || !hourlyRate || !hoursPerDay || !daysPerWeek || !lifetimeMaximum) {
+    if (!dailyMax || !hourlyRate || !hoursPerDay || !daysPerWeek || !lifetimeMax) {
       return null;
     }
 
@@ -26,7 +27,7 @@ export function CareCalculator({ defaultDailyMax = "", lifetimeMaximum = "" }: C
       const hourly = parseFloat(hourlyRate);
       const hours = parseFloat(hoursPerDay);
       const days = parseFloat(daysPerWeek);
-      const lifetime = parseFloat(lifetimeMaximum.toString());
+      const lifetime = parseFloat(lifetimeMax);
 
       // Validate inputs
       if (isNaN(daily) || isNaN(hourly) || isNaN(hours) || isNaN(days) || isNaN(lifetime)) {
@@ -76,7 +77,7 @@ export function CareCalculator({ defaultDailyMax = "", lifetimeMaximum = "" }: C
     } catch (_e) {
       return null;
     }
-  }, [dailyMax, hourlyRate, hoursPerDay, daysPerWeek, lifetimeMaximum]);
+  }, [dailyMax, hourlyRate, hoursPerDay, daysPerWeek, lifetimeMax]);
 
   return (
     <div className="mb-8 p-6 rounded-lg border border-slate-200 bg-slate-50">
@@ -164,6 +165,23 @@ export function CareCalculator({ defaultDailyMax = "", lifetimeMaximum = "" }: C
                 max="7"
               />
               <p className="text-xs text-slate-500 mt-1">Days per week you need care</p>
+            </div>
+
+            <div>
+              <Label htmlFor="lifetimeMax" className="text-sm font-medium">
+                Lifetime Maximum ($) *
+              </Label>
+              <Input
+                id="lifetimeMax"
+                type="number"
+                placeholder="e.g., 500000"
+                value={lifetimeMax}
+                onChange={(e) => setLifetimeMax(e.target.value)}
+                className="mt-1"
+                step="0.01"
+                min="0"
+              />
+              <p className="text-xs text-slate-500 mt-1">Total lifetime benefit from your policy</p>
             </div>
           </div>
 
@@ -259,7 +277,7 @@ export function CareCalculator({ defaultDailyMax = "", lifetimeMaximum = "" }: C
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-slate-600">Lifetime Maximum</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">${lifetimeMaximum}</p>
+                    <p className="text-2xl font-bold text-slate-900 mt-1">${lifetimeMax}</p>
                   </div>
                   <div>
                     <p className="text-sm text-slate-600">Weeks of Care Available</p>
@@ -271,7 +289,7 @@ export function CareCalculator({ defaultDailyMax = "", lifetimeMaximum = "" }: C
                   </div>
                 </div>
                 <p className="text-xs text-slate-600 mt-4">
-                  At ${calculations.insurancePaysWeekly}/week, your {lifetimeMaximum} lifetime maximum will cover approximately {calculations.monthsOfCare} months ({calculations.yearsOfCare} years) of care.
+                  At ${calculations.insurancePaysWeekly}/week, your ${lifetimeMax} lifetime maximum will cover approximately {calculations.monthsOfCare} months ({calculations.yearsOfCare} years) of care.
                 </p>
               </div>
             </div>

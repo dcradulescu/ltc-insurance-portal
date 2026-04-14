@@ -594,3 +594,10 @@
 - [x] All 55 tests passing
 - [x] Dev server running without errors
 - [ ] Re-implement RAG/chat functionality with proper schema (future enhancement)
+
+## Care Cost Calculator Enhancement
+- [x] Add explicit Lifetime Maximum field to calculator (currently pulls from policy but not editable)
+- [x] Make all five calculator fields editable: Daily Max, Lifetime Max, Hours of Care, Days per Week, Hourly Rate
+- [x] Allow users to override policy values in the calculator
+- [x] Test calculator with all fields editable and verify calculations update
+- [x] Verify real-time calculations update when Lifetime Maximum changes (208 weeks at $250k vs 416 weeks at $500k)
