@@ -58,20 +58,22 @@ const formatCurrency = (value: string): string => {
   let dollars = dollarPart || '0';
   let cents = centPart ? centPart.substring(0, 2) : '00';
   
-  // Limit dollars to 3 digits (0-999)
-  if (dollars.length > 3) {
-    dollars = dollars.substring(0, 3);
+  // Allow up to 10 digits for dollars (supports up to $9,999,999,999)
+  if (dollars.length > 10) {
+    dollars = dollars.substring(0, 10);
   }
   
   // Remove leading zeros but keep at least one digit
   dollars = dollars.replace(/^0+/, '') || '0';
+  
+  // Add thousands separators for readability
+  dollars = dollars.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   
   // Pad cents to 2 digits
   cents = (cents + '00').substring(0, 2);
   
   return `$${dollars}.${cents}`;
 };
-
 // Helper function to format date with MM/DD/YYYY mask
 const formatDateInput = (value: string): string => {
   const cleaned = value.replace(/\D/g, '');

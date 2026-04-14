@@ -337,3 +337,12 @@
 - [x] Fixed duplicate useState import in CareCalculator.tsx
 - [x] Added fallback query logic for database column mismatch
 - [x] Restored equipmentAllowance column to schema with default value
+
+
+## Bug: Currency Fields Cannot Be Modified (April 14, 2026)
+- [x] Fix currency input fields (daily max, lifetime max, monthly max) - cursor appears but cannot modify
+- [x] Check if fields are read-only or disabled
+- [x] Verify onChange handlers are working
+- [x] Test currency formatting doesn't prevent input
+- [x] Root cause: formatCurrency was limiting dollars to 3 digits max ($0-$999.99)
+- [x] Fixed: Now supports up to 10 digits ($0-$9,999,999,999) with thousands separators
