@@ -66,8 +66,8 @@ export function CareCalculator({ defaultDailyMax = 250, lifetimeMaximum = 500000
       // Daily: divide monthly premium by actual care days per month (daysPerWeek * 4.33)
       const careDaysPerMonth = days * 4.33;
       const premiumSavingsDaily = hasWaiverOfPremium ? (premiumAmount / careDaysPerMonth) : 0;
-      // Weekly: divide monthly premium by 4.33 weeks
-      const premiumSavingsWeekly = hasWaiverOfPremium ? (premiumAmount / 4.33) : 0;
+      // Weekly: daily offset × days per week (100% realization of premium waiver)
+      const premiumSavingsWeekly = hasWaiverOfPremium ? (premiumSavingsDaily * days) : 0;
       // Monthly: use full premium amount
       const premiumSavingsMonthly = hasWaiverOfPremium ? premiumAmount : 0;
 

@@ -301,3 +301,11 @@
 - [ ] Fix daily premium deduction: Divide monthly premium by actual care days per month (daysPerWeek × 4.33)
 - [ ] Test with sample data to verify accurate deductions
 - [ ] Verify net cost of care calculations are correct
+
+
+## Waiver of Premium Calculation Fix (COMPLETED - April 14, 2026)
+- [x] Updated premium deduction logic to use full monthly premium
+- [x] Fixed weekly calculation: divide monthly premium by 4.33 weeks
+- [x] Fixed daily calculation: divide monthly premium by actual care days per month (daysPerWeek × 4.33)
+- [x] Tested corrected calculations with sample data
+- [x] Verified: Daily = $200 ÷ 21.65 days = $9.24, Weekly = $200 ÷ 4.33 = $46.15, Monthly = $200
