@@ -14,7 +14,7 @@ describe("Physician Letter Generator", () => {
     cityStateZip: "New York, NY 10001",
     phone: "(212) 555-1234",
     fax: "(212) 555-5678",
-    qualifyingAdls: ["Bathing", "Dressing", "Toileting"],
+    adlLimitations: ["Bathing", "Dressing", "Toileting"],
     cognitiveImpairmentTrigger: false,
     minAdlsRequired: 2,
     prognosis: "indefinitely",

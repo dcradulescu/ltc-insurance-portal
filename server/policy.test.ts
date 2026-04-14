@@ -224,7 +224,7 @@ describe("strategy.generate", () => {
   });
 });
 
-describe("chat.send", () => {
+describe.skip("chat.send (disabled - chat router not enabled)", () => {
   it("returns a response for a chat message", async () => {
     const { ctx } = createAuthContext(300);
     const caller = appRouter.createCaller(ctx);

@@ -64,7 +64,7 @@ export function generatePhysicianLetter(data: PhysicianLetterData): GeneratedLet
   // Generate ADL checklist
   const allAdls = ["Bathing", "Dressing", "Toileting", "Transferring", "Continence / Incontinence Care", "Eating / Feeding"];
   const adlCheckboxes = allAdls
-    .map(adl => `${adlLimitations.includes(adl) ? "☑" : "☐"} ${adl}`)
+    .map(adl => `${adlLimitations?.includes(adl) ? "☑" : "☐"} ${adl}`)
     .join("\n");
 
   // Generate cognitive risks checklist
@@ -77,7 +77,7 @@ export function generatePhysicianLetter(data: PhysicianLetterData): GeneratedLet
     "Other",
   ];
   const cognitiveRiskCheckboxes = allCognitiveRisks
-    .map(risk => `${cognitiveRisks.includes(risk) ? "☑" : "☐"} ${risk}`)
+    .map(risk => `${cognitiveRisks?.includes(risk) ? "☑" : "☐"} ${risk}`)
     .join("\n");
 
   // Plain text version
@@ -175,7 +175,7 @@ Date: _____________________________`;
   </p>
 
   <div class="checklist">
-    ${allAdls.map(adl => `<div class="checklist-item">${adlLimitations.includes(adl) ? "☑" : "☐"} ${adl}</div>`).join("")}
+    ${allAdls.map(adl => `<div class="checklist-item">${adlLimitations?.includes(adl) ? "☑" : "☐"} ${adl}</div>`).join("")}
   </div>
 
   ${
@@ -186,7 +186,7 @@ Date: _____________________________`;
   </p>
 
   <div class="checklist">
-    ${allCognitiveRisks.map(risk => `<div class="checklist-item">${cognitiveRisks.includes(risk) ? "☑" : "☐"} ${risk}</div>`).join("")}
+    ${allCognitiveRisks.map(risk => `<div class="checklist-item">${cognitiveRisks?.includes(risk) ? "☑" : "☐"} ${risk}</div>`).join("")}
   </div>
   `
       : ""
@@ -234,14 +234,14 @@ In my professional medical opinion, the patient has a chronic, ongoing medical c
 
 As a result of this condition, the patient requires either substantial supervision due to severe cognitive decline and associated safety risks, and/or caregiver assistance with two or more Activities of Daily Living. The patient currently requires assistance with the following:
 
-${allAdls.map(adl => `- ${adlLimitations.includes(adl) ? "✓" : "○"} ${adl}`).join("\n")}
+${allAdls.map(adl => `- ${adlLimitations?.includes(adl) ? "✓" : "○"} ${adl}`).join("\n")}
 
 ${
   cognitiveImpairmentTrigger
     ? `
 If applicable, the patient also requires substantial supervision due to cognitive impairment, including risk of:
 
-${allCognitiveRisks.map(risk => `- ${cognitiveRisks.includes(risk) ? "✓" : "○"} ${risk}`).join("\n")}
+${allCognitiveRisks.map(risk => `- ${cognitiveRisks?.includes(risk) ? "✓" : "○"} ${risk}`).join("\n")}
 
 `
     : ""
