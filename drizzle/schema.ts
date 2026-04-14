@@ -25,10 +25,12 @@ export const policies = mysqlTable("policies", {
   insuredEmail: varchar("insuredEmail", { length: 320 }),
   insuredPhone: varchar("insuredPhone", { length: 32 }),
   insuredMailingAddress: text("insuredMailingAddress"),
-
+  insuredSsn: varchar("insuredSsn", { length: 16 }),
   insuredMedicareNumber: varchar("insuredMedicareNumber", { length: 64 }),
   insuredMedicaidNumber: varchar("insuredMedicaidNumber", { length: 64 }),
   powerOfAttorneyPresent: varchar("powerOfAttorneyPresent", { length: 8 }),
+  poa_name: varchar("poa_name", { length: 255 }),
+  poa_relationship: varchar("poa_relationship", { length: 128 }),
 
   // === Carrier Info ===
   carrierName: varchar("carrierName", { length: 255 }),
@@ -208,18 +210,16 @@ export const chatMessages = mysqlTable("chatMessages", {
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = typeof chatMessages.$inferInsert;
 
-
 // ===== RAG (Retrieval-Augmented Generation) Tables =====
-
 export const ragDocuments = mysqlTable("ragDocuments", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
-  category: varchar("category", { length: 128 }).notNull(), // "policy_guide", "claim_process", "glossary", "faq", "best_practices"
-  content: text("content").notNull(), // Full document text (mediumtext in DB)
-  summary: text("summary"), // Brief summary for retrieval
-  keywords: json("keywords"), // Array of keywords for semantic search
-  embedding: text("embedding"), // Vector embedding (JSON stringified)
-  source: varchar("source", { length: 255 }), // Where document came from
+  category: varchar("category", { length: 128 }).notNull(),
+  content: text("content").notNull(),
+  summary: text("summary"),
+  keywords: json("keywords"),
+  embedding: text("embedding"),
+  source: varchar("source", { length: 255 }),
   isActive: boolean("isActive").default(true),
   createdAt: timestamp("createdAt").defaultNow(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
@@ -228,51 +228,48 @@ export const ragDocuments = mysqlTable("ragDocuments", {
 export type RAGDocument = typeof ragDocuments.$inferSelect;
 export type InsertRAGDocument = typeof ragDocuments.$inferInsert;
 
-// Chat sessions with multi-turn memory
-export const chatSessions = mysqlTable("chatSessions", {
-  id: int("id").autoincrement().primaryKey(),
-  sessionId: varchar("sessionId", { length: 128 }).notNull().unique(),
-  userId: int("userId"),
-  policyId: int("policyId"), // Link to user's policy for context
-  topic: varchar("topic", { length: 255 }), // Main topic of conversation
-  summary: text("summary"), // AI-generated summary of conversation
-  messageCount: int("messageCount").default(0),
-  isActive: boolean("isActive").default(true),
-  createdAt: timestamp("createdAt").defaultNow(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
-  expiresAt: timestamp("expiresAt"), // Auto-expire old sessions
-});
-
-export type ChatSession = typeof chatSessions.$inferSelect;
-export type InsertChatSession = typeof chatSessions.$inferInsert;
-
-// Enhanced chat messages with metadata
-export const chatMessagesEnhanced = mysqlTable("chatMessagesEnhanced", {
-  id: int("id").autoincrement().primaryKey(),
-  sessionId: varchar("sessionId", { length: 128 }).notNull(),
-  userId: int("userId"),
-  role: varchar("role", { length: 16 }).notNull(), // "user", "assistant", "system"
-  content: text("content").notNull(), // mediumtext in DB
-  retrievedDocuments: json("retrievedDocuments"), // Array of {docId, title, relevanceScore}
-  userContext: json("userContext"), // Snapshot of user's policy data at message time
-  embedding: text("embedding"), // Vector embedding for semantic search
-  createdAt: timestamp("createdAt").defaultNow(),
-});
-
-export type ChatMessageEnhanced = typeof chatMessagesEnhanced.$inferSelect;
-export type InsertChatMessageEnhanced = typeof chatMessagesEnhanced.$inferInsert;
-
-// RAG document chunks for efficient retrieval
 export const ragDocumentChunks = mysqlTable("ragDocumentChunks", {
   id: int("id").autoincrement().primaryKey(),
   documentId: int("documentId").notNull(),
   chunkIndex: int("chunkIndex").notNull(),
-  content: text("content").notNull(), // Chunk of text (e.g., 500 tokens)
-  embedding: text("embedding"), // Vector embedding for semantic search
-  startOffset: int("startOffset"), // Character offset in original document
-  endOffset: int("endOffset"),
+  content: text("content").notNull(),
+  embedding: text("embedding"),
+  tokenCount: int("tokenCount"),
   createdAt: timestamp("createdAt").defaultNow(),
 });
 
 export type RAGDocumentChunk = typeof ragDocumentChunks.$inferSelect;
 export type InsertRAGDocumentChunk = typeof ragDocumentChunks.$inferInsert;
+
+// ===== Enhanced Chat Tables =====
+export const chatSessions = mysqlTable("chatSessions", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 128 }).notNull().unique(),
+  userId: int("userId"),
+  policyId: int("policyId"),
+  topic: varchar("topic", { length: 255 }),
+  summary: text("summary"),
+  messageCount: int("messageCount").default(0),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
+  expiresAt: timestamp("expiresAt"),
+});
+
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = typeof chatSessions.$inferInsert;
+
+export const chatMessagesEnhanced = mysqlTable("chatMessagesEnhanced", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: varchar("sessionId", { length: 128 }).notNull(),
+  userId: int("userId"),
+  role: varchar("role", { length: 16 }).notNull(),
+  content: text("content").notNull(),
+  retrievedDocuments: json("retrievedDocuments"),
+  userContext: json("userContext"),
+  embedding: text("embedding"),
+  createdAt: timestamp("createdAt").defaultNow(),
+});
+
+export type ChatMessageEnhanced = typeof chatMessagesEnhanced.$inferSelect;
+export type InsertChatMessageEnhanced = typeof chatMessagesEnhanced.$inferInsert;

@@ -538,6 +538,9 @@
 - [x] Improved validation logic to handle minAdlsRequired="0" correctly
 - [x] Updated validation to check for both qualifyingAdls and adlLimitations
 - [x] Added simplified validation for localStorage-based forms
+- [x] Synced database schema to match drizzle/schema.ts definitions
+- [x] Restored correct schema with all 67 policy columns and RAG/chat tables
+- [x] Fixed TypeScript compilation errors (0 errors)
 - [ ] Fix localStorage data not persisting between page navigations (Strategy page shows "Complete Required Fields" even after form is filled)
 - [ ] Fix "Failed to save" error when clicking Generate Strategy button
 

@@ -230,6 +230,24 @@ const defaultForm: FormData = {
   preferredCareType: "", additionalNotes: "",
 };
 
+const sampleForm: FormData = {
+  insuredFullName: "John Smith", insuredEmail: "john@example.com", insuredPhone: "(555) 123-4567", insuredDob: "1950-06-15", insuredMailingAddress: "123 Main St, Charleston, SC 29401",
+  powerOfAttorneyPresent: "Yes", poa_name: "Jane Smith", poa_relationship: "Daughter",
+  carrierName: "Genworth", carrierAddress1: "123 Insurance Blvd", carrierAddress2: "Suite 100", carrierCityStateZip: "Richmond, VA 23219",
+  carrierPhone: "(800) 555-1234", carrierFax: "(804) 555-5678",
+  policyNumber: "POL123456", claimPreClaimNumber: "PRE789",
+  eliminationPeriod: "90", lookBackPeriodEnabled: true, lookBackPeriodDays: "30", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "$250.00", monthlyMaximum: "$7500.00", lifetimeMaximum: "$500000.00",
+  minAdlsRequired: "2", qualifyingAdls: ["Bathing", "Dressing", "Toileting"], waiverOfPremium: "Yes", cnaRequired: "No", approvedAgencyRequired: "No", careNotesRequired: "Yes",
+  numberOfDaysUntilPayment: "30", assignmentOfBenefits: "Yes",
+  equipmentAllowanceEnabled: true, equipmentAllowanceAmount: "$100.00", equipmentAllowanceCoverage: "Annually", equipmentAllowanceDeductedFromLifetime: "No", equipmentAllowanceRelatedAdls: ["Bathing"], equipmentNeeds: ["Shower chair", "Walker"], equipmentAllowanceNotes: "Covers mobility aids",
+  inflationAdjustmentEnabled: true, inflationType: "compound", inflationPercentagePerYear: "3", inflationContinuesAfterBenefits: true,
+  caseManagerAssigned: "Yes", caseManagerName: "Sarah Johnson", thirdPartyAssessmentRequired: "Yes",
+  cognitiveImpairmentTrigger: "No",
+  careNeeds: ["Assistance with bathing", "Help with dressing", "Toileting assistance"], careNotes: "Needs 24/7 supervision due to fall risk",
+  diagnosisCheckboxes: ["Alzheimer's Disease", "Osteoarthritis"], diagnosisNotes: "Diagnosed 2 years ago, progressive decline",
+  preferredCareType: "Home Care", additionalNotes: "Prefers female caregivers",
+};
+
 function TooltipField({ label, name, children, isRequired = false }: { label: string; name: string; children: React.ReactNode; isRequired?: boolean }) {
   const tip = tooltips[name];
   return (
@@ -1087,6 +1105,17 @@ export default function PolicyForm() {
             <div className="flex gap-2">
               <Button variant="outline" onClick={handlePrev} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> {step > 0 ? "Previous" : "Education"}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setForm(sampleForm);
+                  localStorage.setItem('ltc_policy_form', JSON.stringify(sampleForm));
+                  toast.success('Sample data loaded. You can now test the form.');
+                }} 
+                className="gap-1 text-blue-600 hover:text-blue-700"
+              >
+                Fill Sample Data
               </Button>
               <Button 
                 variant="outline" 
