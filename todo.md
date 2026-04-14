@@ -346,3 +346,11 @@
 - [x] Test currency formatting doesn't prevent input
 - [x] Root cause: formatCurrency was limiting dollars to 3 digits max ($0-$999.99)
 - [x] Fixed: Now supports up to 10 digits ($0-$9,999,999,999) with thousands separators
+
+
+## Bug: Currency Fields Only Accept 1 Digit (April 14, 2026)
+- [x] Fix currency input only accepting 1 digit per keystroke
+- [x] Root cause: formatCurrency causing re-render and cursor loss
+- [x] Solution: Changed to type="number" inputs (much simpler!)
+- [x] Removed formatCurrency function and custom formatting
+- [x] Test entering multi-digit amounts (e.g., 250000)

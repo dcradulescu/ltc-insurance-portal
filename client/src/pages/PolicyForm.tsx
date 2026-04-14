@@ -66,8 +66,8 @@ const formatCurrency = (value: string): string => {
   // Remove leading zeros but keep at least one digit
   dollars = dollars.replace(/^0+/, '') || '0';
   
-  // Add thousands separators for readability
-  dollars = dollars.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  // DO NOT add thousands separators during input - causes cursor jumping
+  // Formatting will be applied on blur or display only
   
   // Pad cents to 2 digits
   cents = (cents + '00').substring(0, 2);
@@ -497,10 +497,7 @@ export default function PolicyForm() {
       value = formatPhoneNumber(value);
     }
     
-    // Apply currency formatting for dollar amounts
-    if (field === 'dailyMaximum' || field === 'monthlyMaximum' || field === 'lifetimeMaximum') {
-      value = formatCurrency(value);
-    }
+    // Number inputs handle formatting automatically
     
     // Apply auto-capitalize for name and company fields
     if (field === 'insuredFullName' || field === 'carrierName' || field === 'caseManagerName' || field === 'poa_name') {
@@ -805,21 +802,13 @@ export default function PolicyForm() {
                   }} placeholder="0-999" />
                 </TooltipField>
                 <TooltipField label="Daily Maximum" name="dailyMaximum" isRequired>
-                  <Input id="dailyMaximum" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="$0.00-$999.99" />
+                  <Input id="dailyMaximum" type="number" step="0.01" min="0" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="Enter amount" />
                 </TooltipField>
                 <TooltipField label="Monthly Maximum" name="monthlyMaximum">
-                  <Input id="monthlyMaximum" value={form.monthlyMaximum || (() => {
-                    if (!form.dailyMaximum) return '';
-                    const dailyStr = form.dailyMaximum.replace(/[$,]/g, '');
-                    const daily = parseFloat(dailyStr);
-                    if (isNaN(daily)) return '';
-                    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-                    const monthly = daily * daysInMonth;
-                    return `$${monthly.toFixed(2)}`;
-                  })()} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="Auto-calculated or enter manually" />
+                  <Input id="monthlyMaximum" type="number" step="0.01" min="0" value={form.monthlyMaximum || ''} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="Auto-calculated or enter manually" />
                 </TooltipField>
                 <TooltipField label="Lifetime Maximum" name="lifetimeMaximum" isRequired>
-                  <Input id="lifetimeMaximum" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="$0.00-$999.99" />
+                  <Input id="lifetimeMaximum" type="number" step="0.01" min="0" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="Enter amount" />
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
