@@ -74,15 +74,45 @@ export async function updatePolicy(id: number, userId: number, data: Partial<Ins
 export async function getPolicyByUserId(userId: number): Promise<Policy | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(policies).where(eq(policies.userId, userId)).orderBy(desc(policies.updatedAt)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  try {
+    const result = await db.select().from(policies).where(eq(policies.userId, userId)).orderBy(desc(policies.updatedAt)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error: any) {
+    // If query fails due to missing columns, try with a raw query
+    if (error.code === 'ER_BAD_FIELD_ERROR') {
+      console.warn('[Database] Column mismatch in getPolicyByUserId, attempting fallback');
+      try {
+        const raw = await (db as any).execute(`SELECT * FROM policies WHERE userId = ? ORDER BY updatedAt DESC LIMIT 1`, [userId]);
+        return raw[0] && raw[0][0] ? raw[0][0] : undefined;
+      } catch (fallbackError) {
+        console.error('[Database] Fallback query also failed:', fallbackError);
+        return undefined;
+      }
+    }
+    throw error;
+  }
 }
 
 export async function getPolicyById(id: number): Promise<Policy | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(policies).where(eq(policies.id, id)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  try {
+    const result = await db.select().from(policies).where(eq(policies.id, id)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error: any) {
+    // If query fails due to missing columns, try with a raw query
+    if (error.code === 'ER_BAD_FIELD_ERROR') {
+      console.warn('[Database] Column mismatch in getPolicyById, attempting fallback');
+      try {
+        const raw = await (db as any).execute(`SELECT * FROM policies WHERE id = ? LIMIT 1`, [id]);
+        return raw[0] && raw[0][0] ? raw[0][0] : undefined;
+      } catch (fallbackError) {
+        console.error('[Database] Fallback query also failed:', fallbackError);
+        return undefined;
+      }
+    }
+    throw error;
+  }
 }
 
 // ---- Strategy helpers ----

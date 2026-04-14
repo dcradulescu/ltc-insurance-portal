@@ -296,7 +296,14 @@ export default function PolicyForm() {
   const zapierSentRef = useRef(false);
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
-  const saveMutation = trpc.policy.save.useMutation();
+  const saveMutation = trpc.policy.save.useMutation({
+    onError: (error) => {
+      console.error("tRPC mutation error:", error);
+      if ((error.data as any)?.zodError) {
+        console.error("Zod validation error:", (error.data as any).zodError);
+      }
+    }
+  });
   const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
 
   const completionPct = useMemo(() => {
@@ -625,6 +632,11 @@ export default function PolicyForm() {
       toast.success("Form submitted successfully!");
       navigate("/strategy");
     } catch (e) {
+      console.error("Save error:", e);
+      if (e instanceof Error) {
+        console.error("Error message:", e.message);
+        console.error("Error stack:", e.stack);
+      }
       toast.error("Failed to save. Please try again.");
     } finally {
       setSaving(false);

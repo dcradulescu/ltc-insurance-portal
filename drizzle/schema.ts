@@ -60,7 +60,7 @@ export const policies = mysqlTable("policies", {
   monthlyMaximum: varchar("monthlyMaximum", { length: 64 }),
   lifetimeMaximum: varchar("lifetimeMaximum", { length: 64 }),
   inflationProtection: varchar("inflationProtection", { length: 128 }),
-  equipmentAllowance: varchar("equipmentAllowance", { length: 8 }),
+  equipmentAllowance: varchar("equipmentAllowance", { length: 8 }).default("no"),
   homeCareCoverage: varchar("homeCareCoverage", { length: 8 }),
   facilityCareCoverage: varchar("facilityCareCoverage", { length: 8 }),
 

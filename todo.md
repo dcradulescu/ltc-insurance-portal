@@ -323,3 +323,17 @@
 - [x] All TypeScript errors resolved (0 errors)
 - [x] All tests passing
 - [x] Strategy page displays complete 3-stage workflow from pre-filing through post-approval
+
+
+## Bug: Generate Strategy Button Error (April 14, 2026)
+- [x] Fix "Failed to save. Please try again." error when clicking Generate Strategy button
+- [x] Investigate server-side error handling in policyForm router
+- [x] Check form data validation before strategy generation
+- [x] Verify database save operation completes successfully
+- [x] Test strategy generation with sample policy data
+- [x] Added missing form fields to policy.save Zod schema (30+ fields)
+- [x] Added error logging to handleComplete function
+- [x] Added error handler to saveMutation for better debugging
+- [x] Fixed duplicate useState import in CareCalculator.tsx
+- [x] Added fallback query logic for database column mismatch
+- [x] Restored equipmentAllowance column to schema with default value
