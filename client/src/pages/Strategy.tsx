@@ -246,6 +246,14 @@ export default function Strategy() {
 
   const stageProgress = (tasks: StrategyTask[]) => tasks.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
 
+  // Helper function to parse currency values (remove $ and commas)
+  const parseCurrencyValue = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    const cleaned = value.toString().replace(/[^0-9.]/g, '');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  };
+
   // Calculate care costs
   const calculations = useMemo(() => {
     if (!dailyMax || !hourlyRate || !hoursPerDay || !daysPerWeek || !policy?.lifetimeMaximum) {
@@ -255,7 +263,7 @@ export default function Strategy() {
     const hourly = parseFloat(hourlyRate);
     const hours = parseFloat(hoursPerDay);
     const days = parseFloat(daysPerWeek);
-    const lifetime = parseFloat(policy.lifetimeMaximum);
+    const lifetime = parseCurrencyValue(policy.lifetimeMaximum);
     const dailyCost = hours * hourly;
     const userPaysDaily = Math.max(0, dailyCost - daily);
     const insurancePaysDaily = Math.min(daily, dailyCost);
@@ -534,7 +542,7 @@ export default function Strategy() {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="dailyMax" className="text-sm font-medium">Daily Maximum ($)</Label>
-                        <Input id="dailyMax" type="number" placeholder="e.g., 100" value={dailyMax} onChange={e => setDailyMax(e.target.value)} className="mt-1" />
+                        <Input id="dailyMax" type="number" placeholder="e.g., 100" value={dailyMax} onChange={e => setDailyMax(e.target.value.replace(/[^0-9.]/g, ''))} className="mt-1" />
                       </div>
                       <div>
                         <Label htmlFor="hourlyRate" className="text-sm font-medium">Hourly Care Rate ($)</Label>
@@ -605,7 +613,7 @@ export default function Strategy() {
 
               {/* Care Calculator */}
               <CareCalculator 
-                defaultDailyMax={policy?.dailyMaximum || ""}
+                defaultDailyMax={policy?.dailyMaximum ? parseCurrencyValue(policy.dailyMaximum).toString() : ""}
                 lifetimeMaximum={policy?.lifetimeMaximum || ""}
               />
               
@@ -615,7 +623,7 @@ export default function Strategy() {
                   insuredName: policy?.insuredFullName || "",
                   policyNumber: policy?.policyNumber || "",
                   carrierName: policy?.carrierName || "",
-                  dailyMaximum: (() => { const val = parseFloat((policy?.dailyMaximum || '0').toString().replace(/[^0-9.]/g, '')); return isNaN(val) ? 0 : val; })(),
+                  dailyMaximum: parseCurrencyValue(policy?.dailyMaximum || 0),
                   monthlyMaximum: (() => { const val = parseFloat((policy?.monthlyMaximum || '0').toString().replace(/[^0-9.]/g, '')); return isNaN(val) ? 0 : val; })(),
                   lifetimeMaximum: (() => { const val = parseFloat((policy?.lifetimeMaximum || '0').toString().replace(/[^0-9.]/g, '')); return isNaN(val) ? 0 : val; })(),
                   diagnosis: "LTC Insurance Claim",

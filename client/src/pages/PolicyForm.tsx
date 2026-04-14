@@ -99,6 +99,14 @@ const getDisplayDate = (dateValue: string): string => {
   return dateValue;
 };
 
+// Helper function to extract numeric value from formatted currency
+const parseCurrencyToNumber = (value: string): number | null => {
+  if (!value) return null;
+  const cleaned = value.replace(/[^0-9.]/g, '');
+  const num = parseFloat(cleaned);
+  return isNaN(num) ? null : num;
+};
+
 const tooltips: Record<string, string> = {
   // Step 0: Insured Person
   insuredFullName: "Enter the full legal name of the person who holds the LTC insurance policy. This is the person who will receive care. Use the name exactly as it appears on the policy.",
@@ -558,7 +566,14 @@ export default function PolicyForm() {
     // Advance step immediately (non-blocking)
     setStep(prev => prev + 1);
     // Save to DB in background (fire-and-forget)
-    saveMutation.mutate({ ...form, id: policyId || undefined }, {
+      const formToSave = {
+        ...form,
+        id: policyId || undefined,
+        dailyMaximum: form.dailyMaximum ? parseCurrencyToNumber(form.dailyMaximum) : null,
+        monthlyMaximum: form.monthlyMaximum ? parseCurrencyToNumber(form.monthlyMaximum) : null,
+        lifetimeMaximum: form.lifetimeMaximum ? parseCurrencyToNumber(form.lifetimeMaximum) : null,
+      };
+      saveMutation.mutate(formToSave as any, {
       onSuccess: (result) => {
         if (!policyId) setPolicyId(result.id);
       },
@@ -593,8 +608,15 @@ export default function PolicyForm() {
   const handleComplete = async () => {
     setSaving(true);
     try {
-      // Save to DB
-      const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
+      // Save to DB - convert currency strings to numbers
+      const formToSave = {
+        ...form,
+        id: policyId || undefined,
+        dailyMaximum: form.dailyMaximum ? parseCurrencyToNumber(form.dailyMaximum) : null,
+        monthlyMaximum: form.monthlyMaximum ? parseCurrencyToNumber(form.monthlyMaximum) : null,
+        lifetimeMaximum: form.lifetimeMaximum ? parseCurrencyToNumber(form.lifetimeMaximum) : null,
+      };
+      const result = await saveMutation.mutateAsync(formToSave as any);
       if (!policyId) setPolicyId(result.id);
 
       // Send comprehensive data to Zapier

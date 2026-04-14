@@ -8,6 +8,11 @@
 - [x] Policy intake form: Multi-step interactive form for policy details, saved to DB
 - [x] Customized strategy page: LLM-powered strategy generation based on policy data
 - [x] PDF download: Generate and download strategy as PDF
+- [x] Currency field handling: Fixed form to convert "$250.00" → 250 before saving
+- [x] Currency parsing in Strategy page: Added parseCurrencyValue helper to handle formatted currency
+- [x] PDF download verification: Tested and confirmed PDF generates and downloads successfully
+- [x] Form save verification: Tested and confirmed policy form saves without errors (Policy ID 120002)
+- [x] Strategy generation verification: Tested and confirmed 3-stage strategy generates with 50+ tasks
 - [x] Email delivery: Send strategy to user and other recipients
 - [x] Chat widget: Floating chat widget on all pages for LTC support
 - [x] Authentication: Login/register with name and email capture
