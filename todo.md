@@ -293,3 +293,11 @@
 - [ ] Implement document upload per checklist task with S3 storage
 - [ ] Re-implement RAG/chat functionality with proper schema
 - [ ] Add Profile page with name/email editing, CC contacts, notification preferences
+
+
+## Waiver of Premium Calculation Fix - In Progress
+- [ ] Fix monthly premium deduction: Use FULL monthly premium (not divided by 30)
+- [ ] Fix weekly premium deduction: Divide monthly premium by 4.33 weeks
+- [ ] Fix daily premium deduction: Divide monthly premium by actual care days per month (daysPerWeek × 4.33)
+- [ ] Test with sample data to verify accurate deductions
+- [ ] Verify net cost of care calculations are correct
