@@ -84,22 +84,22 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
   tasks.push({
     id: "stage1-start-care",
     title: "Start Care",
-    description: policy.isHomeCareCovidInPolicy === "yes" 
+    description: policy.homeCareCoverage === "yes" 
       ? `Ensure your home care agency is approved by ${policy.carrierName || "your insurance company"}`
       : "Coordinate care with your family/caregivers",
     timeline: "Week 1-2",
     stage: 1,
     completed: false,
-    instructions: policy.isHomeCareCovidInPolicy === "yes"
+    instructions: policy.homeCareCoverage === "yes"
       ? `Contact a home care agency approved by ${policy.carrierName}. Verify they have worked with this insurance company before.`
       : "Arrange care with family members or caregivers",
-    documentsNeeded: policy.isHomeCareCovidInPolicy === "yes" ? ["Home care agency contact info", "Approval confirmation"] : [],
+    documentsNeeded: policy.homeCareCoverage === "yes" ? ["Home care agency contact info", "Approval confirmation"] : [],
   });
 
   // Week 2-4 Tasks
 
   // Conditional: Determine AOB
-  if (policy.isHomeCareCovidInPolicy === "yes") {
+  if (policy.homeCareCoverage === "yes") {
     tasks.push({
       id: "stage1-determine-aob",
       title: "Determine AOB (Assignment of Benefits)",
@@ -127,7 +127,7 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
   }
 
   // Conditional: Privacy Form
-  if (policy.isHomeCareCovidInPolicy === "yes") {
+  if (policy.homeCareCoverage === "yes") {
     tasks.push({
       id: "stage1-privacy-form",
       title: "Complete Privacy Form",
@@ -135,13 +135,13 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
       timeline: "Week 2-4",
       stage: 1,
       completed: false,
-      instructions: `In the claim packet privacy form, add:\n${policy.isHomeCareCovidInPolicy === "yes" ? "- Home care provider" : ""}\n\nThis allows them to discuss your claim with the insurance company.`,
+      instructions: `In the claim packet privacy form, add:\n${policy.homeCareCoverage === "yes" ? "- Home care provider" : ""}\n\nThis allows them to discuss your claim with the insurance company.`,
       documentsNeeded: ["Completed privacy form"],
     });
   }
 
   // Conditional: Home Care Provider Forms
-  if (policy.isHomeCareCovidInPolicy === "yes") {
+  if (policy.homeCareCoverage === "yes") {
     tasks.push({
       id: "stage1-homecare-plan-of-care",
       title: "Get Plan of Care",
@@ -301,7 +301,7 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
   });
 
   // Conditional: Home Care Provider at Evaluation
-  if (policy.isHomeCareCovidInPolicy === "yes") {
+  if (policy.homeCareCoverage === "yes") {
     tasks.push({
       id: "stage2-homecare-at-eval",
       title: "Home Care Provider Attends Evaluation",
@@ -410,35 +410,8 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
     });
   }
 
-  // Conditional: Track Inflation Rider
-  if (policy.inflationAdjustmentEnabled === true) {
-    tasks.push({
-      id: "stage3-inflation-rider",
-      title: `Track Inflation Rider Application (${policy.inflationType === "cpi" ? "CPI-based" : "Fixed Percentage"})`,
-      description: `Monitor and verify annual benefit increases${policy.inflationContinuesAfterBenefits ? " (continues after benefits begin)" : " (may stop when benefits begin)"}.`,
-      timeline: "Day 53-65 (Annually)",
-      stage: 3,
-      completed: false,
-      instructions: policy.inflationType === "cpi"
-        ? "Annually verify benefit increase matches published CPI rates. Request adjustment if not applied."
-        : `Annually verify benefit increases by ${policy.inflationPercentagePerYear}%. Confirm increases compound year-over-year. Track benefit growth for long-term planning.`,
-      documentsNeeded: ["Inflation rider documentation", "Annual benefit statements"],
-    });
-  }
-
-  // Conditional: Equipment Allowance
-  if (policy.equipmentAllowanceEnabled === true) {
-    tasks.push({
-      id: "stage3-equipment-allowance",
-      title: "Manage Equipment Allowance Claims",
-      description: `Claim reimbursement for approved equipment (${policy.equipmentAllowanceAmount || "amount"} available${policy.equipmentAllowanceDeductedFromLifetime ? ", deducted from lifetime max" : ""}).`,
-      timeline: "Day 55-90 (As needed)",
-      stage: 3,
-      completed: false,
-      instructions: `Identify needed equipment based on ADL limitations. Verify equipment is covered. Obtain pre-approval if required. Purchase approved equipment. Submit invoice and proof of payment. Track usage toward allowance limit.`,
-      documentsNeeded: ["Equipment allowance documentation", "Invoices", "Proof of payment"],
-    });
-  }
+  // Note: Inflation rider and equipment allowance features require additional database columns
+  // These features are temporarily disabled
 
   // Always shown: Medical Appointments
   tasks.push({

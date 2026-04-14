@@ -41,7 +41,7 @@ export const appRouter = router({
         cityStateZip: z.string().optional(),
         phone: z.string().optional(),
         fax: z.string().optional(),
-        qualifyingAdls: z.array(z.string()),
+        adlLimitations: z.array(z.string()),
         cognitiveImpairmentTrigger: z.boolean(),
         cognitiveRisks: z.array(z.string()).optional(),
         minAdlsRequired: z.number(),
@@ -299,7 +299,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         const policy = await getPolicyById(input.policyId);
         if (!policy) throw new Error("Policy not found");
 
-        const qualifyingAdls = Array.isArray(policy.qualifyingAdls) ? policy.qualifyingAdls as string[] : [];
+        const adlLimitations = Array.isArray(policy.adlLimitations) ? policy.adlLimitations as string[] : [];
         const isCognitiveImpaired = String(policy.cognitiveImpairmentTrigger || "").toLowerCase() === "yes" || (policy.cognitiveImpairmentTrigger as any) === true;
         const cognitiveRisks = isCognitiveImpaired ? ["Severe memory loss", "Difficulty with decision-making", "Need for supervision"] : [];
 
@@ -308,7 +308,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
           patientDob: policy.insuredDob || "",
           diagnosis: policy.diagnosisOrCondition || policy.primaryDiagnosis || "",
           physicianName: typeof policy.primaryCarePhysician === "string" ? policy.primaryCarePhysician : "",
-          qualifyingAdls,
+          adlLimitations,
           cognitiveImpairmentTrigger: isCognitiveImpaired,
           cognitiveRisks,
           minAdlsRequired: typeof policy.minAdlsRequired === "number" ? policy.minAdlsRequired : parseInt(String(policy.minAdlsRequired)) || 2,

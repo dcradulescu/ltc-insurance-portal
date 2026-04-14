@@ -21,7 +21,7 @@ export interface PhysicianLetterData {
   fax?: string;
 
   // Clinical Information
-  qualifyingAdls: string[]; // Array of selected ADLs
+  adlLimitations: string[]; // Array of selected ADLs
   cognitiveImpairmentTrigger: boolean;
   cognitiveRisks?: string[]; // Array of cognitive risks if applicable
   minAdlsRequired: number;
@@ -52,7 +52,7 @@ export function generatePhysicianLetter(data: PhysicianLetterData): GeneratedLet
     cityStateZip = "[CITY, STATE ZIP]",
     phone = "[PHONE NUMBER]",
     fax = "[FAX NUMBER]",
-    qualifyingAdls,
+    adlLimitations,
     cognitiveImpairmentTrigger,
     cognitiveRisks = [],
     minAdlsRequired,
@@ -64,7 +64,7 @@ export function generatePhysicianLetter(data: PhysicianLetterData): GeneratedLet
   // Generate ADL checklist
   const allAdls = ["Bathing", "Dressing", "Toileting", "Transferring", "Continence / Incontinence Care", "Eating / Feeding"];
   const adlCheckboxes = allAdls
-    .map(adl => `${qualifyingAdls.includes(adl) ? "☑" : "☐"} ${adl}`)
+    .map(adl => `${adlLimitations.includes(adl) ? "☑" : "☐"} ${adl}`)
     .join("\n");
 
   // Generate cognitive risks checklist
@@ -175,7 +175,7 @@ Date: _____________________________`;
   </p>
 
   <div class="checklist">
-    ${allAdls.map(adl => `<div class="checklist-item">${qualifyingAdls.includes(adl) ? "☑" : "☐"} ${adl}</div>`).join("")}
+    ${allAdls.map(adl => `<div class="checklist-item">${adlLimitations.includes(adl) ? "☑" : "☐"} ${adl}</div>`).join("")}
   </div>
 
   ${
@@ -234,7 +234,7 @@ In my professional medical opinion, the patient has a chronic, ongoing medical c
 
 As a result of this condition, the patient requires either substantial supervision due to severe cognitive decline and associated safety risks, and/or caregiver assistance with two or more Activities of Daily Living. The patient currently requires assistance with the following:
 
-${allAdls.map(adl => `- ${qualifyingAdls.includes(adl) ? "✓" : "○"} ${adl}`).join("\n")}
+${allAdls.map(adl => `- ${adlLimitations.includes(adl) ? "✓" : "○"} ${adl}`).join("\n")}
 
 ${
   cognitiveImpairmentTrigger

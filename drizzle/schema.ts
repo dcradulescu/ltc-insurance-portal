@@ -19,7 +19,11 @@ export const policies = mysqlTable("policies", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
 
-  // === Insured Person Info ===
+  // === Holder/Insured Person Info ===
+  holderFirstName: varchar("holderFirstName", { length: 255 }),
+  holderLastName: varchar("holderLastName", { length: 255 }),
+  holderDateOfBirth: varchar("holderDateOfBirth", { length: 32 }),
+  holderRelationship: varchar("holderRelationship", { length: 128 }),
   insuredFullName: varchar("insuredFullName", { length: 255 }),
   insuredDob: varchar("insuredDob", { length: 32 }),
   insuredEmail: varchar("insuredEmail", { length: 320 }),
@@ -29,8 +33,13 @@ export const policies = mysqlTable("policies", {
   insuredMedicareNumber: varchar("insuredMedicareNumber", { length: 64 }),
   insuredMedicaidNumber: varchar("insuredMedicaidNumber", { length: 64 }),
   powerOfAttorneyPresent: varchar("powerOfAttorneyPresent", { length: 8 }),
-  poa_name: varchar("poa_name", { length: 255 }),
-  poa_relationship: varchar("poa_relationship", { length: 128 }),
+
+  // === Insurance/Policy Info ===
+  insuranceCompany: varchar("insuranceCompany", { length: 255 }),
+  policyNumber: varchar("policyNumber", { length: 128 }),
+  policyType: varchar("policyType", { length: 128 }),
+  policyStatus: varchar("policyStatus", { length: 64 }),
+  effectiveDate: varchar("effectiveDate", { length: 32 }),
 
   // === Carrier Info ===
   carrierName: varchar("carrierName", { length: 255 }),
@@ -41,42 +50,34 @@ export const policies = mysqlTable("policies", {
   carrierFax: varchar("carrierFax", { length: 32 }),
 
   // === Policy Identifiers ===
-  policyNumber: varchar("policyNumber", { length: 128 }),
   claimPreClaimNumber: varchar("claimPreClaimNumber", { length: 128 }),
 
   // === Coverage Details ===
   eliminationPeriod: varchar("eliminationPeriod", { length: 128 }),
-  lookBackPeriodEnabled: boolean("lookBackPeriodEnabled").default(false),
-  lookBackPeriodDays: varchar("lookBackPeriodDays", { length: 16 }),
-  careCoordinatorReductionEnabled: boolean("careCoordinatorReductionEnabled").default(false),
-  careCoordinatorReducedToDays: varchar("careCoordinatorReducedToDays", { length: 16 }),
-  reductionInCareProvidedEnabled: boolean("reductionInCareProvidedEnabled").default(false),
-  reductionInCareDaysCountedAs7: varchar("reductionInCareDaysCountedAs7", { length: 16 }),
+  dailyBenefitAmount: varchar("dailyBenefitAmount", { length: 64 }),
+  benefitPeriod: varchar("benefitPeriod", { length: 128 }),
   dailyMaximum: varchar("dailyMaximum", { length: 64 }),
   monthlyMaximum: varchar("monthlyMaximum", { length: 64 }),
   lifetimeMaximum: varchar("lifetimeMaximum", { length: 64 }),
-  equipmentAllowanceEnabled: boolean("equipmentAllowanceEnabled").default(false),
-  equipmentAllowanceAmount: varchar("equipmentAllowanceAmount", { length: 64 }),
-  equipmentAllowanceCoverage: text("equipmentAllowanceCoverage"),
-  equipmentAllowanceDeductedFromLifetime: varchar("equipmentAllowanceDeductedFromLifetime", { length: 8 }),
-  inflationAdjustmentEnabled: boolean("inflationAdjustmentEnabled").default(false),
-  inflationType: varchar("inflationType", { length: 32 }).default("none"),
-  inflationPercentagePerYear: varchar("inflationPercentagePerYear", { length: 16 }),
-  inflationContinuesAfterBenefits: boolean("inflationContinuesAfterBenefits").default(false),
+  inflationProtection: varchar("inflationProtection", { length: 128 }),
+  homeCareCoverage: varchar("homeCareCoverage", { length: 8 }),
+  facilityCareCoverage: varchar("facilityCareCoverage", { length: 8 }),
+
+  // === ADL & Care Requirements ===
   minAdlsRequired: varchar("minAdlsRequired", { length: 16 }),
+  adlLimitations: json("adlLimitations"),
   waiverOfPremium: varchar("waiverOfPremium", { length: 8 }),
   cnaRequired: varchar("cnaRequired", { length: 8 }),
   careNotesRequired: varchar("careNotesRequired", { length: 8 }),
   paymentCycle: varchar("paymentCycle", { length: 128 }),
   assignmentOfBenefits: varchar("assignmentOfBenefits", { length: 8 }),
-  isHomeCareCovidInPolicy: varchar("isHomeCareCovidInPolicy", { length: 8 }),
-  equipmentAllowanceRelatedAdls: json("equipmentAllowanceRelatedAdls"),
 
   // === Medical / Administrative ===
   caseManagerName: varchar("caseManagerName", { length: 255 }),
   thirdPartyAssessmentRequired: varchar("thirdPartyAssessmentRequired", { length: 8 }),
   thirdPartyAssessmentWho: varchar("thirdPartyAssessmentWho", { length: 255 }),
   cognitiveImpairmentTrigger: varchar("cognitiveImpairmentTrigger", { length: 8 }),
+  cognitiveImpairment: varchar("cognitiveImpairment", { length: 8 }),
   planOfCareStatus: varchar("planOfCareStatus", { length: 128 }),
   ltcCoordinatorAssigned: varchar("ltcCoordinatorAssigned", { length: 255 }),
 
@@ -88,15 +89,13 @@ export const policies = mysqlTable("policies", {
 
   // === Care Needs ===
   currentCareNeeds: text("currentCareNeeds"),
+  currentCareReceiving: text("currentCareReceiving"),
   diagnosisOrCondition: text("diagnosisOrCondition"),
   primaryDiagnosis: varchar("primaryDiagnosis", { length: 255 }),
-  adlLimitations: json("adlLimitations"),
-  qualifyingAdls: json("qualifyingAdls"),
-  careNeeds: json("careNeeds"),
-  equipmentNeeds: json("equipmentNeeds"),
+  priorClaimsFiled: varchar("priorClaimsFiled", { length: 8 }),
+  priorClaimsDetails: text("priorClaimsDetails"),
   preferredCareType: varchar("preferredCareType", { length: 128 }),
   additionalNotes: text("additionalNotes"),
-  equipmentAllowanceNotes: text("equipmentAllowanceNotes"),
 
   // === Relationship of form filler ===
   fillerRelationship: varchar("fillerRelationship", { length: 128 }),
@@ -106,36 +105,6 @@ export const policies = mysqlTable("policies", {
 
 export type Policy = typeof policies.$inferSelect;
 export type InsertPolicy = typeof policies.$inferInsert;
-
-export type EquipmentAllowance = {
-  enabled: boolean;
-  amount: string;
-  coverage: string;
-  deductedFromLifetime: boolean;
-  relatedAdls: string[];
-  equipmentNeeds: string[];
-  notes: string;
-};
-
-export type InflationAdjustment = {
-  enabled: boolean;
-  type: "none" | "cpi" | "fixed_percentage";
-  percentagePerYear?: number;
-  continuesAfterBenefits: boolean;
-};
-
-// Helper function to extract equipment allowance from policy
-export function getEquipmentAllowance(policy: Policy): EquipmentAllowance {
-  return {
-    enabled: policy.equipmentAllowanceEnabled || false,
-    amount: policy.equipmentAllowanceAmount || "",
-    coverage: policy.equipmentAllowanceCoverage || "",
-    deductedFromLifetime: policy.equipmentAllowanceDeductedFromLifetime === "yes",
-    relatedAdls: policy.equipmentAllowanceRelatedAdls ? (typeof policy.equipmentAllowanceRelatedAdls === "string" ? JSON.parse(policy.equipmentAllowanceRelatedAdls) : policy.equipmentAllowanceRelatedAdls) : [],
-    equipmentNeeds: policy.equipmentNeeds ? (typeof policy.equipmentNeeds === "string" ? JSON.parse(policy.equipmentNeeds) : policy.equipmentNeeds) : [],
-    notes: policy.equipmentAllowanceNotes || "",
-  };
-}
 
 export const strategies = mysqlTable("strategies", {
   id: int("id").autoincrement().primaryKey(),
@@ -147,7 +116,7 @@ export const strategies = mysqlTable("strategies", {
   stage1Tasks: json("stage1Tasks"),
   stage2Tasks: json("stage2Tasks"),
   stage3Tasks: json("stage3Tasks"),
-  checklistItems: json("checklistItems"), // Array of {id, title, section, completed, expandedContent, notes}
+  checklistItems: json("checklistItems"),
   claimStatus: varchar("claimStatus", { length: 32 }).default("not_started"),
   generatedAt: timestamp("generatedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow(),
@@ -160,7 +129,7 @@ export type InsertStrategy = typeof strategies.$inferInsert;
 export type ChecklistItem = {
   id: string;
   title: string;
-  section: string; // "review", "start_care", "physician_support", "home_care_records", "claim_packet", "claim_review", "continue_care"
+  section: string;
   completed: boolean;
   expandedContent?: string;
   notes?: string;
