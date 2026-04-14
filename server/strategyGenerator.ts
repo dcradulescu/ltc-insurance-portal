@@ -410,8 +410,33 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
     });
   }
 
-  // Note: Inflation rider and equipment allowance features require additional database columns
-  // These features are temporarily disabled
+  // Conditional: Track Inflation Rider
+  if (policy.inflationProtection && policy.inflationProtection !== "none" && policy.inflationProtection !== "") {
+    tasks.push({
+      id: "stage3-inflation-rider",
+      title: "Track Inflation Rider Application (if applicable)",
+      description: `Monitor and verify that benefit amounts increase according to inflation rider terms (${policy.inflationProtection}).`,
+      timeline: "Day 53-65 (Ongoing)",
+      stage: 3,
+      completed: false,
+      instructions: `Your policy includes inflation protection: ${policy.inflationProtection}\n\nAnnually verify that benefit amounts increase according to policy terms:\n- If CPI-based: Verify increases match published CPI rates\n- If Fixed Percentage: Verify increases by stated percentage (e.g., 5%)\n- Confirm increases are compounding year-over-year\n- Verify inflation continues even though benefits are being paid\n\nSet annual reminders to verify adjustments and request corrections if not applied.`,
+      documentsNeeded: ["Inflation rider documentation", "Annual benefit statements", "CPI documentation (if applicable)"],
+    });
+  }
+
+  // Conditional: Equipment Allowance
+  if ((policy as any).equipmentAllowance === "yes") {
+    tasks.push({
+      id: "stage3-equipment-allowance",
+      title: "Manage Equipment Allowance Claims (if applicable)",
+      description: "Obtain and claim reimbursement for approved equipment under equipment allowance rider.",
+      timeline: "Day 55-90 (Ongoing as needed)",
+      stage: 3,
+      completed: false,
+      instructions: "If your policy includes an equipment allowance:\n- Identify needed equipment based on ADL limitations\n- Verify equipment is covered under policy allowance\n- Obtain insurance company pre-approval (if required)\n- Purchase approved equipment\n- Submit invoice and proof of payment to insurance company\n- Track cumulative equipment allowance spending toward lifetime maximum\n\nMaintain receipts and proof of payment for all equipment purchases.",
+      documentsNeeded: ["Equipment allowance rider documentation", "Equipment quotes and invoices", "Proof of payment", "Insurance company approval letters", "Reimbursement confirmations"],
+    });
+  }
 
   // Always shown: Medical Appointments
   tasks.push({

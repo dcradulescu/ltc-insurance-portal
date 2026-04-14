@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Calculator, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
