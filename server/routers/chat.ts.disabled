@@ -1,15 +1,25 @@
 import { router, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { invokeLLM } from "../_core/llm";
-import {
-  retrieveRelevantDocuments,
-  buildRAGContext,
-  createChatSession,
-  getChatSession,
-  saveEnhancedChatMessage,
-  getRecentChatContext,
-  updateChatSession,
-} from "../rag";
+// RAG functionality temporarily disabled due to schema mismatch
+// import {
+//   retrieveRelevantDocuments,
+//   buildRAGContext,
+//   createChatSession,
+//   getChatSession,
+//   saveEnhancedChatMessage,
+//   getRecentChatContext,
+//   updateChatSession,
+// } from "../rag";
+
+// Placeholder functions for RAG (to be implemented)
+const createChatSession = async () => {};
+const getChatSession = async () => null;
+const saveEnhancedChatMessage = async () => {};
+const getRecentChatContext = async () => [];
+const updateChatSession = async () => {};
+const retrieveRelevantDocuments = async () => [];
+const buildRAGContext = async () => "";
 import { getPolicyById } from "../db";
 import { nanoid } from "nanoid";
 

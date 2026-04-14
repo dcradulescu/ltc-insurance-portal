@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { ChatWidget } from "./ChatWidget";
+// import { ChatWidget } from "./ChatWidget"; // Temporarily disabled
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -135,7 +135,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
-      <ChatWidget />
+      {/* <ChatWidget /> */}
     </div>
   );
 }

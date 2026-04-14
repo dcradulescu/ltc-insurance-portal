@@ -210,23 +210,21 @@ export const chatMessages = mysqlTable("chatMessages", {
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = typeof chatMessages.$inferInsert;
 
-// ===== RAG (Retrieval-Augmented Generation) Tables =====
+// === RAG Tables ===
 export const ragDocuments = mysqlTable("ragDocuments", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
   title: varchar("title", { length: 255 }).notNull(),
-  category: varchar("category", { length: 128 }).notNull(),
   content: text("content").notNull(),
-  summary: text("summary"),
-  keywords: json("keywords"),
-  embedding: text("embedding"),
-  source: varchar("source", { length: 255 }),
-  isActive: boolean("isActive").default(true),
-  createdAt: timestamp("createdAt").defaultNow(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
+  source: varchar("source", { length: 512 }),
+  category: varchar("category", { length: 128 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
-export type RAGDocument = typeof ragDocuments.$inferSelect;
-export type InsertRAGDocument = typeof ragDocuments.$inferInsert;
+export type RagDocument = typeof ragDocuments.$inferSelect;
+export type InsertRagDocument = typeof ragDocuments.$inferInsert;
 
 export const ragDocumentChunks = mysqlTable("ragDocumentChunks", {
   id: int("id").autoincrement().primaryKey(),
@@ -234,26 +232,19 @@ export const ragDocumentChunks = mysqlTable("ragDocumentChunks", {
   chunkIndex: int("chunkIndex").notNull(),
   content: text("content").notNull(),
   embedding: text("embedding"),
-  tokenCount: int("tokenCount"),
-  createdAt: timestamp("createdAt").defaultNow(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export type RAGDocumentChunk = typeof ragDocumentChunks.$inferSelect;
-export type InsertRAGDocumentChunk = typeof ragDocumentChunks.$inferInsert;
+export type RagDocumentChunk = typeof ragDocumentChunks.$inferSelect;
+export type InsertRagDocumentChunk = typeof ragDocumentChunks.$inferInsert;
 
-// ===== Enhanced Chat Tables =====
+// === Enhanced Chat Tables ===
 export const chatSessions = mysqlTable("chatSessions", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: varchar("sessionId", { length: 128 }).notNull().unique(),
   userId: int("userId"),
-  policyId: int("policyId"),
-  topic: varchar("topic", { length: 255 }),
-  summary: text("summary"),
-  messageCount: int("messageCount").default(0),
-  isActive: boolean("isActive").default(true),
-  createdAt: timestamp("createdAt").defaultNow(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
-  expiresAt: timestamp("expiresAt"),
+  title: varchar("title", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type ChatSession = typeof chatSessions.$inferSelect;
@@ -261,14 +252,12 @@ export type InsertChatSession = typeof chatSessions.$inferInsert;
 
 export const chatMessagesEnhanced = mysqlTable("chatMessagesEnhanced", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: varchar("sessionId", { length: 128 }).notNull(),
+  sessionId: int("sessionId").notNull(),
   userId: int("userId"),
   role: varchar("role", { length: 16 }).notNull(),
   content: text("content").notNull(),
-  retrievedDocuments: json("retrievedDocuments"),
-  userContext: json("userContext"),
-  embedding: text("embedding"),
-  createdAt: timestamp("createdAt").defaultNow(),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type ChatMessageEnhanced = typeof chatMessagesEnhanced.$inferSelect;

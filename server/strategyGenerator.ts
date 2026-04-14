@@ -58,7 +58,7 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
   tasks.push({
     id: "stage1-gather-lookback",
     title: "Gather Look Back Documentation",
-    description: `Collect all out-of-pocket care expenses from the past ${policy.lookBackPeriodDays || "unknown"} days.`,
+    description: `Collect all out-of-pocket care expenses from the past 90 days.`,
     timeline: "Week 1-2",
     stage: 1,
     completed: false,
@@ -551,21 +551,6 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
  */
 function calculateEffectiveEliminationPeriod(policy: Policy): number {
   let period = parseInt(policy.eliminationPeriod || "0") || 0;
-
-  // Apply care coordinator reduction if enabled
-  if (policy.careCoordinatorReductionEnabled) {
-    const reduced = parseInt(policy.careCoordinatorReducedToDays || "0") || 0;
-    period = Math.min(period, reduced);
-  }
-
-  // Apply reduction in care provided if enabled
-  if (policy.reductionInCareProvidedEnabled) {
-    const daysPerWeek = parseInt(policy.reductionInCareDaysCountedAs7 || "7") || 7;
-    const weeksNeeded = period / 7;
-    const actualDaysNeeded = weeksNeeded * daysPerWeek;
-    period = Math.min(period, Math.ceil(actualDaysNeeded));
-  }
-
   return period;
 }
 

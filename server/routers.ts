@@ -16,7 +16,7 @@ import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { policyFormRouter } from "./routers/policyForm";
 import { documentsRouter } from "./routers/documents";
-import { chatRouter } from "./routers/chat";
+// import { chatRouter } from "./routers/chat"; // Temporarily disabled due to RAG schema mismatch
 import { ENV } from "./_core/env";
 import { pdfDeliveryRouter } from './routers/pdfDelivery';
 import { generatePhysicianLetter } from "./physicianLetterGenerator";
@@ -364,7 +364,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       }),
   }),
 
-  chat: chatRouter,
+  // chat: chatRouter, // Temporarily disabled due to RAG schema mismatch
 
   sms: router({
     sendNotification: publicProcedure

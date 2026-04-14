@@ -283,7 +283,7 @@ export async function getChatHistory(sessionId: string, limit: number = 50) {
     .select()
     .from(chatMessagesEnhanced)
     .where(eq(chatMessagesEnhanced.sessionId, sessionId))
-    .orderBy(chatMessagesEnhanced.createdAt)
+    .orderBy(desc(chatMessagesEnhanced.createdAt))
     .limit(limit);
 }
 
