@@ -162,11 +162,51 @@ export const appRouter = router({
         const { id, ...data } = input;
         // Use a default userId for public access
         const userId = 1; // Default public user
+        
+        // Strip form-only fields that don't exist in the database
+        const {
+          poa_name, poa_relationship,
+          lookBackPeriodEnabled, lookBackPeriodDays,
+          careCoordinatorReductionEnabled, careCoordinatorReducedToDays,
+          reductionInCareProvidedEnabled, reductionInCareDaysCountedAs7,
+          qualifyingAdls,
+          approvedAgencyRequired, numberOfDaysUntilPayment,
+          equipmentAllowanceEnabled, equipmentAllowanceAmount, equipmentAllowanceCoverage,
+          equipmentAllowanceDeductedFromLifetime, equipmentAllowanceRelatedAdls,
+          equipmentNeeds, equipmentAllowanceNotes,
+          inflationAdjustmentEnabled, inflationType, inflationPercentagePerYear,
+          inflationContinuesAfterBenefits,
+          caseManagerAssigned,
+          careNeeds, careNotes,
+          diagnosisCheckboxes, diagnosisNotes,
+          ...dbData
+        } = data as any;
+        
+        // Store form-only fields as JSON in equipmentAllowance for strategy generator
+        const metadata = JSON.stringify({
+          poa_name, poa_relationship,
+          lookBackPeriodEnabled, lookBackPeriodDays,
+          careCoordinatorReductionEnabled, careCoordinatorReducedToDays,
+          reductionInCareProvidedEnabled, reductionInCareDaysCountedAs7,
+          qualifyingAdls,
+          approvedAgencyRequired, numberOfDaysUntilPayment,
+          equipmentAllowanceEnabled, equipmentAllowanceAmount, equipmentAllowanceCoverage,
+          equipmentAllowanceDeductedFromLifetime, equipmentAllowanceRelatedAdls,
+          equipmentNeeds, equipmentAllowanceNotes,
+          inflationAdjustmentEnabled, inflationType, inflationPercentagePerYear,
+          inflationContinuesAfterBenefits,
+          caseManagerAssigned,
+          careNeeds, careNotes,
+          diagnosisCheckboxes, diagnosisNotes,
+        });
+        
+        const saveData = { ...dbData, equipmentAllowance: metadata };
+        
         if (id) {
-          await updatePolicy(id, userId, data);
+          await updatePolicy(id, userId, saveData);
           return { id };
         } else {
-          const newId = await createPolicy({ ...data, userId });
+          const newId = await createPolicy({ ...saveData, userId });
           return { id: newId };
         }
       }),
