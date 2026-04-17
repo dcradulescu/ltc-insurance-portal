@@ -104,7 +104,7 @@ export const policies = mysqlTable("policies", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
 });
 
-export type Policy = Omit<typeof policies.$inferSelect, 'equipmentAllowance'> & { equipmentAllowance?: string | null };
+export type Policy = typeof policies.$inferSelect;
 export type InsertPolicy = typeof policies.$inferInsert;
 
 export const strategies = mysqlTable("strategies", {

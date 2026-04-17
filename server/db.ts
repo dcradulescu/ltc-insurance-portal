@@ -61,100 +61,28 @@ export async function getUserByOpenId(openId: string) {
 export async function createPolicy(data: InsertPolicy): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  try {
-    const result = await db.insert(policies).values(data);
-    return Number(result[0].insertId);
-  } catch (error: any) {
-    // If insert fails due to missing equipmentAllowance column, try without it
-    const errorMsg = error.message || error.cause?.message || '';
-    if (errorMsg.includes('equipmentAllowance') || errorMsg.includes('Unknown column')) {
-      console.warn('[Database] equipmentAllowance column missing, attempting insert without it');
-      try {
-        const { equipmentAllowance, ...dataWithoutEquipment } = data as any;
-        const result = await db.insert(policies).values(dataWithoutEquipment);
-        return Number(result[0].insertId);
-      } catch (fallbackError) {
-        console.error('[Database] Fallback insert also failed:', fallbackError);
-        throw fallbackError;
-      }
-    }
-    throw error;
-  }
+  const result = await db.insert(policies).values(data);
+  return Number(result[0].insertId);
 }
 
 export async function updatePolicy(id: number, userId: number, data: Partial<InsertPolicy>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  try {
-    await db.update(policies).set(data).where(and(eq(policies.id, id), eq(policies.userId, userId)));
-  } catch (error: any) {
-    // If update fails due to missing equipmentAllowance column, try without it
-    const errorMsg = error.message || error.cause?.message || '';
-    if (errorMsg.includes('equipmentAllowance') || errorMsg.includes('Unknown column')) {
-      console.warn('[Database] equipmentAllowance column missing, attempting update without it');
-      try {
-        const { equipmentAllowance, ...dataWithoutEquipment } = data as any;
-        await db.update(policies).set(dataWithoutEquipment).where(and(eq(policies.id, id), eq(policies.userId, userId)));
-      } catch (fallbackError) {
-        console.error('[Database] Fallback update also failed:', fallbackError);
-        throw fallbackError;
-      }
-    } else {
-      throw error;
-    }
-  }
+  await db.update(policies).set(data).where(and(eq(policies.id, id), eq(policies.userId, userId)));
 }
 
 export async function getPolicyByUserId(userId: number): Promise<Policy | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  try {
-    const result = await db.select().from(policies).where(eq(policies.userId, userId)).orderBy(desc(policies.updatedAt)).limit(1);
-    return result.length > 0 ? result[0] : undefined;
-  } catch (error: any) {
-    // If query fails due to missing columns, try with a raw query
-    const errorCode = error.code || error.cause?.code;
-    const errorMsg = error.message || error.cause?.message || '';
-    console.warn('[Database] getPolicyByUserId error:', errorCode, errorMsg);
-    if (errorCode === 'ER_BAD_FIELD_ERROR' || errorMsg.includes('Unknown column')) {
-      console.warn('[Database] Column mismatch in getPolicyByUserId, attempting fallback');
-      try {
-        const raw = await (db as any).execute(`SELECT * FROM policies WHERE userId = ? ORDER BY updatedAt DESC LIMIT 1`, [userId]);
-        return raw[0] && raw[0][0] ? raw[0][0] : undefined;
-      } catch (fallbackError) {
-        console.error('[Database] Fallback query also failed:', fallbackError);
-        return undefined;
-      }
-    }
-    console.error('[Database] getPolicyByUserId throwing error:', error);
-    throw error;
-  }
+  const result = await db.select().from(policies).where(eq(policies.userId, userId)).orderBy(desc(policies.updatedAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
 }
 
 export async function getPolicyById(id: number): Promise<Policy | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  try {
-    const result = await db.select().from(policies).where(eq(policies.id, id)).limit(1);
-    return result.length > 0 ? result[0] : undefined;
-  } catch (error: any) {
-    // If query fails due to missing columns, try with a raw query
-    const errorCode = error.code || error.cause?.code;
-    const errorMsg = error.message || error.cause?.message || '';
-    console.warn('[Database] getPolicyById error:', errorCode, errorMsg);
-    if (errorCode === 'ER_BAD_FIELD_ERROR' || errorMsg.includes('Unknown column')) {
-      console.warn('[Database] Column mismatch in getPolicyById, attempting fallback');
-      try {
-        const raw = await (db as any).execute(`SELECT * FROM policies WHERE id = ? LIMIT 1`, [id]);
-        return raw[0] && raw[0][0] ? raw[0][0] : undefined;
-      } catch (fallbackError) {
-        console.error('[Database] Fallback query also failed:', fallbackError);
-        return undefined;
-      }
-    }
-    console.error('[Database] getPolicyById throwing error:', error);
-    throw error;
-  }
+  const result = await db.select().from(policies).where(eq(policies.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
 }
 
 // ---- Strategy helpers ----
