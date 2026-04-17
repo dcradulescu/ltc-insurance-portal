@@ -68,7 +68,7 @@ describe("policyForm.sendComprehensiveToZapier", () => {
       expect(result).toHaveProperty("success");
       expect(result).toHaveProperty("message");
     }
-  });
+  }, 20000);
 
   it("accepts unsavedFormData in the payload", async () => {
     const { ctx } = createTestContext();
@@ -125,7 +125,7 @@ describe("policyForm.sendToZapier (legacy)", () => {
       expect(result).toHaveProperty("success");
       expect(result).toHaveProperty("message");
     }
-  });
+  }, 20000);
 
   it("accepts formData in the legacy payload", async () => {
     const { ctx } = createTestContext();

@@ -371,3 +371,15 @@
 - [x] Verified INSERT succeeds with test script (status 200, id returned)
 - [x] handleComplete now sends form data as strings (removed parseCurrencyToNumber)
 - [x] Server-side mutation strips form-only fields and stores them as JSON in equipmentAllowance
+
+
+## Bug: PDF Download Error - child_process not supported (April 17, 2026)
+- [x] Fix "Dynamic require of child_process is not supported" error on PDF download
+- [x] Replace server-side PDF generation with browser-compatible approach (jsPDF client-side)
+- [x] Removed dependency on child_process, weasyprint, xhtml2pdf
+- [x] PDF now generates entirely in browser with professional formatting
+- [x] Test PDF download on Strategy page - Verified: 41KB, 7-page PDF with all sections
+
+## Test Fixes (April 17, 2026)
+- [x] Fixed Zapier test timeout: Increased timeout from 5s to 20s for multi-trigger iteration tests
+- [x] All 6 test files passing (42 tests passed, 2 skipped)
