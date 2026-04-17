@@ -362,3 +362,12 @@
 - [ ] Fallback query logic added to catch ER_BAD_FIELD_ERROR and use raw SQL
 - [ ] Need to verify fallback query is being triggered and working
 - [ ] Alternative: Add equipmentAllowance column to actual database via migration
+
+
+## Bug Fix: Generate Strategy "Failed to Save" - FINAL FIX (April 17, 2026)
+- [x] Root cause: equipmentAllowance column was varchar(255) but JSON metadata was 832+ chars
+- [x] Changed equipmentAllowance column from varchar(255) to TEXT in database via ALTER TABLE
+- [x] Updated Drizzle schema to use text() instead of varchar(255)
+- [x] Verified INSERT succeeds with test script (status 200, id returned)
+- [x] handleComplete now sends form data as strings (removed parseCurrencyToNumber)
+- [x] Server-side mutation strips form-only fields and stores them as JSON in equipmentAllowance

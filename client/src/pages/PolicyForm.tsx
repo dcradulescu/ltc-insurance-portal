@@ -572,14 +572,7 @@ export default function PolicyForm() {
     // Advance step immediately (non-blocking)
     setStep(prev => prev + 1);
     // Save to DB in background (fire-and-forget)
-      const formToSave = {
-        ...form,
-        id: policyId || undefined,
-        dailyMaximum: form.dailyMaximum ? parseCurrencyToNumber(form.dailyMaximum) : null,
-        monthlyMaximum: form.monthlyMaximum ? parseCurrencyToNumber(form.monthlyMaximum) : null,
-        lifetimeMaximum: form.lifetimeMaximum ? parseCurrencyToNumber(form.lifetimeMaximum) : null,
-      };
-      saveMutation.mutate(formToSave as any, {
+      saveMutation.mutate({ ...form, id: policyId || undefined } as any, {
       onSuccess: (result) => {
         if (!policyId) setPolicyId(result.id);
       },
@@ -614,15 +607,8 @@ export default function PolicyForm() {
   const handleComplete = async () => {
     setSaving(true);
     try {
-      // Save to DB - convert currency strings to numbers
-      const formToSave = {
-        ...form,
-        id: policyId || undefined,
-        dailyMaximum: form.dailyMaximum ? parseCurrencyToNumber(form.dailyMaximum) : null,
-        monthlyMaximum: form.monthlyMaximum ? parseCurrencyToNumber(form.monthlyMaximum) : null,
-        lifetimeMaximum: form.lifetimeMaximum ? parseCurrencyToNumber(form.lifetimeMaximum) : null,
-      };
-      const result = await saveMutation.mutateAsync(formToSave as any);
+      // Save to DB - send form data as-is (strings)
+      const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
       if (!policyId) setPolicyId(result.id);
 
       // Send comprehensive data to Zapier
