@@ -60,6 +60,7 @@ export const policies = mysqlTable("policies", {
   monthlyMaximum: varchar("monthlyMaximum", { length: 64 }),
   lifetimeMaximum: varchar("lifetimeMaximum", { length: 64 }),
   inflationProtection: varchar("inflationProtection", { length: 128 }),
+  equipmentAllowance: varchar("equipmentAllowance", { length: 255 }).default(''),
   homeCareCoverage: varchar("homeCareCoverage", { length: 8 }),
   facilityCareCoverage: varchar("facilityCareCoverage", { length: 8 }),
 
@@ -103,7 +104,7 @@ export const policies = mysqlTable("policies", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
 });
 
-export type Policy = typeof policies.$inferSelect;
+export type Policy = Omit<typeof policies.$inferSelect, 'equipmentAllowance'> & { equipmentAllowance?: string | null };
 export type InsertPolicy = typeof policies.$inferInsert;
 
 export const strategies = mysqlTable("strategies", {

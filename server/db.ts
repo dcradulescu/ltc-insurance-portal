@@ -79,8 +79,10 @@ export async function getPolicyByUserId(userId: number): Promise<Policy | undefi
     return result.length > 0 ? result[0] : undefined;
   } catch (error: any) {
     // If query fails due to missing columns, try with a raw query
-    console.warn('[Database] getPolicyByUserId error:', error.code, error.message);
-    if (error.code === 'ER_BAD_FIELD_ERROR' || error.message?.includes('Unknown column')) {
+    const errorCode = error.code || error.cause?.code;
+    const errorMsg = error.message || error.cause?.message || '';
+    console.warn('[Database] getPolicyByUserId error:', errorCode, errorMsg);
+    if (errorCode === 'ER_BAD_FIELD_ERROR' || errorMsg.includes('Unknown column')) {
       console.warn('[Database] Column mismatch in getPolicyByUserId, attempting fallback');
       try {
         const raw = await (db as any).execute(`SELECT * FROM policies WHERE userId = ? ORDER BY updatedAt DESC LIMIT 1`, [userId]);
@@ -90,6 +92,7 @@ export async function getPolicyByUserId(userId: number): Promise<Policy | undefi
         return undefined;
       }
     }
+    console.error('[Database] getPolicyByUserId throwing error:', error);
     throw error;
   }
 }
@@ -102,8 +105,10 @@ export async function getPolicyById(id: number): Promise<Policy | undefined> {
     return result.length > 0 ? result[0] : undefined;
   } catch (error: any) {
     // If query fails due to missing columns, try with a raw query
-    console.warn('[Database] getPolicyById error:', error.code, error.message);
-    if (error.code === 'ER_BAD_FIELD_ERROR' || error.message?.includes('Unknown column')) {
+    const errorCode = error.code || error.cause?.code;
+    const errorMsg = error.message || error.cause?.message || '';
+    console.warn('[Database] getPolicyById error:', errorCode, errorMsg);
+    if (errorCode === 'ER_BAD_FIELD_ERROR' || errorMsg.includes('Unknown column')) {
       console.warn('[Database] Column mismatch in getPolicyById, attempting fallback');
       try {
         const raw = await (db as any).execute(`SELECT * FROM policies WHERE id = ? LIMIT 1`, [id]);
@@ -113,6 +118,7 @@ export async function getPolicyById(id: number): Promise<Policy | undefined> {
         return undefined;
       }
     }
+    console.error('[Database] getPolicyById throwing error:', error);
     throw error;
   }
 }
