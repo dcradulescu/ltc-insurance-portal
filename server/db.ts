@@ -61,14 +61,48 @@ export async function getUserByOpenId(openId: string) {
 export async function createPolicy(data: InsertPolicy): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(policies).values(data);
-  return Number(result[0].insertId);
+  try {
+    const result = await db.insert(policies).values(data);
+    return Number(result[0].insertId);
+  } catch (error: any) {
+    // If insert fails due to missing equipmentAllowance column, try without it
+    const errorMsg = error.message || error.cause?.message || '';
+    if (errorMsg.includes('equipmentAllowance') || errorMsg.includes('Unknown column')) {
+      console.warn('[Database] equipmentAllowance column missing, attempting insert without it');
+      try {
+        const { equipmentAllowance, ...dataWithoutEquipment } = data as any;
+        const result = await db.insert(policies).values(dataWithoutEquipment);
+        return Number(result[0].insertId);
+      } catch (fallbackError) {
+        console.error('[Database] Fallback insert also failed:', fallbackError);
+        throw fallbackError;
+      }
+    }
+    throw error;
+  }
 }
 
 export async function updatePolicy(id: number, userId: number, data: Partial<InsertPolicy>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(policies).set(data).where(and(eq(policies.id, id), eq(policies.userId, userId)));
+  try {
+    await db.update(policies).set(data).where(and(eq(policies.id, id), eq(policies.userId, userId)));
+  } catch (error: any) {
+    // If update fails due to missing equipmentAllowance column, try without it
+    const errorMsg = error.message || error.cause?.message || '';
+    if (errorMsg.includes('equipmentAllowance') || errorMsg.includes('Unknown column')) {
+      console.warn('[Database] equipmentAllowance column missing, attempting update without it');
+      try {
+        const { equipmentAllowance, ...dataWithoutEquipment } = data as any;
+        await db.update(policies).set(dataWithoutEquipment).where(and(eq(policies.id, id), eq(policies.userId, userId)));
+      } catch (fallbackError) {
+        console.error('[Database] Fallback update also failed:', fallbackError);
+        throw fallbackError;
+      }
+    } else {
+      throw error;
+    }
+  }
 }
 
 export async function getPolicyByUserId(userId: number): Promise<Policy | undefined> {
