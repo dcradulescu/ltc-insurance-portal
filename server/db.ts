@@ -79,7 +79,8 @@ export async function getPolicyByUserId(userId: number): Promise<Policy | undefi
     return result.length > 0 ? result[0] : undefined;
   } catch (error: any) {
     // If query fails due to missing columns, try with a raw query
-    if (error.code === 'ER_BAD_FIELD_ERROR') {
+    console.warn('[Database] getPolicyByUserId error:', error.code, error.message);
+    if (error.code === 'ER_BAD_FIELD_ERROR' || error.message?.includes('Unknown column')) {
       console.warn('[Database] Column mismatch in getPolicyByUserId, attempting fallback');
       try {
         const raw = await (db as any).execute(`SELECT * FROM policies WHERE userId = ? ORDER BY updatedAt DESC LIMIT 1`, [userId]);
@@ -101,7 +102,8 @@ export async function getPolicyById(id: number): Promise<Policy | undefined> {
     return result.length > 0 ? result[0] : undefined;
   } catch (error: any) {
     // If query fails due to missing columns, try with a raw query
-    if (error.code === 'ER_BAD_FIELD_ERROR') {
+    console.warn('[Database] getPolicyById error:', error.code, error.message);
+    if (error.code === 'ER_BAD_FIELD_ERROR' || error.message?.includes('Unknown column')) {
       console.warn('[Database] Column mismatch in getPolicyById, attempting fallback');
       try {
         const raw = await (db as any).execute(`SELECT * FROM policies WHERE id = ? LIMIT 1`, [id]);

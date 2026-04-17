@@ -354,3 +354,11 @@
 - [x] Solution: Changed to type="number" inputs (much simpler!)
 - [x] Removed formatCurrency function and custom formatting
 - [x] Test entering multi-digit amounts (e.g., 250000)
+
+
+## Bug: Persistent "Failed to save" Error (April 17, 2026)
+- [ ] Root cause: Drizzle ORM still selecting `equipmentAllowance` column that doesn't exist in database
+- [ ] Schema file correctly has equipmentAllowance removed
+- [ ] Fallback query logic added to catch ER_BAD_FIELD_ERROR and use raw SQL
+- [ ] Need to verify fallback query is being triggered and working
+- [ ] Alternative: Add equipmentAllowance column to actual database via migration
