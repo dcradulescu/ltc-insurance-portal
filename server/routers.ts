@@ -9,6 +9,7 @@ import {
   saveChatMessage, getChatHistory,
   createDocumentUpload, getDocumentsByUserId, getDocumentsByTaskId, deleteDocument,
   createUserContact, getUserContacts, updateUserContact, deleteUserContact,
+  saveTaskCompletion, getTaskCompletions, getTaskCompletion,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { notifyOwner } from "./_core/notification";
@@ -224,6 +225,34 @@ export const appRouter = router({
       // Allow public access
       return getStrategyByUserId(1);
     }),
+
+    getTaskCompletions: publicProcedure
+      .input(z.object({ strategyId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        // Allow public access
+        return getTaskCompletions(1, input.strategyId);
+      }),
+
+    saveTaskCompletion: publicProcedure
+      .input(z.object({
+        strategyId: z.number(),
+        taskId: z.string(),
+        taskTitle: z.string(),
+        stage: z.number(),
+        completed: z.boolean(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Allow public access
+        await saveTaskCompletion(
+          1,
+          input.strategyId,
+          input.taskId,
+          input.taskTitle,
+          input.stage,
+          input.completed
+        );
+        return { success: true };
+      }),
 
     updateTasks: publicProcedure
       .input(z.object({

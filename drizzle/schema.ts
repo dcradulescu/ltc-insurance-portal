@@ -208,27 +208,19 @@ export const ragDocumentChunks = mysqlTable("ragDocumentChunks", {
 export type RagDocumentChunk = typeof ragDocumentChunks.$inferSelect;
 export type InsertRagDocumentChunk = typeof ragDocumentChunks.$inferInsert;
 
-// === Enhanced Chat Tables ===
-export const chatSessions = mysqlTable("chatSessions", {
+export const taskCompletions = mysqlTable("taskCompletions", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId"),
-  title: varchar("title", { length: 255 }),
+  userId: int("userId").notNull(),
+  strategyId: int("strategyId").notNull(),
+  taskId: varchar("taskId", { length: 255 }).notNull(),
+  taskTitle: varchar("taskTitle", { length: 512 }),
+  stage: int("stage").notNull(), // 1, 2, or 3
+  completed: boolean("completed").default(false).notNull(),
+  completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
-export type ChatSession = typeof chatSessions.$inferSelect;
-export type InsertChatSession = typeof chatSessions.$inferInsert;
+export type TaskCompletion = typeof taskCompletions.$inferSelect;
+export type InsertTaskCompletion = typeof taskCompletions.$inferInsert;
 
-export const chatMessagesEnhanced = mysqlTable("chatMessagesEnhanced", {
-  id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull(),
-  userId: int("userId"),
-  role: varchar("role", { length: 16 }).notNull(),
-  content: text("content").notNull(),
-  metadata: json("metadata"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type ChatMessageEnhanced = typeof chatMessagesEnhanced.$inferSelect;
-export type InsertChatMessageEnhanced = typeof chatMessagesEnhanced.$inferInsert;

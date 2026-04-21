@@ -471,3 +471,15 @@
 - [x] Reorganize page with clean section headers and visual separation
 - [x] Test all view options in browser (all 5 views working)
 - [x] Fix Zapier test timeout (increased to 10000ms, all 49 tests passing)
+
+
+## Persist Task Completion to Database (April 21, 2026)
+- [ ] Add task_completion table to database schema
+- [ ] Create migration to add task_completion table
+- [ ] Implement tRPC procedure to save task completion state
+- [ ] Implement tRPC procedure to load task completion state for a strategy
+- [ ] Update Strategy page to load task completion on mount
+- [ ] Update Strategy page to save task completion when toggled
+- [ ] Test persistence across page reloads
+- [ ] Test persistence across browser sessions
+- [ ] Verify Gantt chart and Checklist both reflect saved state

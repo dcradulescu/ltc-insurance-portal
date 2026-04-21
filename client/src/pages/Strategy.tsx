@@ -126,6 +126,11 @@ export default function Strategy() {
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
   const strategyQuery = trpc.strategy.getMine.useQuery(undefined, { enabled: true });
+  const taskCompletionsQuery = trpc.strategy.getTaskCompletions.useQuery(
+    { strategyId: strategyQuery.data?.id || 0 },
+    { enabled: !!strategyQuery.data?.id }
+  );
+  const saveTaskCompletionMutation = trpc.strategy.saveTaskCompletion.useMutation();
   const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
   const sessionStartRef = useRef(Date.now());
   const zapierSentRef = useRef(false);
@@ -171,9 +176,32 @@ export default function Strategy() {
   const strategy = strategyQuery.data;
   const policy = policyFromStorage || policyQuery.data;
 
-  const stage1Tasks: StrategyTask[] = useMemo(() => (strategy?.stage1Tasks as unknown as StrategyTask[]) || [], [strategy?.stage1Tasks]);
-  const stage2Tasks: StrategyTask[] = useMemo(() => (strategy?.stage2Tasks as unknown as StrategyTask[]) || [], [strategy?.stage2Tasks]);
-  const stage3Tasks: StrategyTask[] = useMemo(() => (strategy?.stage3Tasks as unknown as StrategyTask[]) || [], [strategy?.stage3Tasks]);
+  const stage1Tasks: StrategyTask[] = useMemo(() => {
+    const tasks = (strategy?.stage1Tasks as unknown as StrategyTask[]) || [];
+    const completions = taskCompletionsQuery.data || [];
+    return tasks.map(task => ({
+      ...task,
+      completed: completions.some(c => c.taskId === task.id && c.completed) || task.completed
+    }));
+  }, [strategy?.stage1Tasks, taskCompletionsQuery.data]);
+  
+  const stage2Tasks: StrategyTask[] = useMemo(() => {
+    const tasks = (strategy?.stage2Tasks as unknown as StrategyTask[]) || [];
+    const completions = taskCompletionsQuery.data || [];
+    return tasks.map(task => ({
+      ...task,
+      completed: completions.some(c => c.taskId === task.id && c.completed) || task.completed
+    }));
+  }, [strategy?.stage2Tasks, taskCompletionsQuery.data]);
+  
+  const stage3Tasks: StrategyTask[] = useMemo(() => {
+    const tasks = (strategy?.stage3Tasks as unknown as StrategyTask[]) || [];
+    const completions = taskCompletionsQuery.data || [];
+    return tasks.map(task => ({
+      ...task,
+      completed: completions.some(c => c.taskId === task.id && c.completed) || task.completed
+    }));
+  }, [strategy?.stage3Tasks, taskCompletionsQuery.data]);
   const currentStage = strategy?.currentStage || 1;
 
   const stageProgress = (tasks: StrategyTask[]) => tasks.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
@@ -201,11 +229,23 @@ export default function Strategy() {
 
   const toggleTask = async (stage: "stage1Tasks" | "stage2Tasks" | "stage3Tasks", tasks: StrategyTask[], taskId: string) => {
     if (!strategy) return;
-    const updated = tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const newCompleted = !task.completed;
+    const stageNum = parseInt(stage.replace(/\D/g, ''));
+    
     try {
-      await updateTasksMutation.mutateAsync({ strategyId: strategy.id, stage, tasks: updated });
-      utils.strategy.getMine.invalidate();
-    } catch (_e) { toast.error("Failed to update task."); }
+      await saveTaskCompletionMutation.mutateAsync({
+        strategyId: strategy.id,
+        taskId,
+        taskTitle: task.label,
+        stage: stageNum,
+        completed: newCompleted,
+      });
+      taskCompletionsQuery.refetch();
+    } catch (_e) { 
+      toast.error("Failed to update task.");
+    }
   };
 
   const advanceStage = async (newStage: number) => {

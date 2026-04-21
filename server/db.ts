@@ -7,6 +7,7 @@ import {
   chatMessages, InsertChatMessage,
   documentUploads, InsertDocumentUpload, DocumentUpload,
   userContacts, InsertUserContact, UserContact,
+  taskCompletions, InsertTaskCompletion, TaskCompletion,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -183,4 +184,100 @@ export async function getChatHistory(sessionId: string, limit = 50): Promise<typ
   const db = await getDb();
   if (!db) return [];
   return db.select().from(chatMessages).where(eq(chatMessages.sessionId, sessionId)).orderBy(chatMessages.createdAt).limit(limit);
+}
+
+// ---- Task Completion helpers ----
+export async function saveTaskCompletion(
+  userId: number,
+  strategyId: number,
+  taskId: string,
+  taskTitle: string,
+  stage: number,
+  completed: boolean
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const completedAt = completed ? new Date() : null;
+  
+  // Try to find existing record
+  const existing = await db
+    .select()
+    .from(taskCompletions)
+    .where(
+      and(
+        eq(taskCompletions.userId, userId),
+        eq(taskCompletions.strategyId, strategyId),
+        eq(taskCompletions.taskId, taskId)
+      )
+    )
+    .limit(1);
+  
+  if (existing.length > 0) {
+    // Update existing record
+    await db
+      .update(taskCompletions)
+      .set({ completed, completedAt })
+      .where(
+        and(
+          eq(taskCompletions.userId, userId),
+          eq(taskCompletions.strategyId, strategyId),
+          eq(taskCompletions.taskId, taskId)
+        )
+      );
+  } else {
+    // Insert new record
+    await db.insert(taskCompletions).values({
+      userId,
+      strategyId,
+      taskId,
+      taskTitle,
+      stage,
+      completed,
+      completedAt,
+    });
+  }
+}
+
+export async function getTaskCompletions(
+  userId: number,
+  strategyId: number
+): Promise<TaskCompletion[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const results = await db
+    .select()
+    .from(taskCompletions)
+    .where(
+      and(
+        eq(taskCompletions.userId, userId),
+        eq(taskCompletions.strategyId, strategyId)
+      )
+    );
+  
+  return results;
+}
+
+export async function getTaskCompletion(
+  userId: number,
+  strategyId: number,
+  taskId: string
+): Promise<TaskCompletion | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const results = await db
+    .select()
+    .from(taskCompletions)
+    .where(
+      and(
+        eq(taskCompletions.userId, userId),
+        eq(taskCompletions.strategyId, strategyId),
+        eq(taskCompletions.taskId, taskId)
+      )
+    )
+    .limit(1);
+  
+  return results.length > 0 ? results[0] : undefined;
 }
