@@ -413,3 +413,11 @@
 - [x] Add scroll indicators (arrows on hover + drag hint text)
 - [x] Test horizontal scroll behavior on desktop (verified, quick-nav buttons work)
 - [x] Verify all other sections remain vertically scrollable as normal (confirmed)
+
+## Dynamic Timeline Timeframes (April 21, 2026)
+- [x] Calculate Stage 1 day range based on elimination period (1/3 of elim period, min 14, max 45 days)
+- [x] Calculate Stage 2 day range based on elimination period (elim period + 30-day review window)
+- [x] Calculate Stage 3 day range (post-approval, starts after elim + review + 1)
+- [x] Pass elimination period from policy data to HorizontalTimeline component (already wired)
+- [x] Update stage cards to show computed day ranges instead of static values
+- [x] Tested with 90-day elimination: Stage 1 Days 1-30, Stage 2 Days 31-120, Stage 3 Day 121+

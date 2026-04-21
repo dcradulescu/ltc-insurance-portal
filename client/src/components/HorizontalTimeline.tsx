@@ -50,59 +50,93 @@ const categoryLabels: Record<string, { label: string; icon: string }> = {
   "reimbursement-flow": { label: "Reimbursement", icon: "💵" },
 };
 
-const STAGES = [
-  {
-    stage: 1,
-    title: "Prior to Claim",
-    subtitle: "Prepare & Gather",
-    timeframe: "Days 1–17",
-    description: "Gather documentation, establish medical necessity, and set up care providers.",
-    color: "blue" as const,
-    icon: "📋",
-    bgGradient: "from-blue-500 to-blue-600",
-    lightBg: "bg-blue-50",
-    borderColor: "border-blue-200",
-    activeBorder: "border-blue-400",
-    textColor: "text-blue-700",
-    badgeColor: "bg-blue-100 text-blue-700",
-    progressColor: "bg-blue-500",
-    ringColor: "ring-blue-200",
-  },
-  {
-    stage: 2,
-    title: "Filing the Claim",
-    subtitle: "Submit & Track",
-    timeframe: "Days 18–48",
-    description: "Submit your complete claim packet and track the 30-day review window.",
-    color: "amber" as const,
-    icon: "📤",
-    bgGradient: "from-amber-500 to-amber-600",
-    lightBg: "bg-amber-50",
-    borderColor: "border-amber-200",
-    activeBorder: "border-amber-400",
-    textColor: "text-amber-700",
-    badgeColor: "bg-amber-100 text-amber-700",
-    progressColor: "bg-amber-500",
-    ringColor: "ring-amber-200",
-  },
-  {
-    stage: 3,
-    title: "Post-Approval",
-    subtitle: "Manage & Maintain",
-    timeframe: "Day 49+",
-    description: "Manage ongoing benefits, submit invoices, and maintain documentation.",
-    color: "green" as const,
-    icon: "✅",
-    bgGradient: "from-green-500 to-green-600",
-    lightBg: "bg-green-50",
-    borderColor: "border-green-200",
-    activeBorder: "border-green-400",
-    textColor: "text-green-700",
-    badgeColor: "bg-green-100 text-green-700",
-    progressColor: "bg-green-500",
-    ringColor: "ring-green-200",
-  },
-];
+// Compute dynamic timeframes based on elimination period
+// Stage 1: Pre-claim preparation — from Day 1 to the day before elimination period starts
+//   Typically ~1/3 of elimination period for gathering docs, or minimum 14 days
+// Stage 2: Filing the claim — spans the elimination period + 30-day carrier review window
+// Stage 3: Post-approval — begins after elimination period + review window
+function computeTimeframes(eliminationDays: number) {
+  // Stage 1: Preparation phase — allow enough time to gather everything
+  // Use roughly 1/3 of elimination period, with a minimum of 14 days and max of 45 days
+  const stage1Days = Math.max(14, Math.min(45, Math.round(eliminationDays / 3)));
+  const stage1Start = 1;
+  const stage1End = stage1Days;
+
+  // Stage 2: Filing + elimination period + 30-day review window
+  // The claim is filed, elimination period runs, then carrier has ~30 days to review
+  const stage2Start = stage1End + 1;
+  const reviewWindowDays = 30;
+  const stage2End = eliminationDays + reviewWindowDays;
+
+  // Stage 3: Post-approval — everything after
+  const stage3Start = stage2End + 1;
+
+  return {
+    stage1: `Days ${stage1Start}–${stage1End}`,
+    stage2: `Days ${stage2Start}–${stage2End}`,
+    stage3: `Day ${stage3Start}+`,
+    stage1Desc: `Gather documentation, establish medical necessity, and set up care providers (~${stage1Days} days).`,
+    stage2Desc: `Submit your complete claim packet and track the ${eliminationDays}-day elimination period plus ${reviewWindowDays}-day review window.`,
+    stage3Desc: `Manage ongoing benefits, submit invoices, and maintain documentation after approval.`,
+  };
+}
+
+function buildStages(eliminationDays: number) {
+  const tf = computeTimeframes(eliminationDays);
+  return [
+    {
+      stage: 1,
+      title: "Prior to Claim",
+      subtitle: "Prepare & Gather",
+      timeframe: tf.stage1,
+      description: tf.stage1Desc,
+      color: "blue" as const,
+      icon: "📋",
+      bgGradient: "from-blue-500 to-blue-600",
+      lightBg: "bg-blue-50",
+      borderColor: "border-blue-200",
+      activeBorder: "border-blue-400",
+      textColor: "text-blue-700",
+      badgeColor: "bg-blue-100 text-blue-700",
+      progressColor: "bg-blue-500",
+      ringColor: "ring-blue-200",
+    },
+    {
+      stage: 2,
+      title: "Filing the Claim",
+      subtitle: "Submit & Track",
+      timeframe: tf.stage2,
+      description: tf.stage2Desc,
+      color: "amber" as const,
+      icon: "📤",
+      bgGradient: "from-amber-500 to-amber-600",
+      lightBg: "bg-amber-50",
+      borderColor: "border-amber-200",
+      activeBorder: "border-amber-400",
+      textColor: "text-amber-700",
+      badgeColor: "bg-amber-100 text-amber-700",
+      progressColor: "bg-amber-500",
+      ringColor: "ring-amber-200",
+    },
+    {
+      stage: 3,
+      title: "Post-Approval",
+      subtitle: "Manage & Maintain",
+      timeframe: tf.stage3,
+      description: tf.stage3Desc,
+      color: "green" as const,
+      icon: "✅",
+      bgGradient: "from-green-500 to-green-600",
+      lightBg: "bg-green-50",
+      borderColor: "border-green-200",
+      activeBorder: "border-green-400",
+      textColor: "text-green-700",
+      badgeColor: "bg-green-100 text-green-700",
+      progressColor: "bg-green-500",
+      ringColor: "ring-green-200",
+    },
+  ];
+}
 
 export function HorizontalTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, currentStage, eliminationPeriod }: HorizontalTimelineProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -111,6 +145,10 @@ export function HorizontalTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, curr
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef(0);
   const scrollStartX = useRef(0);
+
+  // Parse elimination period to number of days (default 90 if not specified)
+  const elimDays = eliminationPeriod ? parseInt(eliminationPeriod, 10) || 90 : 90;
+  const STAGES = buildStages(elimDays);
 
   const allTasks = [stage1Tasks, stage2Tasks, stage3Tasks];
   const totalTasks = stage1Tasks.length + stage2Tasks.length + stage3Tasks.length;
