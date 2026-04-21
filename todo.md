@@ -426,3 +426,15 @@
 - [x] Correct Stage 2: 30-day review window starts after claim packet submission (Days 31-60)
 - [x] Correct Stage 3: Post-approval begins after review (Day 61+), elimination period runs from when services begin
 - [x] Update stage descriptions to accurately reflect the LTC claim process
+
+## Gantt Chart Timeline Redesign (April 21, 2026)
+- [x] Replace horizontal card timeline with proper day-by-day Gantt chart (GanttTimeline.tsx)
+- [x] Frozen task names on left (like Excel frozen panes)
+- [x] Scrollable day columns across the top starting from current date
+- [x] Pastel colors for different tasks/categories (14 unique pastels)
+- [x] Gray color for completed tasks
+- [x] Overlapping task bars showing concurrent work
+- [x] Each task has custom start day and duration (43 tasks mapped)
+- [x] Elegant design with smooth scrolling
+- [x] Integrate into Strategy page replacing HorizontalTimeline
+- [x] Test frozen panes, scrolling, and task completion states (verified in browser)

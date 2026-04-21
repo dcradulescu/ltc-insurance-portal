@@ -5,7 +5,7 @@ import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { CareCalculator } from "@/components/CareCalculator";
 import { PdfDeliveryPanel } from "@/components/PdfDeliveryPanel";
 import { SMSNotificationManager } from "@/components/SMSNotificationManager";
-import { HorizontalTimeline } from "@/components/HorizontalTimeline";
+import { GanttTimeline } from "@/components/GanttTimeline";
 import { PolicySummaryCard } from "@/components/PolicySummaryCard";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -184,6 +184,12 @@ export default function Strategy() {
 
   const primaryDiagnosis = policy?.primaryDiagnosis as keyof typeof careRecommendations | undefined;
   const recommendations = primaryDiagnosis && careRecommendations[primaryDiagnosis] ? careRecommendations[primaryDiagnosis] : null;
+
+  const handleToggleTask = useCallback((stageKey: string, taskId: string) => {
+    const taskMap: Record<string, StrategyTask[]> = { stage1Tasks, stage2Tasks, stage3Tasks };
+    const tasks = taskMap[stageKey];
+    if (tasks) toggleTask(stageKey as "stage1Tasks" | "stage2Tasks" | "stage3Tasks", tasks, taskId);
+  }, [stage1Tasks, stage2Tasks, stage3Tasks]);
 
   const handleGenerate = () => {
     if (!policy) { toast.error("Please complete the Policy Intake Form first."); navigate("/policy-form"); return; }
@@ -473,12 +479,12 @@ export default function Strategy() {
                   </div>
                 </div>
                 <div className="px-4 py-5 md:px-6">
-                  <HorizontalTimeline
+                  <GanttTimeline
                     stage1Tasks={stage1Tasks}
                     stage2Tasks={stage2Tasks}
                     stage3Tasks={stage3Tasks}
-                    currentStage={currentStage}
                     eliminationPeriod={policy?.eliminationPeriod}
+                    onToggleTask={handleToggleTask}
                   />
                 </div>
               </div>

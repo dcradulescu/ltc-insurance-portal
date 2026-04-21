@@ -1,7 +1,5 @@
-import jsPDFModule from "jspdf";
-
-// Handle both ESM default import and CJS module resolution
-const jsPDF = (jsPDFModule as any).jsPDF || (jsPDFModule as any).default || jsPDFModule;
+// Use named import which works reliably in both ESM and CJS contexts
+import { jsPDF } from "jspdf";
 
 // Visiting Angels brand colors
 const VA_NAVY: [number, number, number] = [0, 51, 102];
