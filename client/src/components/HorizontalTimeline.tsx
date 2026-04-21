@@ -51,10 +51,10 @@ const categoryLabels: Record<string, { label: string; icon: string }> = {
 };
 
 // Compute dynamic timeframes based on elimination period
-// Stage 1: Pre-claim preparation — from Day 1 to the day before elimination period starts
-//   Typically ~1/3 of elimination period for gathering docs, or minimum 14 days
-// Stage 2: Filing the claim — spans the elimination period + 30-day carrier review window
-// Stage 3: Post-approval — begins after elimination period + review window
+// The LTC claim process works as follows:
+//   Stage 1: Pre-claim preparation — gather docs, establish medical necessity, set up providers
+//   Stage 2: File the claim packet → carrier has 30 days to review (independent of elimination period)
+//   Stage 3: Post-approval — manage benefits; elimination period runs separately from when services begin
 function computeTimeframes(eliminationDays: number) {
   // Stage 1: Preparation phase — allow enough time to gather everything
   // Use roughly 1/3 of elimination period, with a minimum of 14 days and max of 45 days
@@ -62,13 +62,14 @@ function computeTimeframes(eliminationDays: number) {
   const stage1Start = 1;
   const stage1End = stage1Days;
 
-  // Stage 2: Filing + elimination period + 30-day review window
-  // The claim is filed, elimination period runs, then carrier has ~30 days to review
+  // Stage 2: Filing the claim + 30-day carrier review window
+  // The 30-day review window starts when the claim packet is submitted — it is NOT tied to the elimination period
   const stage2Start = stage1End + 1;
   const reviewWindowDays = 30;
-  const stage2End = eliminationDays + reviewWindowDays;
+  const stage2End = stage2Start + reviewWindowDays - 1;
 
-  // Stage 3: Post-approval — everything after
+  // Stage 3: Post-approval — begins after the carrier review is complete
+  // The elimination period runs separately from when qualifying services begin
   const stage3Start = stage2End + 1;
 
   return {
@@ -76,8 +77,8 @@ function computeTimeframes(eliminationDays: number) {
     stage2: `Days ${stage2Start}–${stage2End}`,
     stage3: `Day ${stage3Start}+`,
     stage1Desc: `Gather documentation, establish medical necessity, and set up care providers (~${stage1Days} days).`,
-    stage2Desc: `Submit your complete claim packet and track the ${eliminationDays}-day elimination period plus ${reviewWindowDays}-day review window.`,
-    stage3Desc: `Manage ongoing benefits, submit invoices, and maintain documentation after approval.`,
+    stage2Desc: `Submit your complete claim packet. The carrier has 30 days to review your claim after submission.`,
+    stage3Desc: `Manage ongoing benefits, submit invoices, and track your ${eliminationDays}-day elimination period (runs from when qualifying services begin).`,
   };
 }
 

@@ -421,3 +421,8 @@
 - [x] Pass elimination period from policy data to HorizontalTimeline component (already wired)
 - [x] Update stage cards to show computed day ranges instead of static values
 - [x] Tested with 90-day elimination: Stage 1 Days 1-30, Stage 2 Days 31-120, Stage 3 Day 121+
+
+## Fix Timeline Calculation Logic (April 21, 2026)
+- [x] Correct Stage 2: 30-day review window starts after claim packet submission (Days 31-60)
+- [x] Correct Stage 3: Post-approval begins after review (Day 61+), elimination period runs from when services begin
+- [x] Update stage descriptions to accurately reflect the LTC claim process
