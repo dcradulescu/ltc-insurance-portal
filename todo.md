@@ -438,3 +438,12 @@
 - [x] Elegant design with smooth scrolling
 - [x] Integrate into Strategy page replacing HorizontalTimeline
 - [x] Test frozen panes, scrolling, and task completion states (verified in browser)
+
+## Chronological Checklist (April 21, 2026)
+- [x] Build ChronologicalChecklist component sorted by start date
+- [x] Color-code tasks by stage (Stage 1 blue, Stage 2 amber, Stage 3 green)
+- [x] Group tasks by date with collapsible date headers
+- [x] Add document hyperlinks for tasks referencing documents (AOB, POA, Plan of Care, etc.)
+- [x] Share task completion state bidirectionally with Gantt chart (shared handleToggleTask)
+- [x] Integrate into Strategy page below video, above stage checklists
+- [x] Test bidirectional sync: verified checking task in checklist updates Gantt (2/43 shown in both)

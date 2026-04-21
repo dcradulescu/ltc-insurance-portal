@@ -6,6 +6,7 @@ import { CareCalculator } from "@/components/CareCalculator";
 import { PdfDeliveryPanel } from "@/components/PdfDeliveryPanel";
 import { SMSNotificationManager } from "@/components/SMSNotificationManager";
 import { GanttTimeline } from "@/components/GanttTimeline";
+import { ChronologicalChecklist } from "@/components/ChronologicalChecklist";
 import { PolicySummaryCard } from "@/components/PolicySummaryCard";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import { toast } from "sonner";
 import {
   FileText, Download, Mail, Loader2, CheckCircle2, AlertTriangle,
   Upload, ArrowRight, Shield, ClipboardCheck, Plus, X, ChevronDown, ChevronUp, RefreshCw, Target,
-  Calculator, TrendingUp, MessageCircle, Clock, Activity, Heart,
+  Calculator, TrendingUp, MessageCircle, Clock, Activity, Heart, ListChecks, BarChart3,
 } from "lucide-react";
 
 // Care recommendations by diagnosis
@@ -507,13 +508,22 @@ export default function Strategy() {
                 </div>
               </div>
 
-              {/* Tabbed Content: Checklists + Full Strategy */}
+              {/* Chronological Checklist */}
+              <ChronologicalChecklist
+                stage1Tasks={stage1Tasks}
+                stage2Tasks={stage2Tasks}
+                stage3Tasks={stage3Tasks}
+                eliminationPeriod={policy?.eliminationPeriod}
+                onToggleTask={handleToggleTask}
+              />
+
+              {/* Tabbed Content: Stage Checklists + Full Strategy */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <div className="px-6 pt-5 pb-0 border-b border-slate-100">
                     <TabsList className="bg-slate-100 p-1 rounded-lg">
                       <TabsTrigger value="timeline" className="rounded-md text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <ClipboardCheck className="w-4 h-4 mr-1.5" /> Task Checklists
+                        <ClipboardCheck className="w-4 h-4 mr-1.5" /> By Stage
                       </TabsTrigger>
                       <TabsTrigger value="strategy" className="rounded-md text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm">
                         <FileText className="w-4 h-4 mr-1.5" /> Full Strategy
