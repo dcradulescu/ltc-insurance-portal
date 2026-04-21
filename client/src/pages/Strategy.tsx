@@ -14,7 +14,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
@@ -22,8 +21,8 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
   FileText, Download, Mail, Loader2, CheckCircle2, AlertTriangle,
-  Upload, ArrowRight, Shield, ClipboardCheck, Plus, X, ChevronDown, ChevronUp, RefreshCw, Target,
-  Calculator, TrendingUp, MessageCircle, Clock, Activity, Heart, ListChecks, BarChart3,
+  Upload, ArrowRight, Shield, ClipboardCheck, Plus, X, RefreshCw, Target,
+  Calculator, MessageCircle, Clock, Activity, Heart, ListChecks,
 } from "lucide-react";
 
 // Care recommendations by diagnosis
@@ -103,10 +102,13 @@ type StrategyTask = {
   uploadRequired?: boolean;
 };
 
+type PlanView = "written" | "timeline" | "checklist" | "downloads" | "send";
+
 export default function Strategy() {
   const [, navigate] = useLocation();
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailRecipients, setEmailRecipients] = useState<string[]>([""]);
+  const [planView, setPlanView] = useState<PlanView>("timeline");
   const [activeTab, setActiveTab] = useState("timeline");
   const strategyContentRef = useRef<HTMLDivElement>(null);
   const initialLoadDone = useRef(false);
@@ -396,7 +398,6 @@ export default function Strategy() {
               <Button asChild size="lg"><a href="/policy-form">Complete Policy Form <ArrowRight className="w-4 h-4 ml-2" /></a></Button>
             </div>
 
-          /* State: No policy */
           ) : !policy && !policyQuery.isLoading ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
               <FileText className="w-14 h-14 text-muted-foreground/30 mx-auto mb-6" />
@@ -407,7 +408,6 @@ export default function Strategy() {
               <Button asChild size="lg"><a href="/policy-form">Complete Policy Form <ArrowRight className="w-4 h-4 ml-2" /></a></Button>
             </div>
 
-          /* State: Generating */
           ) : isGenerating ? (
             <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm">
               <div className="relative w-20 h-20 mx-auto mb-8">
@@ -421,284 +421,379 @@ export default function Strategy() {
               </p>
             </div>
 
-          /* State: Strategy exists */
           ) : hasStrategy ? (
             <div className="space-y-8">
 
-              {/* Policy Summary */}
+              {/* Policy Summary - Always visible at top */}
               {policy && <PolicySummaryCard policy={policy} />}
 
-              {/* Care Recommendations (if diagnosis matches) */}
-              {recommendations && (
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="bg-gradient-to-r from-teal/5 to-cyan-50 px-6 py-4 border-b border-slate-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
-                        <Heart className="w-4.5 h-4.5 text-teal" />
-                      </div>
-                      <div>
-                        <h3 className="font-serif text-base font-bold text-slate-900">Care Recommendations for {primaryDiagnosis}</h3>
-                        <p className="text-xs text-slate-500">Industry-standard care levels to prevent hospital readmission</p>
-                      </div>
+              {/* How Do You Want to See Your Custom Plan? */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+                <div className="text-center mb-8">
+                  <h2 className="font-serif text-3xl font-bold text-slate-900 mb-2">How Do You Want to See Your Custom Plan?</h2>
+                  <p className="text-slate-600 max-w-2xl mx-auto">Choose your preferred way to view and interact with your personalized LTC insurance claim strategy</p>
+                </div>
+
+                {/* Plan View Selector */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  <button
+                    onClick={() => setPlanView("written")}
+                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                      planView === "written"
+                        ? "border-teal bg-teal/5"
+                        : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <FileText className={`w-6 h-6 mx-auto mb-2 ${planView === "written" ? "text-teal" : "text-slate-400"}`} />
+                    <span className={`text-sm font-semibold ${planView === "written" ? "text-teal" : "text-slate-700"}`}>Written Plan</span>
+                  </button>
+
+                  <button
+                    onClick={() => setPlanView("timeline")}
+                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                      planView === "timeline"
+                        ? "border-teal bg-teal/5"
+                        : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Clock className={`w-6 h-6 mx-auto mb-2 ${planView === "timeline" ? "text-teal" : "text-slate-400"}`} />
+                    <span className={`text-sm font-semibold ${planView === "timeline" ? "text-teal" : "text-slate-700"}`}>Timeline</span>
+                  </button>
+
+                  <button
+                    onClick={() => setPlanView("checklist")}
+                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                      planView === "checklist"
+                        ? "border-teal bg-teal/5"
+                        : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <ListChecks className={`w-6 h-6 mx-auto mb-2 ${planView === "checklist" ? "text-teal" : "text-slate-400"}`} />
+                    <span className={`text-sm font-semibold ${planView === "checklist" ? "text-teal" : "text-slate-700"}`}>Checklist</span>
+                  </button>
+
+                  <button
+                    onClick={() => setPlanView("downloads")}
+                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                      planView === "downloads"
+                        ? "border-teal bg-teal/5"
+                        : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Download className={`w-6 h-6 mx-auto mb-2 ${planView === "downloads" ? "text-teal" : "text-slate-400"}`} />
+                    <span className={`text-sm font-semibold ${planView === "downloads" ? "text-teal" : "text-slate-700"}`}>Downloads</span>
+                  </button>
+
+                  <button
+                    onClick={() => setPlanView("send")}
+                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                      planView === "send"
+                        ? "border-teal bg-teal/5"
+                        : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Mail className={`w-6 h-6 mx-auto mb-2 ${planView === "send" ? "text-teal" : "text-slate-400"}`} />
+                    <span className={`text-sm font-semibold ${planView === "send" ? "text-teal" : "text-slate-700"}`}>Send My Plan</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* WRITTEN PLAN VIEW */}
+              {planView === "written" && (
+                <div className="space-y-8">
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
+                      <h3 className="font-serif text-xl font-bold text-slate-900">Written Plan</h3>
+                      <p className="text-sm text-slate-600 mt-1">Your complete personalized strategy document</p>
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <div className="grid md:grid-cols-2 gap-4 mb-5">
-                      <div className="bg-slate-50 p-4 rounded-xl">
-                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Recommended Schedule</p>
-                        <p className="text-sm font-semibold text-slate-900">{recommendations.schedule}</p>
-                      </div>
-                      <div className="bg-green-50 p-4 rounded-xl">
-                        <p className="text-xs font-medium text-green-600 uppercase tracking-wider mb-1">Readmission Prevention</p>
-                        <p className="text-sm font-semibold text-green-700">{recommendations.prevention}</p>
-                      </div>
-                    </div>
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Recommended Care Services</p>
-                    <div className="grid sm:grid-cols-2 gap-2">
-                      {recommendations.items.map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-2 py-1">
-                          <CheckCircle2 className="w-4 h-4 text-teal mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-slate-700">{item}</span>
+                    <div className="p-6">
+                      {recommendations && (
+                        <div className="mb-8 pb-8 border-b border-slate-100">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
+                              <Heart className="w-4.5 h-4.5 text-teal" />
+                            </div>
+                            <h4 className="font-serif text-lg font-bold text-slate-900">Care Recommendations for {primaryDiagnosis}</h4>
+                          </div>
+                          <div className="grid md:grid-cols-2 gap-4 mb-5">
+                            <div className="bg-slate-50 p-4 rounded-xl">
+                              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Recommended Schedule</p>
+                              <p className="text-sm font-semibold text-slate-900">{recommendations.schedule}</p>
+                            </div>
+                            <div className="bg-green-50 p-4 rounded-xl">
+                              <p className="text-xs font-medium text-green-600 uppercase tracking-wider mb-1">Readmission Prevention</p>
+                              <p className="text-sm font-semibold text-green-700">{recommendations.prevention}</p>
+                            </div>
+                          </div>
+                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Recommended Care Services</p>
+                          <div className="grid sm:grid-cols-2 gap-2">
+                            {recommendations.items.map((item, idx) => (
+                              <div key={idx} className="flex items-start gap-2 py-1">
+                                <CheckCircle2 className="w-4 h-4 text-teal mt-0.5 flex-shrink-0" />
+                                <span className="text-sm text-slate-700">{item}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      ))}
+                      )}
+                      <div
+                        ref={strategyContentRef}
+                        className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-h2:text-2xl prose-h2:border-b-2 prose-h2:border-teal prose-h2:pb-2 prose-h2:mt-10 prose-h3:text-xl prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-teal"
+                        dangerouslySetInnerHTML={{ __html: strategy?.strategyHtml || "" }}
+                      />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Horizontal Scrollable Claim Timeline */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
-                      <Clock className="w-4.5 h-4.5 text-teal" />
+              {/* TIMELINE VIEW */}
+              {planView === "timeline" && (
+                <div className="space-y-8">
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
+                      <h3 className="font-serif text-xl font-bold text-slate-900">Timeline</h3>
+                      <p className="text-sm text-slate-600 mt-1">Interactive Gantt chart showing your 3-stage claim process</p>
                     </div>
-                    <div>
-                      <h3 className="font-serif text-base font-bold text-slate-900">Claim Timeline</h3>
-                      <p className="text-xs text-slate-500">Scroll through your 3-stage claim process — track progress at every milestone</p>
+                    <div className="px-4 py-5 md:px-6">
+                      <GanttTimeline
+                        stage1Tasks={stage1Tasks}
+                        stage2Tasks={stage2Tasks}
+                        stage3Tasks={stage3Tasks}
+                        eliminationPeriod={policy?.eliminationPeriod}
+                        onToggleTask={handleToggleTask}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
+                      <h3 className="font-serif text-xl font-bold text-slate-900">Understanding Your Strategy</h3>
+                      <p className="text-sm text-slate-600 mt-1">Learn how to use your personalized 3-stage strategy</p>
+                    </div>
+                    <div className="p-4">
+                      <VideoPlaceholder
+                        title="Understanding Your Strategy"
+                        description="Learn how to use your personalized 3-stage strategy to navigate the claims process"
+                        thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NXdvbYzcqmcgIfxG.jpg"
+                        videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/QlCyvRbUBXkLwOND.mp4"
+                      />
                     </div>
                   </div>
                 </div>
-                <div className="px-4 py-5 md:px-6">
-                  <GanttTimeline
+              )}
+
+              {/* CHECKLIST VIEW */}
+              {planView === "checklist" && (
+                <div className="space-y-8">
+                  <ChronologicalChecklist
                     stage1Tasks={stage1Tasks}
                     stage2Tasks={stage2Tasks}
                     stage3Tasks={stage3Tasks}
                     eliminationPeriod={policy?.eliminationPeriod}
                     onToggleTask={handleToggleTask}
                   />
-                </div>
-              </div>
 
-              {/* Video Tutorial */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100">
-                  <h3 className="font-serif text-base font-bold text-slate-900 flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-teal" /> Understanding Your Strategy
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Learn how to use your personalized 3-stage strategy</p>
-                </div>
-                <div className="p-4">
-                  <VideoPlaceholder
-                    title="Understanding Your Strategy"
-                    description="Learn how to use your personalized 3-stage strategy to navigate the claims process"
-                    thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NXdvbYzcqmcgIfxG.jpg"
-                    videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/QlCyvRbUBXkLwOND.mp4"
-                  />
-                </div>
-              </div>
-
-              {/* Chronological Checklist */}
-              <ChronologicalChecklist
-                stage1Tasks={stage1Tasks}
-                stage2Tasks={stage2Tasks}
-                stage3Tasks={stage3Tasks}
-                eliminationPeriod={policy?.eliminationPeriod}
-                onToggleTask={handleToggleTask}
-              />
-
-              {/* Tabbed Content: Stage Checklists + Full Strategy */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <div className="px-6 pt-5 pb-0 border-b border-slate-100">
-                    <TabsList className="bg-slate-100 p-1 rounded-lg">
-                      <TabsTrigger value="timeline" className="rounded-md text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <ClipboardCheck className="w-4 h-4 mr-1.5" /> By Stage
-                      </TabsTrigger>
-                      <TabsTrigger value="strategy" className="rounded-md text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <FileText className="w-4 h-4 mr-1.5" /> Full Strategy
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-
-                  <TabsContent value="timeline" className="p-6 space-y-8">
-                    {/* Stage 1 */}
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700">1</div>
-                          <div>
-                            <h2 className="font-serif text-lg font-bold text-slate-900">Stage 1: Prior to Claim</h2>
-                            <p className="text-xs text-slate-500">{stageProgress(stage1Tasks)}% complete</p>
-                          </div>
-                        </div>
-                        {stageProgress(stage1Tasks) === 100 && currentStage === 1 && (
-                          <Button size="sm" onClick={() => advanceStage(2)} className="gap-1.5">
-                            Advance to Stage 2 <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        )}
-                      </div>
-                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-sm text-amber-800 flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <span><strong>Critical:</strong> Do NOT initiate your claim until ALL Stage 1 tasks are complete. Submit everything in ONE packet.</span>
-                      </div>
-                      {renderTaskChecklist("stage1Tasks", stage1Tasks)}
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-blue-50">
+                      <h3 className="font-serif text-xl font-bold text-slate-900">By Stage</h3>
+                      <p className="text-sm text-slate-600 mt-1">View and manage tasks organized by claim stage</p>
                     </div>
-
-                    {/* Stage 2 */}
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage >= 2 ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>2</div>
-                          <div>
-                            <h2 className={`font-serif text-lg font-bold ${currentStage >= 2 ? "text-slate-900" : "text-slate-400"}`}>Stage 2: Filing the Claim</h2>
-                            <p className="text-xs text-slate-500">{stageProgress(stage2Tasks)}% complete</p>
-                          </div>
-                        </div>
-                        {stageProgress(stage2Tasks) === 100 && currentStage === 2 && (
-                          <Button size="sm" onClick={() => advanceStage(3)} className="gap-1.5">
-                            Advance to Stage 3 <ArrowRight className="w-3.5 h-3.5" />
-                          </Button>
-                        )}
-                      </div>
-                      {currentStage < 2 ? (
-                        <div className="p-6 bg-slate-50 rounded-xl text-center">
-                          <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                          <p className="text-sm text-slate-500">Complete Stage 1 first before proceeding to claim filing.</p>
-                        </div>
-                      ) : renderTaskChecklist("stage2Tasks", stage2Tasks)}
-                    </div>
-
-                    {/* Stage 3 */}
-                    <div>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage >= 3 ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400"}`}>3</div>
-                        <div>
-                          <h2 className={`font-serif text-lg font-bold ${currentStage >= 3 ? "text-slate-900" : "text-slate-400"}`}>Stage 3: Post-Approval Management</h2>
-                          <p className="text-xs text-slate-500">{stageProgress(stage3Tasks)}% complete</p>
-                        </div>
-                      </div>
-                      {currentStage < 3 ? (
-                        <div className="p-6 bg-slate-50 rounded-xl text-center">
-                          <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                          <p className="text-sm text-slate-500">Complete Stage 2 first before proceeding to post-approval management.</p>
-                        </div>
-                      ) : renderTaskChecklist("stage3Tasks", stage3Tasks)}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="strategy" className="p-6">
-                    <div
-                      ref={strategyContentRef}
-                      className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-h2:text-2xl prose-h2:border-b-2 prose-h2:border-teal prose-h2:pb-2 prose-h2:mt-10 prose-h3:text-xl prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-teal"
-                      dangerouslySetInnerHTML={{ __html: strategy?.strategyHtml || "" }}
-                    />
-                  </TabsContent>
-                </Tabs>
-              </div>
-
-              {/* Care Cost Calculator */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <CareCalculator
-                  defaultDailyMax={policy?.dailyMaximum ? parseCurrencyValue(policy.dailyMaximum).toString() : ""}
-                  lifetimeMaximum={policy?.lifetimeMaximum || ""}
-                />
-              </div>
-
-              {/* Action Bar: Download, Email, SMS, Regenerate */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
-                    <Download className="w-4.5 h-4.5 text-teal" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif text-base font-bold text-slate-900">Share & Download</h3>
-                    <p className="text-xs text-slate-500">Download your strategy as a PDF or share it with family members</p>
-                  </div>
-                </div>
-
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                  <Button onClick={handleDownloadPDF} variant="outline" className="h-auto py-3 flex-col gap-1.5 border-slate-200 hover:border-teal hover:bg-teal/5">
-                    <Download className="w-5 h-5 text-teal" />
-                    <span className="text-xs font-medium">Print Strategy</span>
-                  </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-slate-200 hover:border-teal hover:bg-teal/5">
-                        <MessageCircle className="w-5 h-5 text-teal" />
-                        <span className="text-xs font-medium">SMS Reminders</span>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <DialogHeader><DialogTitle className="font-serif">SMS Task Reminders</DialogTitle></DialogHeader>
-                      <SMSNotificationManager policyId={policy?.id || 0} insuredName={policy?.insuredFullName || ""} insuredPhone={policy?.insuredPhone} />
-                    </DialogContent>
-                  </Dialog>
-                  <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="h-auto py-3 flex-col gap-1.5 border-slate-200 hover:border-teal hover:bg-teal/5">
-                        <Mail className="w-5 h-5 text-teal" />
-                        <span className="text-xs font-medium">Email Strategy</span>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader><DialogTitle className="font-serif">Email Your Strategy</DialogTitle></DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <p className="text-sm text-muted-foreground">Send your personalized strategy to yourself or family members.</p>
-                        {emailRecipients.map((email, index) => (
-                          <div key={index} className="flex gap-2 items-end">
-                            <div className="flex-1 space-y-1">
-                              <Label htmlFor={`email-${index}`}>{index === 0 ? "Email Address" : `Recipient ${index + 1}`}</Label>
-                              <Input id={`email-${index}`} type="email" value={email} onChange={e => updateRecipient(index, e.target.value)} placeholder="name@example.com" />
+                    <div className="p-6 space-y-8">
+                      {/* Stage 1 */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700">1</div>
+                            <div>
+                              <h4 className="font-serif text-lg font-bold text-slate-900">Stage 1: Prior to Claim</h4>
+                              <p className="text-xs text-slate-500">{stageProgress(stage1Tasks)}% complete</p>
                             </div>
-                            {emailRecipients.length > 1 && <Button variant="ghost" size="icon" onClick={() => removeRecipient(index)}><X className="w-4 h-4" /></Button>}
                           </div>
-                        ))}
-                        <Button variant="outline" size="sm" onClick={addRecipient} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Another Recipient</Button>
-                        <Button onClick={handleSendEmail} disabled={emailMutation.isPending} className="w-full">
-                          {emailMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />} Send Strategy
-                        </Button>
+                          {stageProgress(stage1Tasks) === 100 && currentStage === 1 && (
+                            <Button size="sm" onClick={() => advanceStage(2)} className="gap-1.5">
+                              Advance to Stage 2 <ArrowRight className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-sm text-amber-800 flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <span><strong>Critical:</strong> Do NOT initiate your claim until ALL Stage 1 tasks are complete. Submit everything in ONE packet.</span>
+                        </div>
+                        {renderTaskChecklist("stage1Tasks", stage1Tasks)}
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                  <Button variant="outline" onClick={handleGenerate} disabled={isGenerating} className="h-auto py-3 flex-col gap-1.5 border-slate-200 hover:border-amber-400 hover:bg-amber-50">
-                    <RefreshCw className={`w-5 h-5 text-amber-500 ${isGenerating ? "animate-spin" : ""}`} />
-                    <span className="text-xs font-medium">Regenerate</span>
-                  </Button>
-                </div>
 
-                {/* PDF Download Panel */}
-                <PdfDeliveryPanel
-                  policyData={{
-                    insuredName: policy?.insuredFullName || "",
-                    policyNumber: policy?.policyNumber || "",
-                    carrierName: policy?.carrierName || "",
-                    dailyMaximum: parseCurrencyValue(policy?.dailyMaximum || 0),
-                    monthlyMaximum: (() => { const val = parseFloat((policy?.monthlyMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
-                    lifetimeMaximum: (() => { const val = parseFloat((policy?.lifetimeMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
-                    diagnosis: "LTC Insurance Claim",
-                    adlLimitations: policy?.qualifyingAdls || policy?.adlLimitations || [],
-                    stage1Tasks: stage1Tasks.map(t => t.label),
-                    stage2Tasks: stage2Tasks.map(t => t.label),
-                    stage3Tasks: stage3Tasks.map(t => t.label),
-                    careRecommendations: policy?.careRecommendations || "",
-                    strategyContent: strategy?.strategyContent || "",
-                  }}
-                />
-              </div>
+                      {/* Stage 2 */}
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage >= 2 ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>2</div>
+                            <div>
+                              <h4 className={`font-serif text-lg font-bold ${currentStage >= 2 ? "text-slate-900" : "text-slate-400"}`}>Stage 2: Filing the Claim</h4>
+                              <p className="text-xs text-slate-500">{stageProgress(stage2Tasks)}% complete</p>
+                            </div>
+                          </div>
+                          {stageProgress(stage2Tasks) === 100 && currentStage === 2 && (
+                            <Button size="sm" onClick={() => advanceStage(3)} className="gap-1.5">
+                              Advance to Stage 3 <ArrowRight className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                        {currentStage < 2 ? (
+                          <div className="p-6 bg-slate-50 rounded-xl text-center">
+                            <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                            <p className="text-sm text-slate-500">Complete Stage 1 first before proceeding to claim filing.</p>
+                          </div>
+                        ) : renderTaskChecklist("stage2Tasks", stage2Tasks)}
+                      </div>
+
+                      {/* Stage 3 */}
+                      <div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage >= 3 ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400"}`}>3</div>
+                          <div>
+                            <h4 className={`font-serif text-lg font-bold ${currentStage >= 3 ? "text-slate-900" : "text-slate-400"}`}>Stage 3: Post-Approval Management</h4>
+                            <p className="text-xs text-slate-500">{stageProgress(stage3Tasks)}% complete</p>
+                          </div>
+                        </div>
+                        {currentStage < 3 ? (
+                          <div className="p-6 bg-slate-50 rounded-xl text-center">
+                            <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                            <p className="text-sm text-slate-500">Complete Stage 2 first before proceeding to post-approval management.</p>
+                          </div>
+                        ) : renderTaskChecklist("stage3Tasks", stage3Tasks)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* DOWNLOADS VIEW */}
+              {planView === "downloads" && (
+                <div className="space-y-8">
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
+                        <Download className="w-4.5 h-4.5 text-teal" />
+                      </div>
+                      <div>
+                        <h3 className="font-serif text-xl font-bold text-slate-900">Download Your Plan</h3>
+                        <p className="text-sm text-slate-600">Download your strategy as a PDF for offline access</p>
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-3 mb-6">
+                      <Button onClick={handleDownloadPDF} variant="outline" className="h-auto py-4 flex-col gap-2 border-slate-200 hover:border-teal hover:bg-teal/5">
+                        <Download className="w-6 h-6 text-teal" />
+                        <span className="font-medium">Download as PDF</span>
+                        <span className="text-xs text-slate-500">7 pages, includes all sections</span>
+                      </Button>
+                      <Button onClick={handleGenerate} disabled={isGenerating} variant="outline" className="h-auto py-4 flex-col gap-2 border-slate-200 hover:border-amber-400 hover:bg-amber-50">
+                        <RefreshCw className={`w-6 h-6 text-amber-500 ${isGenerating ? "animate-spin" : ""}`} />
+                        <span className="font-medium">Regenerate</span>
+                        <span className="text-xs text-slate-500">Create updated version</span>
+                      </Button>
+                    </div>
+
+                    <PdfDeliveryPanel
+                      policyData={{
+                        insuredName: policy?.insuredFullName || "",
+                        policyNumber: policy?.policyNumber || "",
+                        carrierName: policy?.carrierName || "",
+                        dailyMaximum: parseCurrencyValue(policy?.dailyMaximum || 0),
+                        monthlyMaximum: (() => { const val = parseFloat((policy?.monthlyMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
+                        lifetimeMaximum: (() => { const val = parseFloat((policy?.lifetimeMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
+                        diagnosis: "LTC Insurance Claim",
+                        adlLimitations: policy?.qualifyingAdls || policy?.adlLimitations || [],
+                        stage1Tasks: stage1Tasks.map(t => t.label),
+                        stage2Tasks: stage2Tasks.map(t => t.label),
+                        stage3Tasks: stage3Tasks.map(t => t.label),
+                        careRecommendations: policy?.careRecommendations || "",
+                        strategyContent: strategy?.strategyContent || "",
+                      }}
+                    />
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
+                        <Calculator className="w-4.5 h-4.5 text-teal" />
+                      </div>
+                      <div>
+                        <h3 className="font-serif text-xl font-bold text-slate-900">Care Cost Calculator</h3>
+                        <p className="text-sm text-slate-600">Calculate your potential care costs based on your policy</p>
+                      </div>
+                    </div>
+                    <CareCalculator
+                      defaultDailyMax={policy?.dailyMaximum ? parseCurrencyValue(policy.dailyMaximum).toString() : ""}
+                      lifetimeMaximum={policy?.lifetimeMaximum || ""}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* SEND MY PLAN VIEW */}
+              {planView === "send" && (
+                <div className="space-y-8">
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
+                        <Mail className="w-4.5 h-4.5 text-teal" />
+                      </div>
+                      <div>
+                        <h3 className="font-serif text-xl font-bold text-slate-900">Send My Plan</h3>
+                        <p className="text-sm text-slate-600">Share your strategy with family members or advisors</p>
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-3 mb-6">
+                      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="h-auto py-4 flex-col gap-2 border-slate-200 hover:border-teal hover:bg-teal/5">
+                            <Mail className="w-6 h-6 text-teal" />
+                            <span className="font-medium">Email Strategy</span>
+                            <span className="text-xs text-slate-500">Send to multiple recipients</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader><DialogTitle className="font-serif">Email Your Strategy</DialogTitle></DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <p className="text-sm text-muted-foreground">Send your personalized strategy to yourself or family members.</p>
+                            {emailRecipients.map((email, index) => (
+                              <div key={index} className="flex gap-2 items-end">
+                                <div className="flex-1 space-y-1">
+                                  <Label htmlFor={`email-${index}`}>{index === 0 ? "Email Address" : `Recipient ${index + 1}`}</Label>
+                                  <Input id={`email-${index}`} type="email" value={email} onChange={e => updateRecipient(index, e.target.value)} placeholder="name@example.com" />
+                                </div>
+                                {emailRecipients.length > 1 && <Button variant="ghost" size="icon" onClick={() => removeRecipient(index)}><X className="w-4 h-4" /></Button>}
+                              </div>
+                            ))}
+                            <Button variant="outline" size="sm" onClick={addRecipient} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Another Recipient</Button>
+                            <Button onClick={handleSendEmail} disabled={emailMutation.isPending} className="w-full">
+                              {emailMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />} Send Strategy
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="h-auto py-4 flex-col gap-2 border-slate-200 hover:border-teal hover:bg-teal/5">
+                            <MessageCircle className="w-6 h-6 text-teal" />
+                            <span className="font-medium">SMS Reminders</span>
+                            <span className="text-xs text-slate-500">Get task reminders via text</span>
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader><DialogTitle className="font-serif">SMS Task Reminders</DialogTitle></DialogHeader>
+                          <SMSNotificationManager policyId={policy?.id || 0} insuredName={policy?.insuredFullName || ""} insuredPhone={policy?.insuredPhone} />
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-          /* State: Ready to generate */
           ) : (
             <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm">
               <div className="w-16 h-16 rounded-2xl bg-teal/10 flex items-center justify-center mx-auto mb-6">

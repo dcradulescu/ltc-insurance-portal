@@ -51,7 +51,7 @@ describe("policyForm.sendComprehensiveToZapier", () => {
     expect(result).toHaveProperty("success");
     expect(result).toHaveProperty("message");
     expect(typeof result.success).toBe("boolean");
-  });
+  }, 10000);
 
   it("accepts all valid trigger types", async () => {
     const { ctx } = createTestContext();

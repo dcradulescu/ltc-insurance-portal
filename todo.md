@@ -447,3 +447,27 @@
 - [x] Share task completion state bidirectionally with Gantt chart (shared handleToggleTask)
 - [x] Integrate into Strategy page below video, above stage checklists
 - [x] Test bidirectional sync: verified checking task in checklist updates Gantt (2/43 shown in both)
+
+## Strategy Page Section Reorganization (April 21, 2026)
+- [ ] Add "How Do You Want to See Your Custom Plan?" heading with section navigation
+- [ ] Create clean "Written Plan" section with the full strategy document
+- [ ] Create clean "Timeline" section with the Gantt chart
+- [ ] Create clean "Checklist" section with the chronological checklist
+- [ ] Create clean "Downloads" section for PDF download
+- [ ] Create clean "Send My Plan to Me" section for email/SMS delivery
+- [ ] Add section navigation cards/buttons under the heading
+- [ ] Add visual dividers and consistent section headers throughout
+- [ ] Move policy summary to the top as context, above the plan view options
+- [ ] Test all sections render correctly and navigation works
+
+
+## Strategy Page Section Reorganization (April 21, 2026)
+- [x] Create "How Do You Want to See Your Custom Plan?" heading and navigation
+- [x] Add Written Plan view section
+- [x] Add Timeline view section (Gantt chart)
+- [x] Add Checklist view section (chronological checklist)
+- [x] Add Downloads view section (PDF, calculator)
+- [x] Add Send My Plan view section (email, SMS)
+- [x] Reorganize page with clean section headers and visual separation
+- [x] Test all view options in browser (all 5 views working)
+- [x] Fix Zapier test timeout (increased to 10000ms, all 49 tests passing)
