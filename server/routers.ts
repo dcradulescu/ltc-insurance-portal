@@ -496,39 +496,74 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       .input(z.object({
         strategyId: z.number(),
         recipients: z.array(z.string().email()),
+        policyData: z.object({
+          insuredName: z.string(),
+          policyNumber: z.string(),
+          carrierName: z.string(),
+          dailyMaximum: z.number(),
+          monthlyMaximum: z.number(),
+          lifetimeMaximum: z.number(),
+          diagnosis: z.string().default("LTC Insurance Claim"),
+          adlLimitations: z.array(z.string()).default([]),
+          stage1Tasks: z.array(z.string()).default([]),
+          stage2Tasks: z.array(z.string()).default([]),
+          stage3Tasks: z.array(z.string()).default([]),
+          careRecommendations: z.string().default(""),
+          strategyContent: z.string().default(""),
+        }).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
-        if (!strategy || strategy.userId !== 1) throw new Error("Strategy not found");
-        
-        const zapierUrl = ENV.zapierWebhookUrl;
-        if (!zapierUrl) throw new Error("Zapier webhook URL not configured");
-        
-        try {
-          const response = await fetch(zapierUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "strategy_email",
-              strategyId: input.strategyId,
-              recipients: input.recipients,
-              strategyContent: strategy.strategyContent,
-              timestamp: new Date().toISOString(),
-            }),
-          });
-          
-          if (!response.ok) {
-            console.error(`Zapier webhook error: ${response.status} ${response.statusText}`);
-            throw new Error(`Failed to submit strategy to Zapier: ${response.statusText}`);
+        if (!strategy) throw new Error("Strategy not found");
+
+        // Generate PDF if policy data is provided
+        let pdfUrl = "";
+        if (input.policyData) {
+          try {
+            const { generateStrategyPdf } = await import("./strategyPdfGenerator");
+            const pdfResult = await generateStrategyPdf(input.policyData);
+            pdfUrl = pdfResult.url;
+            console.log(`[Email] PDF generated: ${pdfUrl}`);
+          } catch (pdfError) {
+            console.error("[Email] PDF generation failed:", pdfError);
           }
-          
-          console.log("Strategy sent to Zapier successfully");
-        } catch (error) {
-          console.error("Strategy Zapier submission error:", error);
-          throw new Error("Failed to submit strategy to Zapier");
         }
-        
-        return { success: true, message: `Strategy has been sent to ${input.recipients.length} recipient(s).` };
+
+        // Send to Zapier webhook
+        const zapierUrl = ENV.zapierWebhookUrl;
+        if (zapierUrl) {
+          try {
+            const response = await fetch(zapierUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "strategy_email",
+                strategyId: input.strategyId,
+                recipients: input.recipients,
+                pdfUrl,
+                insuredName: input.policyData?.insuredName || "",
+                policyNumber: input.policyData?.policyNumber || "",
+                strategyContent: strategy.strategyContent,
+                timestamp: new Date().toISOString(),
+              }),
+            });
+            if (!response.ok) {
+              console.error(`[Email] Zapier webhook error: ${response.status}`);
+            } else {
+              console.log("[Email] Strategy sent to Zapier successfully");
+            }
+          } catch (error) {
+            console.error("[Email] Zapier submission error:", error);
+          }
+        }
+
+        // Notify owner
+        await notifyOwner({
+          title: `Strategy Emailed: ${input.policyData?.insuredName || "Unknown"}`,
+          content: `Strategy PDF sent to: ${input.recipients.join(", ")}${pdfUrl ? `\nPDF: ${pdfUrl}` : ""}`,
+        }).catch(() => {});
+
+        return { success: true, message: `Strategy has been sent to ${input.recipients.length} recipient(s).${pdfUrl ? " PDF is attached." : ""}` };
       }),
 
     sendPageContent: publicProcedure

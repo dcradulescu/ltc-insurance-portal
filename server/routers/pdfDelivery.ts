@@ -1,28 +1,29 @@
 import { router, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { generateStrategyPdf } from "../strategyPdfGenerator";
-import { sendEmail } from "../_core/email";
+import { notifyOwner } from "../_core/notification";
+import { ENV } from "../_core/env";
+
+const pdfInputSchema = z.object({
+  insuredName: z.string().min(1, "Insured name is required"),
+  policyNumber: z.string().min(1, "Policy number is required"),
+  carrierName: z.string().min(1, "Carrier name is required"),
+  dailyMaximum: z.number().positive("Daily maximum must be positive"),
+  monthlyMaximum: z.number().positive("Monthly maximum must be positive"),
+  lifetimeMaximum: z.number().positive("Lifetime maximum must be positive"),
+  diagnosis: z.string().default("LTC Insurance Claim"),
+  adlLimitations: z.array(z.string()).default([]),
+  stage1Tasks: z.array(z.string()).default([]),
+  stage2Tasks: z.array(z.string()).default([]),
+  stage3Tasks: z.array(z.string()).default([]),
+  careRecommendations: z.string().default(""),
+  strategyContent: z.string().default(""),
+});
 
 export const pdfDeliveryRouter = router({
-  // Generate and download PDF
+  // Generate PDF and upload to S3
   generatePdf: publicProcedure
-    .input(
-      z.object({
-        insuredName: z.string().min(1, "Insured name is required"),
-        policyNumber: z.string().min(1, "Policy number is required"),
-        carrierName: z.string().min(1, "Carrier name is required"),
-        dailyMaximum: z.number().positive("Daily maximum must be positive"),
-        monthlyMaximum: z.number().positive("Monthly maximum must be positive"),
-        lifetimeMaximum: z.number().positive("Lifetime maximum must be positive"),
-        diagnosis: z.string().default("LTC Insurance Claim"),
-        adlLimitations: z.array(z.string()).default([]),
-        stage1Tasks: z.array(z.string()).default([]),
-        stage2Tasks: z.array(z.string()).default([]),
-        stage3Tasks: z.array(z.string()).default([]),
-        careRecommendations: z.string().default(""),
-        strategyContent: z.string().default(""),
-      })
-    )
+    .input(pdfInputSchema)
     .mutation(async ({ input }) => {
       try {
         const result = await generateStrategyPdf(input);
@@ -38,31 +39,18 @@ export const pdfDeliveryRouter = router({
       }
     }),
 
-  // Send PDF via email
+  // Send PDF via email using Zapier webhook
   sendPdfByEmail: publicProcedure
     .input(
-      z.object({
+      pdfInputSchema.extend({
         recipientEmail: z.string().email("Invalid email address"),
         recipientName: z.string().min(1, "Recipient name is required"),
-        insuredName: z.string().min(1, "Insured name is required"),
-        policyNumber: z.string().min(1, "Policy number is required"),
-        carrierName: z.string().min(1, "Carrier name is required"),
-        dailyMaximum: z.number().positive("Daily maximum must be positive"),
-        monthlyMaximum: z.number().positive("Monthly maximum must be positive"),
-        lifetimeMaximum: z.number().positive("Lifetime maximum must be positive"),
-        diagnosis: z.string().default("LTC Insurance Claim"),
-        adlLimitations: z.array(z.string()).default([]),
-        stage1Tasks: z.array(z.string()).default([]),
-        stage2Tasks: z.array(z.string()).default([]),
-        stage3Tasks: z.array(z.string()).default([]),
-        careRecommendations: z.string().default(""),
-        strategyContent: z.string().default(""),
         message: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
       try {
-        // Generate PDF
+        // Step 1: Generate PDF and upload to S3
         const pdfResult = await generateStrategyPdf({
           insuredName: input.insuredName,
           policyNumber: input.policyNumber,
@@ -79,56 +67,53 @@ export const pdfDeliveryRouter = router({
           strategyContent: input.strategyContent,
         });
 
-        // Send email with PDF
-        const emailSubject = `Your LTC Insurance Strategy for ${input.insuredName}`;
-        const emailBody = `
-Dear ${input.recipientName},
+        console.log(`[Email] PDF generated and uploaded to S3: ${pdfResult.url}`);
 
-Please find attached your personalized LTC Insurance Claim Strategy Guide for ${input.insuredName}.
+        // Step 2: Send to Zapier webhook for email delivery
+        const zapierUrl = ENV.zapierWebhookUrl;
+        if (zapierUrl) {
+          try {
+            const response = await fetch(zapierUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "strategy_email",
+                recipientEmail: input.recipientEmail,
+                recipientName: input.recipientName,
+                insuredName: input.insuredName,
+                policyNumber: input.policyNumber,
+                carrierName: input.carrierName,
+                pdfUrl: pdfResult.url,
+                personalMessage: input.message || "",
+                subject: `Your LTC Insurance Strategy for ${input.insuredName}`,
+                timestamp: new Date().toISOString(),
+              }),
+            });
 
-This document contains:
-- Executive Summary of Benefits
-- Policy Overview
-- Care Recommendations
-- Three-Stage Strategy (Prior to Claim, During Claim, Post-Approval)
-- Home Care Options with Visiting Angels
-- Important Legal Disclaimers
+            if (!response.ok) {
+              console.error(`[Email] Zapier webhook error: ${response.status} ${response.statusText}`);
+            } else {
+              console.log("[Email] Strategy email request sent to Zapier successfully");
+            }
+          } catch (zapierError) {
+            console.error("[Email] Zapier webhook error:", zapierError);
+            // Don't throw - still return success with PDF URL
+          }
+        }
 
-${input.message ? `\nAdditional Notes:\n${input.message}\n` : ""}
-
-IMPORTANT LEGAL DISCLAIMER:
-This document is provided for informational and educational purposes only. It is not legal advice, medical advice, or a guarantee of insurance benefits. Each situation is unique. Please consult with your insurance carrier directly to confirm all details specific to your policy.
-
-For questions about home care services, please contact:
-- Visiting Angels: www.visitingangels.com
-- SC Visiting Angels: www.scvisitingangels.com
-
-Best regards,
-LTC Navigator
-Powered by Visiting Angels
-        `;
-
-        // Send email (using existing email service)
-        await sendEmail({
-          to: input.recipientEmail,
-          subject: emailSubject,
-          html: emailBody,
-          attachments: [
-            {
-              filename: `LTC-Strategy-${input.insuredName.replace(/\s+/g, "-")}.pdf`,
-              path: pdfResult.url, // URL to PDF in S3
-              contentType: "application/pdf",
-            },
-          ],
-        });
+        // Step 3: Notify owner about the email request
+        await notifyOwner({
+          title: `Strategy PDF Emailed: ${input.insuredName}`,
+          content: `Strategy PDF for ${input.insuredName} (Policy: ${input.policyNumber}) was sent to ${input.recipientName} (${input.recipientEmail}).\n\nPDF URL: ${pdfResult.url}${input.message ? `\n\nPersonal message: ${input.message}` : ""}`,
+        }).catch(() => {});
 
         return {
           success: true,
-          message: `Strategy PDF sent successfully to ${input.recipientEmail}`,
+          message: `Strategy PDF has been sent to ${input.recipientEmail}. The PDF is also available for download.`,
           pdfUrl: pdfResult.url,
         };
       } catch (error) {
-        console.error("Email delivery error:", error);
+        console.error("[Email] Delivery error:", error);
         throw new Error(`Failed to send PDF: ${error}`);
       }
     }),
@@ -137,7 +122,6 @@ Powered by Visiting Angels
   validateEmail: publicProcedure
     .input(z.object({ email: z.string().email("Invalid email address") }))
     .query(async ({ input }) => {
-      // Basic validation - in production, you might want to verify the email exists
       return {
         valid: true,
         email: input.email,

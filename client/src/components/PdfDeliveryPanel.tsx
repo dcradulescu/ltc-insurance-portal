@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Download, Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import { Download, Mail, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
+import { trpc } from '@/lib/trpc';
 
 interface PdfDeliveryPanelProps {
   policyData: {
@@ -421,12 +422,32 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
     }
   };
 
+  const sendEmailMutation = trpc.pdfDelivery.sendPdfByEmail.useMutation({
+    onSuccess: (data) => {
+      setStatus({ type: 'success', message: data.message });
+      setRecipientEmail('');
+      setRecipientName('');
+      setMessage('');
+    },
+    onError: (error) => {
+      setStatus({ type: 'error', message: `Failed to send email: ${error.message}` });
+    },
+    onSettled: () => setLoading(false),
+  });
+
   const handleSendEmail = async () => {
     if (!recipientEmail || !recipientName) {
       setStatus({ type: 'error', message: 'Please enter recipient email and name' });
       return;
     }
-    setStatus({ type: 'error', message: 'Email delivery is not yet available. Please download the PDF and share it manually.' });
+    setLoading(true);
+    setStatus({ type: null, message: '' });
+    sendEmailMutation.mutate({
+      recipientEmail,
+      recipientName,
+      message,
+      ...policyData,
+    });
   };
 
   return (

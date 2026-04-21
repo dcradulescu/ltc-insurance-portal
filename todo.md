@@ -397,3 +397,10 @@
 - [x] Update PDF generation to match new design (41KB, 7 pages verified)
 - [x] Test all functionality end-to-end (42 tests passed)
 - [x] Provide sample data link to user
+
+## Fix Email Delivery on Strategy Page (April 20, 2026)
+- [x] Investigate current email implementation and find placeholder toast
+- [x] Implement working email delivery: server-side jsPDF → S3 upload → Zapier webhook
+- [x] Wire up "Email Strategy" and "Email to Someone" buttons (both working)
+- [x] Test email delivery end-to-end (PDF uploaded to S3, Zapier returned 200 OK)
+- [x] Fixed jsPDF import for server-side (ESM/CJS module resolution)

@@ -228,7 +228,25 @@ export default function Strategy() {
     const validEmails = emailRecipients.filter(e => e.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim()));
     if (!validEmails.length) { toast.error("Please enter at least one valid email address."); return; }
     if (!strategy?.id) return;
-    emailMutation.mutate({ strategyId: strategy.id, recipients: validEmails });
+    emailMutation.mutate({
+      strategyId: strategy.id,
+      recipients: validEmails,
+      policyData: policy ? {
+        insuredName: policy.insuredFullName || "",
+        policyNumber: policy.policyNumber || "",
+        carrierName: policy.carrierName || "",
+        dailyMaximum: parseCurrencyValue(policy.dailyMaximum || 0),
+        monthlyMaximum: (() => { const val = parseFloat((policy.monthlyMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
+        lifetimeMaximum: (() => { const val = parseFloat((policy.lifetimeMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
+        diagnosis: "LTC Insurance Claim",
+        adlLimitations: policy.qualifyingAdls || policy.adlLimitations || [],
+        stage1Tasks: stage1Tasks.map(t => t.label),
+        stage2Tasks: stage2Tasks.map(t => t.label),
+        stage3Tasks: stage3Tasks.map(t => t.label),
+        careRecommendations: policy.careRecommendations || "",
+        strategyContent: strategy.strategyContent || "",
+      } : undefined,
+    });
   };
 
   const addRecipient = () => setEmailRecipients(prev => [...prev, ""]);
