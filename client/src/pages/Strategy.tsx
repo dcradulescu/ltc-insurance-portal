@@ -5,7 +5,7 @@ import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { CareCalculator } from "@/components/CareCalculator";
 import { PdfDeliveryPanel } from "@/components/PdfDeliveryPanel";
 import { SMSNotificationManager } from "@/components/SMSNotificationManager";
-import { ClaimTimeline } from "@/components/ClaimTimeline";
+import { HorizontalTimeline } from "@/components/HorizontalTimeline";
 import { PolicySummaryCard } from "@/components/PolicySummaryCard";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -459,6 +459,30 @@ export default function Strategy() {
                 </div>
               )}
 
+              {/* Horizontal Scrollable Claim Timeline */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
+                      <Clock className="w-4.5 h-4.5 text-teal" />
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-base font-bold text-slate-900">Claim Timeline</h3>
+                      <p className="text-xs text-slate-500">Scroll through your 3-stage claim process — track progress at every milestone</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-4 py-5 md:px-6">
+                  <HorizontalTimeline
+                    stage1Tasks={stage1Tasks}
+                    stage2Tasks={stage2Tasks}
+                    stage3Tasks={stage3Tasks}
+                    currentStage={currentStage}
+                    eliminationPeriod={policy?.eliminationPeriod}
+                  />
+                </div>
+              </div>
+
               {/* Video Tutorial */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100">
@@ -475,25 +499,6 @@ export default function Strategy() {
                     videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/QlCyvRbUBXkLwOND.mp4"
                   />
                 </div>
-              </div>
-
-              {/* Claim Timeline (replaces Gantt chart) */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
-                    <Clock className="w-4.5 h-4.5 text-teal" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif text-base font-bold text-slate-900">Claim Timeline</h3>
-                    <p className="text-xs text-slate-500">Track your progress through all three stages of the claim process</p>
-                  </div>
-                </div>
-                <ClaimTimeline
-                  stage1Tasks={stage1Tasks}
-                  stage2Tasks={stage2Tasks}
-                  stage3Tasks={stage3Tasks}
-                  currentStage={currentStage}
-                />
               </div>
 
               {/* Tabbed Content: Checklists + Full Strategy */}

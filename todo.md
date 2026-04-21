@@ -404,3 +404,12 @@
 - [x] Wire up "Email Strategy" and "Email to Someone" buttons (both working)
 - [x] Test email delivery end-to-end (PDF uploaded to S3, Zapier returned 200 OK)
 - [x] Fixed jsPDF import for server-side (ESM/CJS module resolution)
+
+## Horizontal Scrollable Timeline Redesign (April 21, 2026)
+- [x] Build new horizontally scrollable timeline component (HorizontalTimeline.tsx)
+- [x] Timeline should scroll left/right independently within its section
+- [x] Show all 3 stages with milestones along a horizontal track
+- [x] Reorganize Strategy page: policy details above, timeline in middle, checklists/calculator below
+- [x] Add scroll indicators (arrows on hover + drag hint text)
+- [x] Test horizontal scroll behavior on desktop (verified, quick-nav buttons work)
+- [x] Verify all other sections remain vertically scrollable as normal (confirmed)
