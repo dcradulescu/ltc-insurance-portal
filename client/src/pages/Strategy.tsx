@@ -243,6 +243,18 @@ export default function Strategy() {
         completed: newCompleted,
       });
       taskCompletionsQuery.refetch();
+      
+      // Show success toast notification
+      if (newCompleted) {
+        toast.success(`✓ Task completed: ${task.label}`, {
+          description: "Great progress on your claim strategy!",
+          duration: 3000,
+        });
+      } else {
+        toast.info(`Task marked incomplete: ${task.label}`, {
+          duration: 2000,
+        });
+      }
     } catch (_e) { 
       toast.error("Failed to update task.");
     }
