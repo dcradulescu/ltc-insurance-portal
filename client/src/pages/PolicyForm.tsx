@@ -864,7 +864,7 @@ export default function PolicyForm() {
                         <TooltipField label="Care Coordinator Reduction" name="careCoordinatorReducedToDays">
                           <Input id="careCoordinatorReducedToDays" type="text" value={form.careCoordinatorReducedToDays} onChange={e => update("careCoordinatorReducedToDays", e.target.value)} placeholder="### Days" className="bg-white" />
                         </TooltipField>
-                        <TooltipField label="Reduction in Care" name="reductionInCareDaysCountedAs7">
+                        <TooltipField label="Count Days/Wk as 7" name="reductionInCareDaysCountedAs7">
                           <Input id="reductionInCareDaysCountedAs7" type="text" value={form.reductionInCareDaysCountedAs7} onChange={e => update("reductionInCareDaysCountedAs7", e.target.value)} placeholder="### Days" className="bg-white" />
                         </TooltipField>
                       </>
