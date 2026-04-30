@@ -842,17 +842,17 @@ export default function PolicyForm() {
                   }} placeholder="0-999" />
                 </TooltipField>
               </div>
-              <div className="bg-blue-50 border border-gray-300 rounded-lg p-6">
+              <div className="bg-teal/10 border border-gray-300 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Financial Benefits</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <TooltipField label="Daily Maximum" name="dailyMaximum" isRequired>
-                    <Input id="dailyMaximum" type="text" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="$0.00" />
+                    <Input id="dailyMaximum" type="text" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="$0.00" className="bg-white" />
                   </TooltipField>
                   <TooltipField label="Monthly Maximum" name="monthlyMaximum">
-                    <Input id="monthlyMaximum" type="text" value={form.monthlyMaximum || ''} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="$0.00" />
+                    <Input id="monthlyMaximum" type="text" value={form.monthlyMaximum || ''} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="$0.00" className="bg-white" />
                   </TooltipField>
                   <TooltipField label="Lifetime Maximum" name="lifetimeMaximum" isRequired>
-                    <Input id="lifetimeMaximum" type="text" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="$0.00" />
+                    <Input id="lifetimeMaximum" type="text" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="$0.00" className="bg-white" />
                   </TooltipField>
                 </div>
               </div>
