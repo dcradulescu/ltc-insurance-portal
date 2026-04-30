@@ -295,9 +295,29 @@
 - [ ] Add Profile page with name/email editing, CC contacts, notification preferences
 
 
-## Waiver of Premium Calculation Fix - In Progress
-- [ ] Fix monthly premium deduction: Use FULL monthly premium (not divided by 30)
-- [ ] Fix weekly premium deduction: Divide monthly premium by 4.33 weeks
+## Form Restructuring - In Progress
+- [ ] Break apart Insured Person address into Address, City, State, Zip fields
+- [ ] Rename "Insurance Carrier Information" to "Long Term Care Insurance Company"
+- [ ] Break apart Carrier address into Address, City, State, Zip fields
+- [ ] Update timeline: "Carrier Info" → "LTC Ins Company"
+- [ ] Create new "Policy Info" screen
+- [ ] Move Policy Number and Claim Pre-Claim Number to Policy Info
+- [ ] Add question prompts to Coverage Details fields
+- [ ] Delete "Number of Days Until LTC Insurance Pays" field
+- [ ] Move "Elimination Period - Special Treatment" under Elimination Period
+- [ ] Rename "Medical & Admin" to "Claims Info" on timeline
+- [ ] Move all Medical & Admin fields to Policy Info screen
+- [ ] Move CNA Required, Agency Required, Care Notes Logsheets to Claims Info
+- [ ] Add "Where Can I get the Claims Packet?" field to Claims Info
+- [ ] Add "How do I submit the Claims Packet?" field to Claims Info
+- [ ] Add "Invoice Reimbursement Delay" field to Claims Info
+- [ ] Move Assignment of Benefits to Claims Info
+- [ ] Rename "Care Needs & ADLs" to "Qualifying" on timeline
+- [ ] Update Care Needs page title to "Is it likely that I'll qualify?"
+- [ ] Rename "What care services are needed?" to "What Care Do I Need?"
+- [ ] Move "In Home Care Covered" to Policy Info
+- [ ] Restructure Review & Submit with proper grouping
+- [ ] Format all monetary fields as $###,###.##mium deduction: Divide monthly premium by 4.33 weeks
 - [ ] Fix daily premium deduction: Divide monthly premium by actual care days per month (daysPerWeek × 4.33)
 - [ ] Test with sample data to verify accurate deductions
 - [ ] Verify net cost of care calculations are correct
