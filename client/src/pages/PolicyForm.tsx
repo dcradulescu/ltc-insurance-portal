@@ -19,6 +19,21 @@ import {
   createFormSubmission,
   type FormSubmissionData,
 } from "@/lib/formPersistence";
+import {
+  capitalizeWords,
+  formatPhoneNumber as formatPhoneUtil,
+  isValidPhoneNumber,
+  formatDateInput as formatDateUtil,
+  isValidDateFormat,
+  isValidEmail,
+  formatCurrency as formatCurrencyUtil,
+  isValidCurrency,
+  formatNumberOnly,
+  isValidNumberOnly,
+  formatDaysWithSuffix,
+  extractDaysNumber,
+  formatAddressLine,
+} from "@/lib/formValidation";
 
 const adlOptions = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
 
@@ -26,61 +41,16 @@ const adlOptions = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Trans
 const SESSION_ID = generateSessionId();
 const FORM_START_TIME = new Date().toISOString();
 
-// Helper function to format phone number with mask (###)###-####
-const formatPhoneNumber = (value: string): string => {
-  const cleaned = value.replace(/\D/g, '');
-  if (cleaned.length <= 3) return cleaned;
-  if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)})${cleaned.slice(3)}`;
-  return `(${cleaned.slice(0, 3)})${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
-};
+// Use formatPhoneNumber from validation utilities
+const formatPhoneNumber = formatPhoneUtil;
 
-// Helper function to capitalize first letter of each word
-const capitalizeFirstLetter = (value: string): string => {
-  return value
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-};
+// Use capitalizeWords from validation utilities
+const capitalizeFirstLetter = capitalizeWords;
 
-// Helper function to format currency with mask $###.##
-const formatCurrency = (value: string): string => {
-  // Remove any non-numeric characters except decimal point
-  let cleaned = value.replace(/[^0-9.]/g, '');
-  
-  // Handle multiple decimal points - keep only first one
-  const parts = cleaned.split('.');
-  if (parts.length > 2) {
-    cleaned = parts[0] + '.' + parts[1];
-  }
-  
-  // Split into dollars and cents
-  const [dollarPart, centPart] = cleaned.split('.');
-  let dollars = dollarPart || '0';
-  let cents = centPart ? centPart.substring(0, 2) : '00';
-  
-  // Allow up to 10 digits for dollars (supports up to $9,999,999,999)
-  if (dollars.length > 10) {
-    dollars = dollars.substring(0, 10);
-  }
-  
-  // Remove leading zeros but keep at least one digit
-  dollars = dollars.replace(/^0+/, '') || '0';
-  
-  // DO NOT add thousands separators during input - causes cursor jumping
-  // Formatting will be applied on blur or display only
-  
-  // Pad cents to 2 digits
-  cents = (cents + '00').substring(0, 2);
-  
-  return `$${dollars}.${cents}`;
-};
-// Helper function to format date with MM/DD/YYYY mask
-const formatDateInput = (value: string): string => {
-  const cleaned = value.replace(/\D/g, '');
-  if (cleaned.length <= 2) return cleaned;
-  if (cleaned.length <= 4) return `${cleaned.slice(0, 2)}/${cleaned.slice(2)}`;
-  return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}/${cleaned.slice(4, 8)}`;
-};
+// Use formatCurrency from validation utilities
+const formatCurrency = formatCurrencyUtil;
+// Use formatDateInput from validation utilities
+const formatDateInput = formatDateUtil;
 
 // Helper function to convert MM/DD/YYYY to YYYY-MM-DD for storage
 const convertToDateFormat = (value: string): string => {
@@ -492,16 +462,36 @@ export default function PolicyForm() {
   const update = (field: keyof FormData, value: any) => {
     lastActivityRef.current = Date.now();
     
-    // Apply phone number formatting
+    // Apply formatting based on field type
+    
+    // Phone number fields: format to (###)###-####
     if (field === 'insuredPhone' || field === 'carrierPhone' || field === 'carrierFax') {
       value = formatPhoneNumber(value);
     }
     
-    // Number inputs handle formatting automatically
-    
-    // Apply auto-capitalize for name and company fields
-    if (field === 'insuredFullName' || field === 'carrierName' || field === 'caseManagerName' || field === 'poa_name') {
+    // Name fields: capitalize first letter of each word
+    if (field === 'insuredFullName' || field === 'carrierName' || field === 'caseManagerName' || field === 'poa_name' || field === 'poa_relationship') {
       value = capitalizeFirstLetter(value);
+    }
+    
+    // Address fields: capitalize first letter of each word
+    if (field === 'carrierAddress1' || field === 'carrierAddress2') {
+      value = formatAddressLine(value);
+    }
+    
+    // Currency fields: format to $###.##
+    if (field === 'dailyMaximum' || field === 'monthlyMaximum' || field === 'lifetimeMaximum') {
+      value = formatCurrency(value);
+    }
+    
+    // Days fields with "Days" suffix
+    if (field === 'lookBackPeriodDays' || field === 'careCoordinatorReducedToDays' || field === 'reductionInCareDaysCountedAs7') {
+      const numOnly = formatNumberOnly(value);
+      if (numOnly) {
+        value = `${numOnly} Days`;
+      } else {
+        value = '';
+      }
     }
     
     setForm(prev => ({ ...prev, [field]: value }));
@@ -788,13 +778,13 @@ export default function PolicyForm() {
                   }} placeholder="0-999" />
                 </TooltipField>
                 <TooltipField label="Daily Maximum" name="dailyMaximum" isRequired>
-                  <Input id="dailyMaximum" type="number" step="0.01" min="0" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="Enter amount" />
+                  <Input id="dailyMaximum" type="text" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="$0.00" />
                 </TooltipField>
                 <TooltipField label="Monthly Maximum" name="monthlyMaximum">
-                  <Input id="monthlyMaximum" type="number" step="0.01" min="0" value={form.monthlyMaximum || ''} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="Auto-calculated or enter manually" />
+                  <Input id="monthlyMaximum" type="text" value={form.monthlyMaximum || ''} onChange={e => update("monthlyMaximum", e.target.value)} placeholder="$0.00" />
                 </TooltipField>
                 <TooltipField label="Lifetime Maximum" name="lifetimeMaximum" isRequired>
-                  <Input id="lifetimeMaximum" type="number" step="0.01" min="0" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="Enter amount" />
+                  <Input id="lifetimeMaximum" type="text" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="$0.00" />
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -852,12 +842,7 @@ export default function PolicyForm() {
                   </label>
                   {form.lookBackPeriodEnabled && (
                     <div className="ml-6">
-                      <Input id="lookBackPeriodDays" type="number" min="0" max="999" value={form.lookBackPeriodDays} onChange={e => {
-                        const val = e.target.value;
-                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
-                          update("lookBackPeriodDays", val);
-                        }
-                      }} placeholder="## days (365 = 1 year)" />
+                      <Input id="lookBackPeriodDays" type="text" value={form.lookBackPeriodDays} onChange={e => update("lookBackPeriodDays", e.target.value)} placeholder="### Days" />
                     </div>
                   )}
                   <label className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors bg-white border-slate-200 hover:border-slate-300">
@@ -866,12 +851,7 @@ export default function PolicyForm() {
                   </label>
                   {form.careCoordinatorReductionEnabled && (
                     <div className="ml-6">
-                      <Input id="careCoordinatorReducedToDays" type="number" min="0" max="999" value={form.careCoordinatorReducedToDays} onChange={e => {
-                        const val = e.target.value;
-                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
-                          update("careCoordinatorReducedToDays", val);
-                        }
-                      }} placeholder="Reduced To ## Days" />
+                      <Input id="careCoordinatorReducedToDays" type="text" value={form.careCoordinatorReducedToDays} onChange={e => update("careCoordinatorReducedToDays", e.target.value)} placeholder="### Days" />
                     </div>
                   )}
                   <label className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors bg-white border-slate-200 hover:border-slate-300">
@@ -880,12 +860,7 @@ export default function PolicyForm() {
                   </label>
                   {form.reductionInCareProvidedEnabled && (
                     <div className="ml-6">
-                      <Input id="reductionInCareDaysCountedAs7" type="number" min="0" max="7" value={form.reductionInCareDaysCountedAs7} onChange={e => {
-                        const val = e.target.value;
-                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 7)) {
-                          update("reductionInCareDaysCountedAs7", val);
-                        }
-                      }} placeholder="## days will be counted as 7 days" />
+                      <Input id="reductionInCareDaysCountedAs7" type="text" value={form.reductionInCareDaysCountedAs7} onChange={e => update("reductionInCareDaysCountedAs7", e.target.value)} placeholder="### Days" />
                     </div>
                   )}
                 </div>
@@ -1094,12 +1069,8 @@ export default function PolicyForm() {
                     <h3 className="font-semibold text-slate-800 mb-2">{section.title}</h3>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       {section.items.map(([label, value]) => {
-                        // Add dollar signs to monetary fields
-                        const monetaryFields = ["Daily Max", "Monthly Max", "Lifetime Max"];
+                        // Display values as-is (monetary fields already formatted with $)
                         let displayValue = (value as string) || "—";
-                        if (monetaryFields.includes(label as string) && displayValue !== "—" && displayValue) {
-                          displayValue = `$${displayValue}`;
-                        }
                         return (
                           <div key={label as string}><span className="text-slate-500">{label}:</span> <span className="font-medium text-slate-700">{displayValue}</span></div>
                         );
