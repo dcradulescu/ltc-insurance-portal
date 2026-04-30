@@ -817,12 +817,12 @@ export default function PolicyForm() {
                     <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
+                {form.caseManagerAssigned === "yes" && (
+                  <TooltipField label="Case Manager Name" name="caseManagerName">
+                    <Input id="caseManagerName" value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="Enter case manager name" />
+                  </TooltipField>
+                )}
               </div>
-              {form.caseManagerAssigned === "yes" && (
-                <TooltipField label="Case Manager Name" name="caseManagerName">
-                  <Input id="caseManagerName" value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="Enter case manager name" />
-                </TooltipField>
-              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="In Home Care Covered in my Policy?" name="inHomeCoverageEnabled">
                   <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
