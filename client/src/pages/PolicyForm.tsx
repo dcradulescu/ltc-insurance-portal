@@ -823,14 +823,7 @@ export default function PolicyForm() {
                   </TooltipField>
                 )}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="In Home Care Covered in my Policy?" name="inHomeCoverageEnabled">
-                  <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-              </div>
+
             </div>
           )}
 
@@ -865,7 +858,12 @@ export default function PolicyForm() {
                     <SelectContent><SelectItem value="0">0 (No ADL requirement)</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
-
+                <TooltipField label="In Home Care Covered in my Policy?" name="inHomeCoverageEnabled">
+                  <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                  </Select>
+                </TooltipField>
               </div>
               {parseInt(form.minAdlsRequired || "0") > 0 && (
                 <div>
