@@ -832,19 +832,9 @@ export default function PolicyForm() {
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Coverage Details</h2>
               <p className="text-sm text-slate-600">Enter the coverage details from your LTC insurance policy. These are critical for generating your personalized strategy.</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Elimination Period" name="eliminationPeriod" isRequired>
-                  <Input id="eliminationPeriod" type="number" min="0" max="999" value={form.eliminationPeriod} onChange={e => {
-                    const val = e.target.value;
-                    if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
-                      update("eliminationPeriod", val);
-                    }
-                  }} placeholder="0-999" />
-                </TooltipField>
-              </div>
               <div className="bg-teal/10 border border-gray-300 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Financial Benefits</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <TooltipField label="Daily Maximum" name="dailyMaximum" isRequired>
                     <Input id="dailyMaximum" type="text" value={form.dailyMaximum} onChange={e => update("dailyMaximum", e.target.value)} placeholder="$0.00" className="bg-white" />
                   </TooltipField>
@@ -854,6 +844,32 @@ export default function PolicyForm() {
                   <TooltipField label="Lifetime Maximum" name="lifetimeMaximum" isRequired>
                     <Input id="lifetimeMaximum" type="text" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", e.target.value)} placeholder="$0.00" className="bg-white" />
                   </TooltipField>
+                </div>
+                <div className="border-t border-gray-300 pt-6">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-4">Elimination Period Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <TooltipField label="Elimination Period" name="eliminationPeriod" isRequired>
+                      <Input id="eliminationPeriod" type="number" min="0" max="999" value={form.eliminationPeriod} onChange={e => {
+                        const val = e.target.value;
+                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                          update("eliminationPeriod", val);
+                        }
+                      }} placeholder="0-999" className="bg-white" />
+                    </TooltipField>
+                    {form.eliminationPeriod && (
+                      <>
+                        <TooltipField label="Lookback Period" name="lookBackPeriodDays">
+                          <Input id="lookBackPeriodDays" type="text" value={form.lookBackPeriodDays} onChange={e => update("lookBackPeriodDays", e.target.value)} placeholder="### Days" className="bg-white" />
+                        </TooltipField>
+                        <TooltipField label="Care Coordinator Reduction" name="careCoordinatorReducedToDays">
+                          <Input id="careCoordinatorReducedToDays" type="text" value={form.careCoordinatorReducedToDays} onChange={e => update("careCoordinatorReducedToDays", e.target.value)} placeholder="### Days" className="bg-white" />
+                        </TooltipField>
+                        <TooltipField label="Reduction in Care" name="reductionInCareDaysCountedAs7">
+                          <Input id="reductionInCareDaysCountedAs7" type="text" value={form.reductionInCareDaysCountedAs7} onChange={e => update("reductionInCareDaysCountedAs7", e.target.value)} placeholder="### Days" className="bg-white" />
+                        </TooltipField>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -898,40 +914,7 @@ export default function PolicyForm() {
                   </div>
                 </div>
               )}
-              {form.eliminationPeriod && (
-                <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center gap-1.5">
-                    <Label className="text-sm font-medium text-slate-700">Elimination Period - Special Treatment</Label>
-                  </div>
-                  <label className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors bg-white border-slate-200 hover:border-slate-300">
-                    <Checkbox checked={form.lookBackPeriodEnabled} onCheckedChange={checked => update("lookBackPeriodEnabled", checked as boolean)} />
-                    <span className="text-sm font-medium">Look back period for qualifying out of pocket expenses</span>
-                  </label>
-                  {form.lookBackPeriodEnabled && (
-                    <div className="ml-6">
-                      <Input id="lookBackPeriodDays" type="text" value={form.lookBackPeriodDays} onChange={e => update("lookBackPeriodDays", e.target.value)} placeholder="### Days" />
-                    </div>
-                  )}
-                  <label className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors bg-white border-slate-200 hover:border-slate-300">
-                    <Checkbox checked={form.careCoordinatorReductionEnabled} onCheckedChange={checked => update("careCoordinatorReductionEnabled", checked as boolean)} />
-                    <span className="text-sm font-medium">Care Coordinator - Elimination Period Reduction</span>
-                  </label>
-                  {form.careCoordinatorReductionEnabled && (
-                    <div className="ml-6">
-                      <Input id="careCoordinatorReducedToDays" type="text" value={form.careCoordinatorReducedToDays} onChange={e => update("careCoordinatorReducedToDays", e.target.value)} placeholder="### Days" />
-                    </div>
-                  )}
-                  <label className="flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors bg-white border-slate-200 hover:border-slate-300">
-                    <Checkbox checked={form.reductionInCareProvidedEnabled} onCheckedChange={checked => update("reductionInCareProvidedEnabled", checked as boolean)} />
-                    <span className="text-sm font-medium">Reduction in Care Provided During Elimination Period</span>
-                  </label>
-                  {form.reductionInCareProvidedEnabled && (
-                    <div className="ml-6">
-                      <Input id="reductionInCareDaysCountedAs7" type="text" value={form.reductionInCareDaysCountedAs7} onChange={e => update("reductionInCareDaysCountedAs7", e.target.value)} placeholder="### Days" />
-                    </div>
-                  )}
-                </div>
-              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <TooltipField label="Waiver of Premium on Policy" name="waiverOfPremium" isRequired>
                   <Select value={form.waiverOfPremium || "no"} onValueChange={v => update("waiverOfPremium", v)}>
