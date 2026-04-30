@@ -764,24 +764,29 @@ export default function PolicyForm() {
             </div>
           )}
 
-          {/* Step 1: Carrier Info */}
+          {/* Step 1: LTC Ins Company */}
           {step === 1 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Insurance Carrier Information</h2>
+              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Long Term Care Insurance Company</h2>
               <p className="text-sm text-slate-600">Enter the details of your LTC insurance carrier. This information can be found on your policy declaration page.</p>
-                <TooltipField label="LTC Insurance Company Name" name="carrierName" isRequired>
+              <TooltipField label="LTC Insurance Company Name" name="carrierName" isRequired>
                 <Input id="carrierName" value={form.carrierName} onChange={e => update("carrierName", e.target.value)} placeholder="e.g., Genworth, John Hancock, Mutual of Omaha" />
               </TooltipField>
-              <TooltipField label="Address Line 1" name="carrierAddress1">
-                <Input id="carrierAddress1" value={form.carrierAddress1} onChange={e => update("carrierAddress1", e.target.value)} placeholder="Street address" />
-              </TooltipField>
-              <TooltipField label="Address Line 2" name="carrierAddress2">
-                <Input id="carrierAddress2" value={form.carrierAddress2} onChange={e => update("carrierAddress2", e.target.value)} placeholder="Suite, unit, etc." />
+              <TooltipField label="Address" name="carrierAddress">
+                <Input id="carrierAddress" value={form.carrierAddress} onChange={e => update("carrierAddress", e.target.value)} placeholder="Street address" />
               </TooltipField>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <TooltipField label="City, State, Zip" name="carrierCityStateZip">
-                  <Input id="carrierCityStateZip" value={form.carrierCityStateZip} onChange={e => update("carrierCityStateZip", e.target.value)} placeholder="City, ST 00000" />
+                <TooltipField label="City" name="carrierCity">
+                  <Input id="carrierCity" value={form.carrierCity} onChange={e => update("carrierCity", e.target.value)} placeholder="City" />
                 </TooltipField>
+                <TooltipField label="State" name="carrierState">
+                  <Input id="carrierState" value={form.carrierState} onChange={e => update("carrierState", e.target.value.toUpperCase())} placeholder="ST" maxLength={2} />
+                </TooltipField>
+                <TooltipField label="Zip Code" name="carrierZip">
+                  <Input id="carrierZip" value={form.carrierZip} onChange={e => update("carrierZip", e.target.value)} placeholder="00000" />
+                </TooltipField>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="LTC Claims Dept. Phone Number" name="carrierPhone">
                   <Input id="carrierPhone" value={form.carrierPhone} onChange={e => update("carrierPhone", e.target.value)} placeholder="(000) 000-0000" />
                 </TooltipField>
@@ -789,6 +794,14 @@ export default function PolicyForm() {
                   <Input id="carrierFax" value={form.carrierFax} onChange={e => update("carrierFax", e.target.value)} placeholder="(000) 000-0000" />
                 </TooltipField>
               </div>
+            </div>
+          )}
+
+          {/* Step 2: Policy Info */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Policy Info</h2>
+              <p className="text-sm text-slate-600">Enter your policy identification and case management information.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Policy Number" name="policyNumber" isRequired>
                   <Input id="policyNumber" value={form.policyNumber} onChange={e => update("policyNumber", e.target.value)} placeholder="Your policy number" />
@@ -797,11 +810,32 @@ export default function PolicyForm() {
                   <Input id="claimPreClaimNumber" value={form.claimPreClaimNumber} onChange={e => update("claimPreClaimNumber", e.target.value)} placeholder="If already assigned" />
                 </TooltipField>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TooltipField label="Case Manager Assigned?" name="caseManagerAssigned">
+                  <Select value={form.caseManagerAssigned} onValueChange={v => update("caseManagerAssigned", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                  </Select>
+                </TooltipField>
+              </div>
+              {form.caseManagerAssigned === "yes" && (
+                <TooltipField label="Case Manager Name" name="caseManagerName">
+                  <Input id="caseManagerName" value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="Enter case manager name" />
+                </TooltipField>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <TooltipField label="In Home Care Covered in my Policy?" name="equipmentAllowanceEnabled">
+                  <Select value={form.equipmentAllowanceEnabled ? "yes" : "no"} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes")}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                  </Select>
+                </TooltipField>
+              </div>
             </div>
           )}
 
-          {/* Step 2: Coverage Details */}
-          {step === 2 && (
+          {/* Step 3: Coverage Details */}
+          {step === 3 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Coverage Details</h2>
               <p className="text-sm text-slate-600">Enter the coverage details from your LTC insurance policy. These are critical for generating your personalized strategy.</p>
@@ -943,8 +977,8 @@ export default function PolicyForm() {
             </div>
           )}
 
-          {/* Step 3: Medical & Administrative */}
-          {step === 3 && (
+          {/* Step 4: Claims Info */}
+          {step === 4 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Medical & Administrative Details</h2>
               <TooltipField label="Is there a Case Manager assigned to my Claim?" name="caseManagerAssigned" isRequired>
@@ -983,8 +1017,8 @@ export default function PolicyForm() {
             </div>
           )}
 
-          {/* Step 4: Care Needs & ADLs */}
-          {step === 4 && (
+          {/* Step 5: Qualifying */}
+          {step === 5 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Care Needs & ADL Assessment</h2>
               <p className="text-sm text-slate-600">Describe the current care needs and identify which Activities of Daily Living (ADLs) are compromised.</p>
@@ -1083,7 +1117,7 @@ export default function PolicyForm() {
           )}
 
           {/* Step 5: Review */}
-          {step === 5 && (
+          {step === 6 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Review Your Information</h2>
               <p className="text-sm text-slate-600">Review the information below. You can go back to any step to make changes. Once you're satisfied, save and proceed to generate your personalized strategy.</p>
