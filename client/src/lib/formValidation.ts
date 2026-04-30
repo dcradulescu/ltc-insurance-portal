@@ -59,7 +59,7 @@ export const isValidEmail = (value: string): boolean => {
   return pattern.test(value);
 };
 
-// Format currency to $###.##
+// Format currency to $###,###.##
 export const formatCurrency = (value: string): string => {
   let cleaned = value.replace(/[^0-9.]/g, '');
   
@@ -80,6 +80,9 @@ export const formatCurrency = (value: string): string => {
   
   // Remove leading zeros but keep at least one digit
   dollars = dollars.replace(/^0+/, '') || '0';
+  
+  // Add thousands separators
+  dollars = dollars.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   
   // Pad cents to 2 digits
   cents = (cents + '00').substring(0, 2);
