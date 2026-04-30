@@ -10,6 +10,10 @@ export interface FormData {
   insuredPhone: string;
   insuredDob: string;
   insuredMailingAddress: string;
+  insuredAddress: string;
+  insuredCity: string;
+  insuredState: string;
+  insuredZip: string;
 
   powerOfAttorneyPresent: string;
   poa_name?: string;
@@ -20,6 +24,10 @@ export interface FormData {
   carrierAddress1: string;
   carrierAddress2: string;
   carrierCityStateZip: string;
+  carrierAddress: string;
+  carrierCity: string;
+  carrierState: string;
+  carrierZip: string;
   carrierPhone: string;
   carrierFax: string;
   policyNumber: string;
@@ -32,11 +40,14 @@ export interface FormData {
   lifetimeMaximum: string;
   minAdlsRequired: string;
   qualifyingAdls: string[];
-  numberOfDaysUntilPayment: string;
   waiverOfPremium: string;
   cnaRequired: string;
   approvedAgencyRequired: string;
   careNotesRequired: string;
+  careLogsheetsRequired: string;
+  whereToGetClaimsPacket: string;
+  howToSubmitClaimsPacket: string;
+  invoiceReimbursementDelay: string;
   assignmentOfBenefits: string;
 
   // Step 3: Medical & Administrative Information

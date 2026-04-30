@@ -139,6 +139,10 @@ type FormData = {
   insuredPhone: string;
   insuredDob: string;
   insuredMailingAddress: string;
+  insuredAddress: string;
+  insuredCity: string;
+  insuredState: string;
+  insuredZip: string;
 
   powerOfAttorneyPresent: string;
   poa_name?: string;
@@ -147,6 +151,10 @@ type FormData = {
   carrierAddress1: string;
   carrierAddress2: string;
   carrierCityStateZip: string;
+  carrierAddress: string;
+  carrierCity: string;
+  carrierState: string;
+  carrierZip: string;
   carrierPhone: string;
   carrierFax: string;
   policyNumber: string;
@@ -167,7 +175,10 @@ type FormData = {
   cnaRequired: string;
   approvedAgencyRequired: string;
   careNotesRequired: string;
-  numberOfDaysUntilPayment: string;
+  careLogsheetsRequired: string;
+  whereToGetClaimsPacket: string;
+  howToSubmitClaimsPacket: string;
+  invoiceReimbursementDelay: string;
   assignmentOfBenefits: string;
   equipmentAllowanceEnabled: boolean;
   equipmentAllowanceAmount: string;
@@ -194,13 +205,15 @@ type FormData = {
 
 const defaultForm: FormData = {
   insuredFullName: "", insuredEmail: "", insuredPhone: "", insuredDob: "", insuredMailingAddress: "",
+  insuredAddress: "", insuredCity: "", insuredState: "", insuredZip: "",
   powerOfAttorneyPresent: "", poa_name: "", poa_relationship: "",
   carrierName: "", carrierAddress1: "", carrierAddress2: "", carrierCityStateZip: "",
+  carrierAddress: "", carrierCity: "", carrierState: "", carrierZip: "",
   carrierPhone: "", carrierFax: "",
   policyNumber: "", claimPreClaimNumber: "",
   eliminationPeriod: "", lookBackPeriodEnabled: false, lookBackPeriodDays: "", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "", monthlyMaximum: "", lifetimeMaximum: "",
-  minAdlsRequired: "0", qualifyingAdls: [], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "",
-  numberOfDaysUntilPayment: "", assignmentOfBenefits: "",
+  minAdlsRequired: "0", qualifyingAdls: [], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "", careLogsheetsRequired: "", whereToGetClaimsPacket: "", howToSubmitClaimsPacket: "", invoiceReimbursementDelay: "",
+  assignmentOfBenefits: "",
   equipmentAllowanceEnabled: false, equipmentAllowanceAmount: "", equipmentAllowanceCoverage: "", equipmentAllowanceDeductedFromLifetime: "", equipmentAllowanceRelatedAdls: [], equipmentNeeds: [], equipmentAllowanceNotes: "",
   inflationAdjustmentEnabled: false, inflationType: "none", inflationPercentagePerYear: "", inflationContinuesAfterBenefits: false,
   caseManagerAssigned: "", caseManagerName: "", thirdPartyAssessmentRequired: "",
@@ -211,14 +224,14 @@ const defaultForm: FormData = {
 };
 
 const sampleForm: FormData = {
-  insuredFullName: "John Smith", insuredEmail: "john@example.com", insuredPhone: "(555) 123-4567", insuredDob: "1950-06-15", insuredMailingAddress: "123 Main St, Charleston, SC 29401",
+  insuredFullName: "John Smith", insuredEmail: "john@example.com", insuredPhone: "(555) 123-4567", insuredDob: "1950-06-15", insuredMailingAddress: "123 Main St, Charleston, SC 29401", insuredAddress: "123 Main St", insuredCity: "Charleston", insuredState: "SC", insuredZip: "29401",
   powerOfAttorneyPresent: "Yes", poa_name: "Jane Smith", poa_relationship: "Daughter",
-  carrierName: "Genworth", carrierAddress1: "123 Insurance Blvd", carrierAddress2: "Suite 100", carrierCityStateZip: "Richmond, VA 23219",
+  carrierName: "Genworth", carrierAddress1: "123 Insurance Blvd", carrierAddress2: "Suite 100", carrierCityStateZip: "Richmond, VA 23219", carrierAddress: "123 Insurance Blvd Suite 100", carrierCity: "Richmond", carrierState: "VA", carrierZip: "23219",
   carrierPhone: "(800) 555-1234", carrierFax: "(804) 555-5678",
   policyNumber: "POL123456", claimPreClaimNumber: "PRE789",
   eliminationPeriod: "90", lookBackPeriodEnabled: true, lookBackPeriodDays: "30", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "$250.00", monthlyMaximum: "$7500.00", lifetimeMaximum: "$500000.00",
-  minAdlsRequired: "2", qualifyingAdls: ["Bathing", "Dressing", "Toileting"], waiverOfPremium: "Yes", cnaRequired: "No", approvedAgencyRequired: "No", careNotesRequired: "Yes",
-  numberOfDaysUntilPayment: "30", assignmentOfBenefits: "Yes",
+  minAdlsRequired: "2", qualifyingAdls: ["Bathing", "Dressing", "Toileting"], waiverOfPremium: "Yes", cnaRequired: "No", approvedAgencyRequired: "No", careNotesRequired: "Yes", careLogsheetsRequired: "No", whereToGetClaimsPacket: "Contact carrier", howToSubmitClaimsPacket: "Mail or fax", invoiceReimbursementDelay: "30 days",
+  assignmentOfBenefits: "Yes",
   equipmentAllowanceEnabled: true, equipmentAllowanceAmount: "$100.00", equipmentAllowanceCoverage: "Annually", equipmentAllowanceDeductedFromLifetime: "No", equipmentAllowanceRelatedAdls: ["Bathing"], equipmentNeeds: ["Shower chair", "Walker"], equipmentAllowanceNotes: "Covers mobility aids",
   inflationAdjustmentEnabled: true, inflationType: "compound", inflationPercentagePerYear: "3", inflationContinuesAfterBenefits: true,
   caseManagerAssigned: "Yes", caseManagerName: "Sarah Johnson", thirdPartyAssessmentRequired: "Yes",
@@ -336,6 +349,10 @@ export default function PolicyForm() {
         insuredPhone: p.insuredPhone || "",
         insuredDob: p.insuredDob || "",
         insuredMailingAddress: p.insuredMailingAddress || "",
+        insuredAddress: p.insuredAddress || "",
+        insuredCity: p.insuredCity || "",
+        insuredState: p.insuredState || "",
+        insuredZip: p.insuredZip || "",
 
         powerOfAttorneyPresent: p.powerOfAttorneyPresent || "",
         poa_name: p.poa_name || "",
@@ -344,6 +361,10 @@ export default function PolicyForm() {
         carrierAddress1: p.carrierAddress1 || "",
         carrierAddress2: p.carrierAddress2 || "",
         carrierCityStateZip: p.carrierCityStateZip || "",
+        carrierAddress: p.carrierAddress || "",
+        carrierCity: p.carrierCity || "",
+        carrierState: p.carrierState || "",
+        carrierZip: p.carrierZip || "",
         carrierPhone: p.carrierPhone || "",
         carrierFax: p.carrierFax || "",
         policyNumber: p.policyNumber || "",
@@ -364,7 +385,11 @@ export default function PolicyForm() {
         cnaRequired: p.cnaRequired || "",
         approvedAgencyRequired: p.approvedAgencyRequired || "",
         careNotesRequired: p.careNotesRequired || "",
-        numberOfDaysUntilPayment: p.numberOfDaysUntilPayment || "",
+        careLogsheetsRequired: p.careLogsheetsRequired || "",
+        whereToGetClaimsPacket: p.whereToGetClaimsPacket || "",
+        howToSubmitClaimsPacket: p.howToSubmitClaimsPacket || "",
+        invoiceReimbursementDelay: p.invoiceReimbursementDelay || "",
+
         assignmentOfBenefits: p.assignmentOfBenefits || "",
         equipmentAllowanceEnabled: p.equipmentAllowanceEnabled || false,
         equipmentAllowanceAmount: p.equipmentAllowanceAmount || "",
@@ -620,10 +645,11 @@ export default function PolicyForm() {
 
   const steps = [
     { title: "Insured Person", icon: "👤" },
-    { title: "Carrier Info", icon: "🏢" },
+    { title: "LTC Ins Company", icon: "🏢" },
+    { title: "Policy Info", icon: "📄" },
     { title: "Coverage Details", icon: "📋" },
-    { title: "Medical & Admin", icon: "🏥" },
-    { title: "Care Needs & ADLs", icon: "❤️" },
+    { title: "Claims Info", icon: "📞" },
+    { title: "Qualifying", icon: "✓" },
     { title: "Review & Submit", icon: "✅" },
   ];
 
@@ -702,8 +728,19 @@ export default function PolicyForm() {
                 </TooltipField>
               </div>
               <TooltipField label="Mailing Address" name="insuredMailingAddress">
-                <Textarea id="insuredMailingAddress" value={form.insuredMailingAddress} onChange={e => update("insuredMailingAddress", e.target.value)} placeholder="Full mailing address" rows={2} />
+                <Input id="insuredAddress" value={form.insuredAddress} onChange={e => update("insuredAddress", e.target.value)} placeholder="Street address" />
               </TooltipField>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <TooltipField label="City" name="insuredCity">
+                  <Input id="insuredCity" value={form.insuredCity} onChange={e => update("insuredCity", e.target.value)} placeholder="City" />
+                </TooltipField>
+                <TooltipField label="State" name="insuredState">
+                  <Input id="insuredState" value={form.insuredState} onChange={e => update("insuredState", e.target.value.toUpperCase())} placeholder="ST" maxLength={2} />
+                </TooltipField>
+                <TooltipField label="Zip Code" name="insuredZip">
+                  <Input id="insuredZip" value={form.insuredZip} onChange={e => update("insuredZip", e.target.value)} placeholder="00000" />
+                </TooltipField>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Do you have a power of attorney?" name="powerOfAttorneyPresent">
@@ -794,14 +831,7 @@ export default function PolicyForm() {
                     <SelectContent><SelectItem value="0">0 (No ADL requirement)</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
-                <TooltipField label="Number of Days Until LTC Insurance Pays" name="numberOfDaysUntilPayment">
-                  <Input id="numberOfDaysUntilPayment" type="number" min="0" max="999" value={form.numberOfDaysUntilPayment} onChange={e => {
-                    const val = e.target.value;
-                    if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
-                      update("numberOfDaysUntilPayment", val);
-                    }
-                  }} placeholder="0-999" />
-                </TooltipField>
+
               </div>
               {parseInt(form.minAdlsRequired || "0") > 0 && (
                 <div>
