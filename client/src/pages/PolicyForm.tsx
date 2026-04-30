@@ -846,7 +846,7 @@ export default function PolicyForm() {
                   </TooltipField>
                 </div>
                 <div className="border-t border-gray-300 pt-6">
-                  <h4 className="text-sm font-semibold text-slate-700 mb-4">Elimination Period Details</h4>
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4">Elimination Period Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <TooltipField label="Elimination Period" name="eliminationPeriod" isRequired>
                       <Input id="eliminationPeriod" type="number" min="0" max="999" value={form.eliminationPeriod} onChange={e => {
