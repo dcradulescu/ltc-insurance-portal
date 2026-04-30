@@ -19,10 +19,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { useStageCelebration } from "@/hooks/useStageCelebration";
 import {
   FileText, Download, Mail, Loader2, CheckCircle2, AlertTriangle,
   Upload, ArrowRight, Shield, ClipboardCheck, Plus, X, RefreshCw, Target,
-  Calculator, MessageCircle, Clock, Activity, Heart, ListChecks,
+  Calculator, MessageCircle, Clock, Activity, Heart, ListChecks, Sparkles,
 } from "lucide-react";
 
 // Care recommendations by diagnosis
@@ -112,6 +113,8 @@ export default function Strategy() {
   const [activeTab, setActiveTab] = useState("timeline");
   const strategyContentRef = useRef<HTMLDivElement>(null);
   const initialLoadDone = useRef(false);
+  const { celebrateStageCompletion } = useStageCelebration();
+  const [celebratedStages, setCelebratedStages] = useState<Set<number>>(new Set());
 
   // Load policy data from localStorage
   const [policyFromStorage, setPolicyFromStorage] = useState<any>(null);
@@ -205,6 +208,31 @@ export default function Strategy() {
   const currentStage = strategy?.currentStage || 1;
 
   const stageProgress = (tasks: StrategyTask[]) => tasks.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
+
+  // Check if a stage is complete and trigger celebration
+  useEffect(() => {
+    if (!stage1Tasks || !stage2Tasks || !stage3Tasks) return;
+
+    const checkStageCompletion = (tasks: StrategyTask[], stageNum: number) => {
+      const allComplete = tasks.length > 0 && tasks.every(t => t.completed);
+      if (allComplete && !celebratedStages.has(stageNum)) {
+        celebrateStageCompletion(`Stage ${stageNum}`);
+        setCelebratedStages(prev => {
+          const newSet = new Set(prev);
+          newSet.add(stageNum);
+          return newSet;
+        });
+        toast.success(`🎉 Stage ${stageNum} Complete!`, {
+          description: "Excellent progress on your claim strategy!",
+          duration: 4000,
+        });
+      }
+    };
+
+    checkStageCompletion(stage1Tasks, 1);
+    checkStageCompletion(stage2Tasks, 2);
+    checkStageCompletion(stage3Tasks, 3);
+  }, [stage1Tasks, stage2Tasks, stage3Tasks, celebratedStages, celebrateStageCompletion]);
 
   const parseCurrencyValue = (value: string | number): number => {
     if (typeof value === "number") return value;
