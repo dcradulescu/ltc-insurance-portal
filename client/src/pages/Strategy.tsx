@@ -102,7 +102,7 @@ type StrategyTask = {
   uploadRequired?: boolean;
 };
 
-type PlanView = "written" | "timeline" | "checklist" | "downloads" | "send";
+type PlanView = "written" | "timeline" | "checklist" | "financial" | "downloads" | "send";
 
 export default function Strategy() {
   const [, navigate] = useLocation();
@@ -475,7 +475,7 @@ export default function Strategy() {
                 </div>
 
                 {/* Plan View Selector */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-3">
                   <button
                     onClick={() => setPlanView("written")}
                     className={`p-4 rounded-xl border-2 transition-all text-center ${
@@ -510,6 +510,18 @@ export default function Strategy() {
                   >
                     <ListChecks className={`w-6 h-6 mx-auto mb-2 ${planView === "checklist" ? "text-teal" : "text-slate-400"}`} />
                     <span className={`text-sm font-semibold ${planView === "checklist" ? "text-teal" : "text-slate-700"}`}>Checklist</span>
+                  </button>
+
+                  <button
+                    onClick={() => setPlanView("financial")}
+                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                      planView === "financial"
+                        ? "border-teal bg-teal/5"
+                        : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Calculator className={`w-6 h-6 mx-auto mb-2 ${planView === "financial" ? "text-teal" : "text-slate-400"}`} />
+                    <span className={`text-sm font-semibold ${planView === "financial" ? "text-teal" : "text-slate-700"}`}>Financial</span>
                   </button>
 
                   <button
@@ -752,7 +764,12 @@ export default function Strategy() {
                       }}
                     />
                   </div>
+                </div>
+              )}
 
+              {/* FINANCIAL STRATEGY VIEW */}
+              {planView === "financial" && (
+                <div className="space-y-8">
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
