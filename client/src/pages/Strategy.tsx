@@ -23,7 +23,7 @@ import { useStageCelebration } from "@/hooks/useStageCelebration";
 import {
   FileText, Download, Mail, Loader2, CheckCircle2, AlertTriangle,
   Upload, ArrowRight, Shield, ClipboardCheck, Plus, X, RefreshCw, Target,
-  Calculator, MessageCircle, Clock, Activity, Heart, ListChecks, Sparkles,
+  Calculator, MessageCircle, Clock, Activity, Heart, ListChecks, Sparkles, ChevronDown,
 } from "lucide-react";
 
 // Care recommendations by diagnosis
@@ -115,6 +115,7 @@ export default function Strategy() {
   const initialLoadDone = useRef(false);
   const { celebrateStageCompletion } = useStageCelebration();
   const [celebratedStages, setCelebratedStages] = useState<Set<number>>(new Set());
+  const [expandedStages, setExpandedStages] = useState<Set<number>>(new Set([1, 2, 3]));
 
   // Load policy data from localStorage
   const [policyFromStorage, setPolicyFromStorage] = useState<any>(null);
@@ -298,6 +299,18 @@ export default function Strategy() {
       utils.strategy.getMine.invalidate();
       toast.success(`Advanced to Stage ${newStage}`);
     } catch (_e) { toast.error("Failed to advance stage."); }
+  };
+
+  const toggleStageExpanded = (stageNum: number) => {
+    setExpandedStages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stageNum)) {
+        newSet.delete(stageNum);
+      } else {
+        newSet.add(stageNum);
+      }
+      return newSet;
+    });
   };
 
   const handleDownloadPDF = useCallback(() => {
@@ -694,65 +707,103 @@ export default function Strategy() {
                       {/* Stage 1 */}
                       <div>
                         <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => toggleStageExpanded(1)}
+                            className="flex items-center gap-3 flex-1 text-left hover:opacity-75 transition-opacity"
+                          >
+                            <ChevronDown
+                              className={`w-5 h-5 text-slate-600 transition-transform ${
+                                expandedStages.has(1) ? "rotate-0" : "-rotate-90"
+                              }`}
+                            />
                             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700">1</div>
                             <div>
                               <h4 className="font-serif text-lg font-bold text-slate-900">Stage 1: Prior to Claim</h4>
                               <p className="text-xs text-slate-500">{stageProgress(stage1Tasks)}% complete</p>
                             </div>
-                          </div>
+                          </button>
                           {stageProgress(stage1Tasks) === 100 && currentStage === 1 && (
                             <Button size="sm" onClick={() => advanceStage(2)} className="gap-1.5">
                               Advance to Stage 2 <ArrowRight className="w-3.5 h-3.5" />
                             </Button>
                           )}
                         </div>
-                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-sm text-amber-800 flex items-start gap-2">
-                          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span><strong>Critical:</strong> Do NOT initiate your claim until ALL Stage 1 tasks are complete. Submit everything in ONE packet.</span>
-                        </div>
-                        {renderTaskChecklist("stage1Tasks", stage1Tasks)}
+                        {expandedStages.has(1) && (
+                          <>
+                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-sm text-amber-800 flex items-start gap-2">
+                              <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <span><strong>Critical:</strong> Do NOT initiate your claim until ALL Stage 1 tasks are complete. Submit everything in ONE packet.</span>
+                            </div>
+                            {renderTaskChecklist("stage1Tasks", stage1Tasks)}
+                          </>
+                        )}
                       </div>
 
                       {/* Stage 2 */}
                       <div>
                         <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => toggleStageExpanded(2)}
+                            className="flex items-center gap-3 flex-1 text-left hover:opacity-75 transition-opacity"
+                          >
+                            <ChevronDown
+                              className={`w-5 h-5 text-slate-600 transition-transform ${
+                                expandedStages.has(2) ? "rotate-0" : "-rotate-90"
+                              }`}
+                            />
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage >= 2 ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>2</div>
                             <div>
                               <h4 className={`font-serif text-lg font-bold ${currentStage >= 2 ? "text-slate-900" : "text-slate-400"}`}>Stage 2: Filing the Claim</h4>
                               <p className="text-xs text-slate-500">{stageProgress(stage2Tasks)}% complete</p>
                             </div>
-                          </div>
+                          </button>
                           {stageProgress(stage2Tasks) === 100 && currentStage === 2 && (
                             <Button size="sm" onClick={() => advanceStage(3)} className="gap-1.5">
                               Advance to Stage 3 <ArrowRight className="w-3.5 h-3.5" />
                             </Button>
                           )}
                         </div>
-                        {currentStage < 2 ? (
-                          <div className="p-6 bg-slate-50 rounded-xl text-center">
-                            <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                            <p className="text-sm text-slate-500">Complete Stage 1 first before proceeding to claim filing.</p>
-                          </div>
-                        ) : renderTaskChecklist("stage2Tasks", stage2Tasks)}
+                        {expandedStages.has(2) && (
+                          <>
+                            {currentStage < 2 ? (
+                              <div className="p-6 bg-slate-50 rounded-xl text-center">
+                                <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-sm text-slate-500">Complete Stage 1 first before proceeding to claim filing.</p>
+                              </div>
+                            ) : renderTaskChecklist("stage2Tasks", stage2Tasks)}
+                          </>
+                        )}
                       </div>
 
                       {/* Stage 3 */}
                       <div>
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage >= 3 ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400"}`}>3</div>
-                          <div>
-                            <h4 className={`font-serif text-lg font-bold ${currentStage >= 3 ? "text-slate-900" : "text-slate-400"}`}>Stage 3: Post-Approval Management</h4>
-                            <p className="text-xs text-slate-500">{stageProgress(stage3Tasks)}% complete</p>
-                          </div>
+                        <div className="flex items-center justify-between mb-4">
+                          <button
+                            onClick={() => toggleStageExpanded(3)}
+                            className="flex items-center gap-3 flex-1 text-left hover:opacity-75 transition-opacity"
+                          >
+                            <ChevronDown
+                              className={`w-5 h-5 text-slate-600 transition-transform ${
+                                expandedStages.has(3) ? "rotate-0" : "-rotate-90"
+                              }`}
+                            />
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStage >= 3 ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400"}`}>3</div>
+                            <div>
+                              <h4 className={`font-serif text-lg font-bold ${currentStage >= 3 ? "text-slate-900" : "text-slate-400"}`}>Stage 3: Post-Approval Management</h4>
+                              <p className="text-xs text-slate-500">{stageProgress(stage3Tasks)}% complete</p>
+                            </div>
+                          </button>
                         </div>
-                        {currentStage < 3 ? (
-                          <div className="p-6 bg-slate-50 rounded-xl text-center">
-                            <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                            <p className="text-sm text-slate-500">Complete Stage 2 first before proceeding to post-approval management.</p>
-                          </div>
-                        ) : renderTaskChecklist("stage3Tasks", stage3Tasks)}
+                        {expandedStages.has(3) && (
+                          <>
+                            {currentStage < 3 ? (
+                              <div className="p-6 bg-slate-50 rounded-xl text-center">
+                                <Shield className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-sm text-slate-500">Complete Stage 2 first before proceeding to post-approval management.</p>
+                              </div>
+                            ) : renderTaskChecklist("stage3Tasks", stage3Tasks)}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
