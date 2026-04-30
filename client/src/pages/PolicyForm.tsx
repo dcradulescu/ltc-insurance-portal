@@ -742,24 +742,24 @@ export default function PolicyForm() {
                 </TooltipField>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <TooltipField label="Power of Attorney Present?" name="powerOfAttorneyPresent">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <TooltipField label="Power of Attorney Present?" name="powerOfAttorneyPresent">
                   <Select value={form.powerOfAttorneyPresent || "no"} onValueChange={v => update("powerOfAttorneyPresent", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
                 </TooltipField>
+                {form.powerOfAttorneyPresent === "yes" && (
+                  <>
+                    <TooltipField label="POA Name" name="poa_name">
+                      <Input id="poa_name" value={form.poa_name} onChange={e => update("poa_name", e.target.value)} placeholder="Full name" />
+                    </TooltipField>
+                    <TooltipField label="POA Relationship" name="poa_relationship">
+                      <Input id="poa_relationship" value={form.poa_relationship} onChange={e => update("poa_relationship", e.target.value)} placeholder="e.g., Spouse, Child" />
+                    </TooltipField>
+                  </>
+                )}
               </div>
-              {form.powerOfAttorneyPresent === "yes" && (
-                <div className="space-y-4">
-                  <TooltipField label="POA Name" name="poa_name">
-                    <Input id="poa_name" value={form.poa_name} onChange={e => update("poa_name", e.target.value)} placeholder="Enter full name of Power of Attorney" />
-                  </TooltipField>
-                  <TooltipField label="POA Relationship to Insured" name="poa_relationship">
-                    <Input id="poa_relationship" value={form.poa_relationship} onChange={e => update("poa_relationship", e.target.value)} placeholder="e.g., Spouse, Adult Child, Sibling" />
-                  </TooltipField>
-                </div>
-              )}
 
             </div>
           )}
