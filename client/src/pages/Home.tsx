@@ -271,7 +271,7 @@ export default function Home() {
             {/* Right: Static Graphic */}
             <div className="relative hidden lg:block">
               <img 
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/policy-form-section-graphic-eu4U3FJ29ksFNNqnG7N3ow.webp" 
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/intake-form-professional-i4ttKGswjNVFAZQ5DETF6n.webp" 
                 alt="Policy Intake Process" 
                 className="w-full h-auto rounded-2xl shadow-xl"
               />
