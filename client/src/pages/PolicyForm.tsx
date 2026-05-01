@@ -871,6 +871,34 @@ export default function PolicyForm() {
                     )}
                   </div>
                 </div>
+                <div className="border-t border-gray-300 pt-6">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4">Policy Features</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <TooltipField label="Waiver of Premium on Policy" name="waiverOfPremium" isRequired>
+                      <Select value={form.waiverOfPremium || "no"} onValueChange={v => update("waiverOfPremium", v)}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                      </Select>
+                    </TooltipField>
+                    <TooltipField label="Assignment of Benefits (AOB) Available?" name="assignmentOfBenefits" isRequired>
+                      <Select value={form.assignmentOfBenefits || "no"} onValueChange={v => update("assignmentOfBenefits", v)}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TooltipField>
+                  </div>
+                  {form.assignmentOfBenefits && (
+                    <div className={`p-3 rounded-lg text-sm mt-4 ${form.assignmentOfBenefits === "yes" ? "bg-green-50 border border-green-200 text-green-800" : "bg-amber-50 border border-amber-200 text-amber-800"}`}>
+                      <Info className="w-4 h-4 inline mr-1" />
+                      {form.assignmentOfBenefits === "yes"
+                        ? "With AOB, your care provider will submit claims and receive payment directly from the insurance company."
+                        : "Without AOB, you will pay your provider directly and then submit documentation to the insurance company for reimbursement."}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Min # ADLs Compromised Required" name="minAdlsRequired" isRequired>
@@ -915,13 +943,7 @@ export default function PolicyForm() {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <TooltipField label="Waiver of Premium on Policy" name="waiverOfPremium" isRequired>
-                  <Select value={form.waiverOfPremium || "no"} onValueChange={v => update("waiverOfPremium", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Certified Nursing Assistant Required?" name="cnaRequired">
                   <Select value={form.cnaRequired || "no"} onValueChange={v => update("cnaRequired", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
@@ -936,30 +958,13 @@ export default function PolicyForm() {
                     </Select>
                   </TooltipField>
                 )}
-                <TooltipField label="Care Notes / Logsheets Required?" name="careNotesRequired" isRequired>
-                  <Select value={form.careNotesRequired || "no"} onValueChange={v => update("careNotesRequired", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
               </div>
-              <TooltipField label="Assignment of Benefits (AOB) Available?" name="assignmentOfBenefits" isRequired>
-                <Select value={form.assignmentOfBenefits || "no"} onValueChange={v => update("assignmentOfBenefits", v)}>
+              <TooltipField label="Care Notes / Logsheets Required?" name="careNotesRequired" isRequired>
+                <Select value={form.careNotesRequired || "no"} onValueChange={v => update("careNotesRequired", v)}>
                   <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
+                  <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                 </Select>
               </TooltipField>
-              {form.assignmentOfBenefits && (
-                <div className={`p-3 rounded-lg text-sm ${form.assignmentOfBenefits === "yes" ? "bg-green-50 border border-green-200 text-green-800" : "bg-amber-50 border border-amber-200 text-amber-800"}`}>
-                  <Info className="w-4 h-4 inline mr-1" />
-                  {form.assignmentOfBenefits === "yes"
-                    ? "With AOB, your care provider will submit claims and receive payment directly from the insurance company."
-                    : "Without AOB, you will pay your provider directly and then submit documentation to the insurance company for reimbursement."}
-                </div>
-              )}
             </div>
           )}
 
