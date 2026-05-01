@@ -900,17 +900,12 @@ export default function PolicyForm() {
                 </div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-slate-800 mb-4">Activities of Daily Living</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <TooltipField label="Min # ADLs Compromised Required" name="minAdlsRequired" isRequired>
                     <Select value={form.minAdlsRequired || "0"} onValueChange={v => update("minAdlsRequired", v)}>
                       <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="0">0 (No ADL requirement)</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
-                    </Select>
-                  </TooltipField>
-                  <TooltipField label="In Home Care Covered in my Policy?" name="inHomeCoverageEnabled">
-                    <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
-                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                     </Select>
                   </TooltipField>
                 </div>
@@ -944,28 +939,29 @@ export default function PolicyForm() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Certified Nursing Assistant Required?" name="cnaRequired">
-                  <Select value={form.cnaRequired || "no"} onValueChange={v => update("cnaRequired", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-                {form.cnaRequired === "no" && (
-                  <TooltipField label="Approved Agency Required?" name="approvedAgencyRequired">
-                    <Select value={form.approvedAgencyRequired || "no"} onValueChange={v => update("approvedAgencyRequired", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-slate-800 mb-4">Home Care Requirements</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <TooltipField label="In Home Care Covered in my Policy?" name="inHomeCoverageEnabled">
+                    <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
+                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                     </Select>
                   </TooltipField>
-                )}
+                  <TooltipField label="Certified Nursing Assistant Required?" name="cnaRequired">
+                    <Select value={form.cnaRequired || "no"} onValueChange={v => update("cnaRequired", v)}>
+                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                    </Select>
+                  </TooltipField>
+                  <TooltipField label="Care Notes / Logsheets Required?" name="careNotesRequired" isRequired>
+                    <Select value={form.careNotesRequired || "no"} onValueChange={v => update("careNotesRequired", v)}>
+                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                    </Select>
+                  </TooltipField>
+                </div>
               </div>
-              <TooltipField label="Care Notes / Logsheets Required?" name="careNotesRequired" isRequired>
-                <Select value={form.careNotesRequired || "no"} onValueChange={v => update("careNotesRequired", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                </Select>
-              </TooltipField>
             </div>
           )}
 
