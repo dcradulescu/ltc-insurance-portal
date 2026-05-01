@@ -861,7 +861,7 @@ export default function PolicyForm() {
                         <TooltipField label="Lookback Period" name="lookBackPeriodDays">
                           <Input id="lookBackPeriodDays" type="text" value={form.lookBackPeriodDays} onChange={e => update("lookBackPeriodDays", e.target.value)} placeholder="### Days" className="bg-white" />
                         </TooltipField>
-                        <TooltipField label="Care Coordinator Reduction" name="careCoordinatorReducedToDays">
+                        <TooltipField label="Coordinator Reduction" name="careCoordinatorReducedToDays">
                           <Input id="careCoordinatorReducedToDays" type="text" value={form.careCoordinatorReducedToDays} onChange={e => update("careCoordinatorReducedToDays", e.target.value)} placeholder="### Days" className="bg-white" />
                         </TooltipField>
                         <TooltipField label="Count Days/Wk as 7" name="reductionInCareDaysCountedAs7">
