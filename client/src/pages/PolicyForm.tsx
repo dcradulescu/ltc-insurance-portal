@@ -968,34 +968,25 @@ export default function PolicyForm() {
                       <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                     </Select>
                   </TooltipField>
+                  <TooltipField label="Third Party Assessment Required?" name="thirdPartyAssessmentRequired">
+                    <Select value={form.thirdPartyAssessmentRequired || "no"} onValueChange={v => update("thirdPartyAssessmentRequired", v)}>
+                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                    </Select>
+                  </TooltipField>
                 </div>
+                {form.thirdPartyAssessmentRequired === "yes" && (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <h4 className="font-semibold text-amber-800 mb-2">Third-Party Assessment Notice</h4>
+                    <p className="text-sm text-amber-700">Your policy requires a third-party assessment. An independent RN will evaluate the insured's condition, ADL deficits, mobility, and cognitive function. <strong>Any inconsistencies between your documentation and the assessment may lead to denial.</strong> Your strategy will include detailed preparation guidance.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Step 4: Claims Info */}
+          {/* Step 4: Qualifying */}
           {step === 4 && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Medical & Administrative Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Third Party Assessment Required?" name="thirdPartyAssessmentRequired">
-                  <Select value={form.thirdPartyAssessmentRequired || "no"} onValueChange={v => update("thirdPartyAssessmentRequired", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-              </div>
-              {form.thirdPartyAssessmentRequired === "yes" && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <h4 className="font-semibold text-amber-800 mb-2">Third-Party Assessment Notice</h4>
-                  <p className="text-sm text-amber-700">Your policy requires a third-party assessment. An independent RN will evaluate the insured's condition, ADL deficits, mobility, and cognitive function. <strong>Any inconsistencies between your documentation and the assessment may lead to denial.</strong> Your strategy will include detailed preparation guidance.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Step 5: Qualifying */}
-          {step === 5 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Care Needs & ADL Assessment</h2>
               <p className="text-sm text-slate-600">Describe the current care needs and identify which Activities of Daily Living (ADLs) are compromised.</p>
@@ -1094,7 +1085,7 @@ export default function PolicyForm() {
           )}
 
           {/* Step 5: Review */}
-          {step === 6 && (
+          {step === 5 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Review Your Information</h2>
               <p className="text-sm text-slate-600">Review the information below. You can go back to any step to make changes. Once you're satisfied, save and proceed to generate your personalized strategy.</p>
