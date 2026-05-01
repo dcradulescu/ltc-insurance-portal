@@ -977,17 +977,6 @@ export default function PolicyForm() {
           {step === 4 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Medical & Administrative Details</h2>
-              <TooltipField label="Is there a Case Manager assigned to my Claim?" name="caseManagerAssigned" isRequired>
-                <Select value={form.caseManagerAssigned} onValueChange={v => update("caseManagerAssigned", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                </Select>
-              </TooltipField>
-              {form.caseManagerAssigned === "yes" && (
-                <TooltipField label="Case Manager's Name" name="caseManagerName">
-                  <Input id="caseManagerName" value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="Enter case manager's full name" />
-                </TooltipField>
-              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Third Party Assessment Required?" name="thirdPartyAssessmentRequired">
                   <Select value={form.thirdPartyAssessmentRequired || "no"} onValueChange={v => update("thirdPartyAssessmentRequired", v)}>
