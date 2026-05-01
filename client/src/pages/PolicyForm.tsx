@@ -899,34 +899,35 @@ export default function PolicyForm() {
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Min # ADLs Compromised Required" name="minAdlsRequired" isRequired>
-                  <Select value={form.minAdlsRequired || "0"} onValueChange={v => update("minAdlsRequired", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="0">0 (No ADL requirement)</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-                <TooltipField label="In Home Care Covered in my Policy?" name="inHomeCoverageEnabled">
-                  <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-              </div>
-              {parseInt(form.minAdlsRequired || "0") > 0 && (
-                <div>
-                  <div className="flex items-center gap-1.5 mb-3">
-                    <Label className="text-sm font-medium text-slate-700">Which ADLs qualify as valid triggers for this policy?</Label>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
-                          <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs text-xs">Select which of the 6 standard ADLs your policy recognizes as valid triggers for initiating a claim.</TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <TooltipField label="Min # ADLs Compromised Required" name="minAdlsRequired" isRequired>
+                    <Select value={form.minAdlsRequired || "0"} onValueChange={v => update("minAdlsRequired", v)}>
+                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent><SelectItem value="0">0 (No ADL requirement)</SelectItem><SelectItem value="1">1</SelectItem><SelectItem value="2">2</SelectItem><SelectItem value="3">3</SelectItem><SelectItem value="4">4</SelectItem></SelectContent>
+                    </Select>
+                  </TooltipField>
+                  <TooltipField label="In Home Care Covered in my Policy?" name="inHomeCoverageEnabled">
+                    <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
+                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                    </Select>
+                  </TooltipField>
+                </div>
+                {parseInt(form.minAdlsRequired || "0") > 0 && (
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <Label className="text-sm font-medium text-slate-700">Which ADLs qualify as valid triggers for this policy?</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                            <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs text-xs">Select which of the 6 standard ADLs your policy recognizes as valid triggers for initiating a claim.</TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {adlOptions.map(adl => {
                       const qualifyingAdls = form.qualifyingAdls || [];
                       return (
@@ -938,9 +939,10 @@ export default function PolicyForm() {
                         </label>
                       );
                     })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Certified Nursing Assistant Required?" name="cnaRequired">
