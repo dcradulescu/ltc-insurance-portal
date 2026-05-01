@@ -900,7 +900,7 @@ export default function PolicyForm() {
                 </div>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Activities of Daily Living</h3>
+                <h3 className="text-lg font-semibold text-slate-800 mb-4">Qualifying Events</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <TooltipField label="Min # ADLs Compromised Required" name="minAdlsRequired" isRequired>
                     <Select value={form.minAdlsRequired || "0"} onValueChange={v => update("minAdlsRequired", v)}>
@@ -937,6 +937,14 @@ export default function PolicyForm() {
                     </div>
                   </div>
                 )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                  <TooltipField label="Is a diagnosis of Cognitive Impairment able to initiate a claim?" name="cognitiveImpairmentTrigger" isRequired>
+                    <Select value={form.cognitiveImpairmentTrigger || "no"} onValueChange={v => update("cognitiveImpairmentTrigger", v)}>
+                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                    </Select>
+                  </TooltipField>
+                </div>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
@@ -983,14 +991,6 @@ export default function PolicyForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Third Party Assessment Required?" name="thirdPartyAssessmentRequired">
                   <Select value={form.thirdPartyAssessmentRequired || "no"} onValueChange={v => update("thirdPartyAssessmentRequired", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Is a diagnosis of Cognitive Impairment able to initiate a claim?" name="cognitiveImpairmentTrigger" isRequired>
-                  <Select value={form.cognitiveImpairmentTrigger || "no"} onValueChange={v => update("cognitiveImpairmentTrigger", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                   </Select>
