@@ -872,17 +872,16 @@ export default function PolicyForm() {
                   </div>
                 </div>
                 <div className="border-t border-gray-300 pt-6">
-                  <h3 className="text-lg font-semibold text-slate-800 mb-4">Policy Features</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <TooltipField label="Waiver of Premium on Policy" name="waiverOfPremium" isRequired>
                       <Select value={form.waiverOfPremium || "no"} onValueChange={v => update("waiverOfPremium", v)}>
-                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                       </Select>
                     </TooltipField>
                     <TooltipField label="Assignment of Benefits (AOB) Available?" name="assignmentOfBenefits" isRequired>
                       <Select value={form.assignmentOfBenefits || "no"} onValueChange={v => update("assignmentOfBenefits", v)}>
-                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="yes">Yes</SelectItem>
                           <SelectItem value="no">No</SelectItem>
