@@ -1079,6 +1079,42 @@ export default function PolicyForm() {
                 </div>
               </div>
               
+              {(() => {
+                const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
+                const qualifyingAdls = form.qualifyingAdls || [];
+                const adlList = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
+                const actualAdls = form.careNeeds?.filter(need => adlList.includes(need)) || [];
+                const actualAdlCount = actualAdls.length;
+                const noneSelected = form.careNeeds?.includes("None") || false;
+                const allAdlsQualify = actualAdls.every(adl => qualifyingAdls.includes(adl));
+                
+                const qualificationMet = minAdlsRequired > 0 && actualAdlCount >= minAdlsRequired && allAdlsQualify && !noneSelected;
+                
+                if (!qualificationMet && minAdlsRequired > 0) {
+                  return (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <h4 className="font-semibold text-red-800 mb-2">ADL Qualification Alert</h4>
+                      <p className="text-sm text-red-700 mb-2">
+                        Your policy requires a minimum of <strong>{minAdlsRequired} ADL(s)</strong> from the following list to qualify for benefits:
+                      </p>
+                      <p className="text-sm text-red-700 mb-3">
+                        <strong>{qualifyingAdls.join(", ")}</strong>
+                      </p>
+                      {noneSelected && (
+                        <p className="text-sm text-red-700">Currently: No care services are selected. Please select at least {minAdlsRequired} ADL(s) from the qualifying list above.</p>
+                      )}
+                      {!noneSelected && actualAdlCount < minAdlsRequired && (
+                        <p className="text-sm text-red-700">Currently: {actualAdlCount} ADL(s) selected. You need at least {minAdlsRequired} ADL(s) to qualify.</p>
+                      )}
+                      {!noneSelected && actualAdlCount >= minAdlsRequired && !allAdlsQualify && (
+                        <p className="text-sm text-red-700">Currently: {actualAdlCount} ADL(s) selected, but some are not on the qualifying list. Please select only ADLs from the list above.</p>
+                      )}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+              
               <TooltipField label="Care Notes" name="careNotes">
                 <Textarea id="careNotes" value={form.careNotes} onChange={e => update("careNotes", e.target.value)} placeholder="Any additional notes about the care services selected..." rows={3} />
               </TooltipField>
