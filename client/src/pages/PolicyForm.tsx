@@ -995,9 +995,9 @@ export default function PolicyForm() {
                   )}
                 </div>
                 {form.equipmentAllowanceEnabled === true && form.thirdPartyAssessmentRequired === "yes" && (
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                    <h4 className="font-semibold text-amber-800 mb-2">Third-Party Assessment Notice</h4>
-                    <p className="text-sm text-amber-700">Your policy requires a third-party assessment. An independent RN will evaluate the insured's condition, ADL deficits, mobility, and cognitive function. <strong>Any inconsistencies between your documentation and the assessment may lead to denial.</strong> Your strategy will include detailed preparation guidance.</p>
+                  <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h4 className="font-semibold text-red-800 mb-2">Third-Party Assessment Notice</h4>
+                    <p className="text-sm text-red-700">Your policy requires a third-party assessment. An independent RN will evaluate the insured's condition, ADL deficits, mobility, and cognitive function. <strong>Any inconsistencies between your documentation and the assessment may lead to denial.</strong> Your strategy will include detailed preparation guidance.</p>
                   </div>
                 )}
               </div>
