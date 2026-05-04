@@ -572,6 +572,21 @@ export default function PolicyForm() {
 
   // Navigate to next step — save to DB silently, no validation blocking
   const handleNext = () => {
+    // ADL Validation: If on step 3 (Coverage Details), check ADL requirements
+    if (step === 3) {
+      const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
+      const adlList = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
+      const actualAdls = form.careNeeds?.filter(need => adlList.includes(need)) || [];
+      const actualAdlCount = actualAdls.length;
+
+      if (minAdlsRequired > 0 && actualAdlCount < minAdlsRequired) {
+        toast.error(
+          `Qualification Alert: Your policy requires a minimum of ${minAdlsRequired} ADL(s) to be compromised, but only ${actualAdlCount} ADL(s) are currently selected. You will not qualify for benefits with this level of care need.`,
+          { duration: 6000 }
+        );
+      }
+    }
+
     // Create and save form submission for page transition
     const { poa_name, poa_relationship, ...validFormData } = form;
     const submission = createFormSubmission(
