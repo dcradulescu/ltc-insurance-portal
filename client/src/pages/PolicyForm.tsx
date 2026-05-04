@@ -965,7 +965,7 @@ export default function PolicyForm() {
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Home Care Requirements</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <TooltipField label="In Home Care Covered in my Policy?" name="inHomeCoverageEnabled">
+                  <TooltipField label="Home Care Covered?" name="inHomeCoverageEnabled">
                     <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
                       <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
