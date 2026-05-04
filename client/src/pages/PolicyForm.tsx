@@ -1090,7 +1090,8 @@ export default function PolicyForm() {
                 
                 const qualificationMet = minAdlsRequired > 0 && actualAdlCount >= minAdlsRequired && allAdlsQualify && !noneSelected;
                 
-                if (!qualificationMet && minAdlsRequired > 0) {
+                // Show alert if minAdlsRequired is set AND qualification is not met
+                if (minAdlsRequired > 0 && !qualificationMet) {
                   return (
                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                       <h4 className="font-semibold text-red-800 mb-2">ADL Qualification Alert</h4>
