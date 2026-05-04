@@ -212,12 +212,12 @@ const defaultForm: FormData = {
   carrierPhone: "", carrierFax: "",
   policyNumber: "", claimPreClaimNumber: "",
   eliminationPeriod: "", lookBackPeriodEnabled: false, lookBackPeriodDays: "", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "", monthlyMaximum: "", lifetimeMaximum: "",
-  minAdlsRequired: "0", qualifyingAdls: [], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "", careLogsheetsRequired: "", whereToGetClaimsPacket: "", howToSubmitClaimsPacket: "", invoiceReimbursementDelay: "",
+  minAdlsRequired: "0", qualifyingAdls: ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "", careLogsheetsRequired: "", whereToGetClaimsPacket: "", howToSubmitClaimsPacket: "", invoiceReimbursementDelay: "",
   assignmentOfBenefits: "",
   equipmentAllowanceEnabled: false, equipmentAllowanceAmount: "", equipmentAllowanceCoverage: "", equipmentAllowanceDeductedFromLifetime: "", equipmentAllowanceRelatedAdls: [], equipmentNeeds: [], equipmentAllowanceNotes: "",
   inflationAdjustmentEnabled: false, inflationType: "none", inflationPercentagePerYear: "", inflationContinuesAfterBenefits: false,
   caseManagerAssigned: "", caseManagerName: "", thirdPartyAssessmentRequired: "",
-  cognitiveImpairmentTrigger: "",
+  cognitiveImpairmentTrigger: "yes",
   careNeeds: [], careNotes: "",
   diagnosisCheckboxes: [], diagnosisNotes: "",
   preferredCareType: "", additionalNotes: "",
@@ -230,12 +230,12 @@ const sampleForm: FormData = {
   carrierPhone: "(800) 555-1234", carrierFax: "(804) 555-5678",
   policyNumber: "POL123456", claimPreClaimNumber: "PRE789",
   eliminationPeriod: "90", lookBackPeriodEnabled: true, lookBackPeriodDays: "30", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "$250.00", monthlyMaximum: "$7500.00", lifetimeMaximum: "$500000.00",
-  minAdlsRequired: "2", qualifyingAdls: ["Bathing", "Dressing", "Toileting"], waiverOfPremium: "Yes", cnaRequired: "No", approvedAgencyRequired: "No", careNotesRequired: "Yes", careLogsheetsRequired: "No", whereToGetClaimsPacket: "Contact carrier", howToSubmitClaimsPacket: "Mail or fax", invoiceReimbursementDelay: "30 days",
+  minAdlsRequired: "2", qualifyingAdls: ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"], waiverOfPremium: "Yes", cnaRequired: "No", approvedAgencyRequired: "No", careNotesRequired: "Yes", careLogsheetsRequired: "No", whereToGetClaimsPacket: "Contact carrier", howToSubmitClaimsPacket: "Mail or fax", invoiceReimbursementDelay: "30 days",
   assignmentOfBenefits: "Yes",
   equipmentAllowanceEnabled: true, equipmentAllowanceAmount: "$100.00", equipmentAllowanceCoverage: "Annually", equipmentAllowanceDeductedFromLifetime: "No", equipmentAllowanceRelatedAdls: ["Bathing"], equipmentNeeds: ["Shower chair", "Walker"], equipmentAllowanceNotes: "Covers mobility aids",
   inflationAdjustmentEnabled: true, inflationType: "compound", inflationPercentagePerYear: "3", inflationContinuesAfterBenefits: true,
   caseManagerAssigned: "Yes", caseManagerName: "Sarah Johnson", thirdPartyAssessmentRequired: "Yes",
-  cognitiveImpairmentTrigger: "No",
+  cognitiveImpairmentTrigger: "Yes",
   careNeeds: ["Assistance with bathing", "Help with dressing", "Toileting assistance"], careNotes: "Needs 24/7 supervision due to fall risk",
   diagnosisCheckboxes: ["Alzheimer's Disease", "Osteoarthritis"], diagnosisNotes: "Diagnosed 2 years ago, progressive decline",
   preferredCareType: "Home Care", additionalNotes: "Prefers female caregivers",
@@ -952,9 +952,9 @@ export default function PolicyForm() {
                     </div>
                   </div>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <div className="grid grid-cols-1 gap-4 mt-6">
                   <TooltipField label="Is a diagnosis of Cognitive Impairment able to initiate a claim?" name="cognitiveImpairmentTrigger" isRequired>
-                    <Select value={form.cognitiveImpairmentTrigger || "no"} onValueChange={v => update("cognitiveImpairmentTrigger", v)}>
+                    <Select value={form.cognitiveImpairmentTrigger || "yes"} onValueChange={v => update("cognitiveImpairmentTrigger", v)}>
                       <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                     </Select>
