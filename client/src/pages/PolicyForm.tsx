@@ -576,14 +576,33 @@ export default function PolicyForm() {
     if (step === 3) {
       const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
       const adlList = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
+      
+      // Get qualifying ADLs (checked in Coverage Details - Qualifying Events section)
+      const qualifyingAdls = form.qualifyingAdls || [];
+      
+      // Get actual ADLs selected in Care Needs (Claims Info step)
       const actualAdls = form.careNeeds?.filter(need => adlList.includes(need)) || [];
       const actualAdlCount = actualAdls.length;
-
-      if (minAdlsRequired > 0 && actualAdlCount < minAdlsRequired) {
-        toast.error(
-          `Qualification Alert: Your policy requires a minimum of ${minAdlsRequired} ADL(s) to be compromised, but only ${actualAdlCount} ADL(s) are currently selected. You will not qualify for benefits with this level of care need.`,
-          { duration: 6000 }
-        );
+      
+      // Check 1: Is there at least the minimum number of ADLs?
+      // Check 2: Are all selected ADLs in the qualifying list?
+      const allAdlsQualify = actualAdls.every(adl => qualifyingAdls.includes(adl));
+      
+      if (minAdlsRequired > 0 && (actualAdlCount < minAdlsRequired || !allAdlsQualify)) {
+        let alertMessage = `Qualification Alert: `;
+        
+        if (actualAdlCount < minAdlsRequired) {
+          alertMessage += `Your policy requires a minimum of ${minAdlsRequired} ADL(s), but only ${actualAdlCount} ADL(s) are selected. `;
+        }
+        
+        if (!allAdlsQualify) {
+          const nonQualifyingAdls = actualAdls.filter(adl => !qualifyingAdls.includes(adl));
+          alertMessage += `The following ADL(s) are not covered by your policy: ${nonQualifyingAdls.join(", ")}. `;
+        }
+        
+        alertMessage += `You will not qualify for benefits with this level of care need.`;
+        
+        toast.error(alertMessage, { duration: 6000 });
       }
     }
 
