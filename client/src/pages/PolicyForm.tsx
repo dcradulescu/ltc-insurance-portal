@@ -971,26 +971,30 @@ export default function PolicyForm() {
                       <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                     </Select>
                   </TooltipField>
-                  <TooltipField label="CNA Required?" name="cnaRequired">
-                    <Select value={form.cnaRequired || "no"} onValueChange={v => update("cnaRequired", v)}>
-                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                    </Select>
-                  </TooltipField>
-                  <TooltipField label="Care Notes Required?" name="careNotesRequired" isRequired>
-                    <Select value={form.careNotesRequired || "no"} onValueChange={v => update("careNotesRequired", v)}>
-                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                    </Select>
-                  </TooltipField>
-                  <TooltipField label="Third Party Assessment Required?" name="thirdPartyAssessmentRequired">
-                    <Select value={form.thirdPartyAssessmentRequired || "no"} onValueChange={v => update("thirdPartyAssessmentRequired", v)}>
-                      <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                    </Select>
-                  </TooltipField>
+                  {form.equipmentAllowanceEnabled === true && (
+                    <>
+                      <TooltipField label="CNA Required?" name="cnaRequired">
+                        <Select value={form.cnaRequired || "no"} onValueChange={v => update("cnaRequired", v)}>
+                          <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                        </Select>
+                      </TooltipField>
+                      <TooltipField label="Care Notes Required?" name="careNotesRequired" isRequired>
+                        <Select value={form.careNotesRequired || "no"} onValueChange={v => update("careNotesRequired", v)}>
+                          <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                        </Select>
+                      </TooltipField>
+                      <TooltipField label="Third Party Assessment Required?" name="thirdPartyAssessmentRequired">
+                        <Select value={form.thirdPartyAssessmentRequired || "no"} onValueChange={v => update("thirdPartyAssessmentRequired", v)}>
+                          <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                        </Select>
+                      </TooltipField>
+                    </>
+                  )}
                 </div>
-                {form.thirdPartyAssessmentRequired === "yes" && (
+                {form.equipmentAllowanceEnabled === true && form.thirdPartyAssessmentRequired === "yes" && (
                   <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                     <h4 className="font-semibold text-amber-800 mb-2">Third-Party Assessment Notice</h4>
                     <p className="text-sm text-amber-700">Your policy requires a third-party assessment. An independent RN will evaluate the insured's condition, ADL deficits, mobility, and cognitive function. <strong>Any inconsistencies between your documentation and the assessment may lead to denial.</strong> Your strategy will include detailed preparation guidance.</p>
