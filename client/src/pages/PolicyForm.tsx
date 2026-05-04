@@ -971,13 +971,13 @@ export default function PolicyForm() {
                       <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                     </Select>
                   </TooltipField>
-                  <TooltipField label="Certified Nursing Assistant Required?" name="cnaRequired">
+                  <TooltipField label="CNA Required?" name="cnaRequired">
                     <Select value={form.cnaRequired || "no"} onValueChange={v => update("cnaRequired", v)}>
                       <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
                     </Select>
                   </TooltipField>
-                  <TooltipField label="Care Notes / Logsheets Required?" name="careNotesRequired" isRequired>
+                  <TooltipField label="Care Notes Required?" name="careNotesRequired" isRequired>
                     <Select value={form.careNotesRequired || "no"} onValueChange={v => update("careNotesRequired", v)}>
                       <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
