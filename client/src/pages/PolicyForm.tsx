@@ -584,23 +584,30 @@ export default function PolicyForm() {
       const actualAdls = form.careNeeds?.filter(need => adlList.includes(need)) || [];
       const actualAdlCount = actualAdls.length;
       
+      // Check if "None - No care is needed" is selected
+      const noneSelected = form.careNeeds?.includes("None") || false;
+      
       // Check 1: Is there at least the minimum number of ADLs?
       // Check 2: Are all selected ADLs in the qualifying list?
       const allAdlsQualify = actualAdls.every(adl => qualifyingAdls.includes(adl));
       
-      if (minAdlsRequired > 0 && (actualAdlCount < minAdlsRequired || !allAdlsQualify)) {
+      if (minAdlsRequired > 0 && (actualAdlCount < minAdlsRequired || !allAdlsQualify || noneSelected)) {
         let alertMessage = `Qualification Alert: `;
         
-        if (actualAdlCount < minAdlsRequired) {
-          alertMessage += `Your policy requires a minimum of ${minAdlsRequired} ADL(s), but only ${actualAdlCount} ADL(s) are selected. `;
+        if (noneSelected) {
+          alertMessage += `No care services are selected. Your policy requires a minimum of ${minAdlsRequired} ADL(s) from the following list: ${qualifyingAdls.join(", ")}. You will not qualify for benefits with this level of care need.`;
+        } else {
+          if (actualAdlCount < minAdlsRequired) {
+            alertMessage += `Your policy requires a minimum of ${minAdlsRequired} ADL(s), but only ${actualAdlCount} ADL(s) are selected. `;
+          }
+          
+          if (!allAdlsQualify) {
+            const nonQualifyingAdls = actualAdls.filter(adl => !qualifyingAdls.includes(adl));
+            alertMessage += `The following ADL(s) are not covered by your policy: ${nonQualifyingAdls.join(", ")}. `;
+          }
+          
+          alertMessage += `You will not qualify for benefits with this level of care need.`;
         }
-        
-        if (!allAdlsQualify) {
-          const nonQualifyingAdls = actualAdls.filter(adl => !qualifyingAdls.includes(adl));
-          alertMessage += `The following ADL(s) are not covered by your policy: ${nonQualifyingAdls.join(", ")}. `;
-        }
-        
-        alertMessage += `You will not qualify for benefits with this level of care need.`;
         
         toast.error(alertMessage, { duration: 6000 });
       }
