@@ -1202,45 +1202,6 @@ export default function PolicyForm() {
                 </div>
               </div>
 
-              {/* IADLs Section */}
-              <div>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <h3 className="text-base font-semibold text-slate-800">Instrumental Activities of Daily Living (IADLs)</h3>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
-                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-xs">IADLs are household and life-management tasks. While most LTC policies do not count IADLs toward the ADL benefit trigger, they are important for care planning and documenting the full scope of care needed.</TooltipContent>
-                  </Tooltip>
-                </div>
-                <p className="text-xs text-slate-500 mb-3">Select any additional household or management tasks the insured needs help with. These do not count toward ADL qualification but are important for care planning.</p>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {["Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry", "Shopping/Errands", "Transportation", "Money Management", "Telephone Use"].map(service => {
-                    const careNeeds = form.careNeeds || [];
-                    return (
-                      <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
-                        <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
-                          // Selecting any IADL removes "None"
-                          const withoutNone = careNeeds.filter(s => s !== "None");
-                          update("careNeeds", checked ? [...withoutNone, service] : withoutNone.filter(s => s !== service));
-                          clearError("careNeeds");
-                        }} />
-                        <span className="text-sm font-medium">{service}</span>
-                      </label>
-                    );
-                  })}
-                  <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors col-span-2 md:col-span-1 ${(form.careNeeds || []).includes("None") ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
-                    <Checkbox checked={(form.careNeeds || []).includes("None")} onCheckedChange={checked => {
-                      update("careNeeds", checked ? ["None"] : []);
-                      clearError("careNeeds");
-                    }} />
-                    <span className="text-sm font-medium">None &mdash; No care is currently needed</span>
-                  </label>
-                </div>
-              </div>
-
               {fieldErrors.careNeeds && <p className="text-xs text-red-600 -mt-2 mb-2">{fieldErrors.careNeeds}</p>}
               {/* ADL Qualification Alert - derived directly from live form state */}
               {(() => {
@@ -1298,6 +1259,46 @@ export default function PolicyForm() {
                   </div>
                 );
               })()}
+              {/* IADLs Section */}
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <h3 className="text-base font-semibold text-slate-800">Instrumental Activities of Daily Living (IADLs)</h3>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs">IADLs are household and life-management tasks. While most LTC policies do not count IADLs toward the ADL benefit trigger, they are important for care planning and documenting the full scope of care needed.</TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-xs text-slate-500 mb-3">Select any additional household or management tasks the insured needs help with. These do not count toward ADL qualification but are important for care planning.</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {["Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry", "Shopping/Errands", "Transportation", "Money Management", "Telephone Use"].map(service => {
+                    const careNeeds = form.careNeeds || [];
+                    return (
+                      <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
+                          // Selecting any IADL removes "None"
+                          const withoutNone = careNeeds.filter(s => s !== "None");
+                          update("careNeeds", checked ? [...withoutNone, service] : withoutNone.filter(s => s !== service));
+                          clearError("careNeeds");
+                        }} />
+                        <span className="text-sm font-medium">{service}</span>
+                      </label>
+                    );
+                  })}
+                  <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors col-span-2 md:col-span-1 ${(form.careNeeds || []).includes("None") ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                    <Checkbox checked={(form.careNeeds || []).includes("None")} onCheckedChange={checked => {
+                      update("careNeeds", checked ? ["None"] : []);
+                      clearError("careNeeds");
+                    }} />
+                    <span className="text-sm font-medium">None &mdash; No care is currently needed</span>
+                  </label>
+                </div>
+              </div>
+
+
 
               
               <TooltipField label="Care Notes" name="careNotes">
