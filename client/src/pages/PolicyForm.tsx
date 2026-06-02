@@ -336,7 +336,17 @@ export default function PolicyForm() {
         const savedForm = localStorage.getItem('ltc_policy_form');
         const savedStep = localStorage.getItem('ltc_policy_step');
         if (savedForm) {
-          setForm(JSON.parse(savedForm));
+          const parsed = JSON.parse(savedForm);
+          // Migrate old free-text careNeeds to exact ADL checkbox values
+          const validCareNeedsValues = [
+            "Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence",
+            "Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry",
+            "Shopping/Errands", "Transportation", "Money Management", "Telephone Use", "None"
+          ];
+          if (Array.isArray(parsed.careNeeds)) {
+            parsed.careNeeds = parsed.careNeeds.filter((v: string) => validCareNeedsValues.includes(v));
+          }
+          setForm(parsed);
         }
         if (savedStep) {
           setStep(parseInt(savedStep, 10));
