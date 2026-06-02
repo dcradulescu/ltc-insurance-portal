@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -303,7 +304,8 @@ export default function PolicyForm() {
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [zapierSent, setZapierSent] = useState(false);
-  const [proceedInformational, setProceedInformational] = useState(false);
+  const [showAdlModal, setShowAdlModal] = useState(false);
+  const [pendingAdlAdvance, setPendingAdlAdvance] = useState(false);
   const sessionStartRef = useRef(Date.now());
   const lastActivityRef = useRef(Date.now());
   const zapierSentRef = useRef(false);
@@ -698,28 +700,21 @@ export default function PolicyForm() {
       // Check 2: Are all selected ADLs in the qualifying list?
       const allAdlsQualify = actualAdls.every(adl => qualifyingAdls.includes(adl));
       
-      if (minAdlsRequired > 0 && (actualAdlCount < minAdlsRequired || !allAdlsQualify || noneSelected)) {
-        let alertMessage = `Qualification Alert: `;
-        
-        if (noneSelected) {
-          alertMessage += `No care services are selected. Your policy requires a minimum of ${minAdlsRequired} ADL(s) from the following list: ${qualifyingAdls.join(", ")}. You will not qualify for benefits with this level of care need.`;
-        } else {
-          if (actualAdlCount < minAdlsRequired) {
-            alertMessage += `Your policy requires a minimum of ${minAdlsRequired} ADL(s), but only ${actualAdlCount} ADL(s) are selected. `;
-          }
-          
-          if (!allAdlsQualify) {
-            const nonQualifyingAdls = actualAdls.filter(adl => !qualifyingAdls.includes(adl));
-            alertMessage += `The following ADL(s) are not covered by your policy: ${nonQualifyingAdls.join(", ")}. `;
-          }
-          
-          alertMessage += `You will not qualify for benefits with this level of care need.`;
-        }
-        
-        toast.error(alertMessage, { duration: 6000 });
+            if (minAdlsRequired > 0 && (actualAdlCount < minAdlsRequired || !allAdlsQualify || noneSelected)) {
+        // Save all data first before showing modal
+        const { poa_name, poa_relationship, ...validFormData } = form;
+        const submission = createFormSubmission(validFormData, step, "page_transition", SESSION_ID, FORM_START_TIME);
+        localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
+        localStorage.setItem("ltc_form_current", JSON.stringify(submission));
+        saveMutation.mutate({ ...form, id: policyId || undefined } as any, {
+          onSuccess: (result) => { if (!policyId) setPolicyId(result.id); },
+          onError: (e) => { console.error("Background save failed:", e); },
+        });
+        // Show modal — do NOT advance step yet
+        setShowAdlModal(true);
+        return;
       }
     }
-
     // Create and save form submission for page transition
     const { poa_name, poa_relationship, ...validFormData } = form;
     const submission = createFormSubmission(
@@ -1240,22 +1235,7 @@ export default function PolicyForm() {
                         <p className="text-sm text-red-700">Some selected ADLs are not on the qualifying list: <strong>{nonQualifyingAdls.join(", ")}</strong>. Only ADLs from the qualifying list count toward the benefit trigger.</p>
                       )}
                     </div>
-                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                      <p className="text-sm text-amber-800 font-medium mb-2">Would you like to continue for informational purposes?</p>
-                      <p className="text-sm text-amber-700 mb-3">
-                        Even if the current care needs do not meet the policy&apos;s benefit triggers today, you can still complete this form to receive a personalized strategy and understand what to expect when the time comes.
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="proceedInformational"
-                          checked={proceedInformational}
-                          onCheckedChange={checked => setProceedInformational(!!checked)}
-                        />
-                        <label htmlFor="proceedInformational" className="text-sm text-amber-800 cursor-pointer">
-                          Yes, I understand the current care needs may not meet the benefit trigger &mdash; continue for informational purposes only.
-                        </label>
-                      </div>
-                    </div>
+
                   </div>
                 );
               })()}
@@ -1426,6 +1406,77 @@ export default function PolicyForm() {
       {/* About Home Care */}
       <AboutHomeCare />
           <LegalDisclaimerFooter />
+
+      {/* ADL Informational Purposes Modal */}
+      <Dialog open={showAdlModal} onOpenChange={open => { if (!open) setShowAdlModal(false); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+              <span className="text-amber-500">⚠</span> ADL Benefit Trigger Not Met
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-600 mt-2 leading-relaxed">
+              Based on your current care needs, you do not appear to meet the minimum ADL requirement
+              to initiate a claim under this policy at this time.
+              <br /><br />
+              <strong>This does not mean your journey ends here.</strong> Many families use this tool
+              to plan ahead — understanding your policy now means you will be fully prepared when
+              the time comes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm font-medium text-slate-700 mb-3">Would you like to continue for informational purposes?</p>
+            <div className="grid grid-cols-1 gap-3">
+              <Button
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                onClick={() => {
+                  setShowAdlModal(false);
+                  setStep(prev => prev + 1);
+                }}
+              >
+                Yes — continue for informational purposes
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full border-slate-300 text-slate-700"
+                onClick={() => {
+                  setShowAdlModal(false);
+                  setPendingAdlAdvance(true);
+                }}
+              >
+                No — I am done for now
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Thank-you exit modal */}
+      <Dialog open={pendingAdlAdvance} onOpenChange={open => { if (!open) setPendingAdlAdvance(false); }}>
+        <DialogContent className="max-w-md text-center">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-slate-800">Thank You for Using LTC Navigator</DialogTitle>
+            <DialogDescription className="text-sm text-slate-600 mt-2 leading-relaxed">
+              We hope this has been a helpful learning experience. Your information has been saved —
+              whenever your care needs change or you are ready to revisit, simply return and pick up
+              right where you left off.
+              <br /><br />
+              Wishing you and your family all the best.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 justify-center">
+            <Button
+              className="bg-teal-600 hover:bg-teal-700 text-white"
+              onClick={() => {
+                setPendingAdlAdvance(false);
+                navigate("/");
+              }}
+            >
+              Return to Home
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </Layout>
   );
 }
