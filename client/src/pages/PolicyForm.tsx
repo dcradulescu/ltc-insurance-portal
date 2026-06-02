@@ -1152,7 +1152,7 @@ export default function PolicyForm() {
                         <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-xs">Select all home care services needed by the insured, including both ADLs (personal care) and IADLs (household/management tasks).</TooltipContent>
+                    <TooltipContent className="max-w-xs text-xs">Select every care service the insured currently needs help with. <strong>ADLs</strong> (Bathing, Dressing, Eating, Toileting, Transferring, Continence) are the six basic personal care tasks that most LTC policies use as benefit triggers. <strong>IADLs</strong> (Meal Prep, Medications, Housekeeping, etc.) are household and management tasks — important for care planning but generally not counted toward ADL qualification requirements.</TooltipContent>
                   </Tooltip>
                   <span className="text-red-500">*</span>
                 </div>
@@ -1280,7 +1280,7 @@ export default function PolicyForm() {
                   { title: "Carrier", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Policy #", form.policyNumber], ["Claim #", form.claimPreClaimNumber]] },
                   { title: "Coverage", items: [["Elimination Period", form.eliminationPeriod], ["Daily Max", form.dailyMaximum], ["Monthly Max", form.monthlyMaximum], ["Lifetime Max", form.lifetimeMaximum], ["Min ADLs", form.minAdlsRequired], ["AOB", form.assignmentOfBenefits], ["Waiver of Premium", form.waiverOfPremium]] },
                   { title: "Medical", items: [["Case Manager", form.caseManagerAssigned], ["Case Manager Name", form.caseManagerName], ["3rd Party Assessment", form.thirdPartyAssessmentRequired], ["Cognitive Impairment Trigger", form.cognitiveImpairmentTrigger]] },
-                  { title: "Care Needs", items: [["Care Services", (form.careNeeds || []).join(", ") || "None selected"], ["Diagnosis", (form.diagnosisCheckboxes || []).join(", ") || "None selected"], ["Home Care Covered", form.preferredCareType]] },
+                  { title: "Care Needs", items: [["Care Services", (form.careNeeds || []).join(", ") || "None selected"], ["Diagnosis", (form.diagnosisCheckboxes || []).join(", ") || "None selected"], ["Home Care Covered", form.equipmentAllowanceEnabled === true ? "Yes" : form.equipmentAllowanceEnabled === false ? "No" : "—"], ["Approved Agency Req.", form.approvedAgencyRequired || "—"], ["CNA Required", form.cnaRequired || "—"], ["Care Notes Required", form.careNotesRequired || "—"], ["RN Assessment", form.thirdPartyAssessmentRequired || "—"]] },
                 ].map(section => (
                   <div key={section.title} className="bg-slate-50 rounded-lg p-4">
                     <h3 className="font-semibold text-slate-800 mb-2">{section.title}</h3>
