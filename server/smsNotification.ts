@@ -1,4 +1,7 @@
 // SMS Notification Service for LTC Insurance Portal
+// Uses Twilio when TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_PHONE_NUMBER are set.
+// Falls back to a logged-only mode when credentials are absent (dev/staging).
+import twilio from "twilio";
 
 interface SMSNotificationConfig {
   phoneNumber: string;
@@ -16,166 +19,126 @@ interface SMSResponse {
   message: string;
 }
 
-/**
- * Generate SMS notification message based on task and reminder type
- */
+/** Build the SMS body text from the config */
 export function generateSMSMessage(config: SMSNotificationConfig): string {
-  const baseMessage = `LTC Navigator: ${config.taskName}`;
-
+  const base = `LTC Navigator: ${config.taskName}`;
   switch (config.reminderType) {
     case "task_reminder":
-      return `${baseMessage} - Due: ${config.taskDueDate}. Complete this task to stay on track with your claim. Reply HELP for support.`;
-
+      return `${base} — Due: ${config.taskDueDate}. Complete this task to stay on track with your claim. Reply HELP for support.`;
     case "milestone_alert":
-      return `${baseMessage} - Important milestone reached! ${config.customMessage || "Review your strategy for next steps."} Reply HELP for support.`;
-
+      return `${base} — Important milestone reached! ${config.customMessage || "Review your strategy for next steps."} Reply HELP for support.`;
     case "deadline_warning":
-      return `${baseMessage} - URGENT: Due ${config.taskDueDate}. This is critical for your claim. Complete immediately. Reply HELP.`;
-
+      return `${base} — URGENT: Due ${config.taskDueDate}. This is critical for your claim. Complete immediately. Reply HELP.`;
     default:
-      return baseMessage;
+      return base;
   }
 }
 
+/** Validate US phone number (10 digits, optional +1 prefix) */
+function isValidPhoneNumber(phoneNumber: string): boolean {
+  const cleaned = phoneNumber.replace(/[\s\-\(\)\.]/g, "");
+  return /^(\+1)?[0-9]{10}$/.test(cleaned);
+}
+
+/** Normalise to E.164 format (+1XXXXXXXXXX) */
+export function formatPhoneNumber(phoneNumber: string): string {
+  const cleaned = phoneNumber.replace(/[\s\-\(\)\.]/g, "");
+  if (cleaned.startsWith("+")) return cleaned;
+  if (cleaned.startsWith("1") && cleaned.length === 11) return `+${cleaned}`;
+  if (cleaned.length === 10) return `+1${cleaned}`;
+  return `+${cleaned}`;
+}
+
 /**
- * Send SMS notification via Twilio
- * Note: Requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER env vars
+ * Send a single SMS via Twilio.
+ * If Twilio credentials are not configured the message is logged and the
+ * function returns { success: false } so callers can surface a clear error.
  */
 export async function sendSMSNotification(
   config: SMSNotificationConfig
 ): Promise<SMSResponse> {
   try {
-    // Check if SMS service is configured
-    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
-    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
-    const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken  = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
-    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
+    if (!accountSid || !authToken || !fromNumber) {
       console.warn(
-        "[SMS] Twilio not configured. SMS notifications disabled. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER to enable."
+        "[SMS] Twilio credentials not configured. " +
+        "Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER to enable real SMS delivery."
       );
       return {
         success: false,
         error: "SMS service not configured",
-        message: "SMS notifications are not currently available",
+        message: "SMS notifications require Twilio credentials. Please contact your administrator.",
       };
     }
 
-    // Validate phone number format
     if (!isValidPhoneNumber(config.phoneNumber)) {
       return {
         success: false,
         error: "Invalid phone number format",
-        message: "Please provide a valid phone number",
+        message: "Please provide a valid 10-digit US phone number.",
       };
     }
 
-    // Generate message
+    const toNumber   = formatPhoneNumber(config.phoneNumber);
     const messageText = generateSMSMessage(config);
 
-    // In production, this would call Twilio API
-    // For now, we'll log and return success
-    console.log(`[SMS] Sending to ${config.phoneNumber}: ${messageText}`);
+    const client = twilio(accountSid, authToken);
 
-    // Simulate Twilio API call
-    const messageId = `SMS_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const result = await client.messages.create({
+      body: messageText,
+      from: fromNumber,
+      to: toNumber,
+    });
 
+    console.log(`[SMS] Sent to ${toNumber} — SID: ${result.sid}`);
     return {
       success: true,
-      messageId,
-      message: `SMS sent successfully to ${config.phoneNumber}`,
+      messageId: result.sid,
+      message: `SMS sent successfully to ${toNumber}`,
     };
   } catch (error) {
     console.error("[SMS] Error sending notification:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-      message: "Failed to send SMS notification",
+      message: "Failed to send SMS notification. Please try again.",
     };
   }
 }
 
-/**
- * Send bulk SMS notifications to multiple recipients
- */
+/** Send the same SMS to multiple recipients */
 export async function sendBulkSMSNotifications(
   recipients: Array<{ phoneNumber: string; name: string }>,
   config: Omit<SMSNotificationConfig, "phoneNumber">
 ): Promise<SMSResponse[]> {
   return Promise.all(
-    recipients.map((recipient) =>
-      sendSMSNotification({
-        ...config,
-        phoneNumber: recipient.phoneNumber,
-      })
+    recipients.map((r) =>
+      sendSMSNotification({ ...config, phoneNumber: r.phoneNumber })
     )
   );
 }
 
-/**
- * Validate phone number format (basic validation)
- */
-function isValidPhoneNumber(phoneNumber: string): boolean {
-  // Remove common formatting characters
-  const cleaned = phoneNumber.replace(/[\s\-\(\)\.]/g, "");
+// ── Reminder scheduling types (used by taskReminderScheduler) ────────────────
 
-  // Check if it's a valid US phone number (10 digits)
-  // or international format (+1 followed by 10 digits)
-  const phoneRegex = /^(\+1)?[0-9]{10}$/;
-  return phoneRegex.test(cleaned);
-}
-
-/**
- * Format phone number to standard format
- */
-export function formatPhoneNumber(phoneNumber: string): string {
-  const cleaned = phoneNumber.replace(/[\s\-\(\)\.]/g, "");
-
-  // If already has + prefix, return as-is
-  if (cleaned.startsWith("+")) {
-    return cleaned;
-  }
-
-  if (cleaned.startsWith("1")) {
-    return `+${cleaned}`;
-  }
-
-  if (cleaned.length === 10) {
-    return `+1${cleaned}`;
-  }
-
-  return `+${cleaned}`;
-}
-
-/**
- * Schedule recurring SMS reminders for a task
- */
 export interface ReminderSchedule {
   taskId: number;
   phoneNumber: string;
   taskName: string;
   dueDate: string;
-  reminderDaysBefore: number[]; // e.g., [7, 3, 1] = remind 7 days, 3 days, and 1 day before
+  reminderDaysBefore: number[]; // e.g. [7, 3, 1]
   enabled: boolean;
 }
 
 export async function scheduleTaskReminders(
   schedule: ReminderSchedule
 ): Promise<SMSResponse> {
-  // This would integrate with a job scheduler like node-cron or Bull
-  // For now, return a placeholder response
-  return {
-    success: true,
-    message: `Reminders scheduled for ${schedule.taskName}`,
-  };
+  // Actual scheduling is handled by taskReminderScheduler.ts
+  return { success: true, message: `Reminders scheduled for ${schedule.taskName}` };
 }
 
-/**
- * Cancel scheduled SMS reminders
- */
 export async function cancelTaskReminders(taskId: number): Promise<SMSResponse> {
-  return {
-    success: true,
-    message: `Reminders cancelled for task ${taskId}`,
-  };
+  return { success: true, message: `Reminders cancelled for task ${taskId}` };
 }

@@ -9,19 +9,39 @@ import { trpc } from '@/lib/trpc';
 
 interface PdfDeliveryPanelProps {
   policyData: {
+    // Insured
     insuredName: string;
+    insuredDob?: string;
+    insuredPhone?: string;
+    insuredEmail?: string;
+    insuredAddress?: string;
+    // Policy
     policyNumber: string;
+    claimNumber?: string;
     carrierName: string;
+    carrierPhone?: string;
+    // Coverage
+    eliminationPeriod?: string;
     dailyMaximum: number;
     monthlyMaximum: number;
     lifetimeMaximum: number;
-    diagnosis: string;
+    minAdlsRequired?: number;
+    waiverOfPremium?: string;
+    assignmentOfBenefits?: string;
+    // Qualifying
     adlLimitations: string[];
+    diagnosisCheckboxes?: string[];
+    cognitiveImpairmentTrigger?: string;
+    // Tasks
     stage1Tasks: string[];
     stage2Tasks: string[];
     stage3Tasks: string[];
+    // Extra
     careRecommendations: string;
     strategyContent: string;
+    diagnosis?: string;
+    caseManagerName?: string;
+    thirdPartyAssessmentRequired?: string;
   };
 }
 
@@ -255,7 +275,7 @@ function generatePdfDocument(data: PdfDeliveryPanelProps['policyData']): jsPDF {
 
   sectionTitle('Care Recommendations');
   subTitle('Primary Diagnosis');
-  bodyText(data.diagnosis);
+  bodyText(data.diagnosis || 'LTC Insurance Claim');
 
   if (data.adlLimitations.length > 0) {
     subTitle('ADL Limitations');
@@ -407,19 +427,27 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
 
+  const generatePdfMutation = trpc.pdfDelivery.generatePdf.useMutation({
+    onSuccess: (data) => {
+      if (data.url) {
+        const link = document.createElement('a');
+        link.href = data.url;
+        link.download = `LTC-Strategy-${policyData.insuredName.replace(/\s+/g, '-')}.pdf`;
+        link.target = '_blank';
+        link.click();
+        setStatus({ type: 'success', message: 'PDF downloaded successfully!' });
+      }
+    },
+    onError: (error) => {
+      setStatus({ type: 'error', message: `Failed to generate PDF: ${error.message}` });
+    },
+    onSettled: () => setLoading(false),
+  });
+
   const handleDownloadPdf = async () => {
     setLoading(true);
     setStatus({ type: null, message: '' });
-    try {
-      const doc = generatePdfDocument(policyData);
-      doc.save(`LTC-Strategy-${policyData.insuredName.replace(/\s+/g, '-')}.pdf`);
-      setStatus({ type: 'success', message: 'PDF downloaded successfully!' });
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      setStatus({ type: 'error', message: `Failed to generate PDF: ${error}` });
-    } finally {
-      setLoading(false);
-    }
+    generatePdfMutation.mutate(policyData);
   };
 
   const sendEmailMutation = trpc.pdfDelivery.sendPdfByEmail.useMutation({

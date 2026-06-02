@@ -526,19 +526,39 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         strategyId: z.number(),
         recipients: z.array(z.string().email()),
         policyData: z.object({
+          // Insured
           insuredName: z.string(),
+          insuredDob: z.string().optional(),
+          insuredPhone: z.string().optional(),
+          insuredEmail: z.string().optional(),
+          insuredAddress: z.string().optional(),
+          // Policy
           policyNumber: z.string(),
+          claimNumber: z.string().optional(),
           carrierName: z.string(),
+          carrierPhone: z.string().optional(),
+          // Coverage
+          eliminationPeriod: z.string().optional(),
           dailyMaximum: z.number(),
           monthlyMaximum: z.number(),
           lifetimeMaximum: z.number(),
-          diagnosis: z.string().default("LTC Insurance Claim"),
+          minAdlsRequired: z.number().optional(),
+          waiverOfPremium: z.string().optional(),
+          assignmentOfBenefits: z.string().optional(),
+          // Qualifying
           adlLimitations: z.array(z.string()).default([]),
+          diagnosisCheckboxes: z.array(z.string()).optional(),
+          cognitiveImpairmentTrigger: z.string().optional(),
+          // Tasks
           stage1Tasks: z.array(z.string()).default([]),
           stage2Tasks: z.array(z.string()).default([]),
           stage3Tasks: z.array(z.string()).default([]),
+          // Extra
           careRecommendations: z.string().default(""),
           strategyContent: z.string().default(""),
+          diagnosis: z.string().optional(),
+          caseManagerName: z.string().optional(),
+          thirdPartyAssessmentRequired: z.string().optional(),
         }).optional(),
       }))
       .mutation(async ({ ctx, input }) => {

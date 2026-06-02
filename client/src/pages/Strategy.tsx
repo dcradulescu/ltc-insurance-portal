@@ -313,18 +313,52 @@ export default function Strategy() {
     });
   };
 
+  const downloadPdfMutation = trpc.pdfDelivery.generatePdf.useMutation({
+    onSuccess: (data) => {
+      if (data.url) {
+        const link = document.createElement("a");
+        link.href = data.url;
+        link.download = `LTC-Strategy-${(policy?.insuredFullName || "Report").replace(/\s+/g, "-")}.pdf`;
+        link.target = "_blank";
+        link.click();
+        toast.success("PDF downloaded successfully!");
+      }
+    },
+    onError: () => toast.error("Failed to generate PDF. Please try again."),
+  });
+
   const handleDownloadPDF = useCallback(() => {
-    if (!strategyContentRef.current) return;
-    const content = strategyContentRef.current.innerHTML;
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) { toast.error("Please allow popups to download the PDF."); return; }
-    printWindow.document.write(`<!DOCTYPE html><html><head><title>LTC Insurance Claim Strategy</title>
-      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Slab:wght@300;400;500;700&display=swap" rel="stylesheet" />
-      <style>body{font-family:'Roboto',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#333;line-height:1.6}h1,h2,h3{font-family:'Roboto Slab',serif;color:#2c3e50}h2{border-bottom:2px solid #3498db;padding-bottom:8px;margin-top:24px}ul,ol{padding-left:1.5em}li{margin:4px 0}strong{color:#2c3e50}.header{text-align:center;margin-bottom:2em;padding-bottom:1em;border-bottom:3px solid #3498db}.header h1{color:#3498db}@media print{body{padding:20px}}</style>
-    </head><body><div class="header"><h1>LTC Insurance Claim Strategy</h1><p>Generated on ${new Date().toLocaleDateString()}</p></div>${content}</body></html>`);
-    printWindow.document.close();
-    printWindow.onload = () => printWindow.print();
-  }, []);
+    if (!policy) { toast.error("Please complete the Policy Intake Form first."); return; }
+    downloadPdfMutation.mutate({
+      insuredName: policy.insuredFullName || "",
+      insuredDob: policy.insuredDob || "",
+      insuredPhone: policy.insuredPhone || "",
+      insuredEmail: policy.insuredEmail || "",
+      insuredAddress: policy.insuredMailingAddress || "",
+      policyNumber: policy.policyNumber || "",
+      claimNumber: policy.claimNumber || "",
+      carrierName: policy.carrierName || "",
+      carrierPhone: policy.carrierPhone || "",
+      eliminationPeriod: policy.eliminationPeriod || "",
+      dailyMaximum: parseCurrencyValue(policy.dailyMaximum || 0),
+      monthlyMaximum: (() => { const v = parseFloat((policy.monthlyMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(v) ? 0 : v; })(),
+      lifetimeMaximum: (() => { const v = parseFloat((policy.lifetimeMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(v) ? 0 : v; })(),
+      minAdlsRequired: policy.minAdlsRequired ? parseInt(policy.minAdlsRequired) : undefined,
+      waiverOfPremium: policy.waiverOfPremium || "",
+      assignmentOfBenefits: policy.assignmentOfBenefits || "",
+      adlLimitations: policy.qualifyingAdls || policy.adlLimitations || [],
+      diagnosisCheckboxes: policy.diagnosisCheckboxes || [],
+      cognitiveImpairmentTrigger: policy.cognitiveImpairmentTrigger || "",
+      stage1Tasks: stage1Tasks.map(t => t.label),
+      stage2Tasks: stage2Tasks.map(t => t.label),
+      stage3Tasks: stage3Tasks.map(t => t.label),
+      careRecommendations: policy.careRecommendations || "",
+      strategyContent: strategy?.strategyContent || "",
+      diagnosis: policy.primaryDiagnosis || "",
+      caseManagerName: policy.caseManagerName || "",
+      thirdPartyAssessmentRequired: policy.thirdPartyAssessmentRequired || "",
+    });
+  }, [policy, strategy, stage1Tasks, stage2Tasks, stage3Tasks, downloadPdfMutation]);
 
   const handleSendEmail = () => {
     const validEmails = emailRecipients.filter(e => e.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim()));
@@ -825,10 +859,12 @@ export default function Strategy() {
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-3 mb-6">
-                      <Button onClick={handleDownloadPDF} variant="outline" className="h-auto py-4 flex-col gap-2 border-slate-200 hover:border-teal hover:bg-teal/5">
-                        <Download className="w-6 h-6 text-teal" />
-                        <span className="font-medium">Download as PDF</span>
-                        <span className="text-xs text-slate-500">7 pages, includes all sections</span>
+                      <Button onClick={handleDownloadPDF} disabled={downloadPdfMutation.isPending} variant="outline" className="h-auto py-4 flex-col gap-2 border-slate-200 hover:border-teal hover:bg-teal/5">
+                        {downloadPdfMutation.isPending
+                          ? <Loader2 className="w-6 h-6 text-teal animate-spin" />
+                          : <Download className="w-6 h-6 text-teal" />}
+                        <span className="font-medium">{downloadPdfMutation.isPending ? "Generating…" : "Download as PDF"}</span>
+                        <span className="text-xs text-slate-500">Landscape · All sections · SC Visiting Angels</span>
                       </Button>
                       <Button onClick={handleGenerate} disabled={isGenerating} variant="outline" className="h-auto py-4 flex-col gap-2 border-slate-200 hover:border-amber-400 hover:bg-amber-50">
                         <RefreshCw className={`w-6 h-6 text-amber-500 ${isGenerating ? "animate-spin" : ""}`} />
@@ -840,18 +876,32 @@ export default function Strategy() {
                     <PdfDeliveryPanel
                       policyData={{
                         insuredName: policy?.insuredFullName || "",
+                        insuredDob: policy?.insuredDob || "",
+                        insuredPhone: policy?.insuredPhone || "",
+                        insuredEmail: policy?.insuredEmail || "",
+                        insuredAddress: policy?.insuredMailingAddress || "",
                         policyNumber: policy?.policyNumber || "",
+                        claimNumber: policy?.claimNumber || "",
                         carrierName: policy?.carrierName || "",
+                        carrierPhone: policy?.carrierPhone || "",
+                        eliminationPeriod: policy?.eliminationPeriod || "",
                         dailyMaximum: parseCurrencyValue(policy?.dailyMaximum || 0),
                         monthlyMaximum: (() => { const val = parseFloat((policy?.monthlyMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
                         lifetimeMaximum: (() => { const val = parseFloat((policy?.lifetimeMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
-                        diagnosis: "LTC Insurance Claim",
+                        minAdlsRequired: policy?.minAdlsRequired ? parseInt(policy.minAdlsRequired) : undefined,
+                        waiverOfPremium: policy?.waiverOfPremium || "",
+                        assignmentOfBenefits: policy?.assignmentOfBenefits || "",
                         adlLimitations: policy?.qualifyingAdls || policy?.adlLimitations || [],
+                        diagnosisCheckboxes: policy?.diagnosisCheckboxes || [],
+                        cognitiveImpairmentTrigger: policy?.cognitiveImpairmentTrigger || "",
                         stage1Tasks: stage1Tasks.map(t => t.label),
                         stage2Tasks: stage2Tasks.map(t => t.label),
                         stage3Tasks: stage3Tasks.map(t => t.label),
                         careRecommendations: policy?.careRecommendations || "",
                         strategyContent: strategy?.strategyContent || "",
+                        diagnosis: policy?.primaryDiagnosis || "",
+                        caseManagerName: policy?.caseManagerName || "",
+                        thirdPartyAssessmentRequired: policy?.thirdPartyAssessmentRequired || "",
                       }}
                     />
                   </div>

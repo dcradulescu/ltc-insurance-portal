@@ -1,10 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   generateSMSMessage,
   sendSMSNotification,
   formatPhoneNumber,
   sendBulkSMSNotifications,
 } from "./smsNotification";
+
+// Mock the twilio module so tests never make real API calls.
+// The mock returns a fake client whose messages.create resolves with a fake SID.
+vi.mock("twilio", () => {
+  const mockCreate = vi.fn().mockResolvedValue({ sid: "SM_MOCK_SID_12345" });
+  const mockClient = { messages: { create: mockCreate } };
+  const twilioFactory = vi.fn(() => mockClient);
+  return { default: twilioFactory };
+});
 
 describe("SMS Notification Service", () => {
   beforeEach(() => {
@@ -60,23 +69,19 @@ describe("SMS Notification Service", () => {
 
   describe("formatPhoneNumber", () => {
     it("should format 10-digit US number", () => {
-      const formatted = formatPhoneNumber("5551234567");
-      expect(formatted).toBe("+15551234567");
+      expect(formatPhoneNumber("5551234567")).toBe("+15551234567");
     });
 
     it("should format number with parentheses", () => {
-      const formatted = formatPhoneNumber("(555) 123-4567");
-      expect(formatted).toBe("+15551234567");
+      expect(formatPhoneNumber("(555) 123-4567")).toBe("+15551234567");
     });
 
     it("should format number with dashes", () => {
-      const formatted = formatPhoneNumber("555-123-4567");
-      expect(formatted).toBe("+15551234567");
+      expect(formatPhoneNumber("555-123-4567")).toBe("+15551234567");
     });
 
     it("should handle already formatted number", () => {
-      const formatted = formatPhoneNumber("+15551234567");
-      expect(formatted).toBe("+15551234567");
+      expect(formatPhoneNumber("+15551234567")).toBe("+15551234567");
     });
   });
 
@@ -95,8 +100,8 @@ describe("SMS Notification Service", () => {
     });
 
     it("should return error for invalid phone number", async () => {
-      process.env.TWILIO_ACCOUNT_SID = "test_sid";
-      process.env.TWILIO_AUTH_TOKEN = "test_token";
+      process.env.TWILIO_ACCOUNT_SID = "ACtest00000000000000000000000000000";
+      process.env.TWILIO_AUTH_TOKEN = "test_token_00000000000000000000000";
       process.env.TWILIO_PHONE_NUMBER = "+15551234567";
 
       const result = await sendSMSNotification({
@@ -111,9 +116,9 @@ describe("SMS Notification Service", () => {
       expect(result.error).toContain("Invalid phone number");
     });
 
-    it("should return success when SMS service is configured", async () => {
-      process.env.TWILIO_ACCOUNT_SID = "test_sid";
-      process.env.TWILIO_AUTH_TOKEN = "test_token";
+    it("should return success when SMS service is configured (mocked Twilio)", async () => {
+      process.env.TWILIO_ACCOUNT_SID = "ACtest00000000000000000000000000000";
+      process.env.TWILIO_AUTH_TOKEN = "test_token_00000000000000000000000";
       process.env.TWILIO_PHONE_NUMBER = "+15551234567";
 
       const result = await sendSMSNotification({
@@ -131,12 +136,12 @@ describe("SMS Notification Service", () => {
 
   describe("sendBulkSMSNotifications", () => {
     beforeEach(() => {
-      process.env.TWILIO_ACCOUNT_SID = "test_sid";
-      process.env.TWILIO_AUTH_TOKEN = "test_token";
+      process.env.TWILIO_ACCOUNT_SID = "ACtest00000000000000000000000000000";
+      process.env.TWILIO_AUTH_TOKEN = "test_token_00000000000000000000000";
       process.env.TWILIO_PHONE_NUMBER = "+15551234567";
     });
 
-    it("should send to multiple recipients", async () => {
+    it("should send to multiple recipients (mocked Twilio)", async () => {
       const recipients = [
         { phoneNumber: "5551234567", name: "John Doe" },
         { phoneNumber: "5559876543", name: "Jane Smith" },
@@ -154,10 +159,10 @@ describe("SMS Notification Service", () => {
       expect(results[1].success).toBe(true);
     });
 
-    it("should handle mixed success and failure", async () => {
+    it("should handle mixed success and failure (valid + invalid phone)", async () => {
       const recipients = [
         { phoneNumber: "5551234567", name: "John Doe" },
-        { phoneNumber: "invalid", name: "Jane Smith" },
+        { phoneNumber: "invalid",    name: "Jane Smith" },
       ];
 
       const results = await sendBulkSMSNotifications(recipients, {

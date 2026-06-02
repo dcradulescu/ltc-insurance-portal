@@ -510,3 +510,12 @@
 - [x] Update Strategy.tsx handleDownloadPDF to use the new jsPDF generator instead of raw HTML print
 - [x] Update server strategyPdfGenerator.ts to use the new generator for email delivery
 - [x] Expand pdfDelivery router schema to accept all new fields
+
+## SMS & Email Audit Fixes
+- [x] Wire SMSNotificationManager to trpc.sms.sendNotification (currently only logs to console)
+- [x] Wire SMSNotificationManager savePreferences to trpc.sms.savePreferences
+- [x] Install twilio npm package and implement real Twilio API call in smsNotification.ts
+- [x] Fix PdfDeliveryPanel download to use the new comprehensive server-side PDF generator (currently uses old local jsPDF)
+- [x] Fix PdfDeliveryPanel props to pass all new fields (eliminationPeriod, insuredDob, carrierPhone, etc.)
+- [x] Fix email.sendStrategy policyData schema to match expanded PdfData (eliminationPeriod, diagnosisCheckboxes, etc.)
+- [ ] Remove EmailDelivery.tsx component or wire it to real email delivery (currently only calls notifyOwner)
