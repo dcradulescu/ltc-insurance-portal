@@ -4,20 +4,41 @@ import { generateStrategyPdf } from "../strategyPdfGenerator";
 import { notifyOwner } from "../_core/notification";
 import { ENV } from "../_core/env";
 
+// Full schema matching PdfData interface
 const pdfInputSchema = z.object({
+  // Insured
   insuredName: z.string().min(1, "Insured name is required"),
+  insuredDob: z.string().optional(),
+  insuredPhone: z.string().optional(),
+  insuredEmail: z.string().optional(),
+  insuredAddress: z.string().optional(),
+  // Policy
   policyNumber: z.string().min(1, "Policy number is required"),
+  claimNumber: z.string().optional(),
   carrierName: z.string().min(1, "Carrier name is required"),
-  dailyMaximum: z.number().positive("Daily maximum must be positive"),
-  monthlyMaximum: z.number().positive("Monthly maximum must be positive"),
-  lifetimeMaximum: z.number().positive("Lifetime maximum must be positive"),
-  diagnosis: z.string().default("LTC Insurance Claim"),
+  carrierPhone: z.string().optional(),
+  // Coverage
+  eliminationPeriod: z.string().optional(),
+  dailyMaximum: z.number().default(0),
+  monthlyMaximum: z.number().default(0),
+  lifetimeMaximum: z.number().default(0),
+  minAdlsRequired: z.number().optional(),
+  waiverOfPremium: z.string().optional(),
+  assignmentOfBenefits: z.string().optional(),
+  // Qualifying
   adlLimitations: z.array(z.string()).default([]),
+  diagnosisCheckboxes: z.array(z.string()).optional(),
+  cognitiveImpairmentTrigger: z.string().optional(),
+  // Tasks
   stage1Tasks: z.array(z.string()).default([]),
   stage2Tasks: z.array(z.string()).default([]),
   stage3Tasks: z.array(z.string()).default([]),
-  careRecommendations: z.string().default(""),
-  strategyContent: z.string().default(""),
+  // Extra
+  careRecommendations: z.string().optional(),
+  strategyContent: z.string().optional(),
+  diagnosis: z.string().optional(),
+  caseManagerName: z.string().optional(),
+  thirdPartyAssessmentRequired: z.string().optional(),
 });
 
 export const pdfDeliveryRouter = router({
@@ -50,26 +71,9 @@ export const pdfDeliveryRouter = router({
     )
     .mutation(async ({ input }) => {
       try {
-        // Step 1: Generate PDF and upload to S3
-        const pdfResult = await generateStrategyPdf({
-          insuredName: input.insuredName,
-          policyNumber: input.policyNumber,
-          carrierName: input.carrierName,
-          dailyMaximum: input.dailyMaximum,
-          monthlyMaximum: input.monthlyMaximum,
-          lifetimeMaximum: input.lifetimeMaximum,
-          diagnosis: input.diagnosis,
-          adlLimitations: input.adlLimitations,
-          stage1Tasks: input.stage1Tasks,
-          stage2Tasks: input.stage2Tasks,
-          stage3Tasks: input.stage3Tasks,
-          careRecommendations: input.careRecommendations,
-          strategyContent: input.strategyContent,
-        });
-
+        const pdfResult = await generateStrategyPdf(input);
         console.log(`[Email] PDF generated and uploaded to S3: ${pdfResult.url}`);
 
-        // Step 2: Send to Zapier webhook for email delivery
         const zapierUrl = ENV.zapierWebhookUrl;
         if (zapierUrl) {
           try {
@@ -89,7 +93,6 @@ export const pdfDeliveryRouter = router({
                 timestamp: new Date().toISOString(),
               }),
             });
-
             if (!response.ok) {
               console.error(`[Email] Zapier webhook error: ${response.status} ${response.statusText}`);
             } else {
@@ -97,11 +100,9 @@ export const pdfDeliveryRouter = router({
             }
           } catch (zapierError) {
             console.error("[Email] Zapier webhook error:", zapierError);
-            // Don't throw - still return success with PDF URL
           }
         }
 
-        // Step 3: Notify owner about the email request
         await notifyOwner({
           title: `Strategy PDF Emailed: ${input.insuredName}`,
           content: `Strategy PDF for ${input.insuredName} (Policy: ${input.policyNumber}) was sent to ${input.recipientName} (${input.recipientEmail}).\n\nPDF URL: ${pdfResult.url}${input.message ? `\n\nPersonal message: ${input.message}` : ""}`,

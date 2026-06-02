@@ -505,3 +505,8 @@
 - [ ] Verify Gantt chart and Checklist both reflect saved state
 - [x] Fix blank page after clicking Yes on ADL modal (steps array has 7 entries but only 6 rendered blocks — step 5 is Review, clicking Yes from step 4 advances to step 5 which is correct, but the steps array has an extra "Qualifying" entry causing step 6 to be blank)
 - [x] Move Diagnosis section to top of Step 4 with a clear heading
+- [x] Rewrite pdfConverter.ts: landscape orientation, SC Visiting Angels branding, all sections (cover, executive summary, benefit summary, policy summary, 3-stage checklist, Gantt timeline, glossary, disclaimers)
+- [x] Update PdfDeliveryPanel to use the same new generator for download
+- [x] Update Strategy.tsx handleDownloadPDF to use the new jsPDF generator instead of raw HTML print
+- [x] Update server strategyPdfGenerator.ts to use the new generator for email delivery
+- [x] Expand pdfDelivery router schema to accept all new fields
