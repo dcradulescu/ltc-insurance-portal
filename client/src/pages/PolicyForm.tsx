@@ -275,6 +275,7 @@ export default function PolicyForm() {
   const [form, setForm] = useState<FormData>(defaultForm);
   const [policyId, setPolicyId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [zapierSent, setZapierSent] = useState(false);
   const sessionStartRef = useRef(Date.now());
   const lastActivityRef = useRef(Date.now());
@@ -530,6 +531,67 @@ export default function PolicyForm() {
     setForm(prev => ({ ...prev, insuredDob: dateValue }));
   };
 
+  // Per-step validation — returns true if the step is valid, false otherwise
+  const validateStep = (currentStep: number): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (currentStep === 0) {
+      if (!form.insuredFullName.trim()) errors.insuredFullName = "Full name is required.";
+      if (!form.insuredEmail.trim()) {
+        errors.insuredEmail = "Email address is required.";
+      } else if (!isValidEmail(form.insuredEmail)) {
+        errors.insuredEmail = "Please enter a valid email address.";
+      }
+      if (!form.insuredPhone.trim()) {
+        errors.insuredPhone = "Phone number is required.";
+      } else if (!isValidPhoneNumber(form.insuredPhone)) {
+        errors.insuredPhone = "Please enter a valid phone number: (000) 000-0000.";
+      }
+    }
+
+    if (currentStep === 1) {
+      if (!form.carrierName.trim()) errors.carrierName = "Insurance company name is required.";
+    }
+
+    if (currentStep === 2) {
+      if (!form.policyNumber.trim()) errors.policyNumber = "Policy number is required.";
+    }
+
+    if (currentStep === 3) {
+      if (!form.dailyMaximum.trim()) errors.dailyMaximum = "Daily maximum benefit is required.";
+      if (!form.lifetimeMaximum.trim()) errors.lifetimeMaximum = "Lifetime maximum benefit is required.";
+      if (!form.eliminationPeriod.trim()) errors.eliminationPeriod = "Elimination period is required.";
+    }
+
+    if (currentStep === 4) {
+      const hasSelection = (form.careNeeds || []).length > 0 && !((form.careNeeds || []).length === 1 && form.careNeeds[0] === "None");
+      if (!hasSelection && !(form.careNeeds || []).includes("None")) {
+        errors.careNeeds = "Please select at least one care service or choose \"None - No care is needed\".";
+      }
+      if (!form.diagnosisCheckboxes || form.diagnosisCheckboxes.length === 0) {
+        errors.diagnosisCheckboxes = "Please select at least one diagnosis or condition.";
+      }
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error("Please complete all required fields before continuing.", { duration: 4000 });
+      // Scroll to first error
+      const firstErrorKey = Object.keys(errors)[0];
+      const el = document.getElementById(firstErrorKey);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      return false;
+    }
+    return true;
+  };
+
+  // Clear a single field error when user edits it
+  const clearError = (field: string) => {
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => { const next = { ...prev }; delete next[field]; return next; });
+    }
+  };
+
   // Save to database only (no validation required, no Zapier)
   const handleSave = async () => {
     setSaving(true);
@@ -570,10 +632,13 @@ export default function PolicyForm() {
     }
   };
 
-  // Navigate to next step — save to DB silently, no validation blocking
+  // Navigate to next step — validate first, then save to DB silently
   const handleNext = () => {
-    // ADL Validation: If on step 3 (Coverage Details), check ADL requirements
-    if (step === 3) {
+    // Run per-step validation first — block if errors found
+    if (!validateStep(step)) return;
+
+    // ADL Validation: If on step 4 (Care Needs), check ADL requirements
+    if (step === 4) {
       const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
       const adlList = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
       
@@ -754,7 +819,8 @@ export default function PolicyForm() {
               <p className="text-sm text-slate-600">Enter the details of the person covered by the LTC insurance policy.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Full Name of Insured" name="insuredFullName" isRequired>
-                  <Input id="insuredFullName" value={form.insuredFullName} onChange={e => update("insuredFullName", e.target.value)} placeholder="Enter full legal name" />
+                  <Input id="insuredFullName" value={form.insuredFullName} onChange={e => { update("insuredFullName", e.target.value); clearError("insuredFullName"); }} placeholder="Enter full legal name" className={fieldErrors.insuredFullName ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  {fieldErrors.insuredFullName && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredFullName}</p>}
                 </TooltipField>
                 <TooltipField label="Date of Birth" name="insuredDob">
                   <Input id="insuredDob" type="text" value={getDisplayDate(form.insuredDob)} onChange={e => handleDateChange(e.target.value)} placeholder="MM/DD/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in format MM/DD/YYYY" maxLength={10} />
@@ -762,10 +828,12 @@ export default function PolicyForm() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Email Address" name="insuredEmail" isRequired>
-                  <Input id="insuredEmail" type="email" value={form.insuredEmail} onChange={e => update("insuredEmail", e.target.value)} placeholder="your.email@example.com" title="Please enter a valid email address" />
+                  <Input id="insuredEmail" type="email" value={form.insuredEmail} onChange={e => { update("insuredEmail", e.target.value); clearError("insuredEmail"); }} placeholder="your.email@example.com" className={fieldErrors.insuredEmail ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  {fieldErrors.insuredEmail && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredEmail}</p>}
                 </TooltipField>
                 <TooltipField label="Phone Number" name="insuredPhone" isRequired>
-                  <Input id="insuredPhone" type="tel" value={form.insuredPhone} onChange={e => update("insuredPhone", e.target.value)} placeholder="(000) 000-0000" pattern="\\(\\d{3}\\)\\d{3}-\\d{4}" title="Please enter a valid phone number in format (000) 000-0000" />
+                  <Input id="insuredPhone" type="tel" value={form.insuredPhone} onChange={e => { update("insuredPhone", e.target.value); clearError("insuredPhone"); }} placeholder="(000) 000-0000" className={fieldErrors.insuredPhone ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  {fieldErrors.insuredPhone && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredPhone}</p>}
                 </TooltipField>
               </div>
               <TooltipField label="Mailing Address" name="insuredMailingAddress">
@@ -811,7 +879,8 @@ export default function PolicyForm() {
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Long Term Care Insurance Company</h2>
               <p className="text-sm text-slate-600">Enter the details of your LTC insurance carrier. This information can be found on your policy declaration page.</p>
               <TooltipField label="LTC Insurance Company Name" name="carrierName" isRequired>
-                <Input id="carrierName" value={form.carrierName} onChange={e => update("carrierName", e.target.value)} placeholder="e.g., Genworth, John Hancock, Mutual of Omaha" />
+                <Input id="carrierName" value={form.carrierName} onChange={e => { update("carrierName", e.target.value); clearError("carrierName"); }} placeholder="e.g., Genworth, John Hancock, Mutual of Omaha" className={fieldErrors.carrierName ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                {fieldErrors.carrierName && <p className="text-xs text-red-600 mt-1">{fieldErrors.carrierName}</p>}
               </TooltipField>
               <TooltipField label="Address" name="carrierAddress">
                 <Input id="carrierAddress" value={form.carrierAddress} onChange={e => update("carrierAddress", e.target.value)} placeholder="Street address" />
@@ -845,7 +914,8 @@ export default function PolicyForm() {
               <p className="text-sm text-slate-600">Enter your policy identification and case management information.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Policy Number" name="policyNumber" isRequired>
-                  <Input id="policyNumber" value={form.policyNumber} onChange={e => update("policyNumber", e.target.value)} placeholder="Your policy number" />
+                  <Input id="policyNumber" value={form.policyNumber} onChange={e => { update("policyNumber", e.target.value); clearError("policyNumber"); }} placeholder="Your policy number" className={fieldErrors.policyNumber ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  {fieldErrors.policyNumber && <p className="text-xs text-red-600 mt-1">{fieldErrors.policyNumber}</p>}
                 </TooltipField>
                 <TooltipField label="Claim / Pre-Claim Number" name="claimPreClaimNumber">
                   <Input id="claimPreClaimNumber" value={form.claimPreClaimNumber} onChange={e => update("claimPreClaimNumber", e.target.value)} placeholder="If already assigned" />
@@ -877,13 +947,15 @@ export default function PolicyForm() {
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Financial Benefits</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <TooltipField label="Daily Maximum" name="dailyMaximum" isRequired>
-                    <Input id="dailyMaximum" type="text" value={form.dailyMaximum} onChange={e => update("dailyMaximum", formatCurrency(e.target.value))} placeholder="$0.00" className="bg-white" />
+                    <Input id="dailyMaximum" type="text" value={form.dailyMaximum} onChange={e => { update("dailyMaximum", formatCurrency(e.target.value)); clearError("dailyMaximum"); }} placeholder="$0.00" className={`bg-white${fieldErrors.dailyMaximum ? " border-red-500 focus-visible:ring-red-500" : ""}`} />
+                    {fieldErrors.dailyMaximum && <p className="text-xs text-red-600 mt-1">{fieldErrors.dailyMaximum}</p>}
                   </TooltipField>
                   <TooltipField label="Monthly Maximum" name="monthlyMaximum">
                     <Input id="monthlyMaximum" type="text" value={form.monthlyMaximum || ''} onChange={e => update("monthlyMaximum", formatCurrency(e.target.value))} placeholder="$0.00" className="bg-white" />
                   </TooltipField>
                   <TooltipField label="Lifetime Maximum" name="lifetimeMaximum" isRequired>
-                    <Input id="lifetimeMaximum" type="text" value={form.lifetimeMaximum} onChange={e => update("lifetimeMaximum", formatCurrency(e.target.value))} placeholder="$0.00" className="bg-white" />
+                    <Input id="lifetimeMaximum" type="text" value={form.lifetimeMaximum} onChange={e => { update("lifetimeMaximum", formatCurrency(e.target.value)); clearError("lifetimeMaximum"); }} placeholder="$0.00" className={`bg-white${fieldErrors.lifetimeMaximum ? " border-red-500 focus-visible:ring-red-500" : ""}`} />
+                    {fieldErrors.lifetimeMaximum && <p className="text-xs text-red-600 mt-1">{fieldErrors.lifetimeMaximum}</p>}
                   </TooltipField>
                 </div>
                 <div className="border-t border-gray-300 pt-6">
@@ -894,8 +966,10 @@ export default function PolicyForm() {
                         const val = e.target.value;
                         if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
                           update("eliminationPeriod", val);
+                          clearError("eliminationPeriod");
                         }
-                      }} placeholder="0-999" className="bg-white" />
+                      }} placeholder="0-999" className={`bg-white${fieldErrors.eliminationPeriod ? " border-red-500 focus-visible:ring-red-500" : ""}`} />
+                      {fieldErrors.eliminationPeriod && <p className="text-xs text-red-600 mt-1">{fieldErrors.eliminationPeriod}</p>}
                     </TooltipField>
                     {form.eliminationPeriod && (
                       <>
@@ -1060,6 +1134,7 @@ export default function PolicyForm() {
                       <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
                           update("careNeeds", checked ? [...careNeeds, service] : careNeeds.filter(s => s !== service));
+                          clearError("careNeeds");
                         }} />
                         <span className="text-sm font-medium">{service}</span>
                       </label>
@@ -1071,6 +1146,7 @@ export default function PolicyForm() {
                       <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes("None") ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <Checkbox checked={careNeeds.includes("None")} onCheckedChange={checked => {
                           update("careNeeds", checked ? ["None"] : []);
+                          clearError("careNeeds");
                         }} />
                         <span className="text-sm font-medium">None - No care is needed</span>
                       </label>
@@ -1079,6 +1155,8 @@ export default function PolicyForm() {
                 </div>
               </div>
               
+              {fieldErrors.careNeeds && <p className="text-xs text-red-600 -mt-2 mb-2">{fieldErrors.careNeeds}</p>}
+
               {(() => {
                 const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
                 const qualifyingAdls = form.qualifyingAdls || [];
@@ -1140,6 +1218,7 @@ export default function PolicyForm() {
                       <label key={diagnosis} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${diagnosisCheckboxes.includes(diagnosis) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <Checkbox checked={diagnosisCheckboxes.includes(diagnosis)} onCheckedChange={checked => {
                           update("diagnosisCheckboxes", checked ? [...diagnosisCheckboxes, diagnosis] : diagnosisCheckboxes.filter(d => d !== diagnosis));
+                          clearError("diagnosisCheckboxes");
                         }} />
                         <span className="text-sm font-medium">{diagnosis}</span>
                       </label>
@@ -1148,6 +1227,7 @@ export default function PolicyForm() {
                 </div>
               </div>
               
+              {fieldErrors.diagnosisCheckboxes && <p className="text-xs text-red-600 -mt-2 mb-2">{fieldErrors.diagnosisCheckboxes}</p>}
               <TooltipField label="Diagnosis Notes" name="diagnosisNotes">
                 <Textarea id="diagnosisNotes" value={form.diagnosisNotes} onChange={e => update("diagnosisNotes", e.target.value)} placeholder="Additional details about the diagnosis, conditions, or cognitive impairments..." rows={3} />
               </TooltipField>
