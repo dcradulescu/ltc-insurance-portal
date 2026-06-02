@@ -306,6 +306,8 @@ export default function PolicyForm() {
   const [zapierSent, setZapierSent] = useState(false);
   const [showAdlModal, setShowAdlModal] = useState(false);
   const [pendingAdlAdvance, setPendingAdlAdvance] = useState(false);
+  const prevAdlRef = useRef<string[]>([]);
+  const prevIadlRef = useRef<string[]>([]);
   const sessionStartRef = useRef(Date.now());
   const lastActivityRef = useRef(Date.now());
   const zapierSentRef = useRef(false);
@@ -343,10 +345,14 @@ export default function PolicyForm() {
           const validCareNeedsValues = [
             "Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence",
             "Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry",
-            "Shopping/Errands", "Transportation", "Money Management", "Telephone Use", "None"
+            "Shopping/Errands", "Transportation", "Money Management", "Telephone Use",
+            "NoneADL", "NoneIADL"
           ];
           if (Array.isArray(parsed.careNeeds)) {
-            parsed.careNeeds = parsed.careNeeds.filter((v: string) => validCareNeedsValues.includes(v));
+            // Migrate old "None" sentinel to "NoneADL"
+            parsed.careNeeds = parsed.careNeeds
+              .map((v: string) => v === "None" ? "NoneADL" : v)
+              .filter((v: string) => validCareNeedsValues.includes(v));
           }
           setForm(parsed);
         }
@@ -608,9 +614,10 @@ export default function PolicyForm() {
     }
 
     if (currentStep === 4) {
-      const hasSelection = (form.careNeeds || []).length > 0 && !((form.careNeeds || []).length === 1 && form.careNeeds[0] === "None");
-      if (!hasSelection && !(form.careNeeds || []).includes("None")) {
-        errors.careNeeds = "Please select at least one care service or choose \"None - No care is needed\".";
+      const cn = form.careNeeds || [];
+      const hasAdlSelection = cn.some(v => ["Bathing","Dressing","Eating/Feeding","Toileting","Transferring","Continence"].includes(v)) || cn.includes("NoneADL");
+      if (!hasAdlSelection) {
+        errors.careNeeds = "Please select at least one ADL or choose \"None of these ADLs apply\".";
       }
       if (!form.diagnosisCheckboxes || form.diagnosisCheckboxes.length === 0) {
         errors.diagnosisCheckboxes = "Please select at least one diagnosis or condition.";
@@ -693,8 +700,8 @@ export default function PolicyForm() {
       const actualAdls = form.careNeeds?.filter(need => adlList.includes(need)) || [];
       const actualAdlCount = actualAdls.length;
       
-      // Check if "None - No care is needed" is selected
-      const noneSelected = form.careNeeds?.includes("None") || false;
+      // Check if ADL None is selected
+      const noneSelected = form.careNeeds?.includes("NoneADL") || false;
       
       // Check 1: Is there at least the minimum number of ADLs?
       // Check 2: Are all selected ADLs in the qualifying list?
@@ -1185,18 +1192,35 @@ export default function PolicyForm() {
                     return (
                       <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
-                          // Selecting any ADL removes "None"
-                          const withoutNone = careNeeds.filter(s => s !== "None");
-                          update("careNeeds", checked ? [...withoutNone, service] : withoutNone.filter(s => s !== service));
+                          // Selecting any ADL removes NoneADL
+                          const withoutNoneAdl = careNeeds.filter(s => s !== "NoneADL");
+                          update("careNeeds", checked ? [...withoutNoneAdl, service] : withoutNoneAdl.filter(s => s !== service));
                           clearError("careNeeds");
                         }} />
                         <span className="text-sm font-medium">{service}</span>
                       </label>
                     );
                   })}
+                  <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors col-span-2 md:col-span-1 ${(form.careNeeds || []).includes("NoneADL") ? "bg-amber-50 border-amber-300" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                    <Checkbox checked={(form.careNeeds || []).includes("NoneADL")} onCheckedChange={checked => {
+                      const adlItems = ["Bathing","Dressing","Eating/Feeding","Toileting","Transferring","Continence"];
+                      const current = form.careNeeds || [];
+                      if (checked) {
+                        // Remember current ADL selections before clearing
+                        prevAdlRef.current = current.filter(v => adlItems.includes(v));
+                        update("careNeeds", [...current.filter(v => !adlItems.includes(v)), "NoneADL"]);
+                      } else {
+                        // Restore previous ADL selections
+                        const withoutNoneAdl = current.filter(v => v !== "NoneADL");
+                        update("careNeeds", [...withoutNoneAdl, ...prevAdlRef.current]);
+                        prevAdlRef.current = [];
+                      }
+                      clearError("careNeeds");
+                    }} />
+                    <span className="text-sm font-medium text-amber-800">None of these ADLs apply</span>
+                  </label>
                 </div>
               </div>
-
               {fieldErrors.careNeeds && <p className="text-xs text-red-600 -mt-2 mb-2">{fieldErrors.careNeeds}</p>}
               {/* ADL Qualification Alert - derived directly from live form state */}
               {(() => {
@@ -1207,7 +1231,7 @@ export default function PolicyForm() {
                   : ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
                 const adlList = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
                 const careNeedsNow = form.careNeeds || [];
-                const noneSelected = careNeedsNow.includes("None");
+                const noneSelected = careNeedsNow.includes("NoneADL");
                 const actualAdls = careNeedsNow.filter(need => adlList.includes(need));
                 const actualAdlCount = actualAdls.length;
                 const nonQualifyingAdls = actualAdls.filter(adl => !qualifyingAdls.includes(adl));
@@ -1226,7 +1250,7 @@ export default function PolicyForm() {
                         {qualifyingAdls.join(", ")}
                       </p>
                       {noneSelected && (
-                        <p className="text-sm text-red-700">No care services are currently selected. Please select at least {minAdlsRequired} ADL(s) from the qualifying list above to meet the benefit trigger.</p>
+                        <p className="text-sm text-red-700">"None of these ADLs apply" is selected. Please select at least {minAdlsRequired} ADL(s) from the qualifying list above to meet the benefit trigger.</p>
                       )}
                       {!noneSelected && actualAdlCount < minAdlsRequired && (
                         <p className="text-sm text-red-700">Currently {actualAdlCount} qualifying ADL(s) selected &mdash; you need at least {minAdlsRequired} to meet the benefit trigger.</p>
@@ -1259,21 +1283,32 @@ export default function PolicyForm() {
                     return (
                       <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
-                          // Selecting any IADL removes "None"
-                          const withoutNone = careNeeds.filter(s => s !== "None");
-                          update("careNeeds", checked ? [...withoutNone, service] : withoutNone.filter(s => s !== service));
+                          // Selecting any IADL removes NoneIADL
+                          const withoutNoneIadl = careNeeds.filter(s => s !== "NoneIADL");
+                          update("careNeeds", checked ? [...withoutNoneIadl, service] : withoutNoneIadl.filter(s => s !== service));
                           clearError("careNeeds");
                         }} />
                         <span className="text-sm font-medium">{service}</span>
                       </label>
                     );
                   })}
-                  <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors col-span-2 md:col-span-1 ${(form.careNeeds || []).includes("None") ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
-                    <Checkbox checked={(form.careNeeds || []).includes("None")} onCheckedChange={checked => {
-                      update("careNeeds", checked ? ["None"] : []);
+                  <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors col-span-2 md:col-span-1 ${(form.careNeeds || []).includes("NoneIADL") ? "bg-slate-100 border-slate-400" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                    <Checkbox checked={(form.careNeeds || []).includes("NoneIADL")} onCheckedChange={checked => {
+                      const iadlItems = ["Meal Preparation","Medication Management","Housekeeping/Cleaning","Laundry","Shopping/Errands","Transportation","Money Management","Telephone Use"];
+                      const current = form.careNeeds || [];
+                      if (checked) {
+                        // Remember current IADL selections before clearing
+                        prevIadlRef.current = current.filter(v => iadlItems.includes(v));
+                        update("careNeeds", [...current.filter(v => !iadlItems.includes(v)), "NoneIADL"]);
+                      } else {
+                        // Restore previous IADL selections
+                        const withoutNoneIadl = current.filter(v => v !== "NoneIADL");
+                        update("careNeeds", [...withoutNoneIadl, ...prevIadlRef.current]);
+                        prevIadlRef.current = [];
+                      }
                       clearError("careNeeds");
                     }} />
-                    <span className="text-sm font-medium">None &mdash; No care is currently needed</span>
+                    <span className="text-sm font-medium text-slate-600">None of these IADLs apply</span>
                   </label>
                 </div>
               </div>
