@@ -262,7 +262,7 @@ const sampleForm: FormData = {
   inflationAdjustmentEnabled: true, inflationType: "compound", inflationPercentagePerYear: "3", inflationContinuesAfterBenefits: true,
   caseManagerAssigned: "Yes", caseManagerName: "Sarah Johnson", thirdPartyAssessmentRequired: "Yes",
   cognitiveImpairmentTrigger: "Yes",
-  careNeeds: ["Assistance with bathing", "Help with dressing", "Toileting assistance"], careNotes: "Needs 24/7 supervision due to fall risk",
+  careNeeds: ["Bathing", "Dressing", "Toileting"], careNotes: "Needs 24/7 supervision due to fall risk",
   diagnosisCheckboxes: ["Alzheimer's Disease", "Osteoarthritis"], diagnosisNotes: "Diagnosed 2 years ago, progressive decline",
   preferredCareType: "Home Care", additionalNotes: "Prefers female caregivers",
 };
