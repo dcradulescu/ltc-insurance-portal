@@ -303,6 +303,7 @@ export default function PolicyForm() {
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [zapierSent, setZapierSent] = useState(false);
+  const [proceedInformational, setProceedInformational] = useState(false);
   const sessionStartRef = useRef(Date.now());
   const lastActivityRef = useRef(Date.now());
   const zapierSentRef = useRef(false);
@@ -1141,31 +1142,40 @@ export default function PolicyForm() {
             </div>
           )}
 
+
           {/* Step 4: Qualifying */}
           {step === 4 && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Care Needs & ADL Assessment</h2>
-              <p className="text-sm text-slate-600">Describe the current care needs and identify which Activities of Daily Living (ADLs) are compromised.</p>
-              
-              {/* Care Needs Checkboxes */}
+
+              {/* Qualification context banner */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-1">Why are we asking these questions?</h3>
+                <p className="text-sm text-blue-800 leading-relaxed">
+                  Long-term care insurance policies require the insured to meet specific <strong>benefit triggers</strong> before a claim can be initiated. Most policies require that the insured needs assistance with a minimum number of <strong>Activities of Daily Living (ADLs)</strong> &mdash; such as bathing, dressing, or toileting &mdash; or has a <strong>diagnosis of cognitive impairment</strong> (e.g., Alzheimer&apos;s or dementia) that requires substantial supervision.
+                </p>
+                <p className="text-sm text-blue-800 leading-relaxed mt-2">
+                  The selections you make below will be compared against your policy&apos;s requirements from the Coverage Details step. If the current care needs do not meet the policy&apos;s benefit triggers, you will be notified and given the option to continue for <strong>informational purposes only</strong> &mdash; so you can still receive a strategy and understand what to expect when the time comes.
+                </p>
+              </div>
+
+              {/* ADLs Section */}
               <div>
-                <div className="flex items-center gap-1.5 mb-3">
-                  <Label className="text-sm font-medium text-slate-700">What care services are needed? (Select all that apply)</Label>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <h3 className="text-base font-semibold text-slate-800">Activities of Daily Living (ADLs)</h3>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
                         <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-xs">Select every care service the insured currently needs help with. <strong>ADLs</strong> (Bathing, Dressing, Eating, Toileting, Transferring, Continence) are the six basic personal care tasks that most LTC policies use as benefit triggers. <strong>IADLs</strong> (Meal Prep, Medications, Housekeeping, etc.) are household and management tasks — important for care planning but generally not counted toward ADL qualification requirements.</TooltipContent>
+                    <TooltipContent className="max-w-xs text-xs">ADLs are the six fundamental personal care tasks used by most LTC policies as benefit triggers. Select every ADL with which the insured currently needs assistance.</TooltipContent>
                   </Tooltip>
                   <span className="text-red-500">*</span>
                 </div>
+                <p className="text-xs text-slate-500 mb-3">Select all ADLs the insured needs help with. These are compared against your policy&apos;s qualifying ADL list and minimum requirement.</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {[
-                    { category: "ADLs", items: ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"] },
-                    { category: "IADLs", items: ["Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry", "Shopping/Errands", "Transportation", "Money Management", "Telephone Use"] }
-                  ].flatMap(group => group.items).map(service => {
+                  {["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"].map(service => {
                     const careNeeds = form.careNeeds || [];
                     return (
                       <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
@@ -1177,68 +1187,104 @@ export default function PolicyForm() {
                       </label>
                     );
                   })}
-                  {(() => {
-                    const careNeeds = form.careNeeds || [];
-                    return (
-                      <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes("None") ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
-                        <Checkbox checked={careNeeds.includes("None")} onCheckedChange={checked => {
-                          update("careNeeds", checked ? ["None"] : []);
-                          clearError("careNeeds");
-                        }} />
-                        <span className="text-sm font-medium">None - No care is needed</span>
-                      </label>
-                    );
-                  })()}
                 </div>
               </div>
-              
-              {fieldErrors.careNeeds && <p className="text-xs text-red-600 -mt-2 mb-2">{fieldErrors.careNeeds}</p>}
 
+              {/* IADLs Section */}
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <h3 className="text-base font-semibold text-slate-800">Instrumental Activities of Daily Living (IADLs)</h3>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs">IADLs are household and life-management tasks. While most LTC policies do not count IADLs toward the ADL benefit trigger, they are important for care planning and documenting the full scope of care needed.</TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-xs text-slate-500 mb-3">Select any additional household or management tasks the insured needs help with. These do not count toward ADL qualification but are important for care planning.</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {["Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry", "Shopping/Errands", "Transportation", "Money Management", "Telephone Use"].map(service => {
+                    const careNeeds = form.careNeeds || [];
+                    return (
+                      <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
+                          update("careNeeds", checked ? [...careNeeds, service] : careNeeds.filter(s => s !== service));
+                          clearError("careNeeds");
+                        }} />
+                        <span className="text-sm font-medium">{service}</span>
+                      </label>
+                    );
+                  })}
+                  <label className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors col-span-2 md:col-span-1 ${(form.careNeeds || []).includes("None") ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                    <Checkbox checked={(form.careNeeds || []).includes("None")} onCheckedChange={checked => {
+                      update("careNeeds", checked ? ["None"] : []);
+                      clearError("careNeeds");
+                    }} />
+                    <span className="text-sm font-medium">None &mdash; No care is currently needed</span>
+                  </label>
+                </div>
+              </div>
+
+              {fieldErrors.careNeeds && <p className="text-xs text-red-600 -mt-2 mb-2">{fieldErrors.careNeeds}</p>}
+              {/* ADL Qualification Alert - derived directly from live form state */}
               {(() => {
                 const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
-                // If no qualifying ADLs have been specified in Coverage Details, treat all standard ADLs as qualifying
+                if (minAdlsRequired === 0) return null;
                 const qualifyingAdls = (form.qualifyingAdls && form.qualifyingAdls.length > 0)
                   ? form.qualifyingAdls
                   : ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
                 const adlList = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
                 const careNeedsNow = form.careNeeds || [];
+                const noneSelected = careNeedsNow.includes("None");
                 const actualAdls = careNeedsNow.filter(need => adlList.includes(need));
                 const actualAdlCount = actualAdls.length;
-                const noneSelected = careNeedsNow.includes("None");
-                // Only flag non-qualifying ADLs if the user has actually selected some ADLs
                 const nonQualifyingAdls = actualAdls.filter(adl => !qualifyingAdls.includes(adl));
-                const allAdlsQualify = actualAdlCount === 0 || nonQualifyingAdls.length === 0;
-
-                // Do not show alert if no minimum is set
-                if (minAdlsRequired === 0) return null;
-
                 const countOk = !noneSelected && actualAdlCount >= minAdlsRequired;
-                const listOk = allAdlsQualify;
+                const listOk = nonQualifyingAdls.length === 0;
                 const qualificationMet = countOk && listOk;
-
                 if (qualificationMet) return null;
-
                 return (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <h4 className="font-semibold text-red-800 mb-2">ADL Qualification Alert</h4>
-                    <p className="text-sm text-red-700 mb-2">
-                      Your policy requires a minimum of <strong>{minAdlsRequired} ADL(s)</strong> from the following list to qualify for benefits:
-                    </p>
-                    <p className="text-sm text-red-700 mb-3">
-                      <strong>{qualifyingAdls.join(", ")}</strong>
-                    </p>
-                    {noneSelected && (
-                      <p className="text-sm text-red-700">Currently: No care services are selected. Please select at least {minAdlsRequired} ADL(s) from the qualifying list above.</p>
-                    )}
-                    {!noneSelected && actualAdlCount < minAdlsRequired && (
-                      <p className="text-sm text-red-700">Currently: {actualAdlCount} ADL(s) selected. You need at least {minAdlsRequired} ADL(s) to qualify.</p>
-                    )}
-                    {!noneSelected && actualAdlCount >= minAdlsRequired && !listOk && (
-                      <p className="text-sm text-red-700">Currently: {actualAdlCount} ADL(s) selected, but the following are not on the qualifying list: <strong>{nonQualifyingAdls.join(", ")}</strong>. Please select only ADLs from the qualifying list above.</p>
-                    )}
+                  <div className="space-y-3">
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <h4 className="font-semibold text-red-800 mb-2">ADL Qualification Alert</h4>
+                      <p className="text-sm text-red-700 mb-2">
+                        Your policy requires a minimum of <strong>{minAdlsRequired} ADL(s)</strong> from the following qualifying list:
+                      </p>
+                      <p className="text-sm text-red-700 mb-3 font-medium">
+                        {qualifyingAdls.join(", ")}
+                      </p>
+                      {noneSelected && (
+                        <p className="text-sm text-red-700">No care services are currently selected. Please select at least {minAdlsRequired} ADL(s) from the qualifying list above to meet the benefit trigger.</p>
+                      )}
+                      {!noneSelected && actualAdlCount < minAdlsRequired && (
+                        <p className="text-sm text-red-700">Currently {actualAdlCount} qualifying ADL(s) selected &mdash; you need at least {minAdlsRequired} to meet the benefit trigger.</p>
+                      )}
+                      {!noneSelected && actualAdlCount >= minAdlsRequired && !listOk && (
+                        <p className="text-sm text-red-700">Some selected ADLs are not on the qualifying list: <strong>{nonQualifyingAdls.join(", ")}</strong>. Only ADLs from the qualifying list count toward the benefit trigger.</p>
+                      )}
+                    </div>
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                      <p className="text-sm text-amber-800 font-medium mb-2">Would you like to continue for informational purposes?</p>
+                      <p className="text-sm text-amber-700 mb-3">
+                        Even if the current care needs do not meet the policy&apos;s benefit triggers today, you can still complete this form to receive a personalized strategy and understand what to expect when the time comes.
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="proceedInformational"
+                          checked={proceedInformational}
+                          onCheckedChange={checked => setProceedInformational(!!checked)}
+                        />
+                        <label htmlFor="proceedInformational" className="text-sm text-amber-800 cursor-pointer">
+                          Yes, I understand the current care needs may not meet the benefit trigger &mdash; continue for informational purposes only.
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 );
               })()}
+
               
               <TooltipField label="Care Notes" name="careNotes">
                 <Textarea id="careNotes" value={form.careNotes} onChange={e => update("careNotes", e.target.value)} placeholder="Any additional notes about the care services selected..." rows={3} />
