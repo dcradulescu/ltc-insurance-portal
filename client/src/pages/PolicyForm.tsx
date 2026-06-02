@@ -1190,7 +1190,9 @@ export default function PolicyForm() {
                     return (
                       <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
-                          update("careNeeds", checked ? [...careNeeds, service] : careNeeds.filter(s => s !== service));
+                          // Selecting any ADL removes "None"
+                          const withoutNone = careNeeds.filter(s => s !== "None");
+                          update("careNeeds", checked ? [...withoutNone, service] : withoutNone.filter(s => s !== service));
                           clearError("careNeeds");
                         }} />
                         <span className="text-sm font-medium">{service}</span>
@@ -1220,7 +1222,9 @@ export default function PolicyForm() {
                     return (
                       <label key={service} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${careNeeds.includes(service) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
                         <Checkbox checked={careNeeds.includes(service)} onCheckedChange={checked => {
-                          update("careNeeds", checked ? [...careNeeds, service] : careNeeds.filter(s => s !== service));
+                          // Selecting any IADL removes "None"
+                          const withoutNone = careNeeds.filter(s => s !== "None");
+                          update("careNeeds", checked ? [...withoutNone, service] : withoutNone.filter(s => s !== service));
                           clearError("careNeeds");
                         }} />
                         <span className="text-sm font-medium">{service}</span>
