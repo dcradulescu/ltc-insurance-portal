@@ -511,6 +511,11 @@ export default function PolicyForm() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [step]);
 
+  // Scroll to top whenever the user navigates to a new step
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   const update = (field: keyof FormData, value: any) => {
     lastActivityRef.current = Date.now();
     
