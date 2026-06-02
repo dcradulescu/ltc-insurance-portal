@@ -503,3 +503,5 @@
 - [ ] Test persistence across page reloads
 - [ ] Test persistence across browser sessions
 - [ ] Verify Gantt chart and Checklist both reflect saved state
+- [x] Fix blank page after clicking Yes on ADL modal (steps array has 7 entries but only 6 rendered blocks — step 5 is Review, clicking Yes from step 4 advances to step 5 which is correct, but the steps array has an extra "Qualifying" entry causing step 6 to be blank)
+- [x] Move Diagnosis section to top of Step 4 with a clear heading

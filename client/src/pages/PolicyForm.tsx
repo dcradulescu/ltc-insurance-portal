@@ -798,8 +798,7 @@ export default function PolicyForm() {
     { title: "LTC Ins Company", icon: "🏢" },
     { title: "Policy Info", icon: "📄" },
     { title: "Coverage Details", icon: "📋" },
-    { title: "Claims Info", icon: "📞" },
-    { title: "Qualifying", icon: "✓" },
+    { title: "Care Needs", icon: "📞" },
     { title: "Review & Submit", icon: "✅" },
   ];
 
@@ -1171,6 +1170,41 @@ export default function PolicyForm() {
                 </p>
               </div>
 
+              {/* Diagnosis Section */}
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <h3 className="text-base font-semibold text-slate-800">Primary Diagnosis or Condition</h3>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs">Select all medical diagnoses or conditions contributing to the insured's need for care. A cognitive impairment diagnosis (e.g., Alzheimer's, Dementia) may qualify as a separate benefit trigger even without meeting the ADL requirement.</TooltipContent>
+                  </Tooltip>
+                  <span className="text-red-500">*</span>
+                </div>
+                <p className="text-xs text-slate-500 mb-3">Select all diagnoses that apply. Cognitive conditions may qualify as a separate benefit trigger independent of ADL requirements.</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {["Arthritis", "Congestive Heart Failure (CHF)", "Heart Disease", "Diabetes", "Alzheimer's Disease", "Dementia", "COPD", "Stroke", "Cancer", "Parkinson's Disease", "Pneumonia", "Kidney Disease", "Liver Disease", "Osteoporosis", "Hypertension", "Other"].map(diagnosis => {
+                    const diagnosisCheckboxes = form.diagnosisCheckboxes || [];
+                    return (
+                      <label key={diagnosis} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${diagnosisCheckboxes.includes(diagnosis) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
+                        <Checkbox checked={diagnosisCheckboxes.includes(diagnosis)} onCheckedChange={checked => {
+                          update("diagnosisCheckboxes", checked ? [...diagnosisCheckboxes, diagnosis] : diagnosisCheckboxes.filter(d => d !== diagnosis));
+                          clearError("diagnosisCheckboxes");
+                        }} />
+                        <span className="text-sm font-medium">{diagnosis}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {fieldErrors.diagnosisCheckboxes && <p className="text-xs text-red-600 mt-2">{fieldErrors.diagnosisCheckboxes}</p>}
+              </div>
+              <TooltipField label="Diagnosis Notes" name="diagnosisNotes">
+                <Textarea id="diagnosisNotes" value={form.diagnosisNotes} onChange={e => update("diagnosisNotes", e.target.value)} placeholder="Additional details about the diagnosis, conditions, or cognitive impairments..." rows={3} />
+              </TooltipField>
+
               {/* ADLs Section */}
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
@@ -1320,39 +1354,6 @@ export default function PolicyForm() {
                 <Textarea id="careNotes" value={form.careNotes} onChange={e => update("careNotes", e.target.value)} placeholder="Any additional notes about the care services selected..." rows={3} />
               </TooltipField>
               
-              {/* Diagnosis Checkboxes */}
-              <div>
-                <div className="flex items-center gap-1.5 mb-3">
-                  <Label className="text-sm font-medium text-slate-700">What is the primary diagnosis or condition? (Select all that apply)</Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
-                        <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-xs">Select the primary medical diagnosis or condition(s) that necessitate long-term care.</TooltipContent>
-                  </Tooltip>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {["Arthritis", "Congestive Heart Failure (CHF)", "Heart Disease", "Diabetes", "Alzheimer's Disease", "Dementia", "COPD", "Stroke", "Cancer", "Parkinson's Disease", "Pneumonia", "Kidney Disease", "Liver Disease", "Osteoporosis", "Hypertension", "Other"].map(diagnosis => {
-                    const diagnosisCheckboxes = form.diagnosisCheckboxes || [];
-                    return (
-                      <label key={diagnosis} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${diagnosisCheckboxes.includes(diagnosis) ? "bg-teal/10 border-teal" : "bg-white border-slate-200 hover:border-slate-300"}`}>
-                        <Checkbox checked={diagnosisCheckboxes.includes(diagnosis)} onCheckedChange={checked => {
-                          update("diagnosisCheckboxes", checked ? [...diagnosisCheckboxes, diagnosis] : diagnosisCheckboxes.filter(d => d !== diagnosis));
-                          clearError("diagnosisCheckboxes");
-                        }} />
-                        <span className="text-sm font-medium">{diagnosis}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {fieldErrors.diagnosisCheckboxes && <p className="text-xs text-red-600 -mt-2 mb-2">{fieldErrors.diagnosisCheckboxes}</p>}
-              <TooltipField label="Diagnosis Notes" name="diagnosisNotes">
-                <Textarea id="diagnosisNotes" value={form.diagnosisNotes} onChange={e => update("diagnosisNotes", e.target.value)} placeholder="Additional details about the diagnosis, conditions, or cognitive impairments..." rows={3} />
-              </TooltipField>
               <TooltipField label="Additional Notes" name="additionalNotes">
                 <Textarea id="additionalNotes" value={form.additionalNotes} onChange={e => update("additionalNotes", e.target.value)} placeholder="Any additional information that may be relevant..." rows={3} />
               </TooltipField>
