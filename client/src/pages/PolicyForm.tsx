@@ -1196,39 +1196,48 @@ export default function PolicyForm() {
 
               {(() => {
                 const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
-                const qualifyingAdls = form.qualifyingAdls || [];
+                // If no qualifying ADLs have been specified in Coverage Details, treat all standard ADLs as qualifying
+                const qualifyingAdls = (form.qualifyingAdls && form.qualifyingAdls.length > 0)
+                  ? form.qualifyingAdls
+                  : ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
                 const adlList = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
-                const actualAdls = form.careNeeds?.filter(need => adlList.includes(need)) || [];
+                const careNeedsNow = form.careNeeds || [];
+                const actualAdls = careNeedsNow.filter(need => adlList.includes(need));
                 const actualAdlCount = actualAdls.length;
-                const noneSelected = form.careNeeds?.includes("None") || false;
-                const allAdlsQualify = actualAdls.every(adl => qualifyingAdls.includes(adl));
-                
-                const qualificationMet = minAdlsRequired > 0 && actualAdlCount >= minAdlsRequired && allAdlsQualify && !noneSelected;
-                
-                // Show alert if minAdlsRequired is set AND qualification is not met
-                if (minAdlsRequired > 0 && !qualificationMet) {
-                  return (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <h4 className="font-semibold text-red-800 mb-2">ADL Qualification Alert</h4>
-                      <p className="text-sm text-red-700 mb-2">
-                        Your policy requires a minimum of <strong>{minAdlsRequired} ADL(s)</strong> from the following list to qualify for benefits:
-                      </p>
-                      <p className="text-sm text-red-700 mb-3">
-                        <strong>{qualifyingAdls.join(", ")}</strong>
-                      </p>
-                      {noneSelected && (
-                        <p className="text-sm text-red-700">Currently: No care services are selected. Please select at least {minAdlsRequired} ADL(s) from the qualifying list above.</p>
-                      )}
-                      {!noneSelected && actualAdlCount < minAdlsRequired && (
-                        <p className="text-sm text-red-700">Currently: {actualAdlCount} ADL(s) selected. You need at least {minAdlsRequired} ADL(s) to qualify.</p>
-                      )}
-                      {!noneSelected && actualAdlCount >= minAdlsRequired && !allAdlsQualify && (
-                        <p className="text-sm text-red-700">Currently: {actualAdlCount} ADL(s) selected, but some are not on the qualifying list. Please select only ADLs from the list above.</p>
-                      )}
-                    </div>
-                  );
-                }
-                return null;
+                const noneSelected = careNeedsNow.includes("None");
+                // Only flag non-qualifying ADLs if the user has actually selected some ADLs
+                const nonQualifyingAdls = actualAdls.filter(adl => !qualifyingAdls.includes(adl));
+                const allAdlsQualify = actualAdlCount === 0 || nonQualifyingAdls.length === 0;
+
+                // Do not show alert if no minimum is set
+                if (minAdlsRequired === 0) return null;
+
+                const countOk = !noneSelected && actualAdlCount >= minAdlsRequired;
+                const listOk = allAdlsQualify;
+                const qualificationMet = countOk && listOk;
+
+                if (qualificationMet) return null;
+
+                return (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h4 className="font-semibold text-red-800 mb-2">ADL Qualification Alert</h4>
+                    <p className="text-sm text-red-700 mb-2">
+                      Your policy requires a minimum of <strong>{minAdlsRequired} ADL(s)</strong> from the following list to qualify for benefits:
+                    </p>
+                    <p className="text-sm text-red-700 mb-3">
+                      <strong>{qualifyingAdls.join(", ")}</strong>
+                    </p>
+                    {noneSelected && (
+                      <p className="text-sm text-red-700">Currently: No care services are selected. Please select at least {minAdlsRequired} ADL(s) from the qualifying list above.</p>
+                    )}
+                    {!noneSelected && actualAdlCount < minAdlsRequired && (
+                      <p className="text-sm text-red-700">Currently: {actualAdlCount} ADL(s) selected. You need at least {minAdlsRequired} ADL(s) to qualify.</p>
+                    )}
+                    {!noneSelected && actualAdlCount >= minAdlsRequired && !listOk && (
+                      <p className="text-sm text-red-700">Currently: {actualAdlCount} ADL(s) selected, but the following are not on the qualifying list: <strong>{nonQualifyingAdls.join(", ")}</strong>. Please select only ADLs from the qualifying list above.</p>
+                    )}
+                  </div>
+                );
               })()}
               
               <TooltipField label="Care Notes" name="careNotes">
