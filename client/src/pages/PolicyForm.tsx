@@ -81,56 +81,82 @@ const parseCurrencyToNumber = (value: string): number | null => {
 
 const tooltips: Record<string, string> = {
   // Step 0: Insured Person
-  insuredFullName: "Enter the full legal name of the person who holds the LTC insurance policy. This is the person who will receive care. Use the name exactly as it appears on the policy.",
-  insuredEmail: "The insured person's email address. We'll use this to send you updates, strategy recommendations, and important information about your claim. Keep it current.",
-  insuredPhone: "The insured person's phone number. This is the primary contact number for the insurance company and your care team to reach you. Include the area code.",
-  insuredDob: "The insured person's date of birth. This is used to verify identity with the insurance company and is required on all claim paperwork.",
-  insuredMailingAddress: "The current mailing address of the insured person. The insurance company will send all correspondence, claim packets, and checks to this address. This is also where paperwork and your long-term care strategy can be mailed.",
-
-  insuredMedicareNumber: "The insured person's Medicare ID number (found on their red, white, and blue Medicare card). Some LTC policies coordinate with Medicare, so this may be needed during the claim.",
-  insuredMedicaidNumber: "The insured person's Medicaid ID number, if they are enrolled. Medicaid may be a secondary payer or become relevant if LTC benefits are exhausted.",
-  powerOfAttorneyPresent: "A Power of Attorney (POA) is a legal document that lets someone make decisions on behalf of the insured. Select 'Yes' if a POA has been signed. You may need to provide a copy to the insurance company.",
-  poa_name: "Enter the full name of the person designated as Power of Attorney. This person has legal authority to make decisions on behalf of the insured and will be important for your care strategy.",
-  poa_relationship: "What is the Power of Attorney's relationship to the person who is insured and needs care?",
-  fillerRelationship: "Select how you are related to the insured person. If you are the insured person filling this out yourself, select 'Self.' The insurance company may ask about this relationship.",
+  insuredFullName: "Enter the full legal name of the person who holds the LTC insurance policy — the person who will receive care. Use the name exactly as it appears on the policy declaration page.",
+  insuredEmail: "The insured person's email address. Used to send strategy recommendations and important claim updates. Make sure it is current and checked regularly.",
+  insuredPhone: "The insured person's primary phone number including area code, in the format (000) 000-0000. This is the number the insurance company and care team will use to reach you.",
+  insuredDob: "The insured person's date of birth in MM/DD/YYYY format. Required on all claim paperwork and used by the insurance company to verify identity.",
+  insuredMailingAddress: "The current street address of the insured person. The insurance company will mail all correspondence, claim packets, and reimbursement checks to this address.",
+  insuredCity: "The city portion of the insured person's mailing address.",
+  insuredState: "The two-letter state abbreviation for the insured person's mailing address (e.g., SC, NC, GA).",
+  insuredZip: "The five-digit ZIP code for the insured person's mailing address.",
+  powerOfAttorneyPresent: "A Power of Attorney (POA) is a legal document authorizing someone to make decisions on behalf of the insured. Select 'Yes' if a POA has been signed and executed. The insurance company will likely require a copy before speaking with anyone other than the insured.",
+  poa_name: "The full legal name of the person designated as Power of Attorney. This person has legal authority to act on behalf of the insured and will be a key contact throughout the claims process.",
+  poa_relationship: "The relationship of the Power of Attorney to the insured person (e.g., Spouse, Daughter, Son, Attorney). The insurance company may ask for this information when verifying authority.",
 
   // Step 1: Carrier Info
-  carrierName: "The name of the company that issued the LTC insurance policy (e.g., Genworth, John Hancock, Mutual of Omaha). You can find this on the front page of your policy or on any premium billing statement.",
-  carrierAddress1: "The mailing address of your insurance company's claims department. This is where you will send your completed claim packet. Check your policy documents or call the carrier to confirm.",
-  carrierAddress2: "Use this for any additional address details like a suite number, floor, or P.O. Box. Leave blank if not applicable.",
-  carrierCityStateZip: "The city, state, and ZIP code for your insurance company's claims office. You can find this on your policy declaration page or billing statements.",
-  carrierPhone: "The main phone number for your insurance company's LTC claims department. This is the number you'll call to request a claims packet and ask questions about your policy.",
-  carrierFax: "The fax number for your insurance company, if available. Some carriers accept claim documents by fax. Check your policy documents or ask when you call.",
-  policyNumber: "Your unique LTC policy number. This is printed on your policy declaration page, premium notices, and any correspondence from the carrier. Every document you submit must include this number.",
-  claimPreClaimNumber: "When you first contact the insurance company about a claim, they may assign a pre-claim or reference number before the claim is officially opened. Enter it here if you have one; otherwise leave blank.",
+  carrierName: "The full name of the insurance company that issued the LTC policy (e.g., Genworth, John Hancock, Mutual of Omaha, Transamerica). Found on the front page of your policy or any premium billing statement.",
+  carrierAddress: "The mailing address of the insurance company's LTC claims department. This is where you will send your completed claim packet. If unsure, call the carrier's claims line to confirm the correct address.",
+  carrierCity: "The city for the insurance company's claims department mailing address.",
+  carrierState: "The two-letter state abbreviation for the insurance company's claims department address.",
+  carrierZip: "The ZIP code for the insurance company's claims department mailing address.",
+  carrierPhone: "The direct phone number for the insurance company's LTC claims department. This is the number to call when requesting a claims packet, asking about policy provisions, or checking claim status.",
+  carrierFax: "The fax number for the insurance company's claims department, if available. Some carriers still accept claim documents by fax. Confirm with the carrier whether fax submissions are accepted.",
 
-  // Step 2: Coverage Details
-  eliminationPeriod: "The 'waiting period' before your policy starts paying — measured in days of service, not calendar days. For example, a 90-day elimination period means you must receive (and pay for) 90 days of care before benefits kick in. Check your policy's benefit summary.",
-  dailyMaximum: "The most your policy will pay per day of care. For example, if your daily max is $200 and your care costs $250/day, you are responsible for the extra $50. Found on your policy's benefit summary page.",
-  monthlyMaximum: "The most your policy will pay per month. Some policies use a monthly cap instead of (or in addition to) a daily cap. Check your benefit summary — if your policy only lists a daily amount, you can leave this blank.",
-  lifetimeMaximum: "The total amount your policy will ever pay out over its entire lifetime. Once this amount is reached, benefits end. This is sometimes called the 'benefit pool' or 'maximum lifetime benefit.' Found on your policy summary.",
-  minAdlsRequired: "ADLs (Activities of Daily Living) are basic self-care tasks: Bathing, Dressing, Eating, Toileting, Transferring, and Continence. Most policies require that 2 or 3 of these be impaired before benefits begin. Check your policy for the exact number.",
-  waiverOfPremium: "If your policy includes a Waiver of Premium, you stop paying your insurance premiums once you begin receiving benefits. This saves money during care. Check your policy — not all policies include this feature.",
-  cnaRequired: "Some insurance companies require that your caregiver be a Certified Nursing Assistant (CNA). If your caregiver is not a CNA and the policy requires one, the insurance company may deny payment. Check your policy or ask the carrier.",
-  careNotesRequired: "Many insurance companies require daily care logs or 'logsheets' that document what care was provided, when, and by whom. These are submitted along with invoices for reimbursement. Ask your carrier about their specific requirements.",
-  paymentCycle: "How often the insurance company reviews and pays claims — usually monthly. You'll submit invoices and care logs on this schedule. Ask your carrier for their preferred billing cycle.",
-  assignmentOfBenefits: "With an Assignment of Benefits (AOB), the insurance company pays your care provider directly instead of sending a check to you. Without AOB, you pay the provider yourself and then submit receipts for reimbursement. AOB simplifies the process for most families.",
+  // Step 2: Policy Info
+  policyNumber: "Your unique LTC policy identification number. Found on the policy declaration page, premium billing notices, and all carrier correspondence. This number must appear on every document you submit to the insurance company.",
+  claimPreClaimNumber: "When you first contact the insurance company to report a potential claim, they may assign a pre-claim or reference number before the claim is officially opened. Enter it here if one has been provided; otherwise leave blank.",
+  caseManagerAssigned: "Insurance companies often assign a Case Manager once a claim is opened. This person is the insured's primary contact at the carrier, determines approved hours of care, and periodically reviews the case. Select 'Yes' if one has been assigned.",
+  caseManagerName: "The full name of the Case Manager assigned by the insurance company. Having their name makes it easier to reach the right person when calling about your claim status or care approvals.",
 
-  // Step 3: Medical & Administrative
-  caseManagerName: "The insurance company may assign a Case Manager to your claim. This person determines how many hours of care are approved and checks in periodically to review your case. Enter their name if one has been assigned.",
-  thirdPartyAssessmentRequired: "Some policies require an independent nurse (RN) to visit and evaluate the insured person's condition before approving benefits. This is separate from your own doctor's evaluation. Select 'Unknown' if you're not sure.",
-  thirdPartyAssessmentWho: "If a third-party assessment is required, enter the name or title of the person who will conduct it (e.g., 'RN from XYZ Assessment Services'). The insurance company will usually arrange this.",
-  cognitiveImpairmentTrigger: "Some LTC policies allow benefits to begin if the insured has a cognitive impairment (such as Alzheimer's or dementia) even if they don't meet the ADL requirements. Check your policy or ask the carrier.",
-  planOfCareStatus: "A Plan of Care is a document from a healthcare provider that outlines what care the insured person needs. Insurance companies typically require this before approving a claim. Select the current status.",
-  ltcCoordinatorAssigned: "Some insurance companies assign an LTC Coordinator (different from a Case Manager) to help guide you through the claims process. Enter their name if one has been assigned to your case.",
+  // Step 3: Coverage Details — Financial Benefits
+  dailyMaximum: "The maximum dollar amount your policy will pay per day of covered care. If your daily care cost exceeds this amount, you are responsible for the difference. Found on the policy's benefit summary or declaration page.",
+  monthlyMaximum: "The maximum dollar amount your policy will pay per month. Some policies use a monthly cap instead of or in addition to a daily cap. If your policy only shows a daily maximum, you may leave this blank.",
+  lifetimeMaximum: "The total dollar amount your policy will pay over its entire lifetime — sometimes called the 'benefit pool' or 'maximum lifetime benefit.' Once this amount is exhausted, no further benefits are payable. Found on your policy summary page.",
 
-  // Step 4: Care Needs & ADLs
-  currentCareNeeds: "Describe what kind of help the insured person needs right now. For example: 'Needs help bathing, getting dressed, and preparing meals. Cannot be left alone due to fall risk.' Be specific — this helps build your strategy.",
-  diagnosisOrCondition: "List the medical conditions or diagnoses that are causing the need for care. For example: 'Alzheimer's disease, osteoarthritis, history of falls.' Include both physical and cognitive conditions.",
-  primaryDiagnosis: "Select the primary medical diagnosis driving the need for long-term care (e.g., Alzheimer's, CHF, COPD, Stroke). This helps us recommend appropriate care levels and may affect waiver of premium eligibility (e.g., hospice may waive the elimination period).",
-  adlLimitations: "Activities of Daily Living (ADLs) are the basic tasks of everyday life. Check each one the insured person needs help with. Your policy requires a minimum number of ADL deficits to qualify for benefits.",
-  preferredCareType: "Select the type of care the insured person prefers or is currently receiving. Home Care means a caregiver comes to the home. Assisted Living and Nursing Home are residential facilities. Your policy may cover some types but not others.",
-  additionalNotes: "Use this space for anything else that might be important — special circumstances, previous claim attempts, family concerns, or questions you want addressed in your strategy. There are no wrong answers here.",
+  // Step 3: Elimination Period
+  eliminationPeriod: "The elimination period is the 'waiting period' before your policy begins paying benefits — measured in days of qualifying care received, not calendar days. For example, a 90-day elimination period means you must personally pay for 90 days of covered care before the insurance company starts reimbursing. Found on your policy's benefit summary.",
+  lookBackPeriodDays: "Some policies allow care days received within a set window before the formal claim start date to count toward satisfying the elimination period. For example, a 30-day lookback means care provided in the 30 days before the claim was filed may count. Check your policy or ask the carrier.",
+  careCoordinatorReducedToDays: "Some policies allow the insurance company's care coordinator to reduce the number of days that count toward the elimination period. For example, if the coordinator determines the insured only needed care 3 days per week, the elimination period effectively takes longer to satisfy. Enter the reduced day count if this provision applies.",
+  reductionInCareDaysCountedAs7: "Some policies include a provision that counts any week in which care was received — even if only a few days — as a full 7-day week for elimination period purposes. This can significantly shorten the time to satisfy the elimination period. Enter the minimum days per week required to trigger this provision.",
+
+  // Step 3: Policy Features
+  waiverOfPremium: "If your policy includes a Waiver of Premium, your monthly insurance premium payments are suspended once you begin receiving benefits. This can save hundreds of dollars per month during care. Not all policies include this feature — check your policy or ask the carrier.",
+  assignmentOfBenefits: "Assignment of Benefits (AOB) allows the insurance company to pay your care provider directly, rather than reimbursing you after the fact. Without AOB, you pay the provider out of pocket and then submit receipts for reimbursement. AOB is simpler for most families and reduces cash flow burden.",
+
+  // Step 3: Qualifying Events
+  minAdlsRequired: "Activities of Daily Living (ADLs) are the six basic self-care tasks: Bathing, Dressing, Eating/Feeding, Toileting, Transferring, and Continence. Most LTC policies require that the insured be unable to perform 2 or 3 of these without assistance before benefits begin. Check your policy's benefit trigger section for the exact number.",
+  cognitiveImpairmentTrigger: "Many LTC policies allow benefits to begin based on a diagnosis of cognitive impairment (such as Alzheimer's disease or dementia) even if the insured does not meet the ADL requirement. This is a separate qualifying trigger. Check your policy's benefit trigger section or ask the carrier.",
+
+  // Step 3: Home Care Requirements
+  inHomeCoverageEnabled: "Indicates whether your LTC policy covers care provided in the insured person's home by a paid caregiver. Some policies only cover facility-based care (nursing home or assisted living). Check your policy's covered services section.",
+  cnaRequired: "Some insurance companies require that the home caregiver hold a Certified Nursing Assistant (CNA) credential. If your caregiver is not a CNA and the policy requires one, claims may be denied. Check your policy or ask the carrier before hiring a caregiver.",
+  careNotesRequired: "Many insurance companies require that caregivers maintain daily care logs or 'logsheets' documenting what care was provided, when, and for how long. These logs are submitted with invoices as proof of service. Confirm the carrier's specific format and submission requirements.",
+  thirdPartyAssessmentRequired: "Some policies require an independent Registered Nurse (RN) — arranged by the insurance company — to visit and evaluate the insured's condition, ADL deficits, and cognitive status before approving benefits. This assessment is separate from your own physician's evaluation. Any inconsistencies between your documentation and the RN's findings can lead to a claim denial.",
+  approvedAgencyRequired: "Some insurance companies require that home care be provided through an agency they have pre-approved or that holds a specific state license. Independent or private-pay caregivers may not qualify. Check your policy or ask the carrier whether agency affiliation is required before hiring.",
+
+  // Step 4: Care Needs
+  careNeeds: "Select all care services the insured person currently needs. ADLs (Bathing, Dressing, Eating, Toileting, Transferring, Continence) are the six basic personal care tasks that most policies use as benefit triggers. IADLs (Meal Preparation, Medication Management, Housekeeping, etc.) are household and management tasks — important for care planning but generally not counted toward ADL qualification requirements.",
+  careNotes: "Use this space to describe the care situation in more detail. For example: 'Needs hands-on assistance with bathing and dressing every morning. Cannot be left alone due to fall risk. Requires medication reminders three times daily.' The more specific you are, the more tailored your strategy will be.",
+  diagnosisCheckboxes: "Select all medical diagnoses or conditions that are contributing to the insured person's need for care. Include both physical and cognitive conditions. This information helps build your strategy and may affect benefit trigger eligibility — for example, Alzheimer's or dementia may qualify as a cognitive impairment trigger even without meeting the ADL requirement.",
+  diagnosisNotes: "Provide any additional detail about the diagnosis, progression, or treatment. For example: 'Diagnosed with Alzheimer's in 2022, currently in moderate stage. Also has Type 2 diabetes managed with insulin.' This context helps tailor your claim strategy.",
+  preferredCareType: "Indicates whether the insured person's LTC policy covers care provided at home by a paid caregiver. Some policies only cover facility-based care (nursing home or assisted living). If 'No,' home care costs will not be reimbursed and a facility placement strategy may be needed.",
+  additionalNotes: "Use this space for anything else that may be relevant — special family circumstances, previous claim attempts, caregiver preferences, or questions you want addressed in your strategy. There are no wrong answers here.",
+
+  // Legacy / unused keys kept for backward compatibility
+  insuredMedicareNumber: "The insured person's Medicare ID number (found on their red, white, and blue Medicare card). Some LTC policies coordinate with Medicare, so this may be needed during the claim.",
+  insuredMedicaidNumber: "The insured person's Medicaid ID number, if enrolled. Medicaid may become relevant if LTC benefits are exhausted.",
+  fillerRelationship: "Select how you are related to the insured person. If you are the insured person filling this out yourself, select 'Self.'",
+  carrierAddress1: "The mailing address of your insurance company's claims department.",
+  carrierAddress2: "Suite number, floor, or P.O. Box if applicable.",
+  carrierCityStateZip: "City, state, and ZIP code for the insurance company's claims office.",
+  paymentCycle: "How often the insurance company reviews and pays claims — usually monthly.",
+  thirdPartyAssessmentWho: "The name or title of the person conducting the third-party assessment.",
+  planOfCareStatus: "A Plan of Care outlines what care the insured person needs. Insurance companies typically require this before approving a claim.",
+  ltcCoordinatorAssigned: "Some insurance companies assign an LTC Coordinator to help guide you through the claims process.",
+  currentCareNeeds: "Describe what kind of help the insured person needs right now.",
+  diagnosisOrCondition: "List the medical conditions or diagnoses causing the need for care.",
+  primaryDiagnosis: "The primary medical diagnosis driving the need for long-term care.",
+  adlLimitations: "Check each ADL the insured person needs help with.",
 };
 
 type FormData = {
@@ -1064,7 +1090,7 @@ export default function PolicyForm() {
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Home Care Requirements</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   <TooltipField label="Home Care Covered?" name="inHomeCoverageEnabled">
                     <Select value={form.equipmentAllowanceEnabled === true ? "yes" : form.equipmentAllowanceEnabled === false ? "no" : ""} onValueChange={v => update("equipmentAllowanceEnabled", v === "yes" ? true : v === "no" ? false : false)}>
                       <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
@@ -1073,6 +1099,12 @@ export default function PolicyForm() {
                   </TooltipField>
                   {form.equipmentAllowanceEnabled === true && (
                     <>
+                      <TooltipField label="Approved Agency Required?" name="approvedAgencyRequired">
+                        <Select value={form.approvedAgencyRequired || "no"} onValueChange={v => update("approvedAgencyRequired", v)}>
+                          <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
+                        </Select>
+                      </TooltipField>
                       <TooltipField label="CNA Required?" name="cnaRequired">
                         <Select value={form.cnaRequired || "no"} onValueChange={v => update("cnaRequired", v)}>
                           <SelectTrigger className="bg-white"><SelectValue placeholder="Select" /></SelectTrigger>
@@ -1230,15 +1262,6 @@ export default function PolicyForm() {
               {fieldErrors.diagnosisCheckboxes && <p className="text-xs text-red-600 -mt-2 mb-2">{fieldErrors.diagnosisCheckboxes}</p>}
               <TooltipField label="Diagnosis Notes" name="diagnosisNotes">
                 <Textarea id="diagnosisNotes" value={form.diagnosisNotes} onChange={e => update("diagnosisNotes", e.target.value)} placeholder="Additional details about the diagnosis, conditions, or cognitive impairments..." rows={3} />
-              </TooltipField>
-              <TooltipField label="Is Home Care covered in my policy?" name="preferredCareType" isRequired>
-                <Select value={form.preferredCareType || "no"} onValueChange={v => update("preferredCareType", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
               </TooltipField>
               <TooltipField label="Additional Notes" name="additionalNotes">
                 <Textarea id="additionalNotes" value={form.additionalNotes} onChange={e => update("additionalNotes", e.target.value)} placeholder="Any additional information that may be relevant..." rows={3} />
