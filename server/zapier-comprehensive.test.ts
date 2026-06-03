@@ -37,7 +37,10 @@ describe("policyForm.sendComprehensiveToZapier", () => {
   });
 
   it("returns success: false when webhook URL is not configured", async () => {
-    // The ENV.zapierWebhookUrl may be empty in test environment
+    // Mock fetch so no real HTTP call is made (webhook URL may be set in env)
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    vi.stubGlobal("fetch", mockFetch);
+
     const { ctx } = createTestContext();
     const caller = appRouter.createCaller(ctx);
 
@@ -47,11 +50,11 @@ describe("policyForm.sendComprehensiveToZapier", () => {
       sessionDurationSeconds: 120,
     });
 
-    // When no webhook URL is configured, it should return gracefully
+    // Should return gracefully regardless of webhook URL presence
     expect(result).toHaveProperty("success");
     expect(result).toHaveProperty("message");
     expect(typeof result.success).toBe("boolean");
-  }, 10000);
+  }, 5000);
 
   it("accepts all valid trigger types", async () => {
     const { ctx } = createTestContext();

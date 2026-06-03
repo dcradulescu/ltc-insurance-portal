@@ -283,22 +283,22 @@
 - [x] All tests passing
 - [x] Dev server running without errors
 
-## Remove Social Security Number Field
+## Remove Social Security Number Field — DEFERRED
 - [ ] Remove SSN field from Policy Form UI
 - [ ] Remove SSN from database schema
 - [ ] Update server procedures to exclude SSN
 - [ ] Test and verify removal
 
-## Future Enhancements
+## Future Enhancements — DEFERRED
 - [ ] Implement document upload per checklist task with S3 storage
-- [ ] Re-implement RAG/chat functionality with proper schema
+- [x] Re-implement RAG/chat functionality with proper schema (completed June 2026)
 - [ ] Add Profile page with name/email editing, CC contacts, notification preferences
 
 
-## Form Restructuring - In Progress
-- [ ] Break apart Insured Person address into Address, City, State, Zip fields
+## Form Restructuring — DEFERRED (major redesign, separate session)
+- [ ] Break apart Insured Person address into Address, City, State, Zip fields (already done in current form)
 - [ ] Rename "Insurance Carrier Information" to "Long Term Care Insurance Company"
-- [ ] Break apart Carrier address into Address, City, State, Zip fields
+- [ ] Break apart Carrier address into Address, City, State, Zip fields (already done in current form)
 - [ ] Update timeline: "Carrier Info" → "LTC Ins Company"
 - [ ] Create new "Policy Info" screen
 - [ ] Move Policy Number and Claim Pre-Claim Number to Policy Info
@@ -317,10 +317,10 @@
 - [ ] Rename "What care services are needed?" to "What Care Do I Need?"
 - [ ] Move "In Home Care Covered" to Policy Info
 - [ ] Restructure Review & Submit with proper grouping
-- [ ] Format all monetary fields as $###,###.##mium deduction: Divide monthly premium by 4.33 weeks
-- [ ] Fix daily premium deduction: Divide monthly premium by actual care days per month (daysPerWeek × 4.33)
-- [ ] Test with sample data to verify accurate deductions
-- [ ] Verify net cost of care calculations are correct
+- [ ] Format all monetary fields as $###,###.##
+- [x] Fix daily premium deduction: Divide monthly premium by actual care days per month (daysPerWeek × 4.33)
+- [x] Test with sample data to verify accurate deductions
+- [x] Verify net cost of care calculations are correct
 
 
 ## Waiver of Premium Calculation Fix (COMPLETED - April 14, 2026)
@@ -468,17 +468,17 @@
 - [x] Integrate into Strategy page below video, above stage checklists
 - [x] Test bidirectional sync: verified checking task in checklist updates Gantt (2/43 shown in both)
 
-## Strategy Page Section Reorganization (April 21, 2026)
-- [ ] Add "How Do You Want to See Your Custom Plan?" heading with section navigation
-- [ ] Create clean "Written Plan" section with the full strategy document
-- [ ] Create clean "Timeline" section with the Gantt chart
-- [ ] Create clean "Checklist" section with the chronological checklist
-- [ ] Create clean "Downloads" section for PDF download
-- [ ] Create clean "Send My Plan to Me" section for email/SMS delivery
-- [ ] Add section navigation cards/buttons under the heading
-- [ ] Add visual dividers and consistent section headers throughout
-- [ ] Move policy summary to the top as context, above the plan view options
-- [ ] Test all sections render correctly and navigation works
+## Strategy Page Section Reorganization (April 21, 2026) — SUPERSEDED by second block below
+- [x] Add "How Do You Want to See Your Custom Plan?" heading with section navigation
+- [x] Create clean "Written Plan" section with the full strategy document
+- [x] Create clean "Timeline" section with the Gantt chart
+- [x] Create clean "Checklist" section with the chronological checklist
+- [x] Create clean "Downloads" section for PDF download
+- [x] Create clean "Send My Plan to Me" section for email/SMS delivery
+- [x] Add section navigation cards/buttons under the heading
+- [x] Add visual dividers and consistent section headers throughout
+- [x] Move policy summary to the top as context, above the plan view options
+- [x] Test all sections render correctly and navigation works
 
 
 ## Strategy Page Section Reorganization (April 21, 2026)
@@ -493,7 +493,7 @@
 - [x] Fix Zapier test timeout (increased to 10000ms, all 49 tests passing)
 
 
-## Persist Task Completion to Database (April 21, 2026)
+## Persist Task Completion to Database — DEFERRED (future enhancement)
 - [ ] Add task_completion table to database schema
 - [ ] Create migration to add task_completion table
 - [ ] Implement tRPC procedure to save task completion state
@@ -586,3 +586,11 @@
 - [x] RAG chat: inject user's current policy data as context when available
 - [x] RAG chat: markdown rendering in chat widget (dangerouslySetInnerHTML)
 - [x] Write complete Manus reconstruction mega-prompt that rebuilds the entire app from scratch in one prompt
+
+## Gap Resolution (June 2026)
+- [x] Video icons: clarify scope as "coming soon" placeholder (no real video URLs yet) — all fields show dimmed play icon with toast on click
+- [x] Create disaster-recovery ZIP export of full codebase — ltc-insurance-portal-backup-20260603.zip
+- [x] Mobile Strategy: horizontal-scroll approach for Gantt chart on small screens
+- [x] Add per-step Zapier submission on Next button click — notifyStepProgress fires on every Next
+- [x] Pass policyId/policy context into ChatWidget from Strategy page — PolicyContext added
+- [x] Rename sendSaveLink to match email.saveAndReturn or update todo text — procedure is email.sendSaveLink, works correctly

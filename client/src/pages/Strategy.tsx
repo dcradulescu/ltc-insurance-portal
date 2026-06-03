@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { usePolicyContext } from "@/contexts/PolicyContext";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useStageCelebration } from "@/hooks/useStageCelebration";
@@ -174,6 +175,13 @@ export default function Strategy() {
 
   const strategy = strategyQuery.data;
   const policy = policyFromStorage || policyQuery.data;
+
+  // Share active policy ID with the global ChatWidget
+  const { setActivePolicyId } = usePolicyContext();
+  useEffect(() => {
+    if (policy?.id) setActivePolicyId(policy.id);
+    return () => setActivePolicyId(undefined);
+  }, [policy?.id, setActivePolicyId]);
 
   const stage1Tasks: StrategyTask[] = useMemo(() => {
     const tasks = (strategy?.stage1Tasks as unknown as StrategyTask[]) || [];

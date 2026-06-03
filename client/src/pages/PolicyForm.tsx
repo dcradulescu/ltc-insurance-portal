@@ -287,16 +287,27 @@ function TooltipField({ label, name, children, isRequired = false, videoUrl }: {
             <TooltipContent className="max-w-xs text-xs">{tip}</TooltipContent>
           </Tooltip>
         )}
-        {videoUrl && (
-          <a
-            href={videoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 hover:text-teal-600 transition-colors"
-            title="Watch a video explanation"
-          >
-            <PlayCircle className="w-3.5 h-3.5 text-teal-400 cursor-pointer hover:text-teal-600" />
-          </a>
+        {tip && (
+          videoUrl ? (
+            <a
+              href={videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 hover:text-teal-600 transition-colors"
+              title="Watch a video explanation"
+            >
+              <PlayCircle className="w-3.5 h-3.5 text-teal-400 cursor-pointer hover:text-teal-600" />
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 hover:text-teal-600 transition-colors"
+              title="Video explanation coming soon"
+              onClick={() => toast.info('Video explanation coming soon for this field.')}
+            >
+              <PlayCircle className="w-3.5 h-3.5 text-slate-300 cursor-pointer hover:text-teal-400" />
+            </button>
+          )
         )}
       </div>
       {children}

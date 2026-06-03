@@ -14,6 +14,7 @@ import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import { ChatWidget } from "./components/ChatWidget";
 import { TermsGate } from "./components/TermsGate";
+import { usePolicyContext } from "./contexts/PolicyContext";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -41,7 +42,8 @@ function Router() {
   );
 }
 
-function App() {
+function AppInner() {
+  const { activePolicyId } = usePolicyContext();
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
@@ -49,12 +51,16 @@ function App() {
           <Toaster />
           <TermsGate>
             <Router />
-            <ChatWidget />
+            <ChatWidget policyId={activePolicyId} />
           </TermsGate>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
+}
+
+function App() {
+  return <AppInner />;
 }
 
 export default App;

@@ -5,6 +5,7 @@ import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
+import { PolicyProvider } from "./contexts/PolicyContext";
 
 import "./index.css";
 
@@ -45,7 +46,9 @@ const trpcClient = trpc.createClient({
 createRoot(document.getElementById("root")!).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <PolicyProvider>
+        <App />
+      </PolicyProvider>
     </QueryClientProvider>
   </trpc.Provider>
 );
