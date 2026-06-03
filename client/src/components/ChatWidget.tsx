@@ -259,9 +259,7 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
                 }
               </Button>
             </div>
-            <p className="text-[10px] text-slate-400 mt-1.5 text-center">
-              For urgent help call <a href="tel:8037490026" className="text-teal-600 hover:underline">(803) 749-0026</a>
-            </p>
+
           </div>
         </div>
       )}
