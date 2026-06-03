@@ -121,15 +121,20 @@ export function CareCalculator({ defaultDailyMax = 250, lifetimeMaximum = 500000
     const inflation = hasInflationRider && inflationPercentage ? parseFloat(inflationPercentage) : 0;
     
     let remainingBenefit = lifetimeMaximumVal;
-    
+    // Care costs grow at a realistic 3% annual rate regardless of rider
+    // Benefit pool grows at the user-entered inflation rider rate (if enabled)
+    const careGrowthRate = 0.03; // 3% annual care cost inflation
+
     for (let month = 1; month <= 60; month++) {
       const year = Math.ceil(month / 12);
-      const annualIncreaseMultiplier = Math.pow(1.10, year - 1);
-      const currentMonthCareCost = monthlyCareCost * annualIncreaseMultiplier;
-      const inflationMultiplier = inflation > 0 ? Math.pow(1 + inflation / 100, year - 1) : 1;
-      
+      // Care cost escalates at 3% per year (industry standard)
+      const currentMonthCareCost = monthlyCareCost * Math.pow(1 + careGrowthRate, year - 1);
+      // Benefit pool grows at the user-entered inflation rider rate once per year
+      if (inflation > 0 && month > 1 && (month - 1) % 12 === 0) {
+        remainingBenefit = remainingBenefit * (1 + inflation / 100);
+      }
       remainingBenefit = Math.max(0, remainingBenefit - currentMonthCareCost);
-      
+
       data.push({
         month: `M${month}`,
         benefitRemaining: Math.round(remainingBenefit),

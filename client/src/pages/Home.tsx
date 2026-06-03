@@ -118,7 +118,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
-          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg" alt="" className="w-full h-full object-cover" />
+          <img src="/manus-storage/home-hero_8fb65dbf.jpg" alt="Caregiver helping senior at home" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/85 via-[#1a2a3a]/70 to-[#1a2a3a]/50" />
         </div>
         <div className="container relative py-20 md:py-28">
@@ -200,7 +200,7 @@ export default function Home() {
       <section
         className="parallax-section relative py-20 text-white"
         style={{
-          backgroundImage: "url('https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg')",
+          backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')",
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-teal-dark/90 via-primary/85 to-[#1a2a3a]/90" />
@@ -560,7 +560,7 @@ export default function Home() {
       <section
         className="parallax-section relative py-8 text-white"
         style={{
-          backgroundImage: "url('https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg')",
+          backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')",
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/90 to-teal-dark/85" />

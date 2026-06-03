@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { ClipboardList, ArrowRight, ArrowLeft, Save, Loader2, HelpCircle, Info } from "lucide-react";
+import { ClipboardList, ArrowRight, ArrowLeft, Save, Loader2, HelpCircle, Info, PlayCircle, Mail } from "lucide-react";
 import {
   generateSessionId,
   createFormSubmission,
@@ -268,7 +268,7 @@ const sampleForm: FormData = {
   preferredCareType: "Home Care", additionalNotes: "Prefers female caregivers",
 };
 
-function TooltipField({ label, name, children, isRequired = false }: { label: string; name: string; children: React.ReactNode; isRequired?: boolean }) {
+function TooltipField({ label, name, children, isRequired = false, videoUrl }: { label: string; name: string; children: React.ReactNode; isRequired?: boolean; videoUrl?: string }) {
   const tip = tooltips[name];
   return (
     <div className="space-y-1.5">
@@ -286,6 +286,17 @@ function TooltipField({ label, name, children, isRequired = false }: { label: st
             </TooltipTrigger>
             <TooltipContent className="max-w-xs text-xs">{tip}</TooltipContent>
           </Tooltip>
+        )}
+        {videoUrl && (
+          <a
+            href={videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 hover:text-teal-600 transition-colors"
+            title="Watch a video explanation"
+          >
+            <PlayCircle className="w-3.5 h-3.5 text-teal-400 cursor-pointer hover:text-teal-600" />
+          </a>
         )}
       </div>
       {children}
@@ -306,6 +317,9 @@ export default function PolicyForm() {
   const [zapierSent, setZapierSent] = useState(false);
   const [showAdlModal, setShowAdlModal] = useState(false);
   const [pendingAdlAdvance, setPendingAdlAdvance] = useState(false);
+  const [showSaveLinkDialog, setShowSaveLinkDialog] = useState(false);
+  const [saveLinkEmail, setSaveLinkEmail] = useState("");
+  const [saveLinkSending, setSaveLinkSending] = useState(false);
   const prevAdlRef = useRef<string[]>([]);
   const prevIadlRef = useRef<string[]>([]);
   const sessionStartRef = useRef(Date.now());
@@ -322,6 +336,8 @@ export default function PolicyForm() {
     }
   });
   const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
+  const sendSaveLinkMutation = trpc.email.sendSaveLink.useMutation();
+  const notifyStepProgressMutation = trpc.email.notifyStepProgress.useMutation();
 
   const completionPct = useMemo(() => {
     const fields = Object.entries(form).filter(([k]) => k !== "adlLimitations");
@@ -644,6 +660,26 @@ export default function PolicyForm() {
   };
 
   // Save to database only (no validation required, no Zapier)
+  const handleSendSaveLink = async () => {
+    if (!saveLinkEmail) return;
+    setSaveLinkSending(true);
+    try {
+      await handleSave();
+      await sendSaveLinkMutation.mutateAsync({
+        email: saveLinkEmail,
+        insuredName: form.insuredFullName || undefined,
+        stepTitle: steps[step]?.title || `Step ${step + 1}`,
+        origin: window.location.origin,
+      });
+      toast.success(`Resume link sent to ${saveLinkEmail}`);
+      setShowSaveLinkDialog(false);
+    } catch {
+      toast.error("Failed to send link. Please try again.");
+    } finally {
+      setSaveLinkSending(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -734,6 +770,13 @@ export default function PolicyForm() {
     localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
     localStorage.setItem("ltc_form_current", JSON.stringify(submission));
 
+    // Notify owner of step progress (fire-and-forget)
+    notifyStepProgressMutation.mutate({
+      stepNumber: step + 1,
+      stepTitle: steps[step]?.title || `Step ${step + 1}`,
+      formData: form as unknown as Record<string, any>,
+    });
+
     // Advance step immediately (non-blocking)
     setStep(prev => prev + 1);
     // Save to DB in background (fire-and-forget)
@@ -807,7 +850,7 @@ export default function PolicyForm() {
       {/* Hero Section with Nested Video */}
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
-          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/TlLdtWuMnzKTLvjM.jpg" alt="" className="w-full h-full object-cover" />
+          <img src="/manus-storage/policy-form-hero_314c2717.jpg" alt="Senior couple reviewing insurance documents" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 via-[#1a3a4a]/70 to-[#1a2a3a]/50" />
         </div>
         <div className="container relative py-16 md:py-24">
@@ -847,7 +890,7 @@ export default function PolicyForm() {
             </div>
             <div className="flex justify-between mt-3">
               {steps.map((s, i) => (
-                <button key={i} onClick={() => setStep(i)} className={`text-xs text-center flex-1 px-1 ${i === step ? "text-teal font-semibold" : i < step ? "text-green-600" : "text-slate-400"}`}>
+                <button key={i} onClick={() => { if (i < step) setStep(i); }} disabled={i > step} className={`text-xs text-center flex-1 px-1 ${i === step ? "text-teal font-semibold" : i < step ? "text-green-600 cursor-pointer" : "text-slate-400 cursor-not-allowed opacity-50"}`}>
                   <span className="block text-lg mb-0.5">{s.icon}</span>
                   <span className="hidden sm:block">{s.title}</span>
                 </button>
@@ -1422,9 +1465,21 @@ export default function PolicyForm() {
                 Clear All Data
               </Button>
             </div>
-            <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-1">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save Progress
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-1">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSaveLinkEmail(form.insuredEmail || "");
+                  setShowSaveLinkDialog(true);
+                }}
+                className="gap-1 text-teal-600 hover:text-teal-700 border-teal-200 hover:border-teal-400"
+              >
+                <Mail className="w-4 h-4" /> Email Link
+              </Button>
+            </div>
             {step < steps.length - 1 ? (
               <Button onClick={handleNext} className="gap-1">
                 Next <ArrowRight className="w-4 h-4" />
@@ -1508,6 +1563,49 @@ export default function PolicyForm() {
               }}
             >
               Return to Home
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Save & Return Email Dialog */}
+      <Dialog open={showSaveLinkDialog} onOpenChange={setShowSaveLinkDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-teal-600" />
+              Email a Resume Link
+            </DialogTitle>
+            <DialogDescription>
+              We'll email you a link so you can return to this form on any device and pick up right where you left off. Your progress is already saved in this browser.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 my-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="save-link-email" className="text-sm font-medium">Email Address</Label>
+              <Input
+                id="save-link-email"
+                type="email"
+                placeholder="your@email.com"
+                value={saveLinkEmail}
+                onChange={e => setSaveLinkEmail(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && saveLinkEmail) handleSendSaveLink(); }}
+              />
+            </div>
+            <p className="text-xs text-slate-500">
+              The link will take you back to the beginning of the form — your saved data will reload automatically from this browser's storage.
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowSaveLinkDialog(false)}>Cancel</Button>
+            <Button
+              onClick={handleSendSaveLink}
+              disabled={!saveLinkEmail || saveLinkSending}
+              className="gap-1"
+              style={{ background: saveLinkEmail && !saveLinkSending ? "linear-gradient(135deg, #1B4F8A, #3BBFBF)" : undefined, color: "white" }}
+            >
+              {saveLinkSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+              Send Link
             </Button>
           </DialogFooter>
         </DialogContent>

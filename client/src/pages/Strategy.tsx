@@ -86,11 +86,6 @@ function isFormComplete(policy: any) {
   const isComplete = hasInsuredName && hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber && 
          hasEliminationPeriod && hasWaiverOfPremium && hasDailyMaximum && hasLifetimeMaximum &&
          hasAdlsOrCognitive && hasMinAdlsRequired && adlCountValid;
-  console.log('[Strategy Validation] Full Result:', {
-    isComplete, hasInsuredName, hasInsuredEmail, hasInsuredPhone, hasCarrierName, hasPolicyNumber,
-    hasEliminationPeriod, hasWaiverOfPremium, hasDailyMaximum, hasLifetimeMaximum,
-    hasAdlsOrCognitive, hasMinAdlsRequired, adlCountValid
-  });
   return isComplete;
 }
 
@@ -369,18 +364,32 @@ export default function Strategy() {
       recipients: validEmails,
       policyData: policy ? {
         insuredName: policy.insuredFullName || "",
+        insuredDob: policy.insuredDob || "",
+        insuredPhone: policy.insuredPhone || "",
+        insuredEmail: policy.insuredEmail || "",
+        insuredAddress: policy.insuredMailingAddress || "",
         policyNumber: policy.policyNumber || "",
+        claimNumber: policy.claimNumber || "",
         carrierName: policy.carrierName || "",
+        carrierPhone: policy.carrierPhone || "",
+        eliminationPeriod: policy.eliminationPeriod || "",
         dailyMaximum: parseCurrencyValue(policy.dailyMaximum || 0),
         monthlyMaximum: (() => { const val = parseFloat((policy.monthlyMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
         lifetimeMaximum: (() => { const val = parseFloat((policy.lifetimeMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
-        diagnosis: "LTC Insurance Claim",
+        minAdlsRequired: policy.minAdlsRequired ? parseInt(policy.minAdlsRequired) : undefined,
+        waiverOfPremium: policy.waiverOfPremium || "",
+        assignmentOfBenefits: policy.assignmentOfBenefits || "",
+        diagnosis: policy.primaryDiagnosis || "",
         adlLimitations: policy.qualifyingAdls || policy.adlLimitations || [],
+        diagnosisCheckboxes: policy.diagnosisCheckboxes || [],
+        cognitiveImpairmentTrigger: policy.cognitiveImpairmentTrigger || "",
         stage1Tasks: stage1Tasks.map(t => t.label),
         stage2Tasks: stage2Tasks.map(t => t.label),
         stage3Tasks: stage3Tasks.map(t => t.label),
         careRecommendations: policy.careRecommendations || "",
         strategyContent: strategy.strategyContent || "",
+        caseManagerName: policy.caseManagerName || "",
+        thirdPartyAssessmentRequired: policy.thirdPartyAssessmentRequired || "",
       } : undefined,
     });
   };
@@ -693,7 +702,8 @@ export default function Strategy() {
                       <h3 className="font-serif text-xl font-bold text-slate-900">Timeline</h3>
                       <p className="text-sm text-slate-600 mt-1">Interactive Gantt chart showing your 3-stage claim process</p>
                     </div>
-                    <div className="px-4 py-5 md:px-6">
+                    <div className="px-4 py-5 md:px-6 overflow-x-auto">
+                      <div className="min-w-[600px]">
                       <GanttTimeline
                         stage1Tasks={stage1Tasks}
                         stage2Tasks={stage2Tasks}
@@ -701,6 +711,7 @@ export default function Strategy() {
                         eliminationPeriod={policy?.eliminationPeriod}
                         onToggleTask={handleToggleTask}
                       />
+                      </div>
                     </div>
                   </div>
 

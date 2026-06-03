@@ -21,9 +21,9 @@ export function LegalDisclaimerFooter() {
 
           {/* Right Column - Visiting Angels Disclaimer */}
           <div>
-            <h3 className="text-red-700 font-bold text-lg mb-3">Visiting Angels Disclaimer</h3>
+            <h3 className="text-red-700 font-bold text-lg mb-3">SC Visiting Angels Disclaimer</h3>
             <p className="text-sm text-gray-700 leading-relaxed mb-4">
-              Visiting Angels is not responsible for the accuracy, completeness, or applicability of any information 
+              SC Visiting Angels is not responsible for the accuracy, completeness, or applicability of any information 
               provided on this website or in any strategy documents generated.
             </p>
             <p className="text-sm text-gray-700 leading-relaxed">
@@ -46,11 +46,11 @@ export function LegalDisclaimerFooter() {
           {/* Footer Info */}
           <div className="mt-6 text-center text-xs text-gray-600">
             <p>
-              © {new Date().getFullYear()} Visiting Angels. All rights reserved. | 
+              © {new Date().getFullYear()} SC Visiting Angels. All rights reserved. | 
               <span className="mx-2">This is a confidential document intended for personal use only.</span>
             </p>
             <p className="mt-2">
-              For questions about Visiting Angels home care services, visit{' '}
+              For questions about SC Visiting Angels home care services, visit{' '}
               <a 
                 href="https://www.visitingangels.com" 
                 target="_blank" 

@@ -11,6 +11,9 @@ import Education from "./pages/Education";
 import PolicyForm from "./pages/PolicyForm";
 import Strategy from "./pages/Strategy";
 import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import { ChatWidget } from "./components/ChatWidget";
+import { TermsGate } from "./components/TermsGate";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -24,16 +27,18 @@ function Router() {
   return (
     <>
       <ScrollToTop />
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/education"} component={Education} />
-      <Route path={"/policy-form"} component={PolicyForm} />
-      <Route path={"/strategy"} component={Strategy} />
-      <Route path={"/contact"} component={Contact} />
-      <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
-    </>  );
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/education"} component={Education} />
+        <Route path={"/policy-form"} component={PolicyForm} />
+        <Route path={"/strategy"} component={Strategy} />
+        <Route path={"/contact"} component={Contact} />
+        <Route path={"/terms"} component={Terms} />
+        <Route path={"/404"} component={NotFound} />
+        <Route component={NotFound} />
+      </Switch>
+    </>
+  );
 }
 
 function App() {
@@ -42,7 +47,10 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <TermsGate>
+            <Router />
+            <ChatWidget />
+          </TermsGate>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

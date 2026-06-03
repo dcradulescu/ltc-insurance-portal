@@ -571,11 +571,51 @@ export default function Education() {
       {/* About Home Care */}
       <AboutHomeCare />
 
+      {/* Resources Reference Section — anchors used by ChronologicalChecklist document links */}
+      <section className="py-16 bg-white" id="resources">
+        <div className="container max-w-4xl">
+          <div className="text-center mb-10">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
+              LTC Insurance <span className="text-teal">Resource Library</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Quick-reference guides for the most common documents and processes in your LTC insurance claim.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              { id: "plan-of-care", title: "Plan of Care", desc: "A Plan of Care is a written document prepared by a licensed healthcare professional that outlines the specific care services needed, frequency, and goals. Most LTC carriers require a current Plan of Care to initiate and maintain benefits." },
+              { id: "poa", title: "Power of Attorney (POA)", desc: "A legal document granting a designated person authority to act on behalf of the insured in financial and/or healthcare matters. Many carriers require a copy on file before discussing the policy with anyone other than the insured." },
+              { id: "aob", title: "Assignment of Benefits (AOB)", desc: "An AOB directs the insurance company to pay the care provider directly rather than reimbursing the insured. This simplifies billing but means the provider submits claims and receives payment on your behalf." },
+              { id: "hipaa", title: "HIPAA Authorization", desc: "A HIPAA release form allows your healthcare providers to share medical information with the insurance company and its representatives. This is required for the carrier to verify your condition and approve benefits." },
+              { id: "claim-form", title: "Claim Form Guide", desc: "The initial claim packet typically includes a claimant statement, attending physician statement, and functional assessment. Completing these accurately and completely is critical to avoiding delays or denials." },
+              { id: "elimination-period", title: "Elimination Period", desc: "The elimination period is the number of qualifying service days you must pay out-of-pocket before insurance benefits begin. Days are counted only when qualifying care is received — not calendar days. Keep detailed records of every care day." },
+              { id: "care-logs", title: "Care Logs & Log Sheets", desc: "Many carriers require ongoing documentation of care services provided, including date, time, caregiver name, and services rendered. These logs support continued benefit payments and protect against audits." },
+              { id: "invoicing", title: "Invoicing & Billing", desc: "Invoices must typically show the provider name, date of service, type of service, hours, and rate. Some carriers have specific invoice formats. Delays in submitting invoices can delay reimbursement." },
+              { id: "appeals", title: "Appeals Process", desc: "If a claim is denied or benefits are reduced, you have the right to appeal. The appeals process typically involves submitting additional medical documentation, a written statement, and sometimes an independent assessment. Timelines vary by carrier." },
+              { id: "assessment", title: "Third-Party Assessment", desc: "An independent RN or assessor evaluates the insured's condition and ADL deficits. The assessor looks for consistency between medical records, physician statements, and observed function. Preparation and honest documentation are key." },
+              { id: "waiver", title: "Waiver of Premium", desc: "When active on claim, the waiver of premium benefit suspends your premium payments. Not all policies include this feature. Contact your carrier to confirm when the waiver activates and whether it applies retroactively." },
+              { id: "inflation", title: "Inflation Rider / Protection", desc: "An inflation rider increases your benefit amounts annually (typically 3–5% compound or simple interest) to help keep pace with rising care costs. Check your policy for the specific percentage and whether it is simple or compound growth." },
+              { id: "glossary", title: "Full Glossary", desc: "See the Key Definitions section above for a complete glossary of LTC insurance terms including ADLs, Elimination Period, Daily Maximum, Lifetime Maximum, Claim Number, Case Manager, and more." },
+            ].map((item) => (
+              <div key={item.id} id={item.id} className="p-5 rounded-xl border border-border bg-white hover:shadow-md hover:border-teal/30 transition-all duration-300 scroll-mt-24">
+                <h3 className="font-serif font-bold text-foreground mb-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-teal flex-shrink-0" />
+                  {item.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section - Matching Home Page Style */}
       <section
         className="parallax-section relative py-20 text-white"
         style={{
-          backgroundImage: "url('https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg')",
+          backgroundImage: "url('/manus-storage/education-hero_6c3e985b.jpg')",
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-teal-dark/90 via-primary/85 to-[#1a2a3a]/90" />

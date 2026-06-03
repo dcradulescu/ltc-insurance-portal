@@ -42,7 +42,7 @@ export default function Contact() {
       {/* Hero */}
       <section className="relative text-white py-12">
         <div className="absolute inset-0">
-          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ybTvcuNvIxVRebPd.jpg" alt="" className="w-full h-full object-cover" />
+          <img src="/manus-storage/contact-hero_fd7b1494.jpg" alt="Caregiver assisting senior at home" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 to-[#1a2a3a]/80" />
         </div>
         <div className="container relative">
@@ -73,7 +73,7 @@ export default function Contact() {
 
               <div className="space-y-4">
                 {[
-                  { icon: <Phone className="w-5 h-5 text-teal" />, label: "Phone", value: "Contact us for phone support", sub: "Mon-Fri, 9am-5pm EST" },
+                  { icon: <Phone className="w-5 h-5 text-teal" />, label: "Phone", value: "(803) 749-0026", sub: "Mon-Fri, 9am-5pm EST" },
                   { icon: <Mail className="w-5 h-5 text-teal" />, label: "Email", value: "Send us a message using the form", sub: "We respond within 24 hours" },
                   { icon: <Clock className="w-5 h-5 text-teal" />, label: "Response Time", value: "Within 24 business hours", sub: "Urgent matters prioritized" },
                 ].map((item, i) => (
@@ -89,8 +89,11 @@ export default function Contact() {
               </div>
 
               <div className="p-4 bg-teal/5 rounded-lg border border-teal/20">
-                <h3 className="font-semibold text-sm text-foreground mb-2">Need Immediate Help?</h3>
-                <p className="text-xs text-muted-foreground">Use the chat widget in the bottom-right corner for instant assistance with common questions about LTC insurance.</p>
+                <h3 className="font-semibold text-sm text-foreground mb-2">Visit Our Website</h3>
+                <p className="text-xs text-muted-foreground">
+                  Learn more about our home care services at{" "}
+                  <a href="https://www.scvisitingangels.com" target="_blank" rel="noopener noreferrer" className="text-teal hover:underline">scvisitingangels.com</a>.
+                </p>
               </div>
             </div>
 

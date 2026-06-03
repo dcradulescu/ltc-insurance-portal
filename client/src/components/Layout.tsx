@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Phone, Globe } from "lucide-react";
 import { useState } from "react";
-// import { ChatWidget } from "./ChatWidget"; // Temporarily disabled
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -24,16 +23,45 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-4">
             <span className="hidden sm:inline opacity-80">Helping families navigate long-term care insurance</span>
           </div>
+          <div className="flex items-center gap-4">
+            <a
+              href="tel:+18037490026"
+              className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">(803) 749-0026</span>
+            </a>
+            <a
+              href="https://www.scvisitingangels.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">SCVisitingAngels.com</span>
+            </a>
+          </div>
         </div>
       </div>
 
       {/* Main navigation */}
       <header className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
         <div className="container flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png" alt="Visiting Angels" className="w-8 h-8 object-contain" />
-            <span className="font-serif text-xl font-bold text-foreground tracking-tight">LTC Navigator</span>
-          </Link>
+          <a
+            href="https://www.scvisitingangels.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 no-underline"
+          >
+            <img
+              src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
+              alt="SC Visiting Angels"
+              className="w-8 h-8 object-contain"
+            />
+            <span className="font-serif text-xl font-bold text-foreground tracking-tight">
+              SC Visiting Angels
+            </span>
+          </a>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
@@ -101,10 +129,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png" alt="Visiting Angels" className="w-6 h-6 object-contain" />
-                Visiting Angels
+                <img
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
+                  alt="SC Visiting Angels"
+                  className="w-6 h-6 object-contain"
+                />
+                SC Visiting Angels
               </h3>
-              <p className="text-slate-400 text-sm">Helping families navigate long-term care insurance with confidence and clarity.</p>
+              <p className="text-slate-400 text-sm mb-3">
+                Helping families navigate long-term care insurance with confidence and clarity.
+              </p>
+              <a
+                href="https://www.scvisitingangels.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-teal hover:text-teal-light text-sm transition-colors"
+              >
+                www.scvisitingangels.com
+              </a>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
@@ -119,23 +161,56 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <h4 className="font-semibold mb-4">Resources</h4>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/contact" className="text-slate-400 hover:text-teal transition-colors no-underline">Contact Us</Link></li>
-                <li><a href="#" className="text-slate-400 hover:text-teal transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-teal transition-colors">Terms of Service</a></li>
+                <li>
+                  <a
+                    href="https://www.scvisitingangels.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-slate-400 hover:text-teal transition-colors"
+                  >
+                    SC Visiting Angels Website
+                  </a>
+                </li>
+                <li><Link href="/education" className="text-slate-400 hover:text-teal transition-colors no-underline">LTC Education</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <p className="text-slate-400 text-sm mb-2">Have questions?</p>
-              <p className="text-slate-400 text-sm">Contact us anytime through our support page.</p>
+              <h4 className="font-semibold mb-4">Contact</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-teal flex-shrink-0" />
+                  <a href="tel:+18037490026" className="hover:text-teal transition-colors">(803) 749-0026</a>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-teal flex-shrink-0" />
+                  <a
+                    href="https://www.scvisitingangels.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-teal transition-colors"
+                  >
+                    scvisitingangels.com
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
           <div className="border-t border-slate-700 pt-8 text-center text-slate-400 text-sm">
-            <p>&copy; {new Date().getFullYear()} Visiting Angels. All rights reserved.</p>
+            <p>
+              &copy; {new Date().getFullYear()} SC Visiting Angels. All rights reserved.
+              &nbsp;|&nbsp;
+              <a
+                href="https://www.scvisitingangels.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-teal transition-colors"
+              >
+                www.scvisitingangels.com
+              </a>
+            </p>
           </div>
         </div>
       </footer>
-
-      {/* <ChatWidget /> */}
     </div>
   );
 }

@@ -17,9 +17,9 @@ import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { policyFormRouter } from "./routers/policyForm";
 import { documentsRouter } from "./routers/documents";
-// import { chatRouter } from "./routers/chat"; // Temporarily disabled due to RAG schema mismatch
 import { ENV } from "./_core/env";
 import { pdfDeliveryRouter } from './routers/pdfDelivery';
+import { chatRouter } from './routers/chat';
 import { generatePhysicianLetter } from "./physicianLetterGenerator";
 
 export const appRouter = router({
@@ -27,6 +27,7 @@ export const appRouter = router({
   policyForm: policyFormRouter,
   documents: documentsRouter,
   pdfDelivery: pdfDeliveryRouter,
+  chat: chatRouter,
   
   physicianLetter: router({
     generate: publicProcedure
@@ -464,8 +465,6 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       }),
   }),
 
-  // chat: chatRouter, // Temporarily disabled due to RAG schema mismatch
-
   sms: router({
     sendNotification: publicProcedure
       .input(z.object({
@@ -642,6 +641,84 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         await notifyOwner({
           title: `Contact Form: ${input.subject}`,
           content: `From: ${input.name} (${input.email}${input.phone ? ", " + input.phone : ""})\n\n${input.message}`,
+        }).catch(() => {});
+        return { success: true };
+      }),
+
+    // Send a "Save & Return" magic link to the user's email
+    sendSaveLink: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        insuredName: z.string().optional(),
+        stepTitle: z.string().optional(),
+        origin: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const returnUrl = `${input.origin || "https://ltcinsurance.scvisitingangels.com"}/policy-form`;
+        const zapierUrl = ENV.zapierWebhookUrl;
+        if (zapierUrl) {
+          try {
+            await fetch(zapierUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "save_link",
+                to: input.email,
+                insuredName: input.insuredName || "there",
+                stepTitle: input.stepTitle || "your current step",
+                returnUrl,
+                subject: "Your LTC Insurance Navigator — Saved Progress",
+                body: `Hi ${input.insuredName || "there"},\n\nYour LTC Insurance Navigator progress has been saved. Click the link below to pick up right where you left off:\n\n${returnUrl}\n\nYour form data is stored in your browser — simply return to this link on the same device and browser to continue.\n\nIf you have any questions, please call us at (803) 749-0026 or reply to this email.\n\nWarm regards,\nSC Visiting Angels\n(803) 749-0026 | scvisitingangels.com`,
+                timestamp: new Date().toISOString(),
+              }),
+            });
+          } catch (err) {
+            console.error("[SaveLink] Zapier error:", err);
+          }
+        }
+        // Notify owner
+        await notifyOwner({
+          title: `Save Link Requested: ${input.insuredName || input.email}`,
+          content: `User ${input.email} requested a save link at step: ${input.stepTitle || "unknown"}`,
+        }).catch(() => {});
+        return { success: true };
+      }),
+
+    // Notify owner when user advances a step (with full JSON payload)
+    notifyStepProgress: publicProcedure
+      .input(z.object({
+        stepNumber: z.number(),
+        stepTitle: z.string(),
+        formData: z.record(z.string(), z.any()),
+      }))
+      .mutation(async ({ input }) => {
+        const zapierUrl = ENV.zapierWebhookUrl;
+        if (zapierUrl) {
+          try {
+            await fetch(zapierUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "step_progress",
+                stepNumber: input.stepNumber,
+                stepTitle: input.stepTitle,
+                insuredName: input.formData.insuredFullName || "Unknown",
+                insuredEmail: input.formData.insuredEmail || "",
+                insuredPhone: input.formData.insuredPhone || "",
+                notifyEmail: "daniel@scvisitingangels.com",
+                formData: input.formData,
+                timestamp: new Date().toISOString(),
+              }),
+            });
+          } catch (err) {
+            console.error("[StepProgress] Zapier error:", err);
+          }
+        }
+        // Email owner notification
+        const insuredName = (input.formData.insuredFullName as string) || "Unknown";
+        await notifyOwner({
+          title: `Form Progress: ${insuredName} completed Step ${input.stepNumber} — ${input.stepTitle}`,
+          content: `Insured: ${insuredName}\nEmail: ${input.formData.insuredEmail || "N/A"}\nPhone: ${input.formData.insuredPhone || "N/A"}\nStep: ${input.stepNumber} — ${input.stepTitle}\n\nFull JSON:\n${JSON.stringify(input.formData, null, 2)}`,
         }).catch(() => {});
         return { success: true };
       }),

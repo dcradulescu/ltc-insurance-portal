@@ -488,11 +488,11 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
       </CardHeader>
       <CardContent>
         {/* Tab Buttons */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 mb-6">
           <Button
             variant={activeTab === 'download' ? 'default' : 'outline'}
             onClick={() => setActiveTab('download')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
             <Download size={18} />
             Download PDF
@@ -500,7 +500,7 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
           <Button
             variant={activeTab === 'email' ? 'default' : 'outline'}
             onClick={() => setActiveTab('email')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
             <Mail size={18} />
             Email to Someone

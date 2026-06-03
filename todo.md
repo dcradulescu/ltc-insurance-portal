@@ -526,3 +526,63 @@
 - [x] Update all standalone Tooltip blocks in PolicyForm.tsx (ADL, IADL, Diagnosis headings) to use click-toggle
 - [x] Update PolicyFormComprehensive.tsx tooltips to use click-toggle
 - [x] Update ComponentShowcase.tsx tooltip to use click-toggle
+
+## Comprehensive Production Audit Fixes (June 2026)
+
+### Critical Logic / Stability
+- [x] Fix CareCalculator inflation bug: inflationMultiplier is calculated but never applied to projectionData — hard-coded 10% growth used instead of user-entered inflation percentage
+- [x] Fix ChronologicalChecklist DOCUMENT_LINKS: all anchor hrefs point to non-existent Education page sections; add proper section anchors to Education.tsx
+- [x] Remove console.log debug statement in Strategy.tsx isFormComplete() that logs validation details to browser console in production
+- [x] Fix Strategy.tsx handleSendEmail policyData.diagnosis hardcoded as "LTC Insurance Claim" instead of actual diagnosis
+- [x] Fix Strategy.tsx handleSendEmail policyData missing eliminationPeriod, carrierPhone, insuredDob fields
+
+### Branding / Brand Consistency
+- [x] Header: change "LTC Navigator" brand name to "SC Visiting Angels" with link to scvisitingangels.com
+- [x] Footer: change "Visiting Angels" to "SC Visiting Angels" and add scvisitingangels.com link
+- [x] Footer: remove dead placeholder links (Privacy Policy, Terms of Service href="#")
+- [x] Footer: add phone/website for SC Visiting Angels
+- [x] Top bar: add scvisitingangels.com link in the top bar
+- [x] Contact page: replace "Contact us for phone support" with real SC Visiting Angels phone number placeholder
+- [x] Contact page: remove reference to non-existent chat widget
+
+### UX / Flow
+- [x] Step navigation in PolicyForm: clicking a future step number bypasses validation — disable forward-jumping via step buttons
+
+### Photos / Aesthetics
+- [x] Upload diverse senior care photos to CDN and replace hero images across pages
+
+## New Features (June 2026 Audit)
+- [x] Add Save & Return button to each PolicyForm step — saves form to localStorage, emails user a magic resume link
+- [x] Add video icon next to every tooltip (?) icon on form fields — clicking opens a short explainer video modal
+- [x] Build Terms of Use acceptance gate — full legal disclaimer modal on first visit, must accept before using the site; stored in localStorage; protects company from liability
+- [x] Set up storage proxy for manus-storage images and update all hero section photos
+- [x] Create disaster-recovery backup package: architecture README, reconstruction guide, executive summary, full code export ZIP
+- [x] Redesign strategy PDF: SC Visiting Angels aesthetic, pastel section boxes, branded headers, readable typography, logical flow, full content
+- [x] Embed photos, icons, and hero sections into strategy PDF (cover hero photo, section icon badges, pastel info boxes)
+
+## Mobile Responsiveness (June 2026)
+- [x] Mobile nav: hamburger menu in Layout.tsx for screens < md
+- [x] Mobile PolicyForm: single-column layout, full-width buttons, readable step indicator
+- [x] Mobile Strategy: stack all cards/sections vertically, hide Gantt on xs screens
+- [x] Mobile Home: stack hero, reduce font sizes, full-width CTAs
+- [x] Mobile Education: stack glossary cards, full-width layout
+- [x] Mobile Contact: stack contact cards vertically
+- [x] Mobile PdfDeliveryPanel: full-width tabs and buttons
+- [x] Mobile GanttTimeline: horizontal scroll wrapper on small screens
+- [x] Global: ensure touch targets >= 44px, no horizontal overflow
+
+## Save & Return / Video Icons / Terms of Use (June 2026)
+- [x] Add "Save & Email Link" button to each form step footer
+- [x] Add server procedure email.saveAndReturn to send resume link
+- [x] Add video icon (Play button) next to every tooltip HelpCircle icon on form fields
+- [x] Build TermsOfUseModal component shown on first visit (localStorage gate)
+- [x] Add Terms of Use page at /terms route
+- [x] Ensure Terms of Use acceptance is required before accessing the form
+- [x] Send full form JSON to Zapier on every Next button click (placeholder webhook URL)
+- [x] Send full form JSON email to daniel@scvisitingangels.com on every Next button click
+- [x] Build RAG chat widget: LTC knowledge base (Education content + glossary + FAQ)
+- [x] RAG chat: server procedure chat.send with context retrieval from knowledge base
+- [x] RAG chat: floating chat button on all pages (bottom-right corner)
+- [x] RAG chat: inject user's current policy data as context when available
+- [x] RAG chat: markdown rendering in chat widget (dangerouslySetInnerHTML)
+- [x] Write complete Manus reconstruction mega-prompt that rebuilds the entire app from scratch in one prompt
