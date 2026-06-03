@@ -9,6 +9,7 @@ const navLinks = [
   { href: "/policy-form", label: "Policy Form" },
   { href: "/strategy", label: "My Strategy" },
   { href: "/contact", label: "Contact" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CheckCircle2, AlertTriangle, Upload, Calendar, ChevronDown, ChevronRight, FileText, ExternalLink } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Calendar, ChevronDown, ChevronRight, FileText, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
@@ -10,7 +10,6 @@ type StrategyTask = {
   completed: boolean;
   category: string;
   critical?: boolean;
-  uploadRequired?: boolean;
 };
 
 interface ChronologicalChecklistProps {
@@ -458,12 +457,6 @@ export function ChronologicalChecklist({
                               </div>
                             )}
 
-                            {/* Upload indicator */}
-                            {item.task.uploadRequired && !done && (
-                              <span className="flex items-center gap-1 text-[11px] text-blue-600 mt-1.5">
-                                <Upload className="w-3 h-3" /> Document upload recommended
-                              </span>
-                            )}
                           </div>
 
                           {/* Completed check */}

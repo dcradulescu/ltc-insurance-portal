@@ -12,6 +12,7 @@ import PolicyForm from "./pages/PolicyForm";
 import Strategy from "./pages/Strategy";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
+import Profile from "./pages/Profile";
 import { ChatWidget } from "./components/ChatWidget";
 import { TermsGate } from "./components/TermsGate";
 import { usePolicyContext } from "./contexts/PolicyContext";
@@ -35,6 +36,7 @@ function Router() {
         <Route path={"/strategy"} component={Strategy} />
         <Route path={"/contact"} component={Contact} />
         <Route path={"/terms"} component={Terms} />
+        <Route path={"/profile"} component={Profile} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

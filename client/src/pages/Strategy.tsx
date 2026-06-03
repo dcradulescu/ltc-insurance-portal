@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { useStageCelebration } from "@/hooks/useStageCelebration";
 import {
   FileText, Download, Mail, Loader2, CheckCircle2, AlertTriangle,
-  Upload, ArrowRight, Shield, ClipboardCheck, Plus, X, RefreshCw, Target,
+  ArrowRight, Shield, ClipboardCheck, Plus, X, RefreshCw, Target,
   Calculator, MessageCircle, Clock, Activity, Heart, ListChecks, Sparkles, ChevronDown,
 } from "lucide-react";
 
@@ -96,7 +96,6 @@ type StrategyTask = {
   completed: boolean;
   category: string;
   critical?: boolean;
-  uploadRequired?: boolean;
 };
 
 type PlanView = "written" | "timeline" | "checklist" | "financial" | "downloads" | "send";
@@ -475,11 +474,6 @@ export default function Strategy() {
                           )}
                           {task.label}
                         </span>
-                        {task.uploadRequired && !task.completed && (
-                          <span className="block text-xs text-blue-600 mt-1 flex items-center gap-1">
-                            <Upload className="w-3 h-3" /> Document upload recommended
-                          </span>
-                        )}
                       </div>
                       {task.completed && <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />}
                     </label>

@@ -8,7 +8,6 @@ type StrategyTask = {
   completed: boolean;
   category: string;
   critical?: boolean;
-  uploadRequired?: boolean;
 };
 
 interface GanttTimelineProps {

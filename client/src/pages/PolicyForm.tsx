@@ -1032,6 +1032,23 @@ export default function PolicyForm() {
                 )}
               </div>
 
+              {/* Claims Info */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 space-y-4">
+                <h3 className="text-base font-semibold text-slate-800">Claims Info</h3>
+                <p className="text-xs text-slate-500">These details help us tailor your strategy with carrier-specific submission guidance.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <TooltipField label="Where Can I Get the Claims Packet?" name="whereToGetClaimsPacket">
+                    <Input id="whereToGetClaimsPacket" value={form.whereToGetClaimsPacket} onChange={e => update("whereToGetClaimsPacket", e.target.value)} placeholder="e.g., Call carrier, online portal" />
+                  </TooltipField>
+                  <TooltipField label="How Do I Submit the Claims Packet?" name="howToSubmitClaimsPacket">
+                    <Input id="howToSubmitClaimsPacket" value={form.howToSubmitClaimsPacket} onChange={e => update("howToSubmitClaimsPacket", e.target.value)} placeholder="e.g., Mail, fax, online portal" />
+                  </TooltipField>
+                </div>
+                <TooltipField label="Invoice Reimbursement Delay" name="invoiceReimbursementDelay">
+                  <Input id="invoiceReimbursementDelay" value={form.invoiceReimbursementDelay} onChange={e => update("invoiceReimbursementDelay", e.target.value)} placeholder="e.g., 30 days, 2-4 weeks" />
+                </TooltipField>
+              </div>
+
             </div>
           )}
 
@@ -1211,7 +1228,7 @@ export default function PolicyForm() {
           {/* Step 4: Qualifying */}
           {step === 4 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Care Needs & ADL Assessment</h2>
+              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Is it likely that I&apos;ll qualify?</h2>
 
               {/* Qualification context banner */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -1422,10 +1439,10 @@ export default function PolicyForm() {
               <div className="grid gap-4">
                 {[
                   { title: "Insured Person", items: [["Name", form.insuredFullName], ["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["POA Name", form.poa_name], ["POA Relationship", form.poa_relationship]] },
-                  { title: "Carrier", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Policy #", form.policyNumber], ["Claim #", form.claimPreClaimNumber]] },
-                  { title: "Coverage", items: [["Elimination Period", form.eliminationPeriod], ["Daily Max", form.dailyMaximum], ["Monthly Max", form.monthlyMaximum], ["Lifetime Max", form.lifetimeMaximum], ["Min ADLs", form.minAdlsRequired], ["AOB", form.assignmentOfBenefits], ["Waiver of Premium", form.waiverOfPremium]] },
-                  { title: "Medical", items: [["Case Manager", form.caseManagerAssigned], ["Case Manager Name", form.caseManagerName], ["3rd Party Assessment", form.thirdPartyAssessmentRequired], ["Cognitive Impairment Trigger", form.cognitiveImpairmentTrigger]] },
-                  { title: "Care Needs", items: [["Care Services", (form.careNeeds || []).join(", ") || "None selected"], ["Diagnosis", (form.diagnosisCheckboxes || []).join(", ") || "None selected"], ["Home Care Covered", form.equipmentAllowanceEnabled === true ? "Yes" : form.equipmentAllowanceEnabled === false ? "No" : "—"], ["Approved Agency Req.", form.approvedAgencyRequired || "—"], ["CNA Required", form.cnaRequired || "—"], ["Care Notes Required", form.careNotesRequired || "—"], ["RN Assessment", form.thirdPartyAssessmentRequired || "—"]] },
+                  { title: "LTC Insurance Company", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Policy #", form.policyNumber], ["Claim #", form.claimPreClaimNumber]] },
+                  { title: "Claims Info", items: [["Case Manager", form.caseManagerAssigned], ["Case Manager Name", form.caseManagerName], ["Claims Packet", form.whereToGetClaimsPacket || "\u2014"], ["Submit Via", form.howToSubmitClaimsPacket || "\u2014"], ["Reimbursement Delay", form.invoiceReimbursementDelay || "\u2014"]] },
+                  { title: "Coverage Details", items: [["Elimination Period", form.eliminationPeriod], ["Daily Max", form.dailyMaximum], ["Monthly Max", form.monthlyMaximum], ["Lifetime Max", form.lifetimeMaximum], ["Min ADLs", form.minAdlsRequired], ["AOB", form.assignmentOfBenefits], ["Waiver of Premium", form.waiverOfPremium], ["Cognitive Impairment Trigger", form.cognitiveImpairmentTrigger]] },
+                  { title: "Qualifying (Care Needs)", items: [["Care Services", (form.careNeeds || []).join(", ") || "None selected"], ["Diagnosis", (form.diagnosisCheckboxes || []).join(", ") || "None selected"], ["Home Care Covered", form.equipmentAllowanceEnabled === true ? "Yes" : form.equipmentAllowanceEnabled === false ? "No" : "\u2014"], ["Approved Agency Req.", form.approvedAgencyRequired || "\u2014"], ["CNA Required", form.cnaRequired || "\u2014"], ["Care Notes Required", form.careNotesRequired || "\u2014"], ["RN Assessment", form.thirdPartyAssessmentRequired || "\u2014"]] },
                 ].map(section => (
                   <div key={section.title} className="bg-slate-50 rounded-lg p-4">
                     <h3 className="font-semibold text-slate-800 mb-2">{section.title}</h3>

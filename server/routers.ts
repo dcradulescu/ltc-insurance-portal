@@ -7,7 +7,6 @@ import {
   createPolicy, updatePolicy, getPolicyByUserId, getPolicyById,
   createStrategy, getStrategyByPolicyId, getStrategyById, updateStrategy, getStrategyByUserId,
   saveChatMessage, getChatHistory,
-  createDocumentUpload, getDocumentsByUserId, getDocumentsByTaskId, deleteDocument,
   createUserContact, getUserContacts, updateUserContact, deleteUserContact,
   saveTaskCompletion, getTaskCompletions, getTaskCompletion,
 } from "./db";
@@ -16,7 +15,6 @@ import { notifyOwner } from "./_core/notification";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { policyFormRouter } from "./routers/policyForm";
-import { documentsRouter } from "./routers/documents";
 import { ENV } from "./_core/env";
 import { pdfDeliveryRouter } from './routers/pdfDelivery';
 import { chatRouter } from './routers/chat';
@@ -25,7 +23,6 @@ import { generatePhysicianLetter } from "./physicianLetterGenerator";
 export const appRouter = router({
   system: systemRouter,
   policyForm: policyFormRouter,
-  documents: documentsRouter,
   pdfDelivery: pdfDeliveryRouter,
   chat: chatRouter,
   
@@ -66,6 +63,65 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+    getProfile: publicProcedure.query(async () => {
+      const db = await (await import('./db')).getDb();
+      const defaultPrefs = { notifyOnNewPolicy: true, notifyOnStrategyGenerated: true, notifyOnContactForm: true };
+      if (!db) return { id: 1, name: 'Portal Operator', email: '', notificationPreferences: defaultPrefs };
+      const { users } = await import('../drizzle/schema');
+      const { eq } = await import('drizzle-orm');
+      const result = await db.select().from(users).where(eq(users.id, 1)).limit(1);
+      const user = result[0];
+      const prefs = (user?.notificationPreferences as typeof defaultPrefs | null) ?? defaultPrefs;
+      return {
+        id: user?.id ?? 1,
+        name: user?.name ?? 'Portal Operator',
+        email: user?.email ?? '',
+        notificationPreferences: { ...defaultPrefs, ...prefs },
+      };
+    }),
+    updateProfile: publicProcedure
+      .input(z.object({
+        name: z.string().min(1).optional(),
+        email: z.string().email().optional(),
+        notificationPreferences: z.object({
+          notifyOnNewPolicy: z.boolean().optional(),
+          notifyOnStrategyGenerated: z.boolean().optional(),
+          notifyOnContactForm: z.boolean().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await (await import('./db')).getDb();
+        if (!db) return { success: false };
+        const { users } = await import('../drizzle/schema');
+        const { eq, sql } = await import('drizzle-orm');
+        // Upsert: try update first, insert if no row exists
+        const existing = await db.select({ id: users.id }).from(users).where(eq(users.id, 1)).limit(1);
+        if (existing.length === 0) {
+          // Create the operator profile row with a synthetic openId
+          await db.insert(users).values({
+            id: 1,
+            openId: 'portal-operator',
+            name: input.name ?? 'Portal Operator',
+            email: input.email ?? null,
+            lastSignedIn: new Date(),
+            notificationPreferences: input.notificationPreferences ?? null,
+          } as any);
+        } else {
+          const updateData: Record<string, unknown> = {};
+          if (input.name !== undefined) updateData.name = input.name;
+          if (input.email !== undefined) updateData.email = input.email;
+          if (input.notificationPreferences !== undefined) {
+            // Merge with existing prefs
+            const currentResult = await db.select({ prefs: users.notificationPreferences }).from(users).where(eq(users.id, 1)).limit(1);
+            const currentPrefs = (currentResult[0]?.prefs as Record<string, boolean> | null) ?? {};
+            updateData.notificationPreferences = { ...currentPrefs, ...input.notificationPreferences };
+          }
+          if (Object.keys(updateData).length > 0) {
+            await db.update(users).set(updateData as any).where(eq(users.id, 1));
+          }
+        }
+        return { success: true };
+      }),
   }),
 
   policy: router({
