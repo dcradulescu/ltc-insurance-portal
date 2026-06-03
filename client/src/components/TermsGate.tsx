@@ -100,16 +100,21 @@ export function TermsGate({ children }: { children: React.ReactNode }) {
                 id="terms-accept"
                 checked={checked}
                 onCheckedChange={(v) => setChecked(!!v)}
-                className="mt-0.5"
+                className="mt-1 shrink-0"
               />
-              <Label htmlFor="terms-accept" className="text-sm text-slate-700 cursor-pointer leading-relaxed">
-                I have read and agree to the{" "}
-                <Link href="/terms" className="text-teal-600 hover:underline font-medium" target="_blank">
-                  Terms of Use & Disclaimer
-                </Link>
-                . I understand that this tool is for educational purposes only and does not constitute
-                professional advice.
-              </Label>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="terms-accept" className="text-sm text-slate-700 cursor-pointer leading-relaxed">
+                  I have read and agree to the{" "}
+                  <Link href="/terms" className="text-teal-600 hover:underline font-medium" target="_blank">
+                    Terms of Use &amp; Disclaimer
+                  </Link>
+                  .
+                </Label>
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  I understand that this tool is for educational purposes only and does not constitute
+                  professional advice.
+                </p>
+              </div>
             </div>
           </div>
 
