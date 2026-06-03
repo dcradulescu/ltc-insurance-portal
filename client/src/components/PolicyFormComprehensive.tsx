@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, HelpCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { trpc } from "@/lib/trpc";
 
 import { toast } from "sonner";
@@ -250,16 +250,16 @@ export function PolicyFormComprehensive() {
             {label}
             {required && <span className="text-red-500">*</span>}
           </Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button type="button" className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 rounded-full">
                 <HelpCircle className="w-4 h-4 text-teal cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{fieldTooltips[fieldName] || "Additional information"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{fieldTooltips[fieldName] || "Additional information"}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <Input
           id={fieldName}
@@ -289,16 +289,16 @@ export function PolicyFormComprehensive() {
             {label}
             {required && <span className="text-red-500">*</span>}
           </Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button type="button" className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 rounded-full">
                 <HelpCircle className="w-4 h-4 text-teal cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{fieldTooltips[fieldName] || "Additional information"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{fieldTooltips[fieldName] || "Additional information"}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <Select value={value as string} onValueChange={(val) => handleChange(fieldName, val)}>
           <SelectTrigger id={fieldName}>

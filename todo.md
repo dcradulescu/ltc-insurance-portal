@@ -519,3 +519,10 @@
 - [x] Fix PdfDeliveryPanel props to pass all new fields (eliminationPeriod, insuredDob, carrierPhone, etc.)
 - [x] Fix email.sendStrategy policyData schema to match expanded PdfData (eliminationPeriod, diagnosisCheckboxes, etc.)
 - [ ] Remove EmailDelivery.tsx component or wire it to real email delivery (currently only calls notifyOwner)
+
+## Tooltip Fixes
+- [x] Rewrite tooltip.tsx to support click-toggle (open/onOpenChange) so tooltips work on both hover and click/tap
+- [x] Update TooltipField in PolicyForm.tsx to use click-toggle tooltip trigger
+- [x] Update all standalone Tooltip blocks in PolicyForm.tsx (ADL, IADL, Diagnosis headings) to use click-toggle
+- [x] Update PolicyFormComprehensive.tsx tooltips to use click-toggle
+- [x] Update ComponentShowcase.tsx tooltip to use click-toggle

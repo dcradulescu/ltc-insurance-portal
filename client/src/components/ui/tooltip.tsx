@@ -16,25 +16,56 @@ function TooltipProvider({
   );
 }
 
+// Context so TooltipTrigger can call the toggle without prop drilling
+const TooltipClickContext = React.createContext<{ toggle: () => void }>({
+  toggle: () => {},
+});
+
+/**
+ * Tooltip — works on both hover AND click/tap.
+ * Internally manages an `open` state so clicking the trigger toggles visibility.
+ */
 function Tooltip({
+  children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+  const [open, setOpen] = React.useState(false);
   return (
     <TooltipProvider>
-      <TooltipPrimitive.Root data-slot="tooltip" {...props} />
+      <TooltipPrimitive.Root
+        data-slot="tooltip"
+        open={open}
+        onOpenChange={setOpen}
+        {...props}
+      >
+        <TooltipClickContext.Provider value={{ toggle: () => setOpen((v) => !v) }}>
+          {children}
+        </TooltipClickContext.Provider>
+      </TooltipPrimitive.Root>
     </TooltipProvider>
   );
 }
 
 function TooltipTrigger({
+  onClick,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
+  const { toggle } = React.useContext(TooltipClickContext);
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      onClick={(e) => {
+        toggle();
+        onClick?.(e);
+      }}
+      {...props}
+    />
+  );
 }
 
 function TooltipContent({
   className,
-  sideOffset = 0,
+  sideOffset = 4,
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content>) {
