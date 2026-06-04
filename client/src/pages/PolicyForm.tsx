@@ -867,8 +867,31 @@ export default function PolicyForm() {
         <div className="container relative py-16 md:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="flex items-center gap-2 text-primary-foreground/70 text-sm mb-4">
-                <ClipboardList className="w-4 h-4" /> POLICY INTAKE FORM
+              {/* Step progress badges */}
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <div className="inline-flex items-center gap-2 text-primary-foreground/70 text-sm">
+                  <ClipboardList className="w-4 h-4" /> POLICY INTAKE FORM
+                </div>
+                <div className="inline-flex items-center gap-2 bg-teal rounded-full px-4 py-1.5 border border-teal/60 shadow-lg">
+                  <span className="text-sm font-bold text-white">Step 2 of 3 — Complete the Form</span>
+                </div>
+              </div>
+              {/* Step flow indicator */}
+              <div className="flex items-center gap-2 mb-5">
+                <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
+                  <span className="w-5 h-5 rounded-full bg-white/20 text-white/60 text-xs font-bold flex items-center justify-center">1</span>
+                  <span className="text-xs font-semibold text-white/60">Learn</span>
+                </div>
+                <div className="w-6 h-px bg-white/40" />
+                <div className="flex items-center gap-1.5 bg-teal rounded-lg px-3 py-1.5">
+                  <span className="w-5 h-5 rounded-full bg-white text-teal text-xs font-bold flex items-center justify-center">2</span>
+                  <span className="text-xs font-semibold text-white">Form</span>
+                </div>
+                <div className="w-6 h-px bg-white/40" />
+                <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
+                  <span className="w-5 h-5 rounded-full bg-white/20 text-white/60 text-xs font-bold flex items-center justify-center">3</span>
+                  <span className="text-xs font-semibold text-white/60">Strategy</span>
+                </div>
               </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif mb-4 leading-tight">Tell Us About Your <span className="text-teal">Policy</span></h1>
               <p className="text-slate-300 max-w-lg text-base leading-relaxed">Complete this form to receive a personalized strategy for filing your long-term care insurance claim. All information is securely stored and can be edited at any time.</p>
