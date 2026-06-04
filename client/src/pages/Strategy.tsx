@@ -621,7 +621,7 @@ export default function Strategy() {
             </div>
 
           ) : hasStrategy ? (
-            <div className="space-y-8">
+            <div className="space-y-5 md:space-y-8">
 
               {/* Policy Summary - Always visible at top */}
               {policy && <PolicySummaryCard policy={policy} />}
@@ -634,10 +634,10 @@ export default function Strategy() {
                 </div>
 
                 {/* Plan View Selector */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
                   <button
                     onClick={() => setPlanView("written")}
-                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                    className={`p-2 sm:p-4 rounded-xl border-2 transition-all text-center ${
                       planView === "written"
                         ? "border-teal bg-teal/5"
                         : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
@@ -649,7 +649,7 @@ export default function Strategy() {
 
                   <button
                     onClick={() => setPlanView("timeline")}
-                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                    className={`p-2 sm:p-4 rounded-xl border-2 transition-all text-center ${
                       planView === "timeline"
                         ? "border-teal bg-teal/5"
                         : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
@@ -661,7 +661,7 @@ export default function Strategy() {
 
                   <button
                     onClick={() => setPlanView("checklist")}
-                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                    className={`p-2 sm:p-4 rounded-xl border-2 transition-all text-center ${
                       planView === "checklist"
                         ? "border-teal bg-teal/5"
                         : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
@@ -673,7 +673,7 @@ export default function Strategy() {
 
                   <button
                     onClick={() => setPlanView("financial")}
-                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                    className={`p-2 sm:p-4 rounded-xl border-2 transition-all text-center ${
                       planView === "financial"
                         ? "border-teal bg-teal/5"
                         : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
@@ -685,7 +685,7 @@ export default function Strategy() {
 
                   <button
                     onClick={() => setPlanView("downloads")}
-                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                    className={`p-2 sm:p-4 rounded-xl border-2 transition-all text-center ${
                       planView === "downloads"
                         ? "border-teal bg-teal/5"
                         : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
@@ -697,7 +697,7 @@ export default function Strategy() {
 
                   <button
                     onClick={() => setPlanView("send")}
-                    className={`p-4 rounded-xl border-2 transition-all text-center ${
+                    className={`p-2 sm:p-4 rounded-xl border-2 transition-all text-center ${
                       planView === "send"
                         ? "border-teal bg-teal/5"
                         : "border-slate-200 hover:border-teal/30 hover:bg-slate-50"
@@ -711,7 +711,7 @@ export default function Strategy() {
 
               {/* WRITTEN PLAN VIEW */}
               {planView === "written" && (
-                <div className="space-y-8">
+                <div className="space-y-5 md:space-y-8">
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
                       <h3 className="font-serif text-xl font-bold text-slate-900">Written Plan</h3>
@@ -759,7 +759,7 @@ export default function Strategy() {
 
               {/* TIMELINE VIEW */}
               {planView === "timeline" && (
-                <div className="space-y-8">
+                <div className="space-y-5 md:space-y-8">
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
                       <h3 className="font-serif text-xl font-bold text-slate-900">Timeline</h3>
@@ -797,7 +797,7 @@ export default function Strategy() {
 
               {/* CHECKLIST VIEW */}
               {planView === "checklist" && (
-                <div className="space-y-8">
+                <div className="space-y-5 md:space-y-8">
                   <ChronologicalChecklist
                     stage1Tasks={stage1Tasks}
                     stage2Tasks={stage2Tasks}
@@ -811,7 +811,7 @@ export default function Strategy() {
                       <h3 className="font-serif text-xl font-bold text-slate-900">By Stage</h3>
                       <p className="text-sm text-slate-600 mt-1">View and manage tasks organized by claim stage</p>
                     </div>
-                    <div className="p-6 space-y-8">
+                    <div className="p-6 space-y-5 md:space-y-8">
                       {/* Stage 1 */}
                       <div>
                         <div className="flex items-center justify-between mb-4">
@@ -920,7 +920,7 @@ export default function Strategy() {
 
               {/* DOWNLOADS VIEW */}
               {planView === "downloads" && (
-                <div className="space-y-8">
+                <div className="space-y-5 md:space-y-8">
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
@@ -984,7 +984,7 @@ export default function Strategy() {
 
               {/* FINANCIAL STRATEGY VIEW */}
               {planView === "financial" && (
-                <div className="space-y-8">
+                <div className="space-y-5 md:space-y-8">
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">
@@ -1005,7 +1005,7 @@ export default function Strategy() {
 
               {/* SEND MY PLAN VIEW */}
               {planView === "send" && (
-                <div className="space-y-8">
+                <div className="space-y-5 md:space-y-8">
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-9 h-9 rounded-lg bg-teal/10 flex items-center justify-center">

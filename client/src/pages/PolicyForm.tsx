@@ -864,7 +864,7 @@ export default function PolicyForm() {
           <img src="/manus-storage/policy-form-hero_314c2717.jpg" alt="Senior couple reviewing insurance documents" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a3a4a]/85 via-[#1a3a4a]/70 to-[#1a2a3a]/50" />
         </div>
-        <div className="container relative py-16 md:py-24">
+        <div className="container relative py-12 md:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               {/* Step progress badges */}

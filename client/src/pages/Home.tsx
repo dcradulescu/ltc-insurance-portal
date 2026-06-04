@@ -123,7 +123,7 @@ export default function Home() {
           <img src="/manus-storage/home-hero_8fb65dbf.jpg" alt="Caregiver helping senior at home" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/85 via-[#1a2a3a]/70 to-[#1a2a3a]/50" />
         </div>
-        <div className="container relative py-20 md:py-28">
+        <div className="container relative py-14 md:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="flex flex-wrap gap-3 mb-6">
@@ -147,17 +147,17 @@ export default function Home() {
                 <p className="text-white font-semibold text-base mb-1">This is a completely free resource.</p>
                 <p className="text-white/80 text-sm leading-relaxed">There is no charge, no subscription, and no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.</p>
               </div>
-              <div className="flex flex-wrap gap-4">
-                <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+                <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white w-full sm:w-auto">
                   <Link href="/education">Start Here — Learn First</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent">
+                <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent w-full sm:w-auto">
                   <Link href="/policy-form">Already Educated? Go to Form</Link>
                 </Button>
                 <Button
                   variant="outline"
                   size="lg"
-                  className="text-base px-6 border-white/30 text-white hover:bg-white/10 bg-transparent flex items-center gap-2"
+                  className="text-base px-6 border-white/30 text-white hover:bg-white/10 bg-transparent flex items-center justify-center gap-2 w-full sm:w-auto"
                   onClick={async () => {
                     const shareData = {
                       title: "LTC Insurance Navigator — Free Resource",
@@ -194,7 +194,7 @@ export default function Home() {
       </section>
 
       {/* Mobile video */}
-      <section className="lg:hidden py-8 bg-secondary">
+      <section className="lg:hidden py-5 bg-secondary">
         <div className="container">
           <VideoPlaceholder
             title="Welcome to LTC Navigator"
@@ -206,9 +206,9 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               How We <span className="text-teal">Help</span>
             </h2>
@@ -235,7 +235,7 @@ export default function Home() {
 
       {/* You Don't Have to Navigate This Alone - Moved Section */}
       <section
-        className="parallax-section relative py-20 text-white"
+        className="parallax-section relative py-12 md:py-16 text-white"
         style={{
           backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')",
         }}
@@ -262,22 +262,22 @@ export default function Home() {
       </section>
 
       {/* Policy Intake Form Section */}
-      <section className="py-20 bg-secondary">
+      <section className="py-12 md:py-16 bg-secondary">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left: Content */}
             <div>
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-6">
+              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
                 <ClipboardList className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-primary-dark">Smart Preparation</span>
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
                 The <span className="text-primary">Intake Form</span>
               </h2>
-              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+              <p className="text-lg text-foreground/80 leading-relaxed mb-4">
                 Our comprehensive policy intake form is designed to gather all the essential information about your long-term care insurance policy in one place. When you're ready to call your insurance company, you'll have everything organized and at your fingertips.
               </p>
-              <div className="space-y-4 mb-8">
+              <div className="space-y-3 mb-6">
                 <div className="flex gap-4">
                   <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                   <div>
@@ -318,9 +318,9 @@ export default function Home() {
       </section>
 
       {/* Customized Strategy Section */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left: Static Graphic */}
             <div className="relative hidden lg:block order-2 lg:order-1">
               <img 
@@ -332,17 +332,17 @@ export default function Home() {
 
             {/* Right: Content */}
             <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 bg-teal/10 rounded-full px-4 py-2 mb-6">
+              <div className="inline-flex items-center gap-2 bg-teal/10 rounded-full px-4 py-2 mb-4">
                 <Target className="w-4 h-4 text-teal" />
                 <span className="text-sm font-medium text-teal-dark">Personalized Guidance</span>
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Your <span className="text-teal">Customized Strategy</span>
               </h2>
-              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+              <p className="text-lg text-foreground/80 leading-relaxed mb-4">
                 Based on your specific policy details and care situation, we create a personalized, step-by-step strategy designed just for you. This roadmap guides you through every phase of the claims process with clarity and confidence.
               </p>
-              <div className="space-y-4 mb-8">
+              <div className="space-y-3 mb-6">
                 <div className="flex gap-4">
                   <Zap className="w-6 h-6 text-teal flex-shrink-0 mt-1" />
                   <div>
@@ -374,22 +374,22 @@ export default function Home() {
       </section>
 
       {/* Live Chat Support Section */}
-      <section className="py-20 bg-secondary">
+      <section className="py-12 md:py-16 bg-secondary">
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left: Content */}
             <div>
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-6">
+              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
                 <MessageSquare className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-primary-dark">Always Available</span>
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
                 <span className="text-primary">Live Chat</span> Support
               </h2>
-              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+              <p className="text-lg text-foreground/80 leading-relaxed mb-4">
                 Have a question about your policy, the claims process, or how to use the portal? Our intelligent support chat is available to help you find answers quickly. Get instant responses to your questions without waiting on hold.
               </p>
-              <div className="space-y-4 mb-8">
+              <div className="space-y-3 mb-6">
                 <div className="flex gap-4">
                   <MessageSquare className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                   <div>
@@ -520,7 +520,7 @@ export default function Home() {
       </section>
 
       {/* Scrolling Testimonials */}
-      <section className="py-20 bg-secondary overflow-hidden">
+      <section className="py-12 md:py-16 bg-secondary overflow-hidden">
         <div className="container mb-12">
           <div className="text-center">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -563,9 +563,9 @@ export default function Home() {
       </section>
 
       {/* How It Works - Streamlined */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               Four Simple <span className="text-primary">Steps</span>
             </h2>
@@ -592,7 +592,7 @@ export default function Home() {
 
       {/* Bottom CTA */}
       <section
-        className="parallax-section relative py-8 text-white"
+        className="parallax-section relative py-10 text-white"
         style={{
           backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')",
         }}

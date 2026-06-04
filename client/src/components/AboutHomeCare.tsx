@@ -48,7 +48,7 @@ export function AboutHomeCare({ showStartButton = false, onStartClick }: AboutHo
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-64 overflow-hidden group"
+      className="relative w-full h-auto min-h-[10rem] sm:h-64 overflow-hidden group"
     >
       {/* Parallax Background Images - Multiple layers */}
       <div
@@ -82,9 +82,9 @@ export function AboutHomeCare({ showStartButton = false, onStartClick }: AboutHo
       <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-teal-200/30 rounded-full blur-3xl -z-10" />
 
       {/* Content Container */}
-      <div className="relative z-10 h-full flex items-center justify-between px-6 md:px-12 max-w-7xl mx-auto w-full">
+      <div className="relative z-10 h-full flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 md:px-12 max-w-7xl mx-auto w-full py-4 sm:py-0">
         {/* Left side - Logo and Text */}
-        <div className="flex items-center gap-6 md:gap-8 flex-1">
+        <div className="flex items-center gap-3 sm:gap-6 md:gap-8 flex-1 min-w-0">
           {/* Visiting Angels Logo */}
           <div
             className="flex-shrink-0 transform transition-transform duration-300 group-hover:scale-110"
@@ -95,7 +95,7 @@ export function AboutHomeCare({ showStartButton = false, onStartClick }: AboutHo
             <img
               src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/Dove-Trans_350b603e.gif"
               alt="Visiting Angels"
-              className="h-20 md:h-24 w-auto drop-shadow-lg"
+              className="h-12 sm:h-20 md:h-24 w-auto drop-shadow-lg"
             />
           </div>
 
@@ -111,7 +111,7 @@ export function AboutHomeCare({ showStartButton = false, onStartClick }: AboutHo
         </div>
 
         {/* Right side - CTA Button */}
-        <div className="flex-shrink-0 ml-4 md:ml-8">
+        <div className="flex-shrink-0 mt-2 sm:mt-0 ml-0 sm:ml-4 md:ml-8">
           <Button
             onClick={() => window.open("https://www.SCVisitingAngels.com", "_blank")}
             className="bg-gradient-to-r from-blue-400 to-teal-400 hover:from-blue-500 hover:to-teal-500 text-white px-6 md:px-8 py-3 md:py-4 font-semibold rounded-full group/btn transition-all duration-300 hover:shadow-lg hover:shadow-blue-300/50 transform hover:scale-105 whitespace-nowrap text-sm md:text-base"

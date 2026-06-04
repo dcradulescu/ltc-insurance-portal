@@ -111,7 +111,7 @@ export default function Education() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/85 via-[#1a2a3a]/70 to-[#1a2a3a]/50" />
         </div>
-        <div className="container relative py-20 md:py-28">
+        <div className="container relative py-14 md:py-20">
           <div className="max-w-3xl">
             {/* Step progress badges */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
@@ -146,17 +146,17 @@ export default function Education() {
             <p className="text-lg text-white/80 leading-relaxed mb-8 max-w-lg">
               Start here — learn how long-term care insurance works, understand key definitions, and discover how we create your personalized strategy. This is your first step before completing the policy form.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white w-full sm:w-auto">
                 <a href="#definitions">Start Learning Now</a>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent">
+              <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent w-full sm:w-auto">
                 <Link href="/policy-form">Already Learned? Go to Form →</Link>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="text-base px-6 border-white/30 text-white hover:bg-white/10 bg-transparent flex items-center gap-2 print:hidden"
+                className="text-base px-6 border-white/30 text-white hover:bg-white/10 bg-transparent flex items-center justify-center gap-2 print:hidden w-full sm:w-auto"
                 onClick={() => window.print()}
               >
                 <Printer className="w-4 h-4" />
@@ -168,9 +168,9 @@ export default function Education() {
       </section>
 
       {/* Section 1: How LTC Insurance Works */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               How LTC Insurance <span className="text-teal">Works</span>
             </h2>
@@ -229,8 +229,8 @@ export default function Education() {
           </div>
 
           {/* Key Concepts */}
-          <div className="bg-secondary rounded-2xl p-8 md:p-12">
-            <h3 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-8">
+          <div className="bg-secondary rounded-2xl p-5 md:p-8">
+            <h3 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-5">
               Key Concepts to Understand
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -277,9 +277,9 @@ export default function Education() {
       </section>
 
       {/* Section 2: Definitions */}
-      <section className="py-20 bg-white" id="definitions">
+      <section className="py-12 md:py-16 bg-white" id="definitions">
         <div className="container">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               Key <span className="text-teal">Definitions</span>
             </h2>
@@ -358,9 +358,9 @@ export default function Education() {
       </section>
 
       {/* Section 3: How Strategy Creation Works */}
-      <section className="py-20 bg-secondary">
+      <section className="py-12 md:py-16 bg-secondary">
         <div className="container">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               How We Create Your <span className="text-teal">Strategy</span>
             </h2>
@@ -525,9 +525,9 @@ export default function Education() {
       </section>
 
       {/* Success Metrics Section */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               Our <span className="text-teal">Track Record</span>
             </h2>
@@ -642,7 +642,7 @@ export default function Education() {
 
       {/* CTA Section - Matching Home Page Style */}
       <section
-        className="parallax-section relative py-20 text-white"
+        className="parallax-section relative py-12 md:py-16 text-white"
         style={{
           backgroundImage: "url('/manus-storage/education-hero_6c3e985b.jpg')",
         }}
