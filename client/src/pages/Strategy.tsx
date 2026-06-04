@@ -499,11 +499,34 @@ export default function Strategy() {
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a4a]/90 via-[#1a3a4a]/80 to-[#2c5060]/70" />
         </div>
         <div className="container relative max-w-5xl">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-teal/20 flex items-center justify-center">
-              <ClipboardCheck className="w-4 h-4 text-teal" />
+          {/* Step progress badges */}
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-teal/20 flex items-center justify-center">
+                <ClipboardCheck className="w-4 h-4 text-teal" />
+              </div>
+              <span className="text-xs uppercase tracking-[0.2em] text-white/50 font-medium">Personalized Strategy</span>
             </div>
-            <span className="text-xs uppercase tracking-[0.2em] text-white/50 font-medium">Personalized Strategy</span>
+            <div className="inline-flex items-center gap-2 bg-teal rounded-full px-4 py-1.5 border border-teal/60 shadow-lg">
+              <span className="text-sm font-bold text-white">Step 3 of 3 — Your Strategy</span>
+            </div>
+          </div>
+          {/* Step flow indicator */}
+          <div className="flex items-center gap-2 mb-5">
+            <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
+              <span className="w-5 h-5 rounded-full bg-white/20 text-white/60 text-xs font-bold flex items-center justify-center">1</span>
+              <span className="text-xs font-semibold text-white/60">Learn</span>
+            </div>
+            <div className="w-6 h-px bg-white/40" />
+            <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
+              <span className="w-5 h-5 rounded-full bg-white/20 text-white/60 text-xs font-bold flex items-center justify-center">2</span>
+              <span className="text-xs font-semibold text-white/60">Form</span>
+            </div>
+            <div className="w-6 h-px bg-white/40" />
+            <div className="flex items-center gap-1.5 bg-teal rounded-lg px-3 py-1.5">
+              <span className="w-5 h-5 rounded-full bg-white text-teal text-xs font-bold flex items-center justify-center">3</span>
+              <span className="text-xs font-semibold text-white">Strategy</span>
+            </div>
           </div>
           <h1 className="font-serif text-3xl md:text-5xl font-bold mb-4 leading-tight">
             Your LTC Claim<br className="hidden md:block" /> Strategy Guide
