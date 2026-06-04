@@ -73,7 +73,7 @@ export default function Contact() {
 
               <div className="space-y-4">
                 {[
-                  { icon: <Phone className="w-5 h-5 text-teal" />, label: "Phone", value: "(803) 749-0026", sub: "Mon-Fri, 9am-5pm EST" },
+                  { icon: <Phone className="w-5 h-5 text-teal" />, label: "Phone", value: "(864) 244-6300", sub: "Mon-Fri, 9am-5pm EST" },
                   { icon: <Mail className="w-5 h-5 text-teal" />, label: "Email", value: "Send us a message using the form", sub: "We respond within 24 hours" },
                   { icon: <Clock className="w-5 h-5 text-teal" />, label: "Response Time", value: "Within 24 business hours", sub: "Urgent matters prioritized" },
                 ].map((item, i) => (

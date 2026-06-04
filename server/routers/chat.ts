@@ -66,7 +66,7 @@ COMMON MISTAKES TO AVOID:
 6. Choosing a care provider unfamiliar with LTC insurance requirements.
 
 ABOUT SC VISITING ANGELS:
-SC Visiting Angels (scvisitingangels.com) is a home care agency in South Carolina specializing in long-term care insurance claims. They help families navigate the LTC claims process from start to finish, including documentation, provider setup, and carrier communication. Phone: (803) 749-0026. Email: info@scvisitingangels.com.
+SC Visiting Angels (scvisitingangels.com) is a home care agency in South Carolina specializing in long-term care insurance claims. They help families navigate the LTC claims process from start to finish, including documentation, provider setup, and carrier communication. Phone: (864) 244-6300. Email: info@scvisitingangels.com.
 `;
 
 // ── Keyword-based RAG retrieval from ragDocuments table ───────────────────────

@@ -26,11 +26,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-4">
             <a
-              href="tel:+18037490026"
+              href="tel:+18642446300"
               className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors"
             >
               <Phone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">(803) 749-0026</span>
+              <span className="hidden sm:inline">(864) 244-6300</span>
             </a>
             <a
               href="https://www.scvisitingangels.com"
@@ -180,7 +180,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <ul className="space-y-2 text-sm text-slate-400">
                 <li className="flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-teal flex-shrink-0" />
-                  <a href="tel:+18037490026" className="hover:text-teal transition-colors">(803) 749-0026</a>
+                  <a href="tel:+18642446300" className="hover:text-teal transition-colors">(864) 244-6300</a>
                 </li>
                 <li className="flex items-center gap-2">
                   <Globe className="w-3.5 h-3.5 text-teal flex-shrink-0" />

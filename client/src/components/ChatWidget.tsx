@@ -70,7 +70,7 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
         ...prev,
         {
           role: "assistant",
-          content: "I'm having trouble connecting right now. Please try again in a moment, or call us at **(803) 749-0026**.",
+          content: "I'm having trouble connecting right now. Please try again in a moment, or call us at **(864) 244-6300**.",
         },
       ]);
     },

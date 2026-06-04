@@ -122,8 +122,8 @@ export default function Terms() {
                 info@scvisitingangels.com
               </a>{" "}
               or call{" "}
-              <a href="tel:8037490026" className="text-teal-600 hover:underline">
-                (803) 749-0026
+              <a href="tel:8642446300" className="text-teal-600 hover:underline">
+                (864) 244-6300
               </a>
             </p>
             <p className="text-xs text-slate-400 mt-2">

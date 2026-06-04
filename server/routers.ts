@@ -724,7 +724,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
                 stepTitle: input.stepTitle || "your current step",
                 returnUrl,
                 subject: "Your LTC Insurance Navigator — Saved Progress",
-                body: `Hi ${input.insuredName || "there"},\n\nYour LTC Insurance Navigator progress has been saved. Click the link below to pick up right where you left off:\n\n${returnUrl}\n\nYour form data is stored in your browser — simply return to this link on the same device and browser to continue.\n\nIf you have any questions, please call us at (803) 749-0026 or reply to this email.\n\nWarm regards,\nSC Visiting Angels\n(803) 749-0026 | scvisitingangels.com`,
+                body: `Hi ${input.insuredName || "there"},\n\nYour LTC Insurance Navigator progress has been saved. Click the link below to pick up right where you left off:\n\n${returnUrl}\n\nYour form data is stored in your browser — simply return to this link on the same device and browser to continue.\n\nIf you have any questions, please call us at (864) 244-6300 or reply to this email.\n\nWarm regards,\nSC Visiting Angels\n(864) 244-6300 | scvisitingangels.com`,
                 timestamp: new Date().toISOString(),
               }),
             });
