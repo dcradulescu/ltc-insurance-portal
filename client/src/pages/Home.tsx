@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 
 import { Link } from "wouter";
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import {
   Heart,
   ArrowRight,
@@ -18,6 +19,7 @@ import {
   CheckCircle,
   MessageSquare,
   Zap,
+  Share2,
 } from "lucide-react";
 
 const features = [
@@ -151,6 +153,31 @@ export default function Home() {
                 </Button>
                 <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent">
                   <Link href="/policy-form">Already Educated? Go to Form</Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-base px-6 border-white/30 text-white hover:bg-white/10 bg-transparent flex items-center gap-2"
+                  onClick={async () => {
+                    const shareData = {
+                      title: "LTC Insurance Navigator — Free Resource",
+                      text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims. No cost, no signup required.",
+                      url: window.location.origin,
+                    };
+                    if (navigator.share && navigator.canShare?.(shareData)) {
+                      try {
+                        await navigator.share(shareData);
+                      } catch (e) {
+                        // User cancelled — no action needed
+                      }
+                    } else {
+                      await navigator.clipboard.writeText(window.location.origin);
+                      toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
+                    }
+                  }}
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share This Free Resource
                 </Button>
               </div>
             </div>
