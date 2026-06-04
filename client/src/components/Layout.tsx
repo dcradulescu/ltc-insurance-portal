@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Phone, Globe } from "lucide-react";
+import { Menu, X, Phone, Globe, Share2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -156,6 +157,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <li><Link href="/education" className="text-slate-400 hover:text-teal transition-colors no-underline">Education</Link></li>
                 <li><Link href="/policy-form" className="text-slate-400 hover:text-teal transition-colors no-underline">Policy Form</Link></li>
                 <li><Link href="/strategy" className="text-slate-400 hover:text-teal transition-colors no-underline">Strategy</Link></li>
+                <li>
+                  <button
+                    className="flex items-center gap-1.5 text-slate-400 hover:text-teal transition-colors text-sm"
+                    onClick={async () => {
+                      const shareData = {
+                        title: "LTC Insurance Navigator — Free Resource",
+                        text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims. No cost, no signup required.",
+                        url: window.location.origin,
+                      };
+                      if (navigator.share && navigator.canShare?.(shareData)) {
+                        try { await navigator.share(shareData); } catch {}
+                      } else {
+                        await navigator.clipboard.writeText(window.location.origin);
+                        toast.success("Link copied!", { description: "Share it with family members who need help with LTC insurance." });
+                      }
+                    }}
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    Share This Resource
+                  </button>
+                </li>
               </ul>
             </div>
             <div>
