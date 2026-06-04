@@ -217,3 +217,51 @@
   12%, 28% { opacity: 1; transform: translateY(0); }
   32%, 100% { opacity: 0; transform: translateY(-10px); }
 }
+
+/* ============================================================
+   Print styles — Education page (and any page using window.print())
+   ============================================================ */
+@media print {
+  /* Hide chrome: nav, header, footer, chat widget, video placeholders,
+     hero background images, step badges, CTA buttons, and
+     any element explicitly marked print:hidden via Tailwind */
+  header,
+  nav,
+  footer,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reset page background to white */
+  body,
+  main {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Ensure headings are dark on white */
+  h1, h2, h3, h4, h5, h6 {
+    color: #1a2a3a !important;
+  }
+
+  p, li, span {
+    color: #333 !important;
+  }
+
+  /* Remove shadows that look bad on paper */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Prevent page breaks inside cards and list items */
+  li,
+  tr {
+    break-inside: avoid;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 1.5cm 2cm;
+  }
+}
