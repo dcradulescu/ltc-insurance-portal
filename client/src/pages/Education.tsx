@@ -6,7 +6,7 @@ import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { 
   BookOpen, CheckCircle, Info, Shield, Heart, Users, 
   ArrowRight, Sparkles, Brain, DollarSign, Clock, TrendingUp, 
-  ChevronDown, Target, Award, FileText, Phone
+  ChevronDown, Target, Award, FileText, Phone, Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -152,6 +152,15 @@ export default function Education() {
               </Button>
               <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent">
                 <Link href="/policy-form">Already Learned? Go to Form →</Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-base px-6 border-white/30 text-white hover:bg-white/10 bg-transparent flex items-center gap-2 print:hidden"
+                onClick={() => window.print()}
+              >
+                <Printer className="w-4 h-4" />
+                Print This Page
               </Button>
             </div>
           </div>
