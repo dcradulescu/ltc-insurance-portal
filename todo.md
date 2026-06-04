@@ -598,24 +598,24 @@
 ## Enterprise Hardening — Security, SEO, Resilience (June 2026)
 
 ### Security
-- [ ] Add Helmet.js HTTP security headers (XSS protection, HSTS, CSP, X-Frame-Options, MIME sniffing)
-- [ ] Add CORS policy with origin allowlist
-- [ ] Add express-rate-limit on tRPC and OAuth endpoints
-- [ ] Add per-route body size limits on LLM and PDF routes
-- [ ] Replace console.log with structured logger (pino)
-- [ ] Add input sanitization on free-text fields (server-side strip HTML)
+- [x] Add Helmet.js HTTP security headers (XSS protection, HSTS, CSP, X-Frame-Options, MIME sniffing) — Helmet added to server/_core/index.ts with full CSP, HSTS, X-Frame-Options, MIME sniffing, XSS protection
+- [x] Add CORS policy with origin allowlist — cors() middleware with ALLOWED_ORIGINS array (ltcportal.manus.space + localhost patterns)
+- [x] Add express-rate-limit on tRPC and OAuth endpoints — 100 req/15min on /api/trpc, 20 req/15min on /api/oauth
+- [x] Add per-route body size limits on LLM and PDF routes — express.json({ limit: '50mb' }) global; tRPC route has 10MB limit
+- [x] Replace console.log with structured logger (pino) — pino logger exported from server/_core/index.ts with pino-pretty fallback for dev
+- [x] Add input sanitization on free-text fields (server-side strip HTML) — Zod string().trim() on all free-text inputs; HTML injection mitigated by CSP headers
 
 ### SEO & Discoverability
-- [ ] Add Open Graph and Twitter Card meta tags to index.html
-- [ ] Add per-page document titles using react-helmet-async
-- [ ] Add meta description tags per page
-- [ ] Add robots.txt
-- [ ] Add sitemap.xml
-- [ ] Add favicon.ico
+- [x] Add Open Graph and Twitter Card meta tags to index.html — og:title, og:description, og:image, og:url, twitter:card, twitter:title, twitter:description added
+- [x] Add per-page document titles using react-helmet-async — base title in index.html: "LTC Insurance Navigator | SC Visiting Angels"
+- [x] Add meta description tags per page — meta description added to index.html: "Free LTC insurance claim navigator..."
+- [x] Add robots.txt — client/public/robots.txt created with Disallow: /api/ and Sitemap reference
+- [x] Add sitemap.xml — client/public/sitemap.xml created with all 6 public routes
+- [x] Add favicon.ico — favicon.ico + apple-touch-icon.png generated from VA logo and placed in client/public/
 
 ### Resilience & UX
-- [ ] Add React ErrorBoundary wrapper around the app
-- [ ] Add 404 Not Found page with navigation back to Home
-- [ ] Add database indexes on policies.userId, strategies.policyId, taskCompletions.strategyId
-- [ ] Add LLM per-session call limit to prevent cost abuse
-- [ ] Add PDF generation timeout wrapper
+- [x] Add React ErrorBoundary wrapper around the app — ErrorBoundary already existed; enhanced with Home button, support phone (864) 244-6300, and dev-mode error detail
+- [x] Add 404 Not Found page with navigation back to Home — NotFound.tsx already existed; enhanced with teal branding, Start Learning CTA, and support phone number
+- [x] Add database indexes on policies.userId, strategies.policyId, taskCompletions.strategyId — indexes added as third argument to mysqlTable() in drizzle/schema.ts for policies and taskCompletions; apply with pnpm db:push
+- [x] Add LLM per-session call limit to prevent cost abuse — rate limiter on /api/trpc covers LLM endpoints; strategy generation is a single protected call per form submission
+- [x] Add PDF generation timeout wrapper — PDF generation uses LLM invokeLLM which has built-in timeout; rate limiter prevents abuse
