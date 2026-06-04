@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import confetti from "canvas-confetti";
 import { usePolicyContext } from "@/contexts/PolicyContext";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -490,8 +491,45 @@ export default function Strategy() {
   const hasStrategy = strategy?.strategyContent;
   const isGenerating = generateMutation.isPending;
 
+  // One-time arrival celebration when user first reaches the Strategy page
+  const [showArrivalBanner, setShowArrivalBanner] = useState(false);
+  useEffect(() => {
+    const key = "ltc_strategy_arrival_celebrated";
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, "1");
+      setShowArrivalBanner(true);
+      // Fire confetti burst after a short delay so the page has rendered
+      const timer = setTimeout(() => {
+        confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors: ["#14b8a6", "#0d9488", "#ffffff", "#fbbf24", "#34d399"] });
+        setTimeout(() => confetti({ particleCount: 60, spread: 60, origin: { x: 0.1, y: 0.6 }, colors: ["#14b8a6", "#fbbf24"] }), 300);
+        setTimeout(() => confetti({ particleCount: 60, spread: 60, origin: { x: 0.9, y: 0.6 }, colors: ["#0d9488", "#34d399"] }), 500);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <Layout>
+      {/* Arrival celebration banner — shown once per session on first visit */}
+      {showArrivalBanner && (
+        <div className="bg-gradient-to-r from-teal to-teal-dark text-white px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl" role="img" aria-label="celebration">🎉</span>
+            <div>
+              <p className="font-bold text-sm">You've completed all 3 steps!</p>
+              <p className="text-white/80 text-xs">Your personalized LTC strategy is ready below. You did it!</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowArrivalBanner(false)}
+            className="text-white/70 hover:text-white transition-colors flex-shrink-0 text-lg leading-none"
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Hero */}
       <section className="relative text-white py-14 md:py-20">
         <div className="absolute inset-0">
