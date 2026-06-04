@@ -80,7 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
             <Button asChild size="sm" className="ml-2 bg-teal hover:bg-teal-dark text-white">
-              <Link href="/policy-form">Get Started</Link>
+              <Link href="/education">Start Here — Free</Link>
             </Button>
           </nav>
 
@@ -113,7 +113,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ))}
               <div className="p-4">
                 <Button asChild className="w-full bg-teal hover:bg-teal-dark text-white">
-                  <Link href="/policy-form">Get Started</Link>
+                  <Link href="/education">Start Here — Free</Link>
                 </Button>
               </div>
             </nav>

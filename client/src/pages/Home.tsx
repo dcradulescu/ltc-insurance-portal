@@ -124,23 +124,33 @@ export default function Home() {
         <div className="container relative py-20 md:py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-teal/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-teal/30">
-                <Heart className="w-4 h-4 text-teal-light" />
-                <span className="text-sm text-white/90">Supportive Guidance for Families</span>
+              <div className="flex flex-wrap gap-3 mb-6">
+                <div className="inline-flex items-center gap-2 bg-teal/20 backdrop-blur-sm rounded-full px-4 py-2 border border-teal/30">
+                  <Heart className="w-4 h-4 text-teal-light" />
+                  <span className="text-sm text-white/90">Supportive Guidance for Families</span>
+                </div>
+                <div className="inline-flex items-center gap-2 bg-yellow-400/90 backdrop-blur-sm rounded-full px-4 py-2 border border-yellow-300">
+                  <Zap className="w-4 h-4 text-yellow-900" />
+                  <span className="text-sm font-bold text-yellow-900">100% Free — No Cost to You</span>
+                </div>
               </div>
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 Navigating Long Term Care insurance{" "}
                 <span className="text-teal">with Confidence!</span>
               </h1>
-              <p className="text-lg text-white/80 leading-relaxed mb-8 max-w-lg">
+              <p className="text-lg text-white/80 leading-relaxed mb-4 max-w-lg">
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
               </p>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-4 mb-8 max-w-lg">
+                <p className="text-white font-semibold text-base mb-1">This is a completely free resource.</p>
+                <p className="text-white/80 text-sm leading-relaxed">There is no charge, no subscription, and no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.</p>
+              </div>
               <div className="flex flex-wrap gap-4">
                 <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
-                  <Link href="/policy-form">Start Your Claim Journey</Link>
+                  <Link href="/education">Start Here — Learn First</Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent">
-                  <Link href="/education">Learn About LTC</Link>
+                  <Link href="/policy-form">Already Educated? Go to Form</Link>
                 </Button>
               </div>
             </div>
@@ -213,12 +223,12 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90">
-              <Link href="/policy-form">
-                Start Your Claim <ArrowRight className="w-4 h-4 ml-2" />
+              <Link href="/education">
+                Step 1: Learn About LTC <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/10 bg-transparent">
-              <Link href="/education">Learn More</Link>
+              <Link href="/policy-form">Step 2: Complete the Form</Link>
             </Button>
           </div>
         </div>
@@ -538,10 +548,10 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { num: "01", title: "Gather Your Information", desc: "Collect your insurance policy details and care information to prepare for the claim process.", color: "text-teal" },
-              { num: "02", title: "Enter Policy Details", desc: "Complete our comprehensive policy intake form with your insurance information.", color: "text-primary" },
-              { num: "03", title: "Get Your Strategy", desc: "Receive a customized claim filing strategy tailored to your specific situation.", color: "text-teal" },
-              { num: "04", title: "File With Confidence", desc: "Follow your personalized guide to successfully submit your LTC insurance claim.", color: "text-primary" },
+              { num: "01", title: "Learn First", desc: "Start in the Education section to understand your policy, benefits, ADLs, and what to expect from the claims process.", color: "text-teal" },
+              { num: "02", title: "Complete the Form", desc: "Once you understand your policy, fill out our intake form with your specific insurance details and care needs.", color: "text-primary" },
+              { num: "03", title: "Get Your Strategy", desc: "Receive a customized, step-by-step claim filing strategy tailored to your specific policy and situation.", color: "text-teal" },
+              { num: "04", title: "File With Confidence", desc: "Follow your personalized guide to successfully submit your LTC insurance claim with everything in order.", color: "text-primary" },
             ].map((step) => (
               <div key={step.num} className="relative">
                 <div className={`text-6xl font-serif font-bold ${step.color} opacity-20 mb-2`}>{step.num}</div>
@@ -552,9 +562,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* About Home Care */}
-      <AboutHomeCare />
 
       {/* Bottom CTA */}
       <section
@@ -569,17 +576,23 @@ export default function Home() {
             Ready to Get Started?
           </h2>
           <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8">
-            Begin your claim filing journey today. Your information is saved locally on your device for easy access.
+            Begin with our free Education section — it only takes a few minutes and will make completing the form much easier.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
-              <Link href="/policy-form">
-                Complete Policy Form <ArrowRight className="w-4 h-4 ml-2" />
+              <Link href="/education">
+                Start with Education <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/10 bg-transparent">
+              <Link href="/policy-form">Skip to Policy Form</Link>
             </Button>
           </div>
         </div>
       </section>
+
+      {/* About Home Care - just above disclaimer */}
+      <AboutHomeCare />
           <LegalDisclaimerFooter />
     </Layout>
   );

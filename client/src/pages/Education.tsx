@@ -568,9 +568,6 @@ export default function Education() {
         </div>
       </section>
 
-      {/* About Home Care */}
-      <AboutHomeCare />
-
       {/* Resources Reference Section — anchors used by ChronologicalChecklist document links */}
       <section className="py-16 bg-white" id="resources">
         <div className="container max-w-4xl">
@@ -629,15 +626,18 @@ export default function Education() {
           <div className="flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90">
               <Link href="/policy-form">
-                Start Your Strategy <ArrowRight className="w-4 h-4 ml-2" />
+                Complete the Policy Form <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/10 bg-transparent">
-              <Link href="/">Learn More</Link>
+              <Link href="/contact">Talk to Someone</Link>
             </Button>
           </div>
         </div>
       </section>
+
+      {/* About Home Care - just above disclaimer */}
+      <AboutHomeCare />
           <LegalDisclaimerFooter />
     </Layout>
   );
