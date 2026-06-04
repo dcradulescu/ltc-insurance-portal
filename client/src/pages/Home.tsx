@@ -308,8 +308,8 @@ export default function Home() {
             {/* Right: Static Graphic */}
             <div className="relative hidden lg:block">
               <img 
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/intake-form-professional-i4ttKGswjNVFAZQ5DETF6n.webp" 
-                alt="Policy Intake Process" 
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/intake-form-section-mZs4Ekm9teKNjUckYUJK2U.webp" 
+                alt="Care coordinator helping elderly couple complete their LTC insurance intake form at home" 
                 className="w-full h-auto rounded-2xl shadow-xl"
               />
             </div>
@@ -324,8 +324,8 @@ export default function Home() {
             {/* Left: Static Graphic */}
             <div className="relative hidden lg:block order-2 lg:order-1">
               <img 
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/strategy-section-graphic-fKyAWv2ExFCBbFDYZkXKKx.webp" 
-                alt="Strategy Roadmap" 
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/strategy-section-YfSApseWQYDU5UU6xzzqF3.webp" 
+                alt="Care coordinator presenting a personalized LTC strategy plan to a family on a tablet" 
                 className="w-full h-auto rounded-2xl shadow-xl"
               />
             </div>
