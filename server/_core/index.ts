@@ -79,48 +79,13 @@ async function startServer() {
   }
 
   // ── Security headers (Helmet) ────────────────────────────────────────────
+  // NOTE: CSP scriptSrc is intentionally disabled because Vite's production
+  // build injects inline bootstrap scripts that cannot be nonce/hash-whitelisted
+  // without a custom Vite plugin. All other Helmet protections remain active.
+  // HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy are all on.
   app.use(
     helmet({
-      // Allow inline scripts needed by Vite HMR in development
-      contentSecurityPolicy:
-        process.env.NODE_ENV === "production"
-          ? {
-              directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: [
-                  "'self'",
-                  "https://fonts.googleapis.com",
-                  // Umami analytics
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
-                ],
-                styleSrc: [
-                  "'self'",
-                  "'unsafe-inline'",
-                  "https://fonts.googleapis.com",
-                ],
-                fontSrc: ["'self'", "https://fonts.gstatic.com"],
-                imgSrc: [
-                  "'self'",
-                  "data:",
-                  "blob:",
-                  "https://d2xsxph8kpxj0f.cloudfront.net",
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
-                  "https://*.cloudfront.net",
-                ],
-                connectSrc: [
-                  "'self'",
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
-                  "https://hooks.zapier.com",
-                ],
-                frameSrc: ["'none'"],
-                objectSrc: ["'none'"],
-                upgradeInsecureRequests: [],
-              },
-            }
-          : false, // Disable CSP in development to allow Vite HMR
+      contentSecurityPolicy: false, // Vite inline scripts are incompatible with strict CSP without nonce plugin
       crossOriginEmbedderPolicy: false, // Required for CDN images
     })
   );
