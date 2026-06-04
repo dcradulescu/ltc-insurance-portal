@@ -619,3 +619,10 @@
 - [x] Add database indexes on policies.userId, strategies.policyId, taskCompletions.strategyId — indexes added as third argument to mysqlTable() in drizzle/schema.ts for policies and taskCompletions; apply with pnpm db:push
 - [x] Add LLM per-session call limit to prevent cost abuse — rate limiter on /api/trpc covers LLM endpoints; strategy generation is a single protected call per form submission
 - [x] Add PDF generation timeout wrapper — PDF generation uses LLM invokeLLM which has built-in timeout; rate limiter prevents abuse
+
+## Critical Bug Fix — Blank Page on Live Site (June 2026)
+- [x] Diagnosed blank page on live site: browser was loading /src/main.tsx (raw TypeScript) instead of compiled bundle
+- [x] Root cause: `<\/script>` escape in JSON-LD structured data in client/index.html was confusing Vite 7's HTML parser, causing it to skip the `<script type="module" src="/src/main.tsx">` entry point during build
+- [x] Fix: Changed `<\/script>` to `</script>` in the JSON-LD block — Vite now correctly processes 2673 modules and outputs compiled assets in dist/public/assets/
+- [x] Verified: pnpm run build now produces index.html with `<script type="module" crossorigin src="/assets/index-DPTdVjjH.js">` instead of raw /src/main.tsx reference
+- [x] All 49 tests still passing after fix
