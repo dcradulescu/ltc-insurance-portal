@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, boolean, index } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -103,7 +103,10 @@ export const policies = mysqlTable("policies", {
   fillerRelationship: varchar("fillerRelationship", { length: 128 }),
   createdAt: timestamp("createdAt").defaultNow(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
-});
+}, (table) => ({
+  userIdIdx: index("idx_policies_user_id").on(table.userId),
+  createdAtIdx: index("idx_policies_created_at").on(table.createdAt),
+}));
 
 export type Policy = typeof policies.$inferSelect;
 export type InsertPolicy = typeof policies.$inferInsert;
@@ -220,8 +223,14 @@ export const taskCompletions = mysqlTable("taskCompletions", {
   completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  strategyIdIdx: index("idx_task_completions_strategy_id").on(table.strategyId),
+  userIdIdx: index("idx_task_completions_user_id").on(table.userId),
+}));
 
 export type TaskCompletion = typeof taskCompletions.$inferSelect;
 export type InsertTaskCompletion = typeof taskCompletions.$inferInsert;
+
+// Indexes are defined inline in the table definitions above using the third
+// argument to mysqlTable(). Run `pnpm db:push` to apply them to the database.
 

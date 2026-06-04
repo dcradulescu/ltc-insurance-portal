@@ -594,3 +594,28 @@
 - [x] Add per-step Zapier submission on Next button click — notifyStepProgress fires on every Next
 - [x] Pass policyId/policy context into ChatWidget from Strategy page — PolicyContext added
 - [x] Rename sendSaveLink to match email.saveAndReturn or update todo text — procedure is email.sendSaveLink, works correctly
+
+## Enterprise Hardening — Security, SEO, Resilience (June 2026)
+
+### Security
+- [ ] Add Helmet.js HTTP security headers (XSS protection, HSTS, CSP, X-Frame-Options, MIME sniffing)
+- [ ] Add CORS policy with origin allowlist
+- [ ] Add express-rate-limit on tRPC and OAuth endpoints
+- [ ] Add per-route body size limits on LLM and PDF routes
+- [ ] Replace console.log with structured logger (pino)
+- [ ] Add input sanitization on free-text fields (server-side strip HTML)
+
+### SEO & Discoverability
+- [ ] Add Open Graph and Twitter Card meta tags to index.html
+- [ ] Add per-page document titles using react-helmet-async
+- [ ] Add meta description tags per page
+- [ ] Add robots.txt
+- [ ] Add sitemap.xml
+- [ ] Add favicon.ico
+
+### Resilience & UX
+- [ ] Add React ErrorBoundary wrapper around the app
+- [ ] Add 404 Not Found page with navigation back to Home
+- [ ] Add database indexes on policies.userId, strategies.policyId, taskCompletions.strategyId
+- [ ] Add LLM per-session call limit to prevent cost abuse
+- [ ] Add PDF generation timeout wrapper

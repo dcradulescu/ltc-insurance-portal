@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /api/trpc/
+Disallow: /api/oauth/
+
+Sitemap: https://ltcportal.manus.space/sitemap.xml

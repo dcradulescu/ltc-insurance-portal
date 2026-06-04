@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw, Home } from "lucide-react";
 import { Component, ReactNode } from "react";
 
 interface Props {
@@ -39,17 +39,36 @@ class ErrorBoundary extends Component<Props, State> {
               </pre>
             </div>
 
-            <button
-              onClick={() => window.location.reload()}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg",
-                "bg-primary text-primary-foreground",
-                "hover:opacity-90 cursor-pointer"
-              )}
-            >
-              <RotateCcw size={16} />
-              Reload Page
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => window.location.reload()}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg",
+                  "bg-primary text-primary-foreground",
+                  "hover:opacity-90 cursor-pointer"
+                )}
+              >
+                <RotateCcw size={16} />
+                Reload Page
+              </button>
+              <button
+                onClick={() => (window.location.href = "/")}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg",
+                  "bg-muted text-foreground border border-border",
+                  "hover:opacity-90 cursor-pointer"
+                )}
+              >
+                <Home size={16} />
+                Go to Home
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              If this keeps happening, call us at{" "}
+              <a href="tel:+18642446300" className="text-teal-600 font-medium hover:underline">
+                (864) 244-6300
+              </a>
+            </p>
           </div>
         </div>
       );
