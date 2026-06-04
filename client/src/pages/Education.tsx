@@ -113,22 +113,45 @@ export default function Education() {
         </div>
         <div className="container relative py-20 md:py-28">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-teal/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-teal/30">
-              <BookOpen className="w-4 h-4 text-teal-light" />
-              <span className="text-sm text-white/90">Education & Resources</span>
+            {/* Step progress badges */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <div className="inline-flex items-center gap-2 bg-teal/20 backdrop-blur-sm rounded-full px-4 py-2 border border-teal/30">
+                <BookOpen className="w-4 h-4 text-teal-light" />
+                <span className="text-sm text-white/90">Education & Resources</span>
+              </div>
+              <div className="inline-flex items-center gap-2 bg-teal hover:bg-teal-dark rounded-full px-4 py-2 border border-teal/60 shadow-lg">
+                <span className="text-sm font-bold text-white">Step 1 of 3 — Learn First</span>
+              </div>
+            </div>
+            {/* Step flow indicator */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className="flex items-center gap-1.5 bg-teal rounded-lg px-3 py-1.5">
+                <span className="w-5 h-5 rounded-full bg-white text-teal text-xs font-bold flex items-center justify-center">1</span>
+                <span className="text-xs font-semibold text-white">Learn</span>
+              </div>
+              <div className="w-6 h-px bg-white/40" />
+              <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
+                <span className="w-5 h-5 rounded-full bg-white/20 text-white/60 text-xs font-bold flex items-center justify-center">2</span>
+                <span className="text-xs font-semibold text-white/60">Form</span>
+              </div>
+              <div className="w-6 h-px bg-white/40" />
+              <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
+                <span className="w-5 h-5 rounded-full bg-white/20 text-white/60 text-xs font-bold flex items-center justify-center">3</span>
+                <span className="text-xs font-semibold text-white/60">Strategy</span>
+              </div>
             </div>
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
               Master Your <span className="text-teal">LTC Insurance</span>
             </h1>
             <p className="text-lg text-white/80 leading-relaxed mb-8 max-w-lg">
-              Learn how long-term care insurance works, understand key definitions, and discover how we create your personalized strategy.
+              Start here — learn how long-term care insurance works, understand key definitions, and discover how we create your personalized strategy. This is your first step before completing the policy form.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white">
-                <Link href="/policy-form">Start Your Strategy</Link>
+                <a href="#definitions">Start Learning Now</a>
               </Button>
               <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent">
-                <a href="#definitions">Learn Definitions</a>
+                <Link href="/policy-form">Already Learned? Go to Form →</Link>
               </Button>
             </div>
           </div>
