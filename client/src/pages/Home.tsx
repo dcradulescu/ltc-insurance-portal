@@ -2,7 +2,6 @@ import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
-import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { Link } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -154,9 +153,20 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveQuote((prev) => (prev + 1) % storyQuotes.length);
-    }, 5000);
+    }, 9000);
     return () => clearInterval(interval);
   }, []);
+
+  // Chat animation state
+  const [chatStep, setChatStep] = useState(0);
+  useEffect(() => {
+    // Steps: 0=show Q1, 1=typing, 2=show A1, 3=pause, 4=show Q2, 5=typing, 6=show A2, 7=pause, then loop
+    const delays = [1200, 900, 1000, 1800, 1200, 900, 1000, 2200];
+    const timer = setTimeout(() => {
+      setChatStep((prev) => (prev + 1) % delays.length);
+    }, delays[chatStep]);
+    return () => clearTimeout(timer);
+  }, [chatStep]);
 
   return (
     <Layout>
@@ -182,51 +192,46 @@ export default function Home() {
           <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.82)' }} />
         </div>
         <div className="container relative py-14 md:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="flex flex-wrap gap-3 mb-6 animate-float-up">
-                <div className="inline-flex items-center gap-2 rounded px-4 py-2 border" style={{ background: 'rgba(52,177,196,0.18)', borderColor: 'rgba(52,177,196,0.35)' }}>
-                  <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
-                  <span className="text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>Supportive Guidance for Families</span>
-                </div>
-              </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
-                Navigating Long Term Care Insurance{" "}
-                <span style={{ color: VA_TEAL }}>with Confidence!</span>
-              </h1>
-              <p className="text-lg text-white/85 leading-relaxed mb-4 max-w-lg animate-float-up animate-delay-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
-              </p>
-              <div className="rounded px-5 py-4 mb-8 max-w-lg animate-float-up animate-delay-300 border" style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }}>
-                <p className="text-white font-semibold text-base mb-1" style={{ fontFamily: "'Roboto', sans-serif" }}>This is a completely free resource.</p>
-                <p className="text-white/80 text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>There is no charge, no subscription, and no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.</p>
-              </div>
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 animate-float-up animate-delay-400">
-                <Link href="/education" className="va-btn text-base px-8 py-4 w-full sm:w-auto text-center shadow-lg">
-                  Start Here — Learn First
-                </Link>
-                <Link href="/policy-form" className="va-btn va-btn-outline text-base px-8 py-4 w-full sm:w-auto text-center" style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}>
-                  Already Educated? Share My Policy Details
-                </Link>
-                <button
-                  className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2 w-full sm:w-auto"
-                  style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
-                  onClick={async () => {
-                    const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
-                    if (navigator.share && navigator.canShare?.(shareData)) {
-                      try { await navigator.share(shareData); } catch {}
-                    } else {
-                      await navigator.clipboard.writeText(window.location.origin);
-                      toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
-                    }
-                  }}
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share This Free Resource
-                </button>
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="flex flex-wrap justify-center gap-3 mb-6 animate-float-up">
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 border" style={{ background: 'rgba(52,177,196,0.18)', borderColor: 'rgba(52,177,196,0.35)' }}>
+                <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
+                <span className="text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>Supportive Guidance for Families</span>
               </div>
             </div>
-            <div className="hidden lg:block animate-fade-in-scale animate-delay-300">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
+              Navigating Long Term Care Insurance{" "}
+              <span style={{ color: VA_TEAL }}>with Confidence!</span>
+            </h1>
+            <p className="text-lg text-white/85 leading-relaxed mb-4 max-w-2xl mx-auto animate-float-up animate-delay-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
+            </p>
+            <div className="rounded px-5 py-4 mb-8 max-w-2xl mx-auto animate-float-up animate-delay-300 border" style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }}>
+              <p className="text-white font-semibold text-base mb-1" style={{ fontFamily: "'Roboto', sans-serif" }}>This is a completely free resource.</p>
+              <p className="text-white/80 text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>There is no charge, no subscription, and no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 animate-float-up animate-delay-400">
+              <Link href="/education" className="va-btn text-base px-8 py-4 w-full sm:w-auto text-center shadow-lg">
+                Start Here — Learn First
+              </Link>
+              <button
+                className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2 w-full sm:w-auto"
+                style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
+                onClick={async () => {
+                  const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
+                  if (navigator.share && navigator.canShare?.(shareData)) {
+                    try { await navigator.share(shareData); } catch {}
+                  } else {
+                    await navigator.clipboard.writeText(window.location.origin);
+                    toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
+                  }
+                }}
+              >
+                <Share2 className="w-4 h-4" />
+                Share This Free Resource
+              </button>
+            </div>
+            <div className="mt-10 animate-fade-in-scale animate-delay-400">
               <VideoPlaceholder
                 title="Welcome to LTC Navigator"
                 description="Watch our brief introduction to learn how we can help your family"
@@ -238,17 +243,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Mobile video */}
-      <section className="lg:hidden py-5" style={{ background: VA_GREY_BG }}>
-        <div className="container">
-          <VideoPlaceholder
-            title="Welcome to LTC Navigator"
-            description="Watch our brief introduction to learn how we can help your family"
-            thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg"
-            videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/MjPhBEQZfvIrfZms.mp4"
-          />
-        </div>
-      </section>
+
 
       {/* ── Stats ── */}
       <section className="py-10 md:py-14 text-white" style={{ background: VA_CHARCOAL }}>
@@ -326,9 +321,19 @@ export default function Home() {
                 <Link href={step.href} className="inline-flex items-center gap-2 text-sm font-bold transition-colors duration-200 hover:opacity-80" style={{ color: step.color }}>
                   {step.cta} <ArrowRight className="w-4 h-4" />
                 </Link>
+                {i === 0 && (
+                  <div className="mt-3 inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
+                    🤝 Let's figure this out together!
+                  </div>
+                )}
                 {i === 1 && (
-                  <div className="absolute -top-3 right-5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow">
+                  <div className="mt-3 inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
                     ✨ This is where the magic starts!
+                  </div>
+                )}
+                {i === 2 && (
+                  <div className="mt-3 inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
+                    🎯 This is where everything comes together!
                   </div>
                 )}
               </div>
@@ -347,17 +352,23 @@ export default function Home() {
       {/* ── Step 1: Education ── */}
       <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div ref={eduLeftRef} className="relative hidden lg:block reveal reveal-left">
-              <img
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/education-section-hero-Yk9ZFnvFnvFnvFnvFnvF.webp"
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/intake-form-section-mZs4Ekm9teKNjUckYUJK2U.webp'; }}
-                alt="Senior reading about long-term care insurance with a cup of coffee"
-                className="w-full h-auto rounded shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.01]"
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
+            <div ref={eduLeftRef} className="relative hidden lg:flex reveal reveal-left">
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 420 }}>
+                <img
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/education-section-hero-Yk9ZFnvFnvFnvFnvFnvF.webp"
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/manus-storage/step2-policy-portrait_817e452f.jpg'; }}
+                  alt="Senior reading about long-term care insurance"
+                  className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(52,177,196,0.92)' }}>
+                  <BookOpen className="w-3.5 h-3.5 text-white" />
+                  <span className="text-xs font-bold text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>Step 1 of 3</span>
+                </div>
+              </div>
             </div>
-            <div ref={eduRightRef} className="reveal reveal-right">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
+            <div ref={eduRightRef} className="reveal reveal-right flex flex-col justify-center">
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: 'rgba(52,177,196,0.12)' }}>
                 <BookOpen className="w-4 h-4" style={{ color: VA_TEAL }} />
                 <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Step 1 of 3</span>
               </div>
@@ -372,9 +383,11 @@ export default function Home() {
                 <VaCheckItem title="Know What to Expect" desc="Understand the claims process from start to finish before you make a single phone call" />
                 <VaCheckItem title="Free & No Account Required" desc="Access all educational resources instantly — no sign-up, no cost, no obligation" />
               </div>
-              <Link href="/education" className="va-btn text-base px-8 py-4 shadow-lg">
-                Start Learning <ArrowRight className="w-4 h-4 ml-2 inline" />
-              </Link>
+              <div className="flex justify-center">
+                <Link href="/education" className="va-btn text-base px-8 py-4 shadow-lg">
+                  Start Learning <ArrowRight className="w-4 h-4 ml-2 inline" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -383,9 +396,9 @@ export default function Home() {
       {/* ── Policy Intake Form ── */}
       <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div ref={intakeLeftRef} className="reveal reveal-left">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(6,146,215,0.12)' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
+            <div ref={intakeLeftRef} className="reveal reveal-left flex flex-col justify-center">
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: 'rgba(6,146,215,0.12)' }}>
                 <ClipboardList className="w-4 h-4" style={{ color: VA_BLUE }} />
                 <span className="text-sm font-semibold" style={{ color: VA_BLUE, fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
               </div>
@@ -400,16 +413,24 @@ export default function Home() {
                 <VaCheckItem title="Organized Documentation" desc="Store medical records, care assessments, and supporting documents in one secure location" />
                 <VaCheckItem title="Ready for Your Call" desc="When you contact your insurance company, you'll have all the information they need" />
               </div>
-              <Link href="/policy-form" className="va-btn text-base px-8 py-4 shadow-lg" style={{ background: VA_BLUE }}>
-                Share My Policy Details <ArrowRight className="w-4 h-4 ml-2 inline" />
-              </Link>
+              <div className="flex justify-center">
+                <Link href="/policy-form" className="va-btn text-base px-8 py-4 shadow-lg" style={{ background: VA_BLUE }}>
+                  Share My Policy Details <ArrowRight className="w-4 h-4 ml-2 inline" />
+                </Link>
+              </div>
             </div>
-            <div ref={intakeRightRef} className="relative hidden lg:block reveal reveal-right">
-              <img
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/intake-form-section-mZs4Ekm9teKNjUckYUJK2U.webp"
-                alt="Care coordinator helping elderly couple complete their LTC insurance intake form at home"
-                className="w-full h-auto rounded shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.01]"
-              />
+            <div ref={intakeRightRef} className="relative hidden lg:flex reveal reveal-right">
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 420 }}>
+                <img
+                  src="/manus-storage/step2-policy-portrait_817e452f.jpg"
+                  alt="Care coordinator helping elderly couple with LTC insurance details"
+                  className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(6,146,215,0.92)' }}>
+                  <ClipboardList className="w-3.5 h-3.5 text-white" />
+                  <span className="text-xs font-bold text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -418,16 +439,22 @@ export default function Home() {
       {/* ── Customized Strategy ── */}
       <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
         <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div ref={stratLeftRef} className="relative hidden lg:block order-2 lg:order-1 reveal reveal-left">
-              <img
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/strategy-section-YfSApseWQYDU5UU6xzzqF3.webp"
-                alt="Care coordinator presenting a personalized LTC strategy plan to a family on a tablet"
-                className="w-full h-auto rounded shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.01]"
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
+            <div ref={stratLeftRef} className="relative hidden lg:flex order-2 lg:order-1 reveal reveal-left">
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 420 }}>
+                <img
+                  src="/manus-storage/step3-strategy-portrait_174b8901.jpg"
+                  alt="Care coordinator presenting a personalized LTC strategy plan to a family"
+                  className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(52,177,196,0.92)' }}>
+                  <Target className="w-3.5 h-3.5 text-white" />
+                  <span className="text-xs font-bold text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>Step 3 of 3</span>
+                </div>
+              </div>
             </div>
-            <div ref={stratRightRef} className="order-1 lg:order-2 reveal reveal-right">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
+            <div ref={stratRightRef} className="order-1 lg:order-2 reveal reveal-right flex flex-col justify-center">
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: 'rgba(52,177,196,0.12)' }}>
                 <Target className="w-4 h-4" style={{ color: VA_TEAL }} />
                 <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Step 3 of 3</span>
               </div>
@@ -442,9 +469,11 @@ export default function Home() {
                 <VaCheckItem title="Task Checklists" desc="Track your progress with organized checklists for each phase of your claim" />
                 <VaCheckItem title="Policy-Specific Guidance" desc="Recommendations tailored to your unique coverage and care needs" />
               </div>
-              <Link href="/strategy" className="va-btn text-base px-8 py-4 shadow-lg">
-                View My Strategy
-              </Link>
+              <div className="flex justify-center">
+                <Link href="/strategy" className="va-btn text-base px-8 py-4 shadow-lg">
+                  View My Strategy
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -506,19 +535,51 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                <div className="p-4 space-y-3">
-                  <div className="flex justify-end">
-                    <div className="text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: VA_TEAL }}>What does ADL mean?</div>
-                  </div>
-                  <div className="flex justify-start">
-                    <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: '#f0f0f0', color: VA_HEADING }}>ADL stands for Activities of Daily Living. It includes bathing, dressing, eating, and more.</div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: VA_TEAL }}>How does this help my claim?</div>
-                  </div>
-                  <div className="flex justify-start">
-                    <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: '#f0f0f0', color: VA_HEADING }}>Insurance companies use ADL assessments to determine eligibility. We help you document these properly.</div>
-                  </div>
+                <div className="p-4 space-y-3" style={{ minHeight: 200 }}>
+                  {/* Q1 */}
+                  {chatStep >= 0 && (
+                    <div className="flex justify-end" style={{ opacity: chatStep >= 0 ? 1 : 0, transition: 'opacity 0.4s' }}>
+                      <div className="text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: VA_TEAL }}>What does ADL mean?</div>
+                    </div>
+                  )}
+                  {/* Typing A1 */}
+                  {chatStep === 1 && (
+                    <div className="flex justify-start">
+                      <div className="rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1" style={{ background: '#f0f0f0' }}>
+                        <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#aaa', animation: 'bounce 1s infinite 0ms' }} />
+                        <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#aaa', animation: 'bounce 1s infinite 150ms' }} />
+                        <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#aaa', animation: 'bounce 1s infinite 300ms' }} />
+                      </div>
+                    </div>
+                  )}
+                  {/* A1 */}
+                  {chatStep >= 2 && (
+                    <div className="flex justify-start" style={{ opacity: chatStep >= 2 ? 1 : 0, transition: 'opacity 0.4s' }}>
+                      <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: '#f0f0f0', color: VA_HEADING }}>ADL stands for Activities of Daily Living — bathing, dressing, eating, and more.</div>
+                    </div>
+                  )}
+                  {/* Q2 */}
+                  {chatStep >= 4 && (
+                    <div className="flex justify-end" style={{ opacity: chatStep >= 4 ? 1 : 0, transition: 'opacity 0.4s' }}>
+                      <div className="text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: VA_TEAL }}>How does this help my claim?</div>
+                    </div>
+                  )}
+                  {/* Typing A2 */}
+                  {chatStep === 5 && (
+                    <div className="flex justify-start">
+                      <div className="rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1" style={{ background: '#f0f0f0' }}>
+                        <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#aaa', animation: 'bounce 1s infinite 0ms' }} />
+                        <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#aaa', animation: 'bounce 1s infinite 150ms' }} />
+                        <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#aaa', animation: 'bounce 1s infinite 300ms' }} />
+                      </div>
+                    </div>
+                  )}
+                  {/* A2 */}
+                  {chatStep >= 6 && (
+                    <div className="flex justify-start" style={{ opacity: chatStep >= 6 ? 1 : 0, transition: 'opacity 0.4s' }}>
+                      <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: '#f0f0f0', color: VA_HEADING }}>Insurance companies use ADL assessments to determine eligibility. We help you document these properly.</div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full -z-10" style={{ background: 'rgba(52,177,196,0.1)' }} />
@@ -681,7 +742,40 @@ export default function Home() {
         </div>
       </section>
 
-      <AboutHomeCare />
+      {/* ── Home Care CTA (merged) ── */}
+      <section className="py-12 md:py-16 text-white" style={{ background: '#34B1C4' }}>
+        <div className="container">
+          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+            <div className="flex-shrink-0 flex flex-col items-center">
+              <img
+                src="/manus-storage/Dove-White-Transparent_8d7a1c5f.png"
+                alt="SC Visiting Angels dove"
+                className="h-28 md:h-36 w-auto drop-shadow-lg"
+              />
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                Compassionate Home Care in the Upstate
+              </h2>
+              <p className="text-white/85 text-base mb-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                SC Visiting Angels is a locally owned and operated home care agency serving families across the Upstate of South Carolina. From personal care and companionship to specialized dementia support, we are here for your family.
+              </p>
+              <p className="text-white/85 text-base" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                Ready to start home care? Visit us at{" "}
+                <a href="https://www.scvisitingangels.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-white hover:text-white/80">scvisitingangels.com</a>
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <button
+                onClick={() => window.open('https://www.SCVisitingAngels.com', '_blank')}
+                className="va-btn va-btn-white inline-flex items-center gap-2 whitespace-nowrap text-sm md:text-base px-7 py-3"
+              >
+                Start Care <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
       <LegalDisclaimerFooter />
     </Layout>
   );

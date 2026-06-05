@@ -353,7 +353,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           >
             <div className="flex justify-center mb-3">
               <img
-                src="/manus-storage/dove-white_c2c9a4cd.png"
+                src="/manus-storage/dove-white_ddb5cb9c.png"
                 alt="SC Visiting Angels dove"
                 className="w-10 h-10 object-contain opacity-60"
               />
