@@ -1,6 +1,4 @@
 import { Layout } from "@/components/Layout";
-import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
-import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
@@ -166,8 +164,6 @@ export default function Contact() {
         </div>
       </section>
 
-      <AboutHomeCare />
-      <LegalDisclaimerFooter />
     </Layout>
   );
 }

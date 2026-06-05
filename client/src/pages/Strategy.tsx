@@ -1,7 +1,5 @@
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
-import { LegalDisclaimerFooter } from "@/components/LegalDisclaimerFooter";
-import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { lazy, Suspense } from "react";
 // Heavy components loaded lazily to improve initial page load
@@ -1153,8 +1151,6 @@ export default function Strategy() {
       </section>
 
       {/* About Home Care */}
-      <AboutHomeCare showStartButton={true} />
-      <LegalDisclaimerFooter />
     </Layout>
   );
 }

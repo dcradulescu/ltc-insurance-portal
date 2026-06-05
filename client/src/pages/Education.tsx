@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
-import { AboutHomeCare } from "@/components/AboutHomeCare";
-import { LegalDisclaimerFooter } from "@/components/LegalDisclaimerFooter";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, Heart, FileSearch, ClipboardList, CheckCircle2,
@@ -857,7 +855,6 @@ export default function Education() {
         </div>
       </section>
 
-      <LegalDisclaimerFooter />
     </Layout>
   );
 }

@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Menu, X, Phone, Globe, Share2 } from "lucide-react";
+import { SiteFooter } from "@/components/SiteFooter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -188,6 +189,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* ── Main content ── */}
       <main className="flex-1">{children}</main>
+
+      {/* ── Shared Site Footer (consultation callout, home care, stats, legal disclaimer) ── */}
+      <SiteFooter />
 
       {/* ── Footer (VA charcoal #393F43) ── */}
       <footer style={{ background: "#393F43", color: "#ffffff" }} className="py-14">

@@ -1,6 +1,4 @@
 import { Layout } from "@/components/Layout";
-import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
-import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -1700,8 +1698,6 @@ export default function PolicyForm() {
       </section>
 
       {/* About Home Care */}
-      <AboutHomeCare />
-          <LegalDisclaimerFooter />
 
       {/* ADL Informational Purposes Modal */}
       <Dialog open={showAdlModal} onOpenChange={open => { if (!open) setShowAdlModal(false); }}>
