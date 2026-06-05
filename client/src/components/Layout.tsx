@@ -195,6 +195,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </a>
                 </li>
                 <li><Link href="/education" className="text-slate-400 hover:text-teal transition-colors no-underline">LTC Education</Link></li>
+                <li><Link href="/privacy" className="text-slate-400 hover:text-teal transition-colors no-underline">Privacy Policy</Link></li>
               </ul>
             </div>
             <div>
@@ -221,6 +222,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="border-t border-slate-700 pt-8 text-center text-slate-400 text-sm">
             <p>
               &copy; {new Date().getFullYear()} SC Visiting Angels. All rights reserved.
+              &nbsp;|&nbsp;
+              <Link href="/privacy" className="hover:text-teal transition-colors">Privacy Policy</Link>
               &nbsp;|&nbsp;
               <a
                 href="https://www.scvisitingangels.com"

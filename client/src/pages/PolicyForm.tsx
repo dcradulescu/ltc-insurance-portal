@@ -349,6 +349,12 @@ export default function PolicyForm() {
   const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
   const sendSaveLinkMutation = trpc.email.sendSaveLink.useMutation();
   const notifyStepProgressMutation = trpc.email.notifyStepProgress.useMutation();
+  // Resume token from URL query string
+  const resumeToken = useMemo(() => new URLSearchParams(window.location.search).get('resume'), []);
+  const resumeQuery = trpc.email.getResumeData.useQuery(
+    { token: resumeToken! },
+    { enabled: !!resumeToken, retry: false }
+  );
 
   const completionPct = useMemo(() => {
     const fields = Object.entries(form).filter(([k]) => k !== "adlLimitations");
@@ -358,6 +364,25 @@ export default function PolicyForm() {
 
   // Track whether initial load has happened
   const initialLoadDone = useRef(false);
+  const resumeApplied = useRef(false);
+
+  // Restore from server-side resume token (takes priority over localStorage)
+  useEffect(() => {
+    if (resumeQuery.data?.found && !resumeApplied.current) {
+      resumeApplied.current = true;
+      initialLoadDone.current = true; // prevent localStorage from overwriting
+      const data = resumeQuery.data;
+      if (data.formData && typeof data.formData === 'object') {
+        setForm(prev => ({ ...prev, ...(data.formData as any) }));
+      }
+      if (typeof data.currentStep === 'number') {
+        setStep(data.currentStep);
+      }
+      if (data.email) setSaveLinkEmail(data.email);
+      toast.success('Progress restored!', { description: `Resuming from Step ${(data.currentStep || 0) + 1}` });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [resumeQuery.data]);
 
   // Load form data from localStorage on component mount
   useEffect(() => {
@@ -681,6 +706,8 @@ export default function PolicyForm() {
         insuredName: form.insuredFullName || undefined,
         stepTitle: steps[step]?.title || `Step ${step + 1}`,
         origin: window.location.origin,
+        formData: form as Record<string, any>,
+        currentStep: step,
       });
       toast.success(`Resume link sent to ${saveLinkEmail}`);
       setShowSaveLinkDialog(false);

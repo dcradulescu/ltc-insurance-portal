@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { AboutHomeCare } from "@/components/AboutHomeCare";
@@ -101,6 +102,20 @@ export default function Education() {
 
   return (
     <Layout>
+      <Helmet>
+        <title>LTC Insurance Education Center — Free Guides & Resources | SC Visiting Angels</title>
+        <meta name="description" content="Free education on long-term care insurance: understand your policy, benefits, ADLs, elimination periods, and how to file a claim. Guides, glossary, and videos." />
+        <meta property="og:title" content="LTC Insurance Education Center — Free Guides & Resources" />
+        <meta property="og:description" content="Free education on long-term care insurance: understand your policy, benefits, ADLs, elimination periods, and how to file a claim." />
+        <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-education-5pEx3gNnpSRGB9hKqZu9Pb.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="LTC Insurance Education Center — Free Guides & Resources" />
+        <meta name="twitter:description" content="Free education on long-term care insurance: understand your policy, benefits, ADLs, elimination periods, and how to file a claim." />
+        <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-education-5pEx3gNnpSRGB9hKqZu9Pb.png" />
+      </Helmet>
       {/* Hero Section - Matching Home Page Style */}
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">

@@ -1,13 +1,16 @@
+import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { LegalDisclaimerFooter } from "@/components/LegalDisclaimerFooter";
 import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
-import { CareCalculator } from "@/components/CareCalculator";
-import { PdfDeliveryPanel } from "@/components/PdfDeliveryPanel";
-import { SMSNotificationManager } from "@/components/SMSNotificationManager";
-import { GanttTimeline } from "@/components/GanttTimeline";
-import { ChronologicalChecklist } from "@/components/ChronologicalChecklist";
-import { PolicySummaryCard } from "@/components/PolicySummaryCard";
+import { lazy, Suspense } from "react";
+// Heavy components loaded lazily to improve initial page load
+const CareCalculator = lazy(() => import("@/components/CareCalculator").then(m => ({ default: m.CareCalculator })));
+const PdfDeliveryPanel = lazy(() => import("@/components/PdfDeliveryPanel").then(m => ({ default: m.PdfDeliveryPanel })));
+const SMSNotificationManager = lazy(() => import("@/components/SMSNotificationManager").then(m => ({ default: m.SMSNotificationManager })));
+const GanttTimeline = lazy(() => import("@/components/GanttTimeline").then(m => ({ default: m.GanttTimeline })));
+const ChronologicalChecklist = lazy(() => import("@/components/ChronologicalChecklist").then(m => ({ default: m.ChronologicalChecklist })));
+const PolicySummaryCard = lazy(() => import("@/components/PolicySummaryCard").then(m => ({ default: m.PolicySummaryCard })));
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -510,6 +513,20 @@ export default function Strategy() {
 
   return (
     <Layout>
+      <Helmet>
+        <title>Your Personalized LTC Claim Strategy | SC Visiting Angels</title>
+        <meta name="description" content="Your step-by-step long-term care insurance claim strategy from SC Visiting Angels. Track your progress, complete tasks, and file your claim with confidence." />
+        <meta property="og:title" content="Your Personalized LTC Claim Strategy" />
+        <meta property="og:description" content="Your step-by-step long-term care insurance claim strategy from SC Visiting Angels. Track your progress and file your claim with confidence." />
+        <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-strategy-KHRCL3vGMdstnpa8qzFQKT.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Your Personalized LTC Claim Strategy" />
+        <meta name="twitter:description" content="Your step-by-step long-term care insurance claim strategy from SC Visiting Angels. Track your progress and file your claim with confidence." />
+        <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-strategy-KHRCL3vGMdstnpa8qzFQKT.png" />
+      </Helmet>
       {/* Arrival celebration banner — shown once per session on first visit */}
       {showArrivalBanner && (
         <div className="bg-gradient-to-r from-teal to-teal-dark text-white px-4 py-3 flex items-center justify-between gap-4">
@@ -575,6 +592,50 @@ export default function Strategy() {
         </div>
       </section>
 
+      {/* Sticky Stage Progress Bar — shown only when strategy exists */}
+      {hasStrategy && (
+        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
+          <div className="container max-w-5xl py-2.5">
+            <div className="flex items-center gap-3 md:gap-6">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:block whitespace-nowrap">Progress</span>
+              {[
+                { num: 1, label: "Pre-Claim", tasks: stage1Tasks },
+                { num: 2, label: "Filing", tasks: stage2Tasks },
+                { num: 3, label: "Ongoing", tasks: stage3Tasks },
+              ].map(({ num, label, tasks }) => {
+                const pct = stageProgress(tasks);
+                const isActive = currentStage === num;
+                const isComplete = pct === 100;
+                const isLocked = num > currentStage;
+                return (
+                  <div key={num} className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-xs font-semibold truncate ${
+                        isComplete ? "text-teal" : isActive ? "text-slate-800" : "text-slate-400"
+                      }`}>
+                        <span className="hidden sm:inline">Stage {num}: </span>{label}
+                      </span>
+                      <span className={`text-xs font-bold ml-1 ${
+                        isComplete ? "text-teal" : isActive ? "text-slate-700" : "text-slate-400"
+                      }`}>
+                        {isLocked ? "—" : `${tasks.filter(t => t.completed).length}/${tasks.length}`}
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isComplete ? "bg-teal" : isActive ? "bg-teal/60" : "bg-slate-200"
+                        }`}
+                        style={{ width: isLocked ? "0%" : `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       {/* Main Content */}
       <section className="py-10 bg-gradient-to-b from-slate-50 to-white">
         <div className="container max-w-5xl">
@@ -620,9 +681,16 @@ export default function Strategy() {
               </p>
             </div>
 
-          ) : hasStrategy ? (
+                    ) : hasStrategy ? (
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-16">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 border-2 border-teal border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-muted-foreground">Loading your strategy...</p>
+                </div>
+              </div>
+            }>
             <div className="space-y-5 md:space-y-8">
-
               {/* Policy Summary - Always visible at top */}
               {policy && <PolicySummaryCard policy={policy} />}
 
@@ -1065,6 +1133,7 @@ export default function Strategy() {
                 </div>
               )}
             </div>
+            </Suspense>
 
           ) : (
             <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm">

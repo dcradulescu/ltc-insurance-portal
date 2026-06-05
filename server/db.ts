@@ -8,6 +8,7 @@ import {
   documentUploads, InsertDocumentUpload, DocumentUpload,
   userContacts, InsertUserContact, UserContact,
   taskCompletions, InsertTaskCompletion, TaskCompletion,
+  saveLinks, InsertSaveLink, SaveLink,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -280,4 +281,25 @@ export async function getTaskCompletion(
     .limit(1);
   
   return results.length > 0 ? results[0] : undefined;
+}
+
+// ---- Save & Resume Link helpers ----
+export async function createSaveLink(data: InsertSaveLink): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(saveLinks).values(data);
+  return Number(result[0].insertId);
+}
+
+export async function getSaveLinkByToken(token: string): Promise<SaveLink | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(saveLinks).where(eq(saveLinks.token, token)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function markSaveLinkUsed(token: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(saveLinks).set({ used: true }).where(eq(saveLinks.token, token));
 }

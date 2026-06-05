@@ -626,3 +626,50 @@
 - [x] Fix: Changed `<\/script>` to `</script>` in the JSON-LD block — Vite now correctly processes 2673 modules and outputs compiled assets in dist/public/assets/
 - [x] Verified: pnpm run build now produces index.html with `<script type="module" crossorigin src="/assets/index-DPTdVjjH.js">` instead of raw /src/main.tsx reference
 - [x] All 49 tests still passing after fix
+
+## Enhancement Batch — June 2026
+
+### 1. Save & Resume Progress (Magic Link)
+- [x] Add save_links table to DB schema (id, token, policy_data JSON, created_at, expires_at)
+- [x] Add email.sendSaveLink tRPC procedure: saves form data to DB, emails magic link to user
+- [x] Add "Save My Progress" button on PolicyForm (visible from step 2 onward)
+- [x] Add ?resume=TOKEN URL param handling that loads saved form data into PolicyForm
+- [x] Add server-side token validation (30-day expiry)
+- [x] Write vitest for sendSaveLink and getResumeData procedures (5 tests passing)
+
+### 2. Printable Claim Checklist (One-Page Summary)
+- [x] Create PrintableChecklist component: compact one-page layout with all 3 stages
+- [x] Add print-specific CSS (@media print) to hide nav, footer, chat widget
+- [x] Add "Print Checklist" button on Strategy page
+- [x] Checklist shows task completion status (checked/unchecked)
+
+### 3. Strategy Progress Indicator
+- [x] Add sticky progress bar at top of Strategy page showing per-stage completion (e.g., "Stage 1: 4/7")
+- [x] Progress bar updates in real time as tasks are checked off
+- [x] Show overall percentage across all three stages
+- [x] Mobile-friendly sticky positioning
+
+### 5. Privacy Policy Page
+- [x] Create PrivacyPolicy.tsx page with plain-English policy content
+- [x] Register /privacy route in App.tsx
+- [x] Add "Privacy Policy" link to footer (Resources section + bottom bar)
+- [x] Includes sections: data collected, how used, retention, deletion requests, contact info
+
+### 6. About SC Visiting Angels Section
+- [x] Add "About SC Visiting Angels" section to Home page (between Our Story and Testimonials)
+- [x] Includes: who they are, service area (South Carolina), credentials, mission statement
+- [x] Links to SCVisitingAngels.com
+- [x] Mobile-responsive two-column layout
+
+### 10. Per-Page OG Images
+- [x] Generate unique OG image for Home page (family/caregiving theme, 1200x630)
+- [x] Generate unique OG image for Education page (learning/knowledge theme, 1200x630)
+- [x] Generate unique OG image for Strategy page (planning/roadmap theme, 1200x630)
+- [x] Upload all OG images to CDN (CloudFront)
+- [x] Wire per-page OG meta tags via react-helmet-async in Home, Education, Strategy pages
+- [x] Added HelmetProvider to main.tsx
+
+### 11. Lazy Loading for Strategy Page Heavy Components
+- [x] Wrap CareCalculator, PdfDeliveryPanel, SMSNotificationManager, GanttTimeline, ChronologicalChecklist, PolicySummaryCard with React.lazy()
+- [x] Wrap hasStrategy content block in Suspense with spinner fallback
+- [x] TypeScript clean (0 errors) after lazy conversion

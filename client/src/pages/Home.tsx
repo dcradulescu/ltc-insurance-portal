@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
@@ -117,6 +118,20 @@ export default function Home() {
 
   return (
     <Layout>
+      <Helmet>
+        <title>LTC Insurance Navigator — Free Resource for Families | SC Visiting Angels</title>
+        <meta name="description" content="SC Visiting Angels helps families navigate long-term care insurance claims with free education, a personalized strategy, and step-by-step guidance. No cost, ever." />
+        <meta property="og:title" content="LTC Insurance Navigator — Free Resource for Families" />
+        <meta property="og:description" content="SC Visiting Angels helps families navigate long-term care insurance claims with free education, a personalized strategy, and step-by-step guidance." />
+        <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-home-YpxVsqvUs5V8rFXhkJW7Dx.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="LTC Insurance Navigator — Free Resource for Families" />
+        <meta name="twitter:description" content="SC Visiting Angels helps families navigate long-term care insurance claims with free education, a personalized strategy, and step-by-step guidance." />
+        <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-home-YpxVsqvUs5V8rFXhkJW7Dx.png" />
+      </Helmet>
       {/* Hero Section */}
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
@@ -519,6 +534,75 @@ export default function Home() {
         </div>
       </section>
 
+      {/* About SC Visiting Angels */}
+      <section className="py-14 md:py-20 bg-gradient-to-br from-[#1a3a4a] to-[#2c5060] text-white">
+        <div className="container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Text */}
+            <div>
+              <div className="inline-flex items-center gap-2 bg-teal/20 rounded-full px-4 py-2 mb-6">
+                <Heart className="w-4 h-4 text-teal" />
+                <span className="text-sm font-medium text-teal">About SC Visiting Angels</span>
+              </div>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-5 leading-tight">
+                Compassionate Home Care<br className="hidden md:block" /> in the Upstate
+              </h2>
+              <p className="text-white/80 text-base leading-relaxed mb-5">
+                SC Visiting Angels is a locally owned and operated home care agency serving families across the Upstate of South Carolina. For over a decade, we have helped seniors and their families navigate the challenges of aging at home — from personal care and companionship to specialized dementia support.
+              </p>
+              <p className="text-white/80 text-base leading-relaxed mb-8">
+                Our caregivers are carefully selected, thoroughly trained, and deeply committed to treating every client with the dignity and respect they deserve. We believe that home is where healing happens best.
+              </p>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {[
+                  { stat: "10+", label: "Years Serving Upstate SC" },
+                  { stat: "100%", label: "Locally Owned & Operated" },
+                  { stat: "24/7", label: "On-Call Support" },
+                  { stat: "Free", label: "In-Home Consultations" },
+                ].map(({ stat, label }) => (
+                  <div key={label} className="bg-white/10 rounded-xl p-4 border border-white/10">
+                    <div className="text-2xl font-serif font-bold text-teal mb-1">{stat}</div>
+                    <div className="text-xs text-white/70 leading-snug">{label}</div>
+                  </div>
+                ))}
+              </div>
+              <a
+                href="https://www.scvisitingangels.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-teal hover:bg-teal-dark text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+              >
+                Learn More About Our Services
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+            {/* Right: Image */}
+            <div className="relative">
+              <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
+                <img
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/swQpXlcRmPQTVKfl.jpg"
+                  alt="SC Visiting Angels caregiver with client"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-4 -left-4 w-28 h-28 bg-teal/20 rounded-full -z-10" />
+              <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/10 rounded-full -z-10" />
+              {/* Floating badge */}
+              <div className="absolute bottom-6 right-6 bg-white text-slate-900 rounded-xl shadow-xl px-4 py-3 flex items-center gap-3">
+                <img
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
+                  alt="SC Visiting Angels"
+                  className="w-8 h-8 object-contain"
+                />
+                <div>
+                  <div className="text-xs font-bold text-slate-900 leading-tight">SC Visiting Angels</div>
+                  <div className="text-xs text-slate-500">(864) 244-6300</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       {/* Scrolling Testimonials */}
       <section className="py-12 md:py-16 bg-secondary overflow-hidden">
         <div className="container mb-12">

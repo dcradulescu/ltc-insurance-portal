@@ -234,3 +234,20 @@ export type InsertTaskCompletion = typeof taskCompletions.$inferInsert;
 // Indexes are defined inline in the table definitions above using the third
 // argument to mysqlTable(). Run `pnpm db:push` to apply them to the database.
 
+// === Save & Resume Links ===
+export const saveLinks = mysqlTable("saveLinks", {
+  id: int("id").autoincrement().primaryKey(),
+  token: varchar("token", { length: 64 }).notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull(),
+  insuredName: varchar("insuredName", { length: 255 }),
+  formData: json("formData").notNull(),
+  currentStep: int("currentStep").default(0).notNull(),
+  used: boolean("used").default(false).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  tokenIdx: index("idx_save_links_token").on(table.token),
+}));
+export type SaveLink = typeof saveLinks.$inferSelect;
+export type InsertSaveLink = typeof saveLinks.$inferInsert;
+

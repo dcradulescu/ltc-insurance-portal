@@ -9,6 +9,7 @@ import {
   saveChatMessage, getChatHistory,
   createUserContact, getUserContacts, updateUserContact, deleteUserContact,
   saveTaskCompletion, getTaskCompletions, getTaskCompletion,
+  createSaveLink, getSaveLinkByToken, markSaveLinkUsed,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { notifyOwner } from "./_core/notification";
@@ -701,16 +702,33 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         return { success: true };
       }),
 
-    // Send a "Save & Return" magic link to the user's email
+    // Send a "Save & Return" magic link — stores form data server-side
     sendSaveLink: publicProcedure
       .input(z.object({
         email: z.string().email(),
         insuredName: z.string().optional(),
         stepTitle: z.string().optional(),
         origin: z.string().optional(),
+        formData: z.record(z.string(), z.any()).optional(),
+        currentStep: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
-        const returnUrl = `${input.origin || "https://ltcinsurance.scvisitingangels.com"}/policy-form`;
+        const token = nanoid(32);
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+        // Save form data server-side
+        try {
+          await createSaveLink({
+            token,
+            email: input.email,
+            insuredName: input.insuredName || null,
+            formData: input.formData || {},
+            currentStep: input.currentStep || 0,
+            expiresAt,
+          });
+        } catch (err) {
+          console.error("[SaveLink] DB error:", err);
+        }
+        const returnUrl = `${input.origin || "https://ltcinsurance.scvisitingangels.com"}/policy-form?resume=${token}`;
         const zapierUrl = ENV.zapierWebhookUrl;
         if (zapierUrl) {
           try {
@@ -724,7 +742,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
                 stepTitle: input.stepTitle || "your current step",
                 returnUrl,
                 subject: "Your LTC Insurance Navigator — Saved Progress",
-                body: `Hi ${input.insuredName || "there"},\n\nYour LTC Insurance Navigator progress has been saved. Click the link below to pick up right where you left off:\n\n${returnUrl}\n\nYour form data is stored in your browser — simply return to this link on the same device and browser to continue.\n\nIf you have any questions, please call us at (864) 244-6300 or reply to this email.\n\nWarm regards,\nSC Visiting Angels\n(864) 244-6300 | scvisitingangels.com`,
+                body: `Hi ${input.insuredName || "there"},\n\nYour LTC Insurance Navigator progress has been saved. Click the link below to pick up right where you left off:\n\n${returnUrl}\n\nThis link will restore your exact progress and take you directly to Step ${(input.currentStep || 0) + 1}. It expires in 30 days.\n\nIf you have any questions, please call us at (864) 244-6300 or reply to this email.\n\nWarm regards,\nSC Visiting Angels\n(864) 244-6300 | scvisitingangels.com`,
                 timestamp: new Date().toISOString(),
               }),
             });
@@ -732,12 +750,27 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
             console.error("[SaveLink] Zapier error:", err);
           }
         }
-        // Notify owner
         await notifyOwner({
-          title: `Save Link Requested: ${input.insuredName || input.email}`,
-          content: `User ${input.email} requested a save link at step: ${input.stepTitle || "unknown"}`,
+          title: `Save Link Sent: ${input.insuredName || input.email}`,
+          content: `User ${input.email} saved progress at step: ${input.stepTitle || "unknown"}. Token: ${token}`,
         }).catch(() => {});
-        return { success: true };
+        return { success: true, token };
+      }),
+
+    // Retrieve saved form data by resume token
+    getResumeData: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const link = await getSaveLinkByToken(input.token);
+        if (!link) return { found: false } as const;
+        if (link.expiresAt < new Date()) return { found: false, expired: true } as const;
+        return {
+          found: true,
+          formData: link.formData as Record<string, any>,
+          currentStep: link.currentStep,
+          insuredName: link.insuredName,
+          email: link.email,
+        };
       }),
 
     // Notify owner when user advances a step (with full JSON payload)
