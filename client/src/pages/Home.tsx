@@ -596,7 +596,7 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                <div className="p-4 space-y-3" style={{ minHeight: 200 }}>
+                <div className="p-4 space-y-3 overflow-hidden" style={{ height: 280 }}>
                   {/* Q1 */}
                   {chatStep >= 0 && (
                     <div className="flex justify-end" style={{ opacity: chatStep >= 0 ? 1 : 0, transition: 'opacity 0.4s' }}>
