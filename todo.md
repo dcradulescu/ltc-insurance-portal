@@ -708,3 +708,14 @@
 - [x] Confirmed Contact hero h1 "Contact Us" already has color: '#ffffff' ✓
 - [x] Confirmed section alternation is correct on all pages (no two adjacent sections share same background color)
 - [x] All 54 tests passing, TypeScript 0 errors after all changes
+
+## Home Page Streamlining — June 2026
+
+- [x] Remove "You Don't Have to Navigate This Alone" teal parallax section (redundant with hero)
+- [x] Remove "How We Help" 4-card feature section (redundant with the three detail sections below it)
+- [x] Remove "Four Simple Steps" section (redundant with the detail sections and bottom CTA)
+- [x] Fix duplicate "Free" in hero — remove the yellow Free badge and replace stat card with "Years Serving Upstate SC"
+- [x] Replace the repeated elderly couple photo in About SC Visiting Angels section (same image used in Our Story)
+- [x] Reorder sections: Hero → Stats → Policy Intake Form → Customized Strategy → Chat Support → Our Story → About VA → Testimonials → Bottom CTA → AboutHomeCare
+- [x] Remove unused refs and useReveal hooks for deleted sections (aloneRef, featuresHeaderRef, stepsHeaderRef)
+- [x] Ensure all 54 tests still pass and TypeScript is clean after changes

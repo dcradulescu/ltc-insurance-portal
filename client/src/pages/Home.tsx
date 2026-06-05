@@ -9,14 +9,11 @@ import { toast } from "sonner";
 import {
   Heart,
   ArrowRight,
-  BookOpen,
   ClipboardList,
   Target,
-  Phone,
   Quote,
   Star,
   MessageSquare,
-  Zap,
   Share2,
 } from "lucide-react";
 
@@ -28,28 +25,7 @@ const VA_GREY_BG = "#ECE8E8";
 const VA_HEADING = "#454545";
 const VA_BODY = "#555555";
 
-const features = [
-  {
-    icon: BookOpen,
-    title: "Education & Resources",
-    description: "Comprehensive guides to help you understand your long-term care insurance policy, benefits, and coverage options.",
-  },
-  {
-    icon: ClipboardList,
-    title: "Policy Intake Form",
-    description: "Our interactive form captures your specific policy details so we can provide tailored guidance for your situation.",
-  },
-  {
-    icon: Target,
-    title: "Customized Strategy",
-    description: "Receive a personalized, step-by-step strategy designed specifically for your policy and care needs.",
-  },
-  {
-    icon: Phone,
-    title: "Live Support Chat",
-    description: "Get instant answers to your questions about long-term care insurance through our intelligent support chat.",
-  },
-];
+
 
 const testimonials = [
   { name: "Margaret S.", relation: "Daughter of policyholder", text: "When my father needed home care, I had no idea where to start with his LTC policy. Visiting Angels walked us through every step. Within weeks, we had a clear strategy and the claim was approved.", rating: 5 },
@@ -147,16 +123,13 @@ export default function Home() {
   const [activeQuote, setActiveQuote] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const featuresHeaderRef = useReveal();
   const statsRef = useReveal();
   const storyLeftRef = useReveal();
   const storyRightRef = useReveal();
   const aboutLeftRef = useReveal();
   const aboutRightRef = useReveal();
   const testimonialsHeaderRef = useReveal();
-  const stepsHeaderRef = useReveal();
   const ctaRef = useReveal();
-  const aloneRef = useReveal();
   const intakeLeftRef = useReveal();
   const intakeRightRef = useReveal();
   const stratLeftRef = useReveal();
@@ -167,6 +140,7 @@ export default function Home() {
   const stat1 = useCountUp(500);
   const stat2 = useCountUp(98);
   const stat3 = useCountUp(15);
+  const stat4 = useCountUp(10);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -205,10 +179,6 @@ export default function Home() {
                 <div className="inline-flex items-center gap-2 rounded px-4 py-2 border" style={{ background: 'rgba(52,177,196,0.18)', borderColor: 'rgba(52,177,196,0.35)' }}>
                   <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
                   <span className="text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>Supportive Guidance for Families</span>
-                </div>
-                <div className="inline-flex items-center gap-2 rounded px-4 py-2 border border-yellow-300" style={{ background: 'rgba(250,204,21,0.92)' }}>
-                  <Zap className="w-4 h-4 text-yellow-900" />
-                  <span className="text-sm font-bold text-yellow-900" style={{ fontFamily: "'Open Sans', sans-serif" }}>100% Free — No Cost to You</span>
                 </div>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
@@ -271,55 +241,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Features ── */}
-      <section className="py-14 md:py-18" style={{ background: '#ffffff' }}>
-        <div className="container">
-          <div ref={featuresHeaderRef} className="reveal">
-            <VaSectionHeading>How We <span style={{ color: VA_TEAL }}>Help</span></VaSectionHeading>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {features.map((feature, i) => (
-              <div
-                key={feature.title}
-                className="group feature-card p-6 rounded border bg-white text-center"
-                style={{ borderColor: '#e0e0e0', transitionDelay: `${i * 80}ms` }}
-              >
-                <div className="w-16 h-16 rounded flex items-center justify-center mb-5 mx-auto transition-all duration-300 group-hover:scale-110" style={{ background: 'rgba(52,177,196,0.12)' }}>
-                  <feature.icon className="w-8 h-8 transition-transform duration-300" style={{ color: VA_TEAL }} />
-                </div>
-                <h3 className="font-bold text-lg mb-3 transition-colors duration-300 group-hover:text-[#34B1C4]" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{feature.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{feature.description}</p>
-                <div className="mt-4 flex items-center justify-center gap-1 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300" style={{ color: VA_TEAL }}>
-                  <span>Learn more</span>
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── You Don't Have to Navigate This Alone ── */}
-      <section className="parallax-section relative py-12 md:py-16 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
-        <div className="absolute inset-0" style={{ background: `rgba(52,177,196,0.88)` }} />
-        <div ref={aloneRef} className="reveal container relative text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
-            You Don't Have to Navigate This Alone
-          </h2>
-          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-            Thousands of families have trusted us to guide them through the long-term care insurance claims process. Let us create a personalized strategy for your family too.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/education" className="va-btn va-btn-white text-base px-8 py-4 shadow-lg">
-              Step 1: Learn About LTC <ArrowRight className="w-4 h-4 ml-2 inline" />
-            </Link>
-            <Link href="/policy-form" className="va-btn va-btn-outline text-base px-8 py-4" style={{ borderColor: 'rgba(255,255,255,0.6)', color: '#fff', background: 'rgba(255,255,255,0.12)' }}>
-              Step 2: Complete the Form
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* ── Stats ── */}
       <section className="py-10 md:py-14 text-white" style={{ background: VA_CHARCOAL }}>
         <div ref={statsRef} className="reveal container">
@@ -328,16 +249,12 @@ export default function Home() {
               { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped" },
               { ref: stat2.ref, count: stat2.count, suffix: "%", label: "Claim Success Rate" },
               { ref: stat3.ref, count: stat3.count, suffix: "+", label: "Years of Experience" },
-              { ref: null, count: null, suffix: "", label: "100% Free Service", special: true },
+              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC" },
             ].map((stat, i) => (
               <div key={i} className="stat-card p-4 md:p-5 rounded border hover:bg-white/10 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.12)' }}>
-                {stat.special ? (
-                  <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>Free</div>
-                ) : (
-                  <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>
-                    <span ref={stat.ref!}>{stat.count}</span>{stat.suffix}
-                  </div>
-                )}
+                <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>
+                  <span ref={stat.ref!}>{stat.count}</span>{stat.suffix}
+                </div>
                 <div className="text-xs md:text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>{stat.label}</div>
               </div>
             ))}
@@ -579,8 +496,8 @@ export default function Home() {
             <div ref={aboutRightRef} className="relative reveal reveal-right">
               <div className="rounded overflow-hidden shadow-2xl aspect-[4/3] group">
                 <img
-                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/swQpXlcRmPQTVKfl.jpg"
-                  alt="SC Visiting Angels caregiver with client"
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/about-va-caregiver-Ba8Vnk5qXtNdwjG55rSFSE.webp"
+                  alt="SC Visiting Angels caregiver reviewing insurance paperwork with elderly client at home"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
@@ -621,35 +538,6 @@ export default function Home() {
                   <div className="font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{testimonial.name}</div>
                   <div className="text-xs" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>{testimonial.relation}</div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Four Steps ── */}
-      <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
-        <div className="container">
-          <div ref={stepsHeaderRef} className="reveal">
-            <VaSectionHeading>Four Simple <span style={{ color: VA_TEAL }}>Steps</span></VaSectionHeading>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {[
-              { num: "01", title: "Learn First", desc: "Start in the Education section to understand your policy, benefits, ADLs, and what to expect from the claims process." },
-              { num: "02", title: "Complete the Form", desc: "Once you understand your policy, fill out our intake form with your specific insurance details and care needs." },
-              { num: "03", title: "Get Your Strategy", desc: "Receive a customized, step-by-step claim filing strategy tailored to your specific policy and situation." },
-              { num: "04", title: "File With Confidence", desc: "Follow your personalized guide to successfully submit your LTC insurance claim with everything in order." },
-            ].map((step, i) => (
-              <div
-                key={step.num}
-                className={`relative p-6 rounded border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg`}
-                style={{ borderColor: '#e0e0e0', background: '#fff' }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = VA_TEAL)}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = '#e0e0e0')}
-              >
-                <div className="text-6xl font-bold opacity-15 mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>{step.num}</div>
-                <h3 className="font-bold text-lg mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{step.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{step.desc}</p>
               </div>
             ))}
           </div>
