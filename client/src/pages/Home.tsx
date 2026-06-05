@@ -802,10 +802,9 @@ export default function Home() {
               {/* Title row with dove */}
               <div className="flex items-center gap-4 mb-3">
                 <img
-                  src="/manus-storage/Dove-White-Transparent_925915bc.png"
+                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
                   alt="SC Visiting Angels dove"
                   className="w-14 h-14 object-contain flex-shrink-0"
-                  style={{ filter: 'invert(1) sepia(1) saturate(3) hue-rotate(155deg)', opacity: 0.85 }}
                 />
                 <div>
                   <h2 className="text-3xl font-bold leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
