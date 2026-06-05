@@ -122,18 +122,6 @@ export function AboutHomeCare({ showStartButton = false, onStartClick }: AboutHo
         </div>
       </div>
 
-      {/* Animated accent line */}
-      <div
-        className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-blue-400 via-teal-400 to-transparent"
-        style={{
-          width: "100%",
-          opacity: 0.6,
-          transform: `scaleX(${0.5 + (mousePosition.x / 200)})`,
-          transformOrigin: "left",
-          transition: "transform 0.3s ease-out",
-        }}
-      />
-
       {/* Parallax text accent - moves faster */}
       <div
         className="absolute top-1/2 right-0 text-6xl md:text-8xl font-serif font-bold text-white/10 pointer-events-none"
