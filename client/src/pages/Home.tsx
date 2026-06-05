@@ -246,7 +246,7 @@ export default function Home() {
           <img src="/manus-storage/home-hero_8fb65dbf.jpg" alt="Caregiver helping senior at home" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.82)' }} />
         </div>
-        <div className="container relative py-10 md:py-14">
+        <div className="container relative py-4">
           {/* Row 1: Heading (left) + Video (right) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start mb-6">
             {/* Left: Heading */}
@@ -303,7 +303,7 @@ export default function Home() {
 
 
       {/* ── Stats ── */}
-      <section className="relative py-10 md:py-14 text-white overflow-hidden" style={{ background: "#0692D7" }}>
+      <section className="relative py-4 text-white overflow-hidden" style={{ background: "#0692D7" }}>
         {/* floating semi-transparent balls — matches Education "Feeling Comfortable" section */}
         {[...Array(8)].map((_, i) => (
           <div key={i} className="absolute rounded-full pointer-events-none" style={{
@@ -340,7 +340,7 @@ export default function Home() {
       </section>
 
       {/* ── 3 Easy Steps ── */}
-      <section className="py-14 md:py-20" style={{ background: '#ffffff' }}>
+      <section className="py-4" style={{ background: '#ffffff' }}>
         <div ref={stepsRef} className="reveal container">
           <VaSectionHeading>It's as Easy as <span style={{ color: VA_TEAL }}>1 — 2 — 3</span></VaSectionHeading>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
@@ -412,7 +412,7 @@ export default function Home() {
       </section>
 
       {/* ── Step 1: Education ── */}
-      <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
+      <section className="py-4" style={{ background: VA_GREY_BG }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <div ref={eduLeftRef} className="relative hidden lg:flex reveal reveal-left">
@@ -456,7 +456,7 @@ export default function Home() {
       </section>
 
       {/* ── Policy Intake Form ── */}
-      <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
+      <section className="py-4" style={{ background: '#ffffff' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <div ref={intakeLeftRef} className="reveal reveal-left flex flex-col justify-center">
@@ -499,7 +499,7 @@ export default function Home() {
       </section>
 
       {/* ── Customized Strategy ── */}
-      <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
+      <section className="py-4" style={{ background: VA_GREY_BG }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <div ref={stratLeftRef} className="relative hidden lg:flex order-2 lg:order-1 reveal reveal-left">
@@ -542,7 +542,7 @@ export default function Home() {
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section className="parallax-section relative py-10 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
+      <section className="parallax-section relative py-4 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
         <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.88)' }} />
         <div ref={ctaRef} className="reveal container relative text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>Ready to Get Started?</h2>
@@ -561,7 +561,7 @@ export default function Home() {
       </section>
 
       {/* ── Chat Support ── */}
-      <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
+      <section className="py-4" style={{ background: '#ffffff' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={chatLeftRef} className="reveal reveal-left">
@@ -648,7 +648,7 @@ export default function Home() {
       </section>
 
       {/* ── Scrolling Testimonials ── */}
-      <section className="py-12 md:py-16 overflow-hidden" style={{ background: VA_GREY_BG }}>
+      <section className="py-4 overflow-hidden" style={{ background: VA_GREY_BG }}>
         <div className="container mb-12">
           <div ref={testimonialsHeaderRef} className="reveal">
             <VaSectionHeading>What <span style={{ color: VA_TEAL }}>Families</span> Are Saying</VaSectionHeading>
@@ -677,7 +677,7 @@ export default function Home() {
       </section>
 
       {/* ── Our Story ── */}
-      <section className="py-20" style={{ background: '#ffffff' }}>
+      <section className="py-4" style={{ background: '#ffffff' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div ref={storyLeftRef} className="reveal reveal-left relative">
@@ -738,7 +738,7 @@ export default function Home() {
       </section>
 
       {/* ── About SC Visiting Angels ── */}
-      <section className="py-14 md:py-20 text-white" style={{ background: VA_CHARCOAL }}>
+      <section className="py-4 text-white" style={{ background: VA_CHARCOAL }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div ref={aboutLeftRef} className="reveal reveal-left">
@@ -801,7 +801,7 @@ export default function Home() {
       </section>
 
       {/* ── Looking for Home Care? (Education-style) ── */}
-      <section className="py-16" style={{ background: '#34B1C4' }}>
+      <section className="py-4" style={{ background: '#34B1C4' }}>
         <div className="container max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
             <div className="flex flex-col justify-center">
