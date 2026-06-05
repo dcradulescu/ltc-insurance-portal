@@ -8,7 +8,63 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowRight, Heart, FileSearch, ClipboardList, CheckCircle2,
   ChevronDown, ChevronUp, AlertCircle, Lightbulb, Info, Printer,
+  BookOpen, HelpCircle, Send, PhoneCall, ExternalLink,
 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+
+// ─── Terms & FAQ Data ─────────────────────────────────────────────────────────
+
+const TERM_STAGES = [
+  {
+    label: "Recognizing the Need",
+    terms: [
+      { term: "Activities of Daily Living (ADLs)", definition: "The six basic self-care tasks used by insurance companies to determine care need: bathing, dressing, eating, transferring (moving from bed to chair), toileting, and continence. Most LTC policies require inability to perform at least 2 ADLs to qualify for benefits.", applies: "Your loved one must demonstrate inability to perform the required number of ADLs to trigger your policy's benefit eligibility." },
+      { term: "Cognitive Impairment", definition: "A deterioration or loss of intellectual capacity that requires substantial supervision for safety. Alzheimer's disease, dementia, and other neurological conditions typically qualify. This is an alternative trigger to ADL deficits in most policies.", applies: "If ADL deficits are not present but cognitive impairment is, your policy may still pay benefits — check your specific trigger language." },
+      { term: "Benefit Trigger", definition: "The specific condition(s) that must be met before your policy begins paying benefits. Most policies use ADL deficits (typically 2 of 6) and/or cognitive impairment as triggers.", applies: "Understanding your policy's exact trigger language is the first step before initiating a claim." },
+      { term: "Elimination Period", definition: "A waiting period — similar to a deductible — during which you pay for care out-of-pocket before insurance benefits begin. Common periods are 30, 60, 90, or 100 days. The clock starts when you begin receiving qualifying care.", applies: "You must pay for care during this period. Plan your finances accordingly before benefits kick in." },
+    ],
+  },
+  {
+    label: "Understanding Your Policy",
+    terms: [
+      { term: "Daily Benefit Amount", definition: "The maximum dollar amount your policy will pay per day for qualifying care. For example, $200/day means the policy pays up to $200 for each day of care, regardless of actual cost.", applies: "If your care costs exceed your daily benefit, you pay the difference. If costs are lower, you only receive the actual cost." },
+      { term: "Benefit Pool", definition: "The total lifetime maximum your policy will pay, calculated as Daily Benefit × Benefit Period. A $200/day policy with a 3-year benefit period has a pool of approximately $219,000.", applies: "Track your pool balance carefully — once exhausted, benefits end permanently." },
+      { term: "Inflation Rider", definition: "An optional policy feature that automatically increases your daily benefit amount each year, typically by 3–5% simple or compound. Compound riders grow significantly faster over time.", applies: "If your policy has this rider, your effective daily benefit today may be higher than the original amount purchased." },
+      { term: "Indemnity vs. Reimbursement", definition: "Indemnity policies pay the full daily benefit regardless of actual care costs. Reimbursement policies pay only actual documented care costs up to the daily maximum.", applies: "Knowing your policy type determines how you document and submit care costs for reimbursement." },
+      { term: "Waiver of Premium", definition: "A provision that suspends your premium payments once you begin receiving benefits. You continue to be covered without paying premiums during the claim period.", applies: "Stop paying premiums once your claim is approved — contact your carrier immediately to activate this provision." },
+    ],
+  },
+  {
+    label: "Filing the Claim",
+    terms: [
+      { term: "Claims Packet", definition: "The set of forms required to initiate a claim, typically including a Claimant Statement, Attending Physician Statement, and functional assessment form. Incomplete packets are the most common cause of claim delays.", applies: "Gather all required documents before submitting anything. Send everything together with a cover letter listing all enclosed items." },
+      { term: "Third-Party Assessment", definition: "An in-person evaluation by an independent registered nurse hired by the insurance company to verify ADL deficits. The assessor looks for consistency between medical records and observed functional ability.", applies: "On assessment day, the insured should present as they normally are — not at their best. Minimizing limitations can result in claim denial." },
+      { term: "Case Manager", definition: "A representative assigned by the insurance company to manage your ongoing claim, determine approved care hours, and serve as your primary contact.", applies: "Build a professional relationship with your case manager — they have significant influence over your approved care level." },
+      { term: "Assignment of Benefits (AOB)", definition: "An arrangement where the insurance company pays the care provider directly, eliminating the need for the family to front care costs each month.", applies: "Ask your case manager about AOB at approval — it simplifies billing significantly for ongoing home care." },
+    ],
+  },
+  {
+    label: "After Claim Approval",
+    terms: [
+      { term: "Care Logs", definition: "Daily records of every care visit, including date, caregiver name, start/end time, and services provided. Required by most carriers for monthly reimbursement.", applies: "Missing or incomplete care logs are the most common reason for delayed or denied reimbursements after approval." },
+      { term: "Periodic Review", definition: "A reassessment conducted by the case manager every 90–180 days to confirm continued eligibility and review the care plan.", applies: "Be prepared to demonstrate ongoing care needs at each review. Significant improvement could affect benefit continuation." },
+      { term: "Appeals Process", definition: "A formal process to challenge a claim denial or benefit reduction. Typically requires a written appeal letter, additional medical documentation, and sometimes an independent medical examination.", applies: "Most carriers have a 60–180 day window to file an appeal. Act quickly if benefits are denied or reduced." },
+      { term: "Benefit Pool Exhaustion", definition: "When the total lifetime maximum has been paid out and no further benefits are available under the policy.", applies: "Track your running balance carefully. When approaching exhaustion, begin exploring supplemental options — not at the last minute." },
+    ],
+  },
+];
+
+const FAQS: { q: string; a: string }[] = [
+  { q: "How do I know if my loved one qualifies for LTC insurance benefits?", a: "Most policies require that your loved one cannot perform at least 2 of 6 Activities of Daily Living (ADLs) — bathing, dressing, eating, transferring, toileting, and continence — OR has a cognitive impairment like Alzheimer's or dementia. Review your specific policy's 'benefit trigger' language, as the exact number of ADLs required can vary." },
+  { q: "How long does the claims process take?", a: "From initial contact to first benefit payment typically takes 4–8 weeks. The elimination period (usually 30–90 days) must also be satisfied before benefits begin. The most common delays are incomplete claims packets and scheduling the third-party assessment." },
+  { q: "Can I use any home care agency, or does it have to be a specific one?", a: "Most policies allow any licensed home care agency. Some policies require a 'licensed care provider' — which typically means a state-licensed home care agency. SC Visiting Angels is fully licensed and works with all major LTC insurance carriers." },
+  { q: "What is the elimination period and when does it start?", a: "The elimination period is a waiting period — like a deductible — during which you pay for care out-of-pocket before benefits begin. It starts on the first day you receive qualifying care. A 90-day elimination period means you pay for the first 90 days of care yourself." },
+  { q: "What happens if the insurance company denies the claim?", a: "You have the right to appeal. Most carriers have a formal appeals process with a 60–180 day filing window. An appeal typically requires a written appeal letter, additional medical documentation, and sometimes an independent medical examination. If the internal appeal fails, you can escalate to your state's Department of Insurance." },
+  { q: "Does SC Visiting Angels help with the paperwork?", a: "Yes. We have guided many families through the entire LTC claims process — from understanding your policy to completing the claims packet, preparing for the third-party assessment, and managing ongoing care logs and invoices. This is a free service we provide to the families we serve." },
+  { q: "What if care costs more than my daily benefit amount?", a: "You pay the difference out-of-pocket. For example, if your daily benefit is $200 and care costs $250/day, you pay $50/day. Some families supplement with personal savings, family contributions, or other resources. The LTC Navigator strategy tool will show you exactly how to manage this gap." },
+  { q: "Can I use LTC insurance benefits for a family member who provides care?", a: "Generally, no. Most policies require care to be provided by a licensed professional caregiver or home care agency, not a family member. Some policies have 'informal care' provisions — check your specific policy language." },
+];
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
 
@@ -163,6 +219,15 @@ function StickyStageNav({ active }: { active: string }) {
 export default function Education() {
   const [activeStage, setActiveStage] = useState("stage-1");
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const [activeTermStage, setActiveTermStage] = useState(0);
+  const [activeTerm, setActiveTerm] = useState<string | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [questionForm, setQuestionForm] = useState({ name: "", email: "", question: "" });
+  const [questionSubmitted, setQuestionSubmitted] = useState(false);
+  const sendQuestion = trpc.email.sendContactForm.useMutation({
+    onSuccess: () => { setQuestionSubmitted(true); setQuestionForm({ name: "", email: "", question: "" }); },
+    onError: () => toast.error("Could not send your question. Please try again."),
+  });
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -213,17 +278,17 @@ export default function Education() {
               Your Journey, Step by Step
             </p>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
-              Understanding LTC Insurance
+              <span style={{ color: '#34B1C4' }}>Understanding</span> LTC Insurance
             </h1>
             <p className="text-lg text-white/80 leading-relaxed mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Long-term care insurance can feel overwhelming. This guide walks you through the real experience — from the moment you realize a loved one needs help, all the way through what happens after your claim is approved — so you know exactly what to expect at every step.
             </p>
-            <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex flex-nowrap gap-2 mb-6 overflow-x-auto pb-1">
               {STAGES.map((s, i) => (
                 <button
                   key={s.id}
                   onClick={() => { const el = document.getElementById(s.id); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
-                  className="flex items-center gap-2 px-4 py-2 rounded text-sm font-semibold transition-all duration-200 hover:opacity-90"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all duration-200 hover:opacity-90 whitespace-nowrap flex-shrink-0"
                   style={{ background: i === 0 ? "#34B1C4" : "rgba(255,255,255,0.15)", color: "#fff", fontFamily: "'Roboto', sans-serif", border: "1px solid rgba(255,255,255,0.25)" }}
                 >
                   <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">{i + 1}</span>
@@ -372,6 +437,43 @@ export default function Education() {
           Use the LTC Insurance Navigator's Policy Intake Form to enter all of these details in one place. The system will use them to generate your personalized strategy — including exactly how many days your elimination period will take and how long your benefit pool will last at your current care costs.
         </TipBox>
       </Stage>
+
+      {/* ── Mid-Journey CTA ── */}
+      <section
+        id="mid-cta"
+        className="relative py-16 md:py-20 text-white overflow-hidden print:hidden"
+        style={{ background: "linear-gradient(135deg, #34B1C4 0%, #0692D7 100%)" }}
+      >
+        {/* subtle wave pattern */}
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px), radial-gradient(circle at 60% 80%, white 1px, transparent 1px)", backgroundSize: "60px 60px, 80px 80px, 50px 50px" }} />
+        <div className="container relative text-center max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6" style={{ background: "rgba(255,255,255,0.2)", fontFamily: "'Open Sans', sans-serif" }}>
+            ✨ You've learned Stages 1 &amp; 2
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white" style={{ fontFamily: "'Roboto', sans-serif" }}>
+            Ready to Create Your Personalized Strategy?
+          </h2>
+          <p className="text-white/85 text-lg mb-8 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            You now understand your policy and what triggers a claim. Your personalized strategy is just a few questions away — and it's completely free.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button
+              onClick={() => window.location.href = '/policy-form'}
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg text-base font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: "#fff", color: "#0692D7", fontFamily: "'Roboto', sans-serif" }}
+            >
+              Yes, I'm Ready! <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => { const el = document.getElementById('stage-3'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg text-base font-semibold border-2 border-white/60 transition-all duration-200 hover:bg-white/10"
+              style={{ color: "#fff", fontFamily: "'Roboto', sans-serif" }}
+            >
+              No, I Want to Learn More
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════════════════════
           STAGE 3 — Filing the Claim
@@ -548,7 +650,192 @@ export default function Education() {
         </div>
       </section>
 
-      <AboutHomeCare />
+      {/* ── Terms & Definitions ── */}
+      <section id="terms" className="py-16" style={{ background: "#ffffff" }}>
+        <div className="container max-w-5xl">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "#e8f7f9", color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
+              <BookOpen className="w-3.5 h-3.5" /> LTC Insurance Glossary
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: "#393F43" }}>Terms &amp; Definitions</h2>
+            <p className="text-gray-500 max-w-xl mx-auto" style={{ fontFamily: "'Open Sans', sans-serif" }}>Click a stage tab, then click any term to see its definition and how it applies to your claim.</p>
+          </div>
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Stage tabs */}
+            <div className="md:w-56 flex-shrink-0">
+              <div className="flex md:flex-col gap-2">
+                {TERM_STAGES.map((ts, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setActiveTermStage(i); setActiveTerm(null); }}
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-left transition-all duration-200"
+                    style={{
+                      background: activeTermStage === i ? (i % 2 === 0 ? "#34B1C4" : "#0692D7") : "#F2F6FA",
+                      color: activeTermStage === i ? "#fff" : "#555",
+                      fontFamily: "'Roboto', sans-serif",
+                    }}
+                  >
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: activeTermStage === i ? "rgba(255,255,255,0.3)" : "#ddd", color: activeTermStage === i ? "#fff" : "#555" }}>{i + 1}</span>
+                    {ts.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Terms list + definition */}
+            <div className="flex-1 rounded-xl border overflow-hidden" style={{ borderColor: "#e0dcdc" }}>
+              <div className="divide-y divide-gray-100">
+                {TERM_STAGES[activeTermStage].terms.map((t) => (
+                  <div key={t.term}>
+                    <button
+                      onClick={() => setActiveTerm(activeTerm === t.term ? null : t.term)}
+                      className="w-full flex items-center justify-between px-5 py-3.5 text-left text-sm font-semibold transition-colors duration-150 hover:bg-blue-50"
+                      style={{ fontFamily: "'Roboto', sans-serif", color: "#393F43" }}
+                    >
+                      <span>{t.term}</span>
+                      {activeTerm === t.term ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                    </button>
+                    {activeTerm === t.term && (
+                      <div className="px-5 pb-4 pt-1">
+                        <p className="text-sm text-gray-600 mb-2 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>{t.definition}</p>
+                        <p className="text-xs font-semibold rounded px-3 py-2" style={{ background: "#f0fafb", color: "#34B1C4", borderLeft: "3px solid #34B1C4", fontFamily: "'Open Sans', sans-serif" }}>📋 How this applies: {t.applies}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Floating-balls CTA ── */}
+      <section className="relative py-16 overflow-hidden print:hidden" style={{ background: "#0692D7" }}>
+        {/* floating semi-transparent balls */}
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="absolute rounded-full pointer-events-none" style={{
+            width: `${60 + i * 25}px`, height: `${60 + i * 25}px`,
+            background: "rgba(255,255,255,0.08)",
+            top: `${[10,60,20,70,5,55,35,80][i]}%`,
+            left: `${[5,15,70,80,45,90,30,60][i]}%`,
+            transform: "translate(-50%,-50%)",
+          }} />
+        ))}
+        <div className="container relative text-center max-w-2xl">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white" style={{ fontFamily: "'Roboto', sans-serif" }}>Feeling Comfortable to Move Forward?</h2>
+          <p className="text-white/85 text-lg mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>You've read the journey and learned the terms. Your personalized strategy is ready to be built — it only takes a few minutes.</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button onClick={() => window.location.href = '/policy-form'}
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg text-base font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+              style={{ background: "#fff", color: "#0692D7", fontFamily: "'Roboto', sans-serif" }}
+            >Yes, Let's Build My Strategy! <ArrowRight className="w-4 h-4" /></button>
+            <button onClick={() => { const el = document.getElementById('faq'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+              className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg text-base font-semibold border-2 border-white/60 transition-all duration-200 hover:bg-white/10"
+              style={{ color: "#fff", fontFamily: "'Roboto', sans-serif" }}
+            >I Have More Questions</button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section id="faq" className="py-16" style={{ background: "#F2F6FA" }}>
+        <div className="container max-w-3xl">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "#e8f7f9", color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
+              <HelpCircle className="w-3.5 h-3.5" /> Common Questions
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: "#393F43" }}>Frequently Asked Questions</h2>
+            <p className="text-gray-500" style={{ fontFamily: "'Open Sans', sans-serif" }}>Real questions from families navigating the LTC insurance journey.</p>
+          </div>
+          <div className="space-y-3 mb-12">
+            {FAQS.map((faq, i) => (
+              <div key={i} className="rounded-xl border bg-white overflow-hidden" style={{ borderColor: "#e0dcdc" }}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between px-5 py-4 text-left font-semibold text-sm transition-colors duration-150 hover:bg-blue-50"
+                  style={{ fontFamily: "'Roboto', sans-serif", color: "#393F43" }}
+                >
+                  <span>{faq.q}</span>
+                  {openFaq === i ? <ChevronUp className="w-4 h-4 flex-shrink-0 text-gray-400" /> : <ChevronDown className="w-4 h-4 flex-shrink-0 text-gray-400" />}
+                </button>
+                {openFaq === i && (
+                  <div className="px-5 pb-4 pt-1 text-sm text-gray-600 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>{faq.a}</div>
+                )}
+              </div>
+            ))}
+          </div>
+          {/* Question submission form */}
+          <div className="rounded-2xl border p-6 bg-white" style={{ borderColor: "#34B1C4", borderWidth: 2 }}>
+            <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: "#393F43" }}>Have a Question Not Answered Above?</h3>
+            <p className="text-sm text-gray-500 mb-5" style={{ fontFamily: "'Open Sans', sans-serif" }}>Submit your question and we'll get back to you personally — and may add it to our FAQ to help other families.</p>
+            {questionSubmitted ? (
+              <div className="text-center py-6">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "#e8f7f9" }}>
+                  <CheckCircle2 className="w-6 h-6" style={{ color: "#34B1C4" }} />
+                </div>
+                <p className="font-semibold text-gray-700" style={{ fontFamily: "'Roboto', sans-serif" }}>Thank you! We'll be in touch soon.</p>
+              </div>
+            ) : (
+              <form onSubmit={(e) => { e.preventDefault(); if (!questionForm.name || !questionForm.email || !questionForm.question) { toast.error("Please fill in all fields"); return; } sendQuestion.mutate({ name: questionForm.name, email: questionForm.email, phone: "", subject: "FAQ Question from Education Page", message: questionForm.question }); }} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>Your Name *</label>
+                    <input value={questionForm.name} onChange={e => setQuestionForm(p => ({ ...p, name: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2" style={{ borderColor: "#e0dcdc", fontFamily: "'Open Sans', sans-serif" }} placeholder="Jane Smith" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>Email Address *</label>
+                    <input type="email" value={questionForm.email} onChange={e => setQuestionForm(p => ({ ...p, email: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2" style={{ borderColor: "#e0dcdc", fontFamily: "'Open Sans', sans-serif" }} placeholder="jane@example.com" required />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-gray-600" style={{ fontFamily: "'Open Sans', sans-serif" }}>Your Question *</label>
+                  <textarea value={questionForm.question} onChange={e => setQuestionForm(p => ({ ...p, question: e.target.value }))} rows={4} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none" style={{ borderColor: "#e0dcdc", fontFamily: "'Open Sans', sans-serif" }} placeholder="What would you like to know about the LTC insurance process?" required />
+                </div>
+                <button type="submit" disabled={sendQuestion.isPending} className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-60" style={{ background: "#34B1C4", fontFamily: "'Roboto', sans-serif" }}>
+                  {sendQuestion.isPending ? "Sending..." : <><Send className="w-4 h-4" /> Submit My Question</>}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Enhanced Home Care Section ── */}
+      <section className="py-16" style={{ background: "#34B1C4" }}>
+        <div className="container max-w-5xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-5" style={{ background: "rgba(255,255,255,0.2)", color: "#fff", fontFamily: "'Open Sans', sans-serif" }}>
+                🏠 Home Care &amp; Your LTC Claim
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>Looking for Home Care?<br />We Can Help.</h2>
+              <p className="text-white/90 mb-4 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>Most long-term care insurance policies cover home care services when you can no longer perform at least 2 Activities of Daily Living (ADLs) — such as bathing, dressing, or mobility. This is exactly where SC Visiting Angels comes in.</p>
+              <p className="text-white/85 mb-6 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>Our professional caregivers provide the hands-on, documented care that satisfies your policy's ADL requirements — helping you qualify for and maintain your LTC benefits while receiving compassionate care at home. We work alongside your insurance company every step of the way.</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/contact">
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5" style={{ background: "#fff", color: "#34B1C4", fontFamily: "'Roboto', sans-serif" }}>
+                    <PhoneCall className="w-4 h-4" /> Contact Us
+                  </button>
+                </Link>
+                <a href="https://www.SCVisitingAngels.com" target="_blank" rel="noopener noreferrer">
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold border-2 border-white/60 transition-all duration-200 hover:bg-white/10" style={{ color: "#fff", fontFamily: "'Roboto', sans-serif" }}>
+                    Learn More <ExternalLink className="w-4 h-4" />
+                  </button>
+                </a>
+              </div>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ minHeight: 320 }}>
+              <img
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg"
+                alt="SC Visiting Angels caregiver providing compassionate home care to a senior"
+                className="w-full h-full object-cover"
+                style={{ minHeight: 320 }}
+              />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(52,177,196,0.3) 0%, transparent 60%)" }} />
+            </div>
+          </div>
+        </div>
+      </section>
+
       <LegalDisclaimerFooter />
     </Layout>
   );

@@ -764,3 +764,17 @@
 - [ ] Combine "Compassionate Home Care in Upstate" and "Ready to Start Home Care?" into one teal section with white dove logo
 - [ ] Upload dove logo to static assets
 - [ ] Legal Disclaimer: white background, cards with pale pastel yellow bg, thin pink border, slight shadow
+
+## Education Page Enhancements — June 2026
+
+- [ ] Fix hero: color "Understanding" word teal like Home page hero
+- [ ] Fix hero: stage buttons 1-2-3-4 all on one line (no wrapping)
+- [ ] Improve print layout: VA header with logo, phone, website; more educational content per stage
+- [ ] Add mid-journey parallax CTA: "Ready to Create Your Personalized Strategy?" with Yes/No buttons
+- [ ] Add interactive Terms glossary: left tabs for 4 stages, term list cascades, definition appears on right
+- [ ] Add floating-balls CTA section (blue background): "Ready to move forward or learn more?"
+- [ ] Add FAQ section with common Q&A for all 4 stages of LTC claims journey
+- [ ] Add user question submission form in FAQ section (sends to daniel@SCVisitingAngels.com)
+- [ ] Generate caregiver portrait image for home care section (senior female with walker/in bed)
+- [ ] Add enhanced home care section above footer (ADL context, caregiver image, Contact Us + Learn More buttons)
+- [ ] Add LegalDisclaimerFooter and teal home care section to Education page footer area
