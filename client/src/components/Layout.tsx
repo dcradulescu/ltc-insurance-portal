@@ -17,12 +17,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 16);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 16);
+      setShowBackToTop(window.scrollY > 400);
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   useEffect(() => { setMobileMenuOpen(false); }, [location]);
 
@@ -388,6 +394,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
+      {/* ── Back to Top button ── */}
+      <button
+        onClick={scrollToTop}
+        aria-label="Back to top"
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-11 h-11 rounded-full shadow-lg transition-all duration-300"
+        style={{
+          background: "#34B1C4",
+          color: "#ffffff",
+          opacity: showBackToTop ? 1 : 0,
+          pointerEvents: showBackToTop ? "auto" : "none",
+          transform: showBackToTop ? "translateY(0) scale(1)" : "translateY(16px) scale(0.85)",
+          border: "2px solid rgba(255,255,255,0.3)",
+        }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 15l-6-6-6 6" />
+        </svg>
+      </button>
     </div>
   );
 }
