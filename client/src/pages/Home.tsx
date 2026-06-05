@@ -318,9 +318,9 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
             {[
               { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped",         icon: Users,    accent: '#ffffff' },
-              { ref: stat2.ref, count: stat2.count, suffix: "+", label: "Years of Experience",     icon: Award,    accent: '#34B1C4' },
+              { ref: stat2.ref, count: stat2.count, suffix: "+", label: "Years of Experience",     icon: Award,    accent: '#ffffff' },
               { ref: stat3.ref, count: stat3.count, suffix: "%", label: "Overall Satisfaction",    icon: ThumbsUp, accent: '#ffffff' },
-              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC", icon: MapPin,   accent: '#34B1C4' },
+              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC", icon: MapPin,   accent: '#ffffff' },
             ].map((stat, i) => (
               <div key={i} className="stat-card p-5 md:p-6 rounded-xl border hover:bg-white/10 transition-all duration-300 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)' }}>
                 {/* Icon */}
