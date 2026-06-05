@@ -421,9 +421,8 @@ export default function Home() {
             <div ref={eduLeftRef} className="relative hidden lg:flex reveal reveal-left">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 420 }}>
                 <img
-                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/education-section-hero-Yk9ZFnvFnvFnvFnvFnvF.webp"
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/manus-storage/step2-policy-portrait_817e452f.jpg'; }}
-                  alt="Senior reading about long-term care insurance"
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step1-education-portrait-dkjwvNn7YpGRrK7uWEigNs.webp"
+                  alt="Adult woman calmly reading LTC insurance documents at home"
                   className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(52,177,196,0.92)' }}>
