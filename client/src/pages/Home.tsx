@@ -27,6 +27,7 @@ import {
   Gift,
   Shield,
   Clock,
+  Phone,
 } from "lucide-react";
 
 // VA Brand constants
@@ -575,71 +576,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Parallax CTA ── */}
-      <section
-        className="relative py-20 overflow-hidden"
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1600&q=80)',
-          backgroundAttachment: 'fixed',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {/* Dark overlay */}
-        <div className="absolute inset-0" style={{ background: 'rgba(10, 40, 60, 0.72)' }} />
-        {/* Teal gradient accent at top and bottom */}
-        <div className="absolute inset-x-0 top-0 h-1" style={{ background: 'linear-gradient(to right, #34B1C4, #0692D7, #34B1C4)' }} />
-        <div className="absolute inset-x-0 bottom-0 h-1" style={{ background: 'linear-gradient(to right, #34B1C4, #0692D7, #34B1C4)' }} />
-
-        <div className="relative container text-center text-white">
-          {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide" style={{ background: 'rgba(52,177,196,0.25)', border: '1px solid rgba(52,177,196,0.5)', color: '#7ee8f4', fontFamily: "'Open Sans', sans-serif" }}>
-            <span>You Don't Have to Do This Alone</span>
-          </div>
-
-          {/* Headline */}
-          <h2 className="text-3xl md:text-5xl font-extrabold leading-tight mb-6" style={{ fontFamily: "'Roboto', sans-serif" }}>
-            We Walk With You<br />
-            <span style={{ color: '#34B1C4' }}>Every Step of the Way</span>
-          </h2>
-
-          {/* Body */}
-          <p className="text-lg md:text-xl text-white/85 max-w-3xl mx-auto mb-4 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-            Navigating a long-term care insurance claim is complex — but you were never meant to figure it out alone.
-            SC Visiting Angels guides families through every stage: understanding your policy, building your claim file,
-            and executing a personalized strategy that gives your loved one the best possible outcome.
-          </p>
-          <p className="text-base text-white/70 max-w-2xl mx-auto mb-10" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-            From the first question to the final approval — we are here.
-          </p>
-
-          {/* Three pillars */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
-            {[
-              { step: '1', label: 'Understand', desc: 'Learn exactly what your policy covers and what triggers your benefits.' },
-              { step: '2', label: 'Prepare',    desc: 'Document your situation thoroughly so your claim is complete and compelling.' },
-              { step: '3', label: 'Succeed',    desc: 'Submit with confidence and follow through until your benefits are approved.' },
-            ].map(({ step, label, desc }) => (
-              <div key={step} className="rounded-2xl px-6 py-7 text-left" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)' }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold mb-4" style={{ background: '#34B1C4', color: '#fff', fontFamily: "'Roboto', sans-serif" }}>{step}</div>
-                <div className="text-lg font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#7ee8f4' }}>{label}</div>
-                <div className="text-sm text-white/75 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>{desc}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/policy-form" className="inline-flex items-center justify-center gap-2 rounded-lg px-8 py-4 text-base font-bold transition-all hover:opacity-90" style={{ background: '#34B1C4', color: '#fff', fontFamily: "'Roboto', sans-serif" }}>
-              Start Here — It's Free <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link href="/contact" className="inline-flex items-center justify-center gap-2 rounded-lg px-8 py-4 text-base font-bold transition-all hover:bg-white/20" style={{ background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1.5px solid rgba(255,255,255,0.35)', fontFamily: "'Roboto', sans-serif" }}>
-              Talk to Us Directly
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* ── Chat Support ── */}
       <section className="py-5" style={{ background: '#ffffff' }}>
         <div className="container">
@@ -812,6 +748,46 @@ export default function Home() {
                 ))}
               </div>
               <p className="mt-6 text-sm" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>— A Visiting Angels family</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Free Consultation Callout ── */}
+      <section className="py-5" style={{ background: '#F2F6FA', borderTop: '1px solid #e2eaf2', borderBottom: '1px solid #e2eaf2' }}>
+        <div className="container">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 rounded-2xl px-8 py-6" style={{ background: 'linear-gradient(135deg, #34B1C4 0%, #0692D7 100%)', boxShadow: '0 4px 20px rgba(6,146,215,0.25)' }}>
+            {/* Left: icon + text */}
+            <div className="flex items-center gap-5 text-white">
+              <div className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }}>
+                <Phone className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <div className="text-lg md:text-xl font-bold leading-snug" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                  Need Help Navigating This Process?
+                </div>
+                <div className="text-sm text-white/85 mt-1" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                  Call SC Visiting Angels for a <strong className="text-white">complimentary consultation</strong> — we guide families through every step at no charge.
+                </div>
+              </div>
+            </div>
+            {/* Right: phone + button */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
+              <a
+                href="tel:8642446300"
+                className="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-base font-bold transition-all hover:opacity-90"
+                style={{ background: '#ffffff', color: '#0692D7', fontFamily: "'Roboto', sans-serif" }}
+              >
+                <Phone className="w-4 h-4" />
+                (864) 244-6300
+              </a>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-base font-bold transition-all hover:bg-white/20"
+                style={{ background: 'rgba(255,255,255,0.15)', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.4)', fontFamily: "'Roboto', sans-serif" }}
+              >
+                Schedule Online
+              </Link>
             </div>
           </div>
         </div>
