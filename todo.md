@@ -736,3 +736,15 @@
 - [x] Section shows: Your Custom Claim Strategy, Personalized Timeline, Downloadable PDF Checklist, Live Support Chat — with icons and benefit descriptions
 - [x] Include a sample/preview visual of what a strategy looks like (mockup card with 3 phases)
 - [x] Keep tone warm, exciting, and senior-friendly — emphasize the payoff, not the effort
+
+## Color Scheme Update — June 2026
+
+- [ ] Lighten grey section background from #ECE8E8 to #F2F6FA (light blue-tinted grey) across all pages
+- [ ] Add VA_BLUE = #0692D7 constant to all pages that use color constants
+- [ ] Home.tsx: apply blue accent to step number circles, alternate badge colors (teal/blue), stat card accents
+- [ ] Home.tsx: update VaCheckItem checkmark to alternate teal/blue, add blue info boxes
+- [ ] Education.tsx: apply blue to topic cards, info boxes, CTA section
+- [ ] PolicyForm.tsx: apply blue to "magic happens" section highlight card, step progress indicators
+- [ ] Strategy.tsx: apply blue to phase headers, progress indicators, info cards
+- [ ] Contact.tsx / PrivacyPolicy.tsx: update grey backgrounds to lighter value
+- [ ] index.css: update any hardcoded ECE8E8 references

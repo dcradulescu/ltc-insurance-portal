@@ -942,12 +942,12 @@ export default function PolicyForm() {
         <div className="container max-w-5xl">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 rounded-full px-5 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)', border: '1px solid rgba(52,177,196,0.3)' }}>
-              <Sparkles className="w-4 h-4" style={{ color: '#34B1C4' }} />
-              <span className="text-sm font-bold" style={{ color: '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>This is where the magic happens</span>
+            <div className="inline-flex items-center gap-2 rounded-full px-5 py-2 mb-4" style={{ background: 'rgba(6,146,215,0.12)', border: '1px solid rgba(6,146,215,0.3)' }}>
+              <Sparkles className="w-4 h-4" style={{ color: '#0692D7' }} />
+              <span className="text-sm font-bold" style={{ color: '#0692D7', fontFamily: "'Open Sans', sans-serif" }}>This is where the magic happens</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>
-              Here's What You'll <span style={{ color: '#34B1C4' }}>Receive</span>
+              Here's What You'll <span style={{ color: '#0692D7' }}>Receive</span>
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ fontFamily: "'Open Sans', sans-serif", color: '#555555' }}>
               Answer a few simple questions about your policy and care needs — and we'll create everything below, personalized just for your family.
@@ -986,12 +986,12 @@ export default function PolicyForm() {
                 key={i}
                 className="flex gap-5 p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-lg"
                 style={{
-                  borderColor: item.highlight ? '#34B1C4' : '#e8e8e8',
-                  background: item.highlight ? 'rgba(52,177,196,0.05)' : '#ffffff',
+                  borderColor: item.highlight ? '#0692D7' : '#e8e8e8',
+                  background: item.highlight ? 'rgba(6,146,215,0.05)' : '#ffffff',
                 }}
               >
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: item.highlight ? 'rgba(52,177,196,0.15)' : 'rgba(52,177,196,0.08)' }}>
-                  <item.icon className="w-6 h-6" style={{ color: '#34B1C4' }} />
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: item.highlight ? 'rgba(6,146,215,0.15)' : 'rgba(6,146,215,0.08)' }}>
+                  <item.icon className="w-6 h-6" style={{ color: i % 2 === 0 ? '#0692D7' : '#34B1C4' }} />
                 </div>
                 <div>
                   <h3 className="font-bold text-base mb-1.5" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>{item.title}</h3>
@@ -1019,12 +1019,12 @@ export default function PolicyForm() {
                   { step: "Week 3", title: "Submit & Follow Up", tasks: ["Submit complete claim packet", "Confirm receipt in writing", "Track approval timeline"] },
                 ].map((phase, i) => (
                   <div key={i} className="rounded-lg p-4 border" style={{ borderColor: '#e8e8e8', background: '#f9f9f9' }}>
-                    <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>{phase.step}</div>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: i === 1 ? '#0692D7' : '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>{phase.step}</div>
                     <div className="font-bold text-sm mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>{phase.title}</div>
                     <ul className="space-y-1.5">
                       {phase.tasks.map((task, j) => (
                         <li key={j} className="flex items-start gap-2 text-xs" style={{ color: '#666666', fontFamily: "'Open Sans', sans-serif" }}>
-                          <span className="mt-0.5 flex-shrink-0" style={{ color: '#34B1C4' }}>&#10003;</span>
+                          <span className="mt-0.5 flex-shrink-0" style={{ color: i === 1 ? '#0692D7' : '#34B1C4' }}>&#10003;</span>
                           {task}
                         </li>
                       ))}
@@ -1034,7 +1034,7 @@ export default function PolicyForm() {
               </div>
               <div className="mt-4 pt-4 border-t flex items-center justify-between" style={{ borderColor: '#e8e8e8' }}>
                 <p className="text-xs italic" style={{ color: '#999', fontFamily: "'Open Sans', sans-serif" }}>This is a sample preview. Your actual strategy will be tailored to your specific policy and care situation.</p>
-                <a href="#policy-form-start" className="inline-flex items-center gap-1.5 text-sm font-bold" style={{ color: '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>
+                <a href="#policy-form-start" className="inline-flex items-center gap-1.5 text-sm font-bold" style={{ color: '#0692D7', fontFamily: "'Open Sans', sans-serif" }}>
                   Get My Real Strategy <ArrowRight className="w-4 h-4" />
                 </a>
               </div>

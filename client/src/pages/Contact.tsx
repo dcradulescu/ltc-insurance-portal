@@ -12,8 +12,9 @@ import { toast } from "sonner";
 import { Phone, Mail, Clock, Send, Loader2, MessageCircle } from "lucide-react";
 
 const VA_TEAL = "#34B1C4";
+const VA_BLUE = "#0692D7";
 const VA_CHARCOAL = "#393F43";
-const VA_GREY_BG = "#ECE8E8";
+const VA_GREY_BG = "#F2F6FA";
 const VA_HEADING = "#454545";
 const VA_BODY = "#555555";
 
@@ -92,7 +93,7 @@ export default function Contact() {
               <div className="space-y-3">
                 {[
                   { icon: <Phone className="w-5 h-5" style={{ color: VA_TEAL }} />, label: "Phone", value: "(864) 244-6300", sub: "Mon-Fri, 9am-5pm EST" },
-                  { icon: <Mail className="w-5 h-5" style={{ color: VA_TEAL }} />, label: "Email", value: "Send us a message using the form", sub: "We respond within 24 hours" },
+                  { icon: <Mail className="w-5 h-5" style={{ color: VA_BLUE }} />, label: "Email", value: "Send us a message using the form", sub: "We respond within 24 hours" },
                   { icon: <Clock className="w-5 h-5" style={{ color: VA_TEAL }} />, label: "Response Time", value: "Within 24 business hours", sub: "Urgent matters prioritized" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded border transition-all duration-200 hover:shadow-sm" style={{ background: VA_GREY_BG, borderColor: '#e0e0e0' }}>
@@ -106,11 +107,11 @@ export default function Contact() {
                 ))}
               </div>
 
-              <div className="p-4 rounded border" style={{ background: 'rgba(52,177,196,0.07)', borderColor: 'rgba(52,177,196,0.25)', borderLeft: `3px solid ${VA_TEAL}` }}>
+              <div className="p-4 rounded border" style={{ background: 'rgba(6,146,215,0.07)', borderColor: 'rgba(6,146,215,0.25)', borderLeft: `3px solid ${VA_BLUE}` }}>
                 <h3 className="font-bold text-sm mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>Visit Our Website</h3>
                 <p className="text-xs leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
                   Learn more about our home care services at{" "}
-                  <a href="https://www.scvisitingangels.com" target="_blank" rel="noopener noreferrer" className="hover:underline font-semibold" style={{ color: VA_TEAL }}>scvisitingangels.com</a>.
+                  <a href="https://www.scvisitingangels.com" target="_blank" rel="noopener noreferrer" className="hover:underline font-semibold" style={{ color: VA_BLUE }}>scvisitingangels.com</a>.
                 </p>
               </div>
             </div>

@@ -52,7 +52,7 @@
   /* SC Visiting Angels brand palette
      Primary teal: #34B1C4 → oklch(0.695 0.112 200)
      Dark charcoal: #393F43 → oklch(0.295 0.010 250)
-     Light grey bg: #ECE8E8 → oklch(0.935 0.005 30)
+     Light grey bg: #F2F6FA → oklch(0.935 0.005 30)
      Body text: #333333 → oklch(0.248 0 0)
      Heading text: #454545 → oklch(0.320 0 0)
   */
@@ -351,7 +351,10 @@
     background: #ffffff;
   }
   .va-section-grey {
-    background: #ECE8E8;
+    background: #F2F6FA;
+  }
+  .va-section-blue-light {
+    background: #EBF5FC;
   }
   .va-section-teal {
     background: #34B1C4;

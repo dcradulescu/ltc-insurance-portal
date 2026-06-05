@@ -24,8 +24,10 @@ import {
 // VA Brand constants
 const VA_TEAL = "#34B1C4";
 const VA_TEAL_DARK = "#2a8fa0";
+const VA_BLUE = "#0692D7";
+const VA_BLUE_DARK = "#0578b3";
 const VA_CHARCOAL = "#393F43";
-const VA_GREY_BG = "#ECE8E8";
+const VA_GREY_BG = "#F2F6FA";
 const VA_HEADING = "#454545";
 const VA_BODY = "#555555";
 
@@ -253,13 +255,13 @@ export default function Home() {
         <div ref={statsRef} className="reveal container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
             {[
-              { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped" },
-              { ref: stat2.ref, count: stat2.count, suffix: "%", label: "Claim Success Rate" },
-              { ref: stat3.ref, count: stat3.count, suffix: "+", label: "Years of Experience" },
-              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC" },
+              { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped", accent: VA_TEAL },
+              { ref: stat2.ref, count: stat2.count, suffix: "%", label: "Claim Success Rate", accent: VA_BLUE },
+              { ref: stat3.ref, count: stat3.count, suffix: "+", label: "Years of Experience", accent: VA_TEAL },
+              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC", accent: VA_BLUE },
             ].map((stat, i) => (
               <div key={i} className="stat-card p-4 md:p-5 rounded border hover:bg-white/10 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.12)' }}>
-                <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>
+                <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: stat.accent }}>
                   <span ref={stat.ref!}>{stat.count}</span>{stat.suffix}
                 </div>
                 <div className="text-xs md:text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>{stat.label}</div>
@@ -291,7 +293,7 @@ export default function Home() {
                 title: "Tell Us About Your Policy",
                 subtitle: "Share Your Policy Details",
                 desc: "Answer a few simple questions about your policy and care needs. No complicated forms — just the information we need to build your personal plan.",
-                color: VA_TEAL_DARK,
+                color: VA_BLUE,
                 href: "/policy-form",
                 cta: "Share My Policy Details",
               },
@@ -301,7 +303,7 @@ export default function Home() {
                 title: "Get Your Strategy",
                 subtitle: "Your Personalized Claim Plan",
                 desc: "Receive a step-by-step, personalized strategy built just for your situation — a clear roadmap that takes the guesswork out of filing your claim.",
-                color: VA_CHARCOAL,
+                color: VA_TEAL_DARK,
                 href: "/strategy",
                 cta: "See a Sample Strategy",
               },
@@ -309,16 +311,16 @@ export default function Home() {
               <div
                 key={step.num}
                 className="relative flex flex-col rounded-xl border-2 p-7 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                style={{ borderColor: i === 1 ? VA_TEAL : '#e8e8e8', background: i === 1 ? 'rgba(52,177,196,0.04)' : '#fff' }}
+                style={{ borderColor: i === 1 ? VA_BLUE : (i === 2 ? VA_TEAL : '#e8e8e8'), background: i === 1 ? 'rgba(6,146,215,0.04)' : (i === 2 ? 'rgba(52,177,196,0.04)' : '#fff') }}
               >
                 {/* Step number badge */}
                 <div className="absolute -top-5 left-7 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md" style={{ background: step.color }}>
                   {step.num}
                 </div>
-                <div className="mt-4 mb-4 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: `rgba(52,177,196,0.12)` }}>
+                <div className="mt-4 mb-4 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: i === 1 ? 'rgba(6,146,215,0.12)' : 'rgba(52,177,196,0.12)' }}>
                   <step.icon className="w-7 h-7" style={{ color: step.color }} />
                 </div>
-                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>{step.subtitle}</div>
+                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: i === 1 ? VA_BLUE : VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>{step.subtitle}</div>
                 <h3 className="text-xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{step.title}</h3>
                 <p className="text-sm leading-relaxed flex-1 mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{step.desc}</p>
                 <Link href={step.href} className="inline-flex items-center gap-2 text-sm font-bold transition-colors duration-200 hover:opacity-80" style={{ color: step.color }}>
@@ -383,12 +385,12 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={intakeLeftRef} className="reveal reveal-left">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
-                <ClipboardList className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(6,146,215,0.12)' }}>
+                <ClipboardList className="w-4 h-4" style={{ color: VA_BLUE }} />
+                <span className="text-sm font-semibold" style={{ color: VA_BLUE, fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
-                Tell Us About <span style={{ color: VA_TEAL }}>Your Policy</span>
+                Tell Us About <span style={{ color: VA_BLUE }}>Your Policy</span>
               </h2>
               <p className="text-lg leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
                 Answer a few simple questions about your policy and care needs. It only takes a few minutes, and every answer helps us build a strategy that's tailored specifically to your situation.
@@ -398,7 +400,7 @@ export default function Home() {
                 <VaCheckItem title="Organized Documentation" desc="Store medical records, care assessments, and supporting documents in one secure location" />
                 <VaCheckItem title="Ready for Your Call" desc="When you contact your insurance company, you'll have all the information they need" />
               </div>
-              <Link href="/policy-form" className="va-btn text-base px-8 py-4 shadow-lg">
+              <Link href="/policy-form" className="va-btn text-base px-8 py-4 shadow-lg" style={{ background: VA_BLUE }}>
                 Share My Policy Details <ArrowRight className="w-4 h-4 ml-2 inline" />
               </Link>
             </div>
@@ -523,9 +525,9 @@ export default function Home() {
               <div className="absolute -top-4 -left-4 w-16 h-16 rounded-full -z-10" style={{ background: 'rgba(52,177,196,0.08)' }} />
             </div>
             <div ref={storyRightRef} className="reveal reveal-right">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-6" style={{ background: 'rgba(52,177,196,0.12)' }}>
-                <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Real Families, Real Results</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-6" style={{ background: 'rgba(6,146,215,0.12)' }}>
+                <Heart className="w-4 h-4" style={{ color: VA_BLUE }} />
+                <span className="text-sm font-semibold" style={{ color: VA_BLUE, fontFamily: "'Open Sans', sans-serif" }}>Real Families, Real Results</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
                 Our <span style={{ color: VA_TEAL }}>Story</span>
@@ -588,13 +590,13 @@ export default function Home() {
               </p>
               <div className="grid grid-cols-2 gap-4 mb-8">
                 {[
-                  { stat: "10+", label: "Years Serving Upstate SC" },
-                  { stat: "100%", label: "Locally Owned & Operated" },
-                  { stat: "24/7", label: "On-Call Support" },
-                  { stat: "Free", label: "In-Home Consultations" },
-                ].map(({ stat, label }) => (
+                  { stat: "10+", label: "Years Serving Upstate SC", accent: VA_TEAL },
+                  { stat: "100%", label: "Locally Owned & Operated", accent: VA_BLUE },
+                  { stat: "24/7", label: "On-Call Support", accent: VA_TEAL },
+                  { stat: "Free", label: "In-Home Consultations", accent: VA_BLUE },
+                ].map(({ stat, label, accent }) => (
                   <div key={label} className="stat-card rounded p-4 border hover:bg-white/15 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.12)' }}>
-                    <div className="text-2xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>{stat}</div>
+                    <div className="text-2xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: accent }}>{stat}</div>
                     <div className="text-xs text-white/90 leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
                   </div>
                 ))}
@@ -651,7 +653,7 @@ export default function Home() {
                 </div>
                 <p className="text-sm leading-relaxed mb-4 italic" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>"{testimonial.text}"</p>
                 <div className="border-t pt-4" style={{ borderColor: '#e0e0e0' }}>
-                  <div className="font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{testimonial.name}</div>
+                  <div className="font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: index % 2 === 0 ? VA_TEAL : VA_BLUE }}>{testimonial.name}</div>
                   <div className="text-xs" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>{testimonial.relation}</div>
                 </div>
               </div>
@@ -672,8 +674,8 @@ export default function Home() {
             <Link href="/education" className="va-btn text-base px-8 py-4 shadow-lg">
               Start with Education <ArrowRight className="w-4 h-4 ml-2 inline" />
             </Link>
-            <Link href="/policy-form" className="va-btn va-btn-outline text-base px-8 py-4" style={{ borderColor: 'rgba(255,255,255,0.5)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}>
-              Skip to Policy Details
+            <Link href="/policy-form" className="va-btn text-base px-8 py-4" style={{ background: VA_BLUE }}>
+              Skip to Policy Details <ArrowRight className="w-4 h-4 ml-2 inline" />
             </Link>
           </div>
         </div>

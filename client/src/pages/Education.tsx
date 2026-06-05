@@ -41,7 +41,7 @@ function TipBox({ type, children }: { type: "tip" | "warning" | "info"; children
   const config = {
     tip:     { icon: Lightbulb,   bg: "#f0fafb", border: "#34B1C4", label: "Helpful Tip" },
     warning: { icon: AlertCircle, bg: "#fff8f0", border: "#e08030", label: "Watch Out" },
-    info:    { icon: Info,        bg: "#f5f5f5", border: "#393F43", label: "Good to Know" },
+    info:    { icon: Info,        bg: "#EBF5FC", border: "#0692D7", label: "Good to Know" },
   }[type];
   const Icon = config.icon;
   return (
@@ -71,7 +71,7 @@ function StageDivider() {
     <div className="flex items-center gap-3 mb-8">
       <div style={{ height: 2, width: 40, background: "#34B1C4" }} />
       <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#34B1C4" }} />
-      <div style={{ height: 2, flex: 1, background: "#ECE8E8" }} />
+      <div style={{ height: 2, flex: 1, background: "#F2F6FA" }} />
     </div>
   );
 }
@@ -88,12 +88,12 @@ function Stage({
         <div className="flex items-start gap-4 mb-6">
           <div
             className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shadow"
-            style={{ background: "#34B1C4", fontFamily: "'Roboto', sans-serif" }}
+            style={{ background: number % 2 === 0 ? "#0692D7" : "#34B1C4", fontFamily: "'Roboto', sans-serif" }}
           >
             {number}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs uppercase tracking-widest font-semibold mb-0.5" style={{ color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
+            <p className="text-xs uppercase tracking-widest font-semibold mb-0.5" style={{ color: number % 2 === 0 ? "#0692D7" : "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
               Stage {number}
             </p>
             <h2 className="text-2xl md:text-3xl font-bold leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: "#454545" }}>
@@ -102,7 +102,7 @@ function Stage({
             <p className="text-sm mt-1" style={{ color: "#555", fontFamily: "'Open Sans', sans-serif" }}>{subtitle}</p>
           </div>
           <div className="hidden md:flex flex-shrink-0">
-            <Icon className="w-10 h-10 opacity-20" style={{ color: "#34B1C4" }} />
+            <Icon className="w-10 h-10 opacity-20" style={{ color: number % 2 === 0 ? "#0692D7" : "#34B1C4" }} />
           </div>
         </div>
         <StageDivider />
@@ -139,13 +139,13 @@ function StickyStageNav({ active }: { active: string }) {
               className="flex items-center gap-2 px-4 py-3 text-sm font-semibold transition-all duration-200 border-b-2 whitespace-nowrap"
               style={{
                 fontFamily: "'Roboto', sans-serif",
-                color: active === s.id ? "#34B1C4" : "#555",
-                borderBottomColor: active === s.id ? "#34B1C4" : "transparent",
+                color: active === s.id ? (i % 2 === 0 ? "#34B1C4" : "#0692D7") : "#555",
+                borderBottomColor: active === s.id ? (i % 2 === 0 ? "#34B1C4" : "#0692D7") : "transparent",
               }}
             >
               <span
                 className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                style={{ background: active === s.id ? "#34B1C4" : "#aaa", fontSize: "10px" }}
+                style={{ background: active === s.id ? (i % 2 === 0 ? "#34B1C4" : "#0692D7") : "#aaa", fontSize: "10px" }}
               >
                 {i + 1}
               </span>
@@ -303,7 +303,7 @@ export default function Education() {
         icon={FileSearch}
         title="Understanding Your Policy"
         subtitle="Before you file anything, you need to know exactly what your policy covers — and what it doesn't."
-        bg="#ECE8E8"
+        bg="#F2F6FA"
       >
         <p>
           LTC insurance policies were written years — sometimes decades — ago, and they can be dense. But there are a handful of key numbers and terms that determine almost everything about how your claim will work. Taking an hour to understand these now will save weeks of confusion later.
@@ -458,7 +458,7 @@ export default function Education() {
         icon={CheckCircle2}
         title="After Claim Approval"
         subtitle="Benefits are flowing. Now the focus shifts to maintaining them and making the most of what you have."
-        bg="#ECE8E8"
+        bg="#F2F6FA"
       >
         <p>
           Once the claim is approved and care begins, many families feel a wave of relief — and then quickly realize there is ongoing administrative work required to keep the benefits flowing. This stage is about maintaining compliance, tracking your benefit usage, and planning ahead.

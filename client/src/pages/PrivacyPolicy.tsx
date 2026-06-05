@@ -2,7 +2,7 @@ import { Layout } from "@/components/Layout";
 
 const VA_TEAL = "#34B1C4";
 const VA_CHARCOAL = "#393F43";
-const VA_GREY_BG = "#ECE8E8";
+const VA_GREY_BG = "#F2F6FA";
 const VA_HEADING = "#454545";
 const VA_BODY = "#555555";
 
