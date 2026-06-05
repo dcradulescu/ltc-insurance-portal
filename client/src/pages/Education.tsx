@@ -262,8 +262,29 @@ export default function Education() {
         <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-education-5pEx3gNnpSRGB9hKqZu9Pb.png" />
       </Helmet>
 
+      {/* ── Print-only header (hidden on screen) ── */}
+      <div className="hidden print:block" style={{ borderBottom: '3px solid #34B1C4', paddingBottom: '12px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src="/manus-storage/Dove-Trans_bbc93e8e.gif" alt="SC Visiting Angels" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+            <div>
+              <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#34B1C4', fontFamily: "'Roboto', sans-serif" }}>SC Visiting Angels</div>
+              <div style={{ fontSize: '11px', color: '#555', fontFamily: "'Open Sans', sans-serif" }}>LTC Insurance Education Guide</div>
+            </div>
+          </div>
+          <div style={{ textAlign: 'right', fontSize: '11px', color: '#555', fontFamily: "'Open Sans', sans-serif", lineHeight: '1.6' }}>
+            <div style={{ fontWeight: 'bold', color: '#34B1C4' }}>(864) 244-6300</div>
+            <div>www.scvisitingangels.com</div>
+            <div>Printed: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          </div>
+        </div>
+        <div style={{ marginTop: '8px', fontSize: '13px', color: '#333', fontFamily: "'Open Sans', sans-serif" }}>
+          <strong>Understanding LTC Insurance</strong> — A free guide from SC Visiting Angels, Upstate South Carolina
+        </div>
+      </div>
+
       {/* ── Hero ── */}
-      <section className="relative text-white overflow-hidden">
+      <section className="relative text-white overflow-hidden print:hidden">
         <div className="absolute inset-0">
           <img
             src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg"
@@ -308,7 +329,7 @@ export default function Education() {
         </div>
       </section>
 
-      {/* ── Sticky stage nav ── */}
+      {/* ── Sticky stage nav (hidden on print) ── */}
       <StickyStageNav active={activeStage} />
 
       {/* ══════════════════════════════════════════════════════════════════════

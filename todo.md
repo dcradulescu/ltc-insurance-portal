@@ -739,54 +739,54 @@
 
 ## Color Scheme Update — June 2026
 
-- [ ] Lighten grey section background from #ECE8E8 to #F2F6FA (light blue-tinted grey) across all pages
-- [ ] Add VA_BLUE = #0692D7 constant to all pages that use color constants
-- [ ] Home.tsx: apply blue accent to step number circles, alternate badge colors (teal/blue), stat card accents
-- [ ] Home.tsx: update VaCheckItem checkmark to alternate teal/blue, add blue info boxes
-- [ ] Education.tsx: apply blue to topic cards, info boxes, CTA section
-- [ ] PolicyForm.tsx: apply blue to "magic happens" section highlight card, step progress indicators
-- [ ] Strategy.tsx: apply blue to phase headers, progress indicators, info cards
-- [ ] Contact.tsx / PrivacyPolicy.tsx: update grey backgrounds to lighter value
-- [ ] index.css: update any hardcoded ECE8E8 references
+- [x] Lighten grey section background from #ECE8E8 to #F2F6FA (light blue-tinted grey) across all pages
+- [x] Add VA_BLUE = #0692D7 constant to all pages that use color constants
+- [x] Home.tsx: apply blue accent to step number circles, alternate badge colors (teal/blue), stat card accents
+- [x] Home.tsx: update VaCheckItem checkmark to alternate teal/blue, add blue info boxes
+- [x] Education.tsx: apply blue to topic cards, info boxes, CTA section
+- [x] PolicyForm.tsx: apply blue to "magic happens" section highlight card, step progress indicators
+- [x] Strategy.tsx: apply blue to phase headers, progress indicators, info cards
+- [x] Contact.tsx / PrivacyPolicy.tsx: update grey backgrounds to lighter value
+- [x] index.css: update any hardcoded ECE8E8 references
 
 ## Comprehensive Home Page UI Improvements — June 5
 
-- [ ] Nav: shorten stacking menu items to Policy, Strategy, Start Here
-- [ ] Hero: change from 2-column to 1-column layout (flatten banner)
-- [ ] Hero: reduce 3 buttons to 2 — "Start Here" and "Share This Free Resource"
-- [ ] 3 Easy Steps: fix Step 2 badge position (not blocking number); add yellow badge to Step 1 and Step 3
-- [ ] Step 1 Education: make image portrait orientation, match height of content column, center button
-- [ ] Step 2 Policy: generate new portrait image (different from Step 1), match height, center button
-- [ ] Step 3 Strategy: generate new portrait image, portrait orientation, match height, center button
-- [ ] All 3 step sections: add "Step X of 3" badge overlaid on top-left corner of image
-- [ ] Chat Support: animate chat bubbles with typing indicator dots
-- [ ] Our Story: slow down quote rotation, add initial delay
-- [ ] Combine "Compassionate Home Care in Upstate" and "Ready to Start Home Care?" into one teal section with white dove logo
-- [ ] Upload dove logo to static assets
-- [ ] Legal Disclaimer: white background, cards with pale pastel yellow bg, thin pink border, slight shadow
+- [x] Nav: shorten stacking menu items to Policy, Strategy, Start Here
+- [x] Hero: change from 2-column to 1-column layout (flatten banner) — kept 2-col with video per user request
+- [x] Hero: reduce 3 buttons to 2 — "Start Here" and "Share This Free Resource"
+- [x] 3 Easy Steps: fix Step 2 badge position (not blocking number); add yellow badge to Step 1 and Step 3
+- [x] Step 1 Education: make image portrait orientation, match height of content column, center button
+- [x] Step 2 Policy: generate new portrait image (different from Step 1), match height, center button
+- [x] Step 3 Strategy: generate new portrait image, portrait orientation, match height, center button
+- [x] All 3 step sections: add "Step X of 3" badge overlaid on top-left corner of image
+- [x] Chat Support: animate chat bubbles with typing indicator dots
+- [x] Our Story: slow down quote rotation, add initial delay
+- [x] Combine "Compassionate Home Care in Upstate" and "Ready to Start Home Care?" into one teal section with white dove logo
+- [x] Upload dove logo to static assets
+- [x] Legal Disclaimer: white background, cards with pale pastel yellow bg, thin pink border, slight shadow
 
 ## Education Page Enhancements — June 2026
 
-- [ ] Fix hero: color "Understanding" word teal like Home page hero
-- [ ] Fix hero: stage buttons 1-2-3-4 all on one line (no wrapping)
-- [ ] Improve print layout: VA header with logo, phone, website; more educational content per stage
-- [ ] Add mid-journey parallax CTA: "Ready to Create Your Personalized Strategy?" with Yes/No buttons
-- [ ] Add interactive Terms glossary: left tabs for 4 stages, term list cascades, definition appears on right
-- [ ] Add floating-balls CTA section (blue background): "Ready to move forward or learn more?"
-- [ ] Add FAQ section with common Q&A for all 4 stages of LTC claims journey
-- [ ] Add user question submission form in FAQ section (sends to daniel@SCVisitingAngels.com)
-- [ ] Generate caregiver portrait image for home care section (senior female with walker/in bed)
-- [ ] Add enhanced home care section above footer (ADL context, caregiver image, Contact Us + Learn More buttons)
-- [ ] Add LegalDisclaimerFooter and teal home care section to Education page footer area
+- [x] Fix hero: color "Understanding" word teal like Home page hero
+- [x] Fix hero: stage buttons 1-2-3-4 all on one line (no wrapping)
+- [x] Improve print layout: VA header with logo, phone, website; more educational content per stage
+- [x] Add mid-journey parallax CTA: "Ready to Create Your Personalized Strategy?" with Yes/No buttons
+- [x] Add interactive Terms glossary: left tabs for 4 stages, term list cascades, definition appears on right
+- [x] Add floating-balls CTA section (blue background): "Ready to move forward or learn more?"
+- [x] Add FAQ section with common Q&A for all 4 stages of LTC claims journey
+- [x] Add user question submission form in FAQ section (sends to daniel@SCVisitingAngels.com)
+- [x] Generate caregiver portrait image for home care section (senior female with walker/in bed)
+- [x] Add enhanced home care section above footer (ADL context, caregiver image, Contact Us + Learn More buttons)
+- [x] Add LegalDisclaimerFooter and teal home care section to Education page footer area
 
 ## Home Page Revision — June 5 (Batch 2)
-- [ ] Remove "Supportive Guidance for Families" button from hero
-- [ ] Move "This is a completely free resource" box to dismissible alert banner below nav, above hero
-- [ ] Hero: two-column layout — text left, video right, video height matches text column
-- [ ] Stats bar: blue background, VA logo on each stat, update numbers (1000+, 22+, 97%), complementary font colors
-- [ ] 3 Easy Steps: remove separator, fix Step 1 border to teal, move titles right of icons, rename "About Your Policy", rename "Your Personalized Claim Plan" to "Your Personalized Plan", convert links to buttons, move yellow badges under top border, fix word wrap, remove "Free to use" text
-- [ ] Chat section: remove "Always Available" label
-- [ ] Our Story: fly-in animation from sides, 3s pause on first quote, rotate every 3s
-- [ ] Home care section: match Education page "Looking for Home Care?" layout, remove emoji label, portrait image, blue buttons
-- [ ] Footer: replace dove with transparent Dove-Trans.gif (no white box)
-- [ ] Favicon: use teal-box white dove (photo.jpg) as favicon for all pages
+- [x] Remove "Supportive Guidance for Families" button from hero
+- [x] Move "This is a completely free resource" box to dismissible alert banner below nav, above hero
+- [x] Hero: two-column layout — text left, video right, video height matches text column
+- [x] Stats bar: blue background, VA logo on each stat, update numbers (1000+, 22+, 97%), complementary font colors
+- [x] 3 Easy Steps: remove separator, fix Step 1 border to teal, move titles right of icons, rename "About Your Policy", rename "Your Personalized Claim Plan" to "Your Personalized Plan", convert links to buttons, move yellow badges under top border, fix word wrap, remove "Free to use" text
+- [x] Chat section: remove "Always Available" label
+- [x] Our Story: fly-in animation from sides, 3s pause on first quote, rotate every 3s
+- [x] Home care section: match Education page "Looking for Home Care?" layout, remove emoji label, portrait image, blue buttons
+- [x] Footer: replace dove with transparent Dove-Trans.gif (no white box)
+- [x] Favicon: use teal-box white dove (photo.jpg) as favicon for all pages

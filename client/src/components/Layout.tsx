@@ -132,7 +132,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               className="ml-4 va-btn text-sm"
               style={{ paddingTop: "0.6rem", paddingBottom: "0.6rem", paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
             >
-              Start Here — Free
+              Start Here
             </a>
           </nav>
 
@@ -179,7 +179,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
             <div className="p-4">
               <a href="/education" className="va-btn w-full text-center block text-sm">
-                Start Here — Free
+                Start Here
               </a>
             </div>
           </nav>

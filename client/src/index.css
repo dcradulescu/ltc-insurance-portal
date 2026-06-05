@@ -661,6 +661,10 @@
     display: none !important;
   }
 
+  .hidden.print\:block {
+    display: block !important;
+  }
+
   body,
   main {
     background: white !important;
@@ -685,7 +689,42 @@
     break-inside: avoid;
   }
 
+  /* Education page: stage sections get page breaks */
+  section[id^="stage-"] {
+    break-before: page;
+    padding-top: 1cm !important;
+  }
+
+  /* Hide parallax/CTA sections that don't print well */
+  .parallax-section {
+    display: none !important;
+  }
+
+  /* Ensure text is readable on print */
+  .text-white, .text-white\/80, .text-white\/85, .text-white\/90 {
+    color: #333 !important;
+  }
+
+  /* Remove background images from sections */
+  section {
+    background-image: none !important;
+    background-color: white !important;
+  }
+
+  /* Keep tip boxes visible but simplified */
+  [style*="background: #f0fafb"],
+  [style*="background: #fff8f0"],
+  [style*="background: #EBF5FC"] {
+    border: 1px solid #ccc !important;
+    background: #f9f9f9 !important;
+  }
+
   @page {
     margin: 1.5cm 2cm;
+    size: letter;
+  }
+
+  @page :first {
+    margin-top: 0.5cm;
   }
 }
