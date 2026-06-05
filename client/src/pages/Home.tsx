@@ -339,7 +339,7 @@ export default function Home() {
       <section className="py-5" style={{ background: '#ffffff' }}>
         <div ref={stepsRef} className="reveal container">
           <VaSectionHeading>It's as Easy as <span style={{ color: VA_TEAL }}>1 — 2 — 3</span></VaSectionHeading>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 items-stretch">
             {[
               {
                 num: "1",
@@ -374,7 +374,7 @@ export default function Home() {
             ].map((step, i) => (
               <div
                 key={step.num}
-                className="relative flex flex-col rounded-xl border-2 p-7 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="relative flex flex-col h-full rounded-xl border-2 p-7 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 style={{ borderColor: i === 0 ? VA_TEAL : (i === 1 ? VA_BLUE : VA_TEAL), background: i === 1 ? 'rgba(6,146,215,0.04)' : (i === 2 ? 'rgba(52,177,196,0.04)' : '#fff') }}
               >
                 {/* Step number badge */}
