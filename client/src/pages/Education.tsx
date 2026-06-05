@@ -137,7 +137,7 @@ function Stage({
   subtitle: string; children: React.ReactNode; bg?: string;
 }) {
   return (
-    <section id={id} className="py-14 scroll-mt-28" style={{ background: bg }}>
+    <section id={id} className="py-section scroll-mt-28" style={{ background: bg }}>
       <div className="container max-w-3xl">
         <div className="flex items-start gap-4 mb-6">
           <div
@@ -643,7 +643,7 @@ export default function Education() {
       </Stage>
 
       {/* ── CTA ── */}
-      <section className="py-14 text-white" style={{ background: "#393F43" }}>
+      <section className="py-section text-white" style={{ background: "#393F43" }}>
         <div className="container text-center max-w-2xl">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div style={{ height: 2, width: 40, background: "#34B1C4" }} />
@@ -670,7 +670,7 @@ export default function Education() {
       </section>
 
       {/* ── Terms & Definitions ── */}
-      <section id="terms" className="py-16" style={{ background: "#ffffff" }}>
+      <section id="terms" className="py-section" style={{ background: "#ffffff" }}>
         <div className="container max-w-5xl">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "#e8f7f9", color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
@@ -728,7 +728,7 @@ export default function Education() {
       </section>
 
       {/* ── Floating-balls CTA ── */}
-      <section className="relative py-16 overflow-hidden print:hidden" style={{ background: "#0692D7" }}>
+      <section className="relative py-section overflow-hidden print:hidden" style={{ background: "#0692D7" }}>
         {/* floating semi-transparent balls */}
         {[...Array(8)].map((_, i) => (
           <div key={i} className="absolute rounded-full pointer-events-none" style={{
@@ -756,7 +756,7 @@ export default function Education() {
       </section>
 
       {/* ── FAQ ── */}
-      <section id="faq" className="py-16" style={{ background: "#F2F6FA" }}>
+      <section id="faq" className="py-section" style={{ background: "#F2F6FA" }}>
         <div className="container max-w-3xl">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "#e8f7f9", color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
@@ -819,7 +819,7 @@ export default function Education() {
       </section>
 
       {/* ── Enhanced Home Care Section ── */}
-      <section className="py-16" style={{ background: "#34B1C4" }}>
+      <section className="py-section" style={{ background: "#34B1C4" }}>
         <div className="container max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             <div>

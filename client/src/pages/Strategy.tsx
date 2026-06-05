@@ -546,7 +546,7 @@ export default function Strategy() {
       )}
 
       {/* Hero */}
-      <section className="relative text-white py-14 md:py-20">
+      <section className="relative text-white py-section">
         <div className="absolute inset-0">
           <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/gwMDIGGTHLJRGnPt.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a4a]/90 via-[#1a3a4a]/80 to-[#2c5060]/70" />
@@ -635,7 +635,7 @@ export default function Strategy() {
         </div>
       )}
       {/* Main Content */}
-      <section className="py-10 bg-gradient-to-b from-slate-50 to-white">
+      <section className="py-section bg-gradient-to-b from-slate-50 to-white">
         <div className="container max-w-5xl">
           {/* State: Form incomplete */}
           {policy && !isFormComplete(policy) ? (
