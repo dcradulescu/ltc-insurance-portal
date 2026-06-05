@@ -752,48 +752,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Home Care Stats Bar ── */}
-      <section className="py-5 relative overflow-hidden" style={{ background: VA_TEAL }}>
-        {/* Floating balls — top + bottom spread */}
-        {[
-          { w: 120, h: 120, top: '-20px',  left: '5%',  op: 0.12 },
-          { w: 80,  h: 80,  top: '10px',   left: '18%', op: 0.08 },
-          { w: 160, h: 160, top: '-40px',  left: '38%', op: 0.07 },
-          { w: 60,  h: 60,  top: '20px',   left: '55%', op: 0.10 },
-          { w: 100, h: 100, top: '-10px',  left: '70%', op: 0.09 },
-          { w: 140, h: 140, top: '-30px',  left: '85%', op: 0.08 },
-          { w: 50,  h: 50,  top: '30px',   left: '92%', op: 0.11 },
-          { w: 90,  h: 90,  top: '-5px',   left: '48%', op: 0.06 },
-          /* bottom row */
-          { w: 85,  h: 85,  top: 'auto', bottom: '-18px', left: '8%',  op: 0.09 },
-          { w: 55,  h: 55,  top: 'auto', bottom: '6px',   left: '22%', op: 0.08 },
-          { w: 115, h: 115, top: 'auto', bottom: '-28px', left: '45%', op: 0.07 },
-          { w: 48,  h: 48,  top: 'auto', bottom: '10px',  left: '62%', op: 0.10 },
-          { w: 95,  h: 95,  top: 'auto', bottom: '-20px', left: '75%', op: 0.08 },
-          { w: 65,  h: 65,  top: 'auto', bottom: '8px',   left: '88%', op: 0.09 },
-        ].map((b, i) => (
-          <div key={i} className="absolute rounded-full pointer-events-none" style={{ width: b.w, height: b.h, top: (b as any).bottom ? 'auto' : b.top, bottom: (b as any).bottom ?? undefined, left: b.left, background: `rgba(255,255,255,${b.op})` }} />
-        ))}
-        <div className="relative container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: MapPin,      num: '22+',   suffix: '',    label: 'Years Serving Upstate SC' },
-              { icon: Gift,        num: 'FREE',  suffix: '',    label: 'In-Home Consultation' },
-              { icon: Users,       num: '1000',  suffix: '+',   label: 'Families Served' },
-              { icon: Award,       num: 'Yes!',  suffix: '',    label: 'Long Term Care Experts' },
-            ].map(({ icon: Icon, num, suffix, label }) => (
-              <div key={label} className="flex flex-col items-center text-center rounded-xl p-5 shadow-sm" style={{ background: 'rgba(255,255,255,0.18)' }}>
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(255,255,255,0.25)' }}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-2xl md:text-3xl font-bold text-white mb-1" style={{ fontFamily: "'Roboto', sans-serif" }}>{num}{suffix}</div>
-                <div className="text-xs text-white/85 font-medium leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── Looking for Home Care? We Can Help ── */}
       <section className="py-5" style={{ background: '#ffffff' }}>
         <div className="container">
@@ -913,6 +871,48 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── Home Care Stats Bar ── */}
+      <section className="py-5 relative overflow-hidden" style={{ background: VA_TEAL }}>
+        {/* Floating balls — top + bottom spread */}
+        {[
+          { w: 120, h: 120, top: '-20px',  left: '5%',  op: 0.12 },
+          { w: 80,  h: 80,  top: '10px',   left: '18%', op: 0.08 },
+          { w: 160, h: 160, top: '-40px',  left: '38%', op: 0.07 },
+          { w: 60,  h: 60,  top: '20px',   left: '55%', op: 0.10 },
+          { w: 100, h: 100, top: '-10px',  left: '70%', op: 0.09 },
+          { w: 140, h: 140, top: '-30px',  left: '85%', op: 0.08 },
+          { w: 50,  h: 50,  top: '30px',   left: '92%', op: 0.11 },
+          { w: 90,  h: 90,  top: '-5px',   left: '48%', op: 0.06 },
+          { w: 85,  h: 85,  top: 'auto', bottom: '-18px', left: '8%',  op: 0.09 },
+          { w: 55,  h: 55,  top: 'auto', bottom: '6px',   left: '22%', op: 0.08 },
+          { w: 115, h: 115, top: 'auto', bottom: '-28px', left: '45%', op: 0.07 },
+          { w: 48,  h: 48,  top: 'auto', bottom: '10px',  left: '62%', op: 0.10 },
+          { w: 95,  h: 95,  top: 'auto', bottom: '-20px', left: '75%', op: 0.08 },
+          { w: 65,  h: 65,  top: 'auto', bottom: '8px',   left: '88%', op: 0.09 },
+        ].map((b, i) => (
+          <div key={i} className="absolute rounded-full pointer-events-none" style={{ width: b.w, height: b.h, top: (b as any).bottom ? 'auto' : b.top, bottom: (b as any).bottom ?? undefined, left: b.left, background: `rgba(255,255,255,${b.op})` }} />
+        ))}
+        <div className="relative container">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { icon: MapPin,      num: '22+',   suffix: '',  label: 'Years Serving Upstate SC' },
+              { icon: Gift,        num: 'FREE',  suffix: '',  label: 'In-Home Consultation' },
+              { icon: Users,       num: '1000',  suffix: '+', label: 'Families Served' },
+              { icon: Award,       num: 'Yes!',  suffix: '',  label: 'Long Term Care Experts' },
+            ].map(({ icon: Icon, num, suffix, label }) => (
+              <div key={label} className="flex flex-col items-center text-center rounded-xl p-5 shadow-sm" style={{ background: 'rgba(255,255,255,0.18)' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(255,255,255,0.25)' }}>
+                  <Icon className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1" style={{ fontFamily: "'Roboto', sans-serif" }}>{num}{suffix}</div>
+                <div className="text-xs text-white/85 font-medium leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <LegalDisclaimerFooter />
     </Layout>
   );
