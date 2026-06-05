@@ -108,11 +108,7 @@ function VaSectionHeading({ children, light = false }: { children: React.ReactNo
       <h2 style={{ fontFamily: "'Roboto', sans-serif", color: light ? '#ffffff' : VA_HEADING }} className="text-3xl md:text-4xl font-bold mb-3">
         {children}
       </h2>
-      <div className="flex items-center justify-center gap-3 mt-3">
-        <div style={{ height: 2, width: 40, background: VA_TEAL }} />
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: VA_TEAL }} />
-        <div style={{ height: 2, width: 40, background: VA_TEAL }} />
-      </div>
+
     </div>
   );
 }
