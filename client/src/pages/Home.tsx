@@ -662,14 +662,14 @@ export default function Home() {
           <div className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: `linear-gradient(to left, ${VA_GREY_BG}, transparent)` }} />
           <div ref={scrollRef} className="flex gap-6 animate-scroll-left" style={{ width: "max-content" }}>
             {[...testimonials, ...testimonials].map((testimonial, index) => (
-              <div key={index} className="testimonial-card w-[380px] shrink-0 bg-white rounded border p-6 shadow-sm" style={{ borderColor: '#e0e0e0' }}>
+              <div key={index} className="testimonial-card w-[380px] shrink-0 bg-white rounded border p-6 shadow-sm flex flex-col" style={{ borderColor: '#e0e0e0', minHeight: 220 }}>
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-sm leading-relaxed mb-4 italic" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>"{testimonial.text}"</p>
-                <div className="pt-4">
+                <p className="text-sm leading-relaxed italic flex-1" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>"{ testimonial.text}"</p>
+                <div className="pt-4 mt-auto border-t" style={{ borderColor: '#f0f0f0' }}>
                   <div className="font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: index % 2 === 0 ? VA_TEAL : VA_BLUE }}>{testimonial.name}</div>
                   <div className="text-xs" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>{testimonial.relation}</div>
                 </div>
