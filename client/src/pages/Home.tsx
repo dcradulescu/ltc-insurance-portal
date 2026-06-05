@@ -303,15 +303,25 @@ export default function Home() {
 
       {/* ── Stats ── */}
       <section className="relative py-5 text-white overflow-hidden" style={{ background: "#0692D7" }}>
-        {/* floating semi-transparent balls — matches Education "Feeling Comfortable" section */}
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className="absolute rounded-full pointer-events-none" style={{
-            width: `${60 + i * 25}px`, height: `${60 + i * 25}px`,
-            background: "rgba(255,255,255,0.08)",
-            top: `${[10,60,20,70,5,55,35,80][i]}%`,
-            left: `${[5,15,70,80,45,90,30,60][i]}%`,
-            transform: "translate(-50%,-50%)",
-          }} />
+        {/* floating semi-transparent balls — top + bottom spread */}
+        {[
+          { w: 110, h: 110, top: '-25px',  left: '5%',  op: 0.09 },
+          { w: 70,  h: 70,  top: '8px',    left: '18%', op: 0.07 },
+          { w: 150, h: 150, top: '-35px',  left: '38%', op: 0.06 },
+          { w: 55,  h: 55,  top: '15px',   left: '55%', op: 0.09 },
+          { w: 95,  h: 95,  top: '-12px',  left: '70%', op: 0.08 },
+          { w: 130, h: 130, top: '-28px',  left: '85%', op: 0.07 },
+          { w: 45,  h: 45,  top: '20px',   left: '92%', op: 0.10 },
+          { w: 85,  h: 85,  top: '-8px',   left: '48%', op: 0.05 },
+          /* bottom row */
+          { w: 90,  h: 90,  top: 'auto', bottom: '-20px', left: '10%', op: 0.08 },
+          { w: 60,  h: 60,  top: 'auto', bottom: '5px',   left: '25%', op: 0.07 },
+          { w: 120, h: 120, top: 'auto', bottom: '-30px', left: '50%', op: 0.06 },
+          { w: 50,  h: 50,  top: 'auto', bottom: '8px',   left: '65%', op: 0.09 },
+          { w: 100, h: 100, top: 'auto', bottom: '-15px', left: '78%', op: 0.07 },
+          { w: 70,  h: 70,  top: 'auto', bottom: '10px',  left: '90%', op: 0.08 },
+        ].map((b, i) => (
+          <div key={i} className="absolute rounded-full pointer-events-none" style={{ width: b.w, height: b.h, top: (b as any).bottom ? 'auto' : b.top, bottom: (b as any).bottom ?? undefined, left: b.left, background: `rgba(255,255,255,${b.op})` }} />
         ))}
         <div ref={statsRef} className="container relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
@@ -744,18 +754,25 @@ export default function Home() {
 
       {/* ── Home Care Stats Bar ── */}
       <section className="py-5 relative overflow-hidden" style={{ background: VA_TEAL }}>
-        {/* Floating balls */}
+        {/* Floating balls — top + bottom spread */}
         {[
-          { w: 120, h: 120, top: '-20px', left: '5%', op: 0.12 },
-          { w: 80,  h: 80,  top: '10px',  left: '18%', op: 0.08 },
-          { w: 160, h: 160, top: '-40px', left: '38%', op: 0.07 },
-          { w: 60,  h: 60,  top: '20px',  left: '55%', op: 0.10 },
-          { w: 100, h: 100, top: '-10px', left: '70%', op: 0.09 },
-          { w: 140, h: 140, top: '-30px', left: '85%', op: 0.08 },
-          { w: 50,  h: 50,  top: '30px',  left: '92%', op: 0.11 },
-          { w: 90,  h: 90,  top: '-5px',  left: '48%', op: 0.06 },
+          { w: 120, h: 120, top: '-20px',  left: '5%',  op: 0.12 },
+          { w: 80,  h: 80,  top: '10px',   left: '18%', op: 0.08 },
+          { w: 160, h: 160, top: '-40px',  left: '38%', op: 0.07 },
+          { w: 60,  h: 60,  top: '20px',   left: '55%', op: 0.10 },
+          { w: 100, h: 100, top: '-10px',  left: '70%', op: 0.09 },
+          { w: 140, h: 140, top: '-30px',  left: '85%', op: 0.08 },
+          { w: 50,  h: 50,  top: '30px',   left: '92%', op: 0.11 },
+          { w: 90,  h: 90,  top: '-5px',   left: '48%', op: 0.06 },
+          /* bottom row */
+          { w: 85,  h: 85,  top: 'auto', bottom: '-18px', left: '8%',  op: 0.09 },
+          { w: 55,  h: 55,  top: 'auto', bottom: '6px',   left: '22%', op: 0.08 },
+          { w: 115, h: 115, top: 'auto', bottom: '-28px', left: '45%', op: 0.07 },
+          { w: 48,  h: 48,  top: 'auto', bottom: '10px',  left: '62%', op: 0.10 },
+          { w: 95,  h: 95,  top: 'auto', bottom: '-20px', left: '75%', op: 0.08 },
+          { w: 65,  h: 65,  top: 'auto', bottom: '8px',   left: '88%', op: 0.09 },
         ].map((b, i) => (
-          <div key={i} className="absolute rounded-full pointer-events-none" style={{ width: b.w, height: b.h, top: b.top, left: b.left, background: `rgba(255,255,255,${b.op})` }} />
+          <div key={i} className="absolute rounded-full pointer-events-none" style={{ width: b.w, height: b.h, top: (b as any).bottom ? 'auto' : b.top, bottom: (b as any).bottom ?? undefined, left: b.left, background: `rgba(255,255,255,${b.op})` }} />
         ))}
         <div className="relative container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
