@@ -381,26 +381,31 @@ export default function Home() {
                 <div className="absolute -top-5 left-7 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md" style={{ background: step.color }}>
                   {step.num}
                 </div>
-                {/* Icon row + yellow note */}
-                <div className="mt-4 mb-3 flex items-start gap-3">
+                {/* Icon + Title row */}
+                <div className="mt-4 mb-3 flex items-center gap-3">
                   <div className="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: i === 1 ? 'rgba(6,146,215,0.12)' : 'rgba(52,177,196,0.12)' }}>
                     <step.icon className="w-7 h-7" style={{ color: step.color }} />
                   </div>
-                  <div className="inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow whitespace-nowrap self-center">
-                    {i === 0 && "🤝 Let's figure this out together!"}
-                    {i === 1 && "✨ This is where the magic starts!"}
-                    {i === 2 && "🎯 Everything comes together here!"}
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: i === 1 ? VA_BLUE : VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>{step.subtitle}</div>
+                    <h3 className="text-xl font-bold leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{step.title}</h3>
                   </div>
                 </div>
-                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: i === 1 ? VA_BLUE : VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>{step.subtitle}</div>
-                <h3 className="text-xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{step.title}</h3>
                 <p className="text-sm leading-relaxed flex-1 mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{step.desc}</p>
-                <div className="flex justify-center">
+                <div className="flex justify-center mb-4">
                   <Link href={step.href}>
                     <button className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-lg text-white transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90 shadow" style={{ background: step.color }}>
                       {step.cta} <ArrowRight className="w-4 h-4" />
                     </button>
                   </Link>
+                </div>
+                {/* Yellow badge at bottom */}
+                <div className="flex justify-center">
+                  <div className="inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
+                    {i === 0 && "🤝 Let's figure this out together!"}
+                    {i === 1 && "✨ This is where the magic starts!"}
+                    {i === 2 && "🎯 Everything comes together here!"}
+                  </div>
                 </div>
               </div>
             ))}
