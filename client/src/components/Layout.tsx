@@ -198,7 +198,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <div className="flex items-center gap-2.5 mb-4">
                 <img
-                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
+                  src="/manus-storage/Dove-White-Transparent_925915bc.png"
                   alt="SC Visiting Angels"
                   className="w-8 h-8 object-contain"
                 />
