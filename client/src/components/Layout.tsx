@@ -6,7 +6,7 @@ import { toast } from "sonner";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/education", label: "Education" },
-  { href: "/policy-form", label: "Policy Form" },
+  { href: "/policy-form", label: "My Policy" },
   { href: "/strategy", label: "My Strategy" },
   { href: "/contact", label: "Contact" },
   { href: "/profile", label: "Profile" },
@@ -239,7 +239,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {[
                   { href: "/", label: "Home" },
                   { href: "/education", label: "Education" },
-                  { href: "/policy-form", label: "Policy Form" },
+                  { href: "/policy-form", label: "My Policy" },
                   { href: "/strategy", label: "Strategy" },
                 ].map(({ href, label }) => (
                   <li key={href}>

@@ -719,3 +719,20 @@
 - [x] Reorder sections: Hero → Stats → Policy Intake Form → Customized Strategy → Chat Support → Our Story → About VA → Testimonials → Bottom CTA → AboutHomeCare
 - [x] Remove unused refs and useReveal hooks for deleted sections (aloneRef, featuresHeaderRef, stepsHeaderRef)
 - [x] Ensure all 54 tests still pass and TypeScript is clean after changes
+
+## 3 Easy Steps & Language Softening — June 2026
+
+- [x] Add a "3 Easy Steps" section to Home page (after stats band, before detail sections): Step 1 Learn, Step 2 Understand Your Policy, Step 3 Your Customized Strategy
+- [x] Rename "Policy Intake Form" section heading on Home to "Tell Us About Your Policy"
+- [x] Rename "Complete Your Intake Form" CTA button on Home to "Share My Policy Details"
+- [x] Rename "Policy Intake Form" badge on Home to "Step 2 of 3"
+- [x] Update hero CTA button "Already Educated? Go to Form" to "Already Educated? Share My Policy Details"
+- [x] Update nav link label from "Policy Form" to "My Policy"
+- [x] Update the Policy Intake Form page hero heading — already says "Tell Us About Your Policy" (no change needed)
+
+## PolicyForm "Here's What You Get" Section — June 2026
+
+- [x] Add a "This is where the magic happens" motivation section to PolicyForm page, above the form itself
+- [x] Section shows: Your Custom Claim Strategy, Personalized Timeline, Downloadable PDF Checklist, Live Support Chat — with icons and benefit descriptions
+- [x] Include a sample/preview visual of what a strategy looks like (mockup card with 3 phases)
+- [x] Keep tone warm, exciting, and senior-friendly — emphasize the payoff, not the effort

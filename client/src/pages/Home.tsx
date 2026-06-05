@@ -15,6 +15,10 @@ import {
   Star,
   MessageSquare,
   Share2,
+  BookOpen,
+  FileText,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 // VA Brand constants
@@ -123,6 +127,7 @@ export default function Home() {
   const [activeQuote, setActiveQuote] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const stepsRef = useReveal();
   const statsRef = useReveal();
   const storyLeftRef = useReveal();
   const storyRightRef = useReveal();
@@ -197,7 +202,7 @@ export default function Home() {
                   Start Here — Learn First
                 </Link>
                 <Link href="/policy-form" className="va-btn va-btn-outline text-base px-8 py-4 w-full sm:w-auto text-center" style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}>
-                  Already Educated? Go to Form
+                  Already Educated? Share My Policy Details
                 </Link>
                 <button
                   className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2 w-full sm:w-auto"
@@ -262,6 +267,79 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── 3 Easy Steps ── */}
+      <section className="py-14 md:py-20" style={{ background: '#ffffff' }}>
+        <div ref={stepsRef} className="reveal container">
+          <VaSectionHeading>It's as Easy as <span style={{ color: VA_TEAL }}>1 — 2 — 3</span></VaSectionHeading>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+            {[
+              {
+                num: "1",
+                icon: BookOpen,
+                title: "Learn",
+                subtitle: "Understand Your Coverage",
+                desc: "Start in our free Education section. In just a few minutes you'll understand your policy, your benefits, and exactly what to expect — no insurance jargon.",
+                color: VA_TEAL,
+                href: "/education",
+                cta: "Start Learning",
+              },
+              {
+                num: "2",
+                icon: FileText,
+                title: "Tell Us About Your Policy",
+                subtitle: "Share Your Policy Details",
+                desc: "Answer a few simple questions about your policy and care needs. No complicated forms — just the information we need to build your personal plan.",
+                color: VA_TEAL_DARK,
+                href: "/policy-form",
+                cta: "Share My Policy Details",
+              },
+              {
+                num: "3",
+                icon: Sparkles,
+                title: "Get Your Strategy",
+                subtitle: "Your Personalized Claim Plan",
+                desc: "Receive a step-by-step, personalized strategy built just for your situation — a clear roadmap that takes the guesswork out of filing your claim.",
+                color: VA_CHARCOAL,
+                href: "/strategy",
+                cta: "See a Sample Strategy",
+              },
+            ].map((step, i) => (
+              <div
+                key={step.num}
+                className="relative flex flex-col rounded-xl border-2 p-7 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                style={{ borderColor: i === 1 ? VA_TEAL : '#e8e8e8', background: i === 1 ? 'rgba(52,177,196,0.04)' : '#fff' }}
+              >
+                {/* Step number badge */}
+                <div className="absolute -top-5 left-7 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md" style={{ background: step.color }}>
+                  {step.num}
+                </div>
+                <div className="mt-4 mb-4 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: `rgba(52,177,196,0.12)` }}>
+                  <step.icon className="w-7 h-7" style={{ color: step.color }} />
+                </div>
+                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>{step.subtitle}</div>
+                <h3 className="text-xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{step.title}</h3>
+                <p className="text-sm leading-relaxed flex-1 mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{step.desc}</p>
+                <Link href={step.href} className="inline-flex items-center gap-2 text-sm font-bold transition-colors duration-200 hover:opacity-80" style={{ color: step.color }}>
+                  {step.cta} <ArrowRight className="w-4 h-4" />
+                </Link>
+                {i === 1 && (
+                  <div className="absolute -top-3 right-5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full shadow">
+                    ✨ This is where the magic starts!
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {/* Connector arrows on desktop */}
+          <div className="hidden md:flex justify-center items-center gap-0 mt-8">
+            <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: VA_BODY, fontFamily: "'Open Sans', sans-serif" }}>
+              <CheckCircle2 className="w-5 h-5" style={{ color: VA_TEAL }} />
+              <span>Free to use — no account required to get started</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Policy Intake Form ── */}
       <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
         <div className="container">
@@ -269,13 +347,13 @@ export default function Home() {
             <div ref={intakeLeftRef} className="reveal reveal-left">
               <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
                 <ClipboardList className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Personalized Intake</span>
+                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
-                Your <span style={{ color: VA_TEAL }}>Policy Intake Form</span>
+                Tell Us About <span style={{ color: VA_TEAL }}>Your Policy</span>
               </h2>
               <p className="text-lg leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
-                Our comprehensive intake form captures all the details we need to build your personalized strategy. Complete it once, and we'll create a roadmap tailored specifically to your policy and care situation.
+                Answer a few simple questions about your policy and care needs. It only takes a few minutes, and every answer helps us build a strategy that's tailored specifically to your situation.
               </p>
               <div className="space-y-4 mb-8">
                 <VaCheckItem title="Complete Policy Details" desc="Capture your policy number, carrier, coverage dates, and benefit amounts" />
@@ -283,7 +361,7 @@ export default function Home() {
                 <VaCheckItem title="Ready for Your Call" desc="When you contact your insurance company, you'll have all the information they need" />
               </div>
               <Link href="/policy-form" className="va-btn text-base px-8 py-4 shadow-lg">
-                Complete Your Intake Form
+                Share My Policy Details <ArrowRight className="w-4 h-4 ml-2 inline" />
               </Link>
             </div>
             <div ref={intakeRightRef} className="relative hidden lg:block reveal reveal-right">
@@ -550,14 +628,14 @@ export default function Home() {
         <div ref={ctaRef} className="reveal container relative text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>Ready to Get Started?</h2>
           <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-            Begin with our free Education section — it only takes a few minutes and will make completing the form much easier.
+            Begin with our free Education section — it only takes a few minutes and will make sharing your policy details much easier.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/education" className="va-btn text-base px-8 py-4 shadow-lg">
               Start with Education <ArrowRight className="w-4 h-4 ml-2 inline" />
             </Link>
             <Link href="/policy-form" className="va-btn va-btn-outline text-base px-8 py-4" style={{ borderColor: 'rgba(255,255,255,0.5)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}>
-              Skip to Policy Form
+              Skip to Policy Details
             </Link>
           </div>
         </div>

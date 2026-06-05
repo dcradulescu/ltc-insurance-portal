@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { ClipboardList, ArrowRight, ArrowLeft, Save, Loader2, HelpCircle, Info, PlayCircle, Mail } from "lucide-react";
+import { ClipboardList, ArrowRight, ArrowLeft, Save, Loader2, HelpCircle, Info, PlayCircle, Mail, Sparkles, FileCheck, Map, Download, MessageCircle } from "lucide-react";
 import {
   generateSessionId,
   createFormSubmission,
@@ -937,8 +937,114 @@ export default function PolicyForm() {
         </div>
       </section>
 
+      {/* ✨ What You Get Section */}
+      <section className="py-14 md:py-18" style={{ background: '#f8f9fa' }}>
+        <div className="container max-w-5xl">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 rounded-full px-5 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)', border: '1px solid rgba(52,177,196,0.3)' }}>
+              <Sparkles className="w-4 h-4" style={{ color: '#34B1C4' }} />
+              <span className="text-sm font-bold" style={{ color: '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>This is where the magic happens</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>
+              Here's What You'll <span style={{ color: '#34B1C4' }}>Receive</span>
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto" style={{ fontFamily: "'Open Sans', sans-serif", color: '#555555' }}>
+              Answer a few simple questions about your policy and care needs — and we'll create everything below, personalized just for your family.
+            </p>
+          </div>
+
+          {/* Benefit cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            {[
+              {
+                icon: FileCheck,
+                title: "Your Custom Claim Strategy",
+                desc: "A written, step-by-step plan built specifically around your policy, your insurance company, and your loved one's care needs. No guesswork — just clear next steps.",
+                highlight: true,
+              },
+              {
+                icon: Map,
+                title: "A Personalized Timeline",
+                desc: "Know exactly what to do and when to do it. Your timeline maps out every task from first contact with your insurer all the way to approved benefits.",
+                highlight: false,
+              },
+              {
+                icon: Download,
+                title: "Downloadable PDF Checklist",
+                desc: "Print it out, share it with family, or keep it on your phone. Your checklist makes it easy to track every step and never miss a deadline.",
+                highlight: false,
+              },
+              {
+                icon: MessageCircle,
+                title: "Live Support Chat",
+                desc: "Have a question while you're working through your strategy? Our LTC Support Assistant is right here to help — available any time, day or night.",
+                highlight: false,
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="flex gap-5 p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-lg"
+                style={{
+                  borderColor: item.highlight ? '#34B1C4' : '#e8e8e8',
+                  background: item.highlight ? 'rgba(52,177,196,0.05)' : '#ffffff',
+                }}
+              >
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: item.highlight ? 'rgba(52,177,196,0.15)' : 'rgba(52,177,196,0.08)' }}>
+                  <item.icon className="w-6 h-6" style={{ color: '#34B1C4' }} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base mb-1.5" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>{item.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>{item.desc}</p>
+                </div>
+                {item.highlight && (
+                  <div className="absolute" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Sample strategy preview card */}
+          <div className="rounded-2xl border-2 overflow-hidden shadow-xl" style={{ borderColor: '#34B1C4' }}>
+            <div className="px-6 py-4 flex items-center gap-3" style={{ background: '#34B1C4' }}>
+              <Sparkles className="w-5 h-5 text-white" />
+              <span className="text-white font-bold text-base" style={{ fontFamily: "'Roboto', sans-serif" }}>Sample: Your Custom Strategy Preview</span>
+              <span className="ml-auto text-white/80 text-xs font-medium">What you'll receive after completing Step 2</span>
+            </div>
+            <div className="p-6 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { step: "Week 1", title: "Notify Your Insurer", tasks: ["Call claims department", "Request claim forms", "Confirm elimination period"] },
+                  { step: "Week 2", title: "Gather Documentation", tasks: ["Physician certification", "ADL assessment form", "Care plan from provider"] },
+                  { step: "Week 3", title: "Submit & Follow Up", tasks: ["Submit complete claim packet", "Confirm receipt in writing", "Track approval timeline"] },
+                ].map((phase, i) => (
+                  <div key={i} className="rounded-lg p-4 border" style={{ borderColor: '#e8e8e8', background: '#f9f9f9' }}>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>{phase.step}</div>
+                    <div className="font-bold text-sm mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>{phase.title}</div>
+                    <ul className="space-y-1.5">
+                      {phase.tasks.map((task, j) => (
+                        <li key={j} className="flex items-start gap-2 text-xs" style={{ color: '#666666', fontFamily: "'Open Sans', sans-serif" }}>
+                          <span className="mt-0.5 flex-shrink-0" style={{ color: '#34B1C4' }}>&#10003;</span>
+                          {task}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 pt-4 border-t flex items-center justify-between" style={{ borderColor: '#e8e8e8' }}>
+                <p className="text-xs italic" style={{ color: '#999', fontFamily: "'Open Sans', sans-serif" }}>This is a sample preview. Your actual strategy will be tailored to your specific policy and care situation.</p>
+                <a href="#policy-form-start" className="inline-flex items-center gap-1.5 text-sm font-bold" style={{ color: '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>
+                  Get My Real Strategy <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Form */}
-      <section className="py-10 bg-white">
+      <section id="policy-form-start" className="py-10 bg-white">
         <div className="container max-w-4xl">
           {/* Progress */}
           <div className="mb-8">
