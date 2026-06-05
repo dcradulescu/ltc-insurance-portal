@@ -6,8 +6,8 @@ import { toast } from "sonner";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/education", label: "Education" },
-  { href: "/policy-form", label: "My Policy" },
-  { href: "/strategy", label: "My Strategy" },
+  { href: "/policy-form", label: "Policy" },
+  { href: "/strategy", label: "Strategy" },
   { href: "/contact", label: "Contact" },
   { href: "/profile", label: "Profile" },
 ];
@@ -351,10 +351,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="pt-8 text-center text-sm"
             style={{ borderTop: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.45)" }}
           >
+            <div className="flex justify-center mb-3">
+              <img
+                src="/manus-storage/dove-white_c2c9a4cd.png"
+                alt="SC Visiting Angels dove"
+                className="w-10 h-10 object-contain opacity-60"
+              />
+            </div>
             <p style={{ fontFamily: "'Open Sans', sans-serif" }}>
               &copy; {new Date().getFullYear()} SC Visiting Angels. All rights reserved.
               &nbsp;·&nbsp;
               <Link href="/privacy" className="hover:text-[#34B1C4] transition-colors duration-200">Privacy Policy</Link>
+              &nbsp;·&nbsp;
+              <a
+                href="https://www.visitingangels.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-[#34B1C4] transition-colors duration-200"
+              >
+                www.visitingangels.com
+              </a>
               &nbsp;·&nbsp;
               <a
                 href="https://www.scvisitingangels.com"

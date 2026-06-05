@@ -748,3 +748,19 @@
 - [ ] Strategy.tsx: apply blue to phase headers, progress indicators, info cards
 - [ ] Contact.tsx / PrivacyPolicy.tsx: update grey backgrounds to lighter value
 - [ ] index.css: update any hardcoded ECE8E8 references
+
+## Comprehensive Home Page UI Improvements — June 5
+
+- [ ] Nav: shorten stacking menu items to Policy, Strategy, Start Here
+- [ ] Hero: change from 2-column to 1-column layout (flatten banner)
+- [ ] Hero: reduce 3 buttons to 2 — "Start Here" and "Share This Free Resource"
+- [ ] 3 Easy Steps: fix Step 2 badge position (not blocking number); add yellow badge to Step 1 and Step 3
+- [ ] Step 1 Education: make image portrait orientation, match height of content column, center button
+- [ ] Step 2 Policy: generate new portrait image (different from Step 1), match height, center button
+- [ ] Step 3 Strategy: generate new portrait image, portrait orientation, match height, center button
+- [ ] All 3 step sections: add "Step X of 3" badge overlaid on top-left corner of image
+- [ ] Chat Support: animate chat bubbles with typing indicator dots
+- [ ] Our Story: slow down quote rotation, add initial delay
+- [ ] Combine "Compassionate Home Care in Upstate" and "Ready to Start Home Care?" into one teal section with white dove logo
+- [ ] Upload dove logo to static assets
+- [ ] Legal Disclaimer: white background, cards with pale pastel yellow bg, thin pink border, slight shadow
