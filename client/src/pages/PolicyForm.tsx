@@ -929,14 +929,14 @@ export default function PolicyForm() {
       </section>
 
       {/* Mobile video */}
-      <section className="lg:hidden py-8 bg-secondary">
+      <section className="lg:hidden py-section bg-secondary">
         <div className="container">
           <VideoPlaceholder title="How to Complete the Policy Form" description="Watch this guide to understand what information you'll need and how to find it in your policy documents" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/prngCKWDVnvVgXBI.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/UZLuXdBXwBOgyGSg.mp4" />
         </div>
       </section>
 
       {/* ✨ What You Get Section */}
-      <section className="py-14 md:py-18" style={{ background: '#f8f9fa' }}>
+      <section className="py-section" style={{ background: '#f8f9fa' }}>
         <div className="container max-w-5xl">
           {/* Header */}
           <div className="text-center mb-10">
@@ -1042,7 +1042,7 @@ export default function PolicyForm() {
       </section>
 
       {/* Form */}
-      <section id="policy-form-start" className="py-10 bg-white">
+      <section id="policy-form-start" className="py-section bg-white">
         <div className="container max-w-4xl">
           {/* Progress */}
           <div className="mb-8">

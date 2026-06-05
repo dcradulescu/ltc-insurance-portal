@@ -44,7 +44,7 @@ export default function Contact() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="relative text-white py-12">
+      <section className="relative text-white py-section">
         <div className="absolute inset-0">
           <img src="/manus-storage/contact-hero_fd7b1494.jpg" alt="Caregiver assisting senior at home" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.86)' }} />
@@ -66,7 +66,7 @@ export default function Contact() {
       </section>
 
       {/* Video */}
-      <section className="py-8" style={{ background: VA_GREY_BG }}>
+      <section className="py-section" style={{ background: VA_GREY_BG }}>
         <div className="container max-w-4xl">
           <VideoPlaceholder
             title="How We Can Help"
@@ -78,7 +78,7 @@ export default function Contact() {
       </section>
 
       {/* Content */}
-      <section className="py-12" style={{ background: '#ffffff' }}>
+      <section className="py-section" style={{ background: '#ffffff' }}>
         <div className="container max-w-5xl">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Contact Info */}
