@@ -685,3 +685,12 @@
 - [x] Added useScrollReveal hook to client/src/hooks/ directory for reuse
 - [x] Added animate-scale-in keyframe to index.css
 - [x] All 54 tests passing, TypeScript 0 errors after all changes
+
+## Education Page Restructure — June 2026
+
+- [ ] Rewrite Education page as an experiential 4-stage journey (Stage 1: Recognizing the Need, Stage 2: Understanding Your Policy, Stage 3: Filing the Claim, Stage 4: Care is Provided)
+- [ ] Replace glossary/definition list format with narrative storytelling per stage
+- [ ] Weave term explanations contextually into each stage narrative (not as a separate glossary)
+- [ ] Add a sticky stage navigation bar so users can jump between stages
+- [ ] Preserve OG meta tags, VA brand styling, hero image, CTA, AboutHomeCare, and LegalDisclaimerFooter
+- [ ] Keep "Ready to Create Your Strategy?" CTA at the bottom
