@@ -129,7 +129,17 @@ function VaCheckItem({ title, desc }: { title: string; desc: string }) {
 export default function Home() {
   const [activeQuote, setActiveQuote] = useState(0);
   const [alertVisible, setAlertVisible] = useState(true);
+  const [alertDismissed, setAlertDismissed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-close alert after 3 seconds with slide-up animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAlertVisible(false);
+      setTimeout(() => setAlertDismissed(true), 400); // remove from DOM after animation
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const stepsRef = useReveal();
   const statsRef = useReveal();
@@ -196,18 +206,30 @@ export default function Home() {
       </Helmet>
 
       {/* ── Free Resource Alert Banner ── */}
-      {alertVisible && (
-        <div className="relative z-50 text-white text-sm py-3 px-4" style={{ background: 'rgba(52,177,196,0.95)' }}>
-          <div className="container flex items-start sm:items-center justify-between gap-3">
-            <div className="flex items-start sm:items-center gap-2 flex-1">
-              <Heart className="w-4 h-4 flex-shrink-0 mt-0.5 sm:mt-0" />
-              <span style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                <strong>This is a completely free resource.</strong> No charge, no subscription, no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.
+      {!alertDismissed && (
+        <div
+          className="relative z-50 text-sm py-2 px-4 overflow-hidden"
+          style={{
+            background: '#fffde7',
+            border: '2px dashed #c0392b',
+            transition: 'max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease',
+            maxHeight: alertVisible ? '60px' : '0px',
+            opacity: alertVisible ? 1 : 0,
+            paddingTop: alertVisible ? '0.5rem' : '0',
+            paddingBottom: alertVisible ? '0.5rem' : '0',
+          }}
+        >
+          <div className="container flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <Heart className="w-4 h-4 flex-shrink-0" style={{ color: '#c0392b' }} />
+              <span className="truncate" style={{ fontFamily: "'Open Sans', sans-serif", color: '#7b2d00' }}>
+                <strong>100% Free Resource</strong> — No charge, no subscription, no hidden fees. Ever.
               </span>
             </div>
             <button
-              onClick={() => setAlertVisible(false)}
-              className="flex-shrink-0 text-white/80 hover:text-white transition-colors duration-200 text-lg leading-none font-bold ml-2"
+              onClick={() => { setAlertVisible(false); setTimeout(() => setAlertDismissed(true), 400); }}
+              className="flex-shrink-0 font-bold ml-2 transition-colors duration-200"
+              style={{ color: '#c0392b', fontSize: '1.1rem', lineHeight: 1 }}
               aria-label="Dismiss"
             >✕</button>
           </div>
@@ -220,38 +242,15 @@ export default function Home() {
           <img src="/manus-storage/home-hero_8fb65dbf.jpg" alt="Caregiver helping senior at home" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.82)' }} />
         </div>
-        <div className="container relative py-12 md:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            {/* Left: Text content */}
-            <div className="animate-float-up">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-5 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
+        <div className="container relative py-10 md:py-14">
+          {/* Row 1: Heading (left) + Video (right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start mb-6">
+            {/* Left: Heading */}
+            <div className="animate-float-up flex items-center h-full">
+              <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
                 Navigating Long Term Care Insurance{" "}
                 <span style={{ color: VA_TEAL }}>with Confidence!</span>
               </h1>
-              <p className="text-lg text-white/85 leading-relaxed mb-6 animate-float-up animate-delay-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-float-up animate-delay-300">
-                <Link href="/education" className="va-btn text-base px-8 py-4 text-center shadow-lg">
-                  Start Here
-                </Link>
-                <button
-                  className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2"
-                  style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
-                  onClick={async () => {
-                    const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
-                    if (navigator.share && navigator.canShare?.(shareData)) {
-                      try { await navigator.share(shareData); } catch {}
-                    } else {
-                      await navigator.clipboard.writeText(window.location.origin);
-                      toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
-                    }
-                  }}
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share This Free Resource
-                </button>
-              </div>
             </div>
             {/* Right: Video */}
             <div className="animate-fade-in-scale animate-delay-200">
@@ -261,6 +260,37 @@ export default function Home() {
                 thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg"
                 videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/MjPhBEQZfvIrfZms.mp4"
               />
+            </div>
+          </div>
+          {/* Row 2: Description (left) + Buttons (right, aligned under video) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
+            {/* Left: Description */}
+            <div className="animate-float-up animate-delay-200">
+              <p className="text-lg text-white/85 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
+              </p>
+            </div>
+            {/* Right: Buttons (aligned under video) */}
+            <div className="animate-float-up animate-delay-300 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-start lg:justify-start">
+              <Link href="/education" className="va-btn text-base px-8 py-4 text-center shadow-lg">
+                Start Here
+              </Link>
+              <button
+                className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2"
+                style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
+                onClick={async () => {
+                  const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
+                  if (navigator.share && navigator.canShare?.(shareData)) {
+                    try { await navigator.share(shareData); } catch {}
+                  } else {
+                    await navigator.clipboard.writeText(window.location.origin);
+                    toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
+                  }
+                }}
+              >
+                <Share2 className="w-4 h-4" />
+                Share This Free Resource
+              </button>
             </div>
           </div>
         </div>

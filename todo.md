@@ -780,6 +780,8 @@
 - [x] Add LegalDisclaimerFooter and teal home care section to Education page footer area
 
 ## Home Page Revision — June 5 (Batch 2)
+- [x] Alert banner: pale yellow bg, dashed red border, one-line text, auto-close after 3s with slide-up animation
+- [x] Hero: 2x2 grid — heading + video on row 1, description + buttons on row 2 (buttons aligned under video)
 - [x] Remove "Supportive Guidance for Families" button from hero
 - [x] Move "This is a completely free resource" box to dismissible alert banner below nav, above hero
 - [x] Hero: two-column layout — text left, video right, video height matches text column
