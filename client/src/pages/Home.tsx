@@ -314,7 +314,7 @@ export default function Home() {
             transform: "translate(-50%,-50%)",
           }} />
         ))}
-        <div ref={statsRef} className="reveal container relative">
+        <div ref={statsRef} className="container relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
             {[
               { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped",         icon: Users,    accent: '#ffffff' },
