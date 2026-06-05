@@ -3,7 +3,7 @@ import { Layout } from "@/components/Layout";
 import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { Link } from "wouter";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import {
   Heart,
@@ -18,6 +18,8 @@ import {
   FileText,
   Sparkles,
   CheckCircle2,
+  PhoneCall,
+  ExternalLink,
 } from "lucide-react";
 
 // VA Brand constants
@@ -126,6 +128,7 @@ function VaCheckItem({ title, desc }: { title: string; desc: string }) {
 
 export default function Home() {
   const [activeQuote, setActiveQuote] = useState(0);
+  const [alertVisible, setAlertVisible] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const stepsRef = useReveal();
@@ -145,16 +148,23 @@ export default function Home() {
   const chatLeftRef = useReveal();
   const chatRightRef = useReveal();
 
-  const stat1 = useCountUp(500);
-  const stat2 = useCountUp(98);
-  const stat3 = useCountUp(15);
+  const stat1 = useCountUp(1000);
+  const stat2 = useCountUp(22);
+  const stat3 = useCountUp(97);
   const stat4 = useCountUp(10);
 
+  // Our Story: fly-in on mount, pause 3s on first quote, then rotate every 3s
+  const storyStarted = useRef(false);
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveQuote((prev) => (prev + 1) % storyQuotes.length);
-    }, 9000);
-    return () => clearInterval(interval);
+    if (storyStarted.current) return;
+    storyStarted.current = true;
+    const firstDelay = setTimeout(() => {
+      const interval = setInterval(() => {
+        setActiveQuote((prev) => (prev + 1) % storyQuotes.length);
+      }, 3000);
+      return () => clearInterval(interval);
+    }, 3000);
+    return () => clearTimeout(firstDelay);
   }, []);
 
   // Chat animation state
@@ -185,53 +195,66 @@ export default function Home() {
         <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-home-YpxVsqvUs5V8rFXhkJW7Dx.png" />
       </Helmet>
 
+      {/* ── Free Resource Alert Banner ── */}
+      {alertVisible && (
+        <div className="relative z-50 text-white text-sm py-3 px-4" style={{ background: 'rgba(52,177,196,0.95)' }}>
+          <div className="container flex items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start sm:items-center gap-2 flex-1">
+              <Heart className="w-4 h-4 flex-shrink-0 mt-0.5 sm:mt-0" />
+              <span style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                <strong>This is a completely free resource.</strong> No charge, no subscription, no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.
+              </span>
+            </div>
+            <button
+              onClick={() => setAlertVisible(false)}
+              className="flex-shrink-0 text-white/80 hover:text-white transition-colors duration-200 text-lg leading-none font-bold ml-2"
+              aria-label="Dismiss"
+            >✕</button>
+          </div>
+        </div>
+      )}
+
       {/* ── Hero ── */}
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
           <img src="/manus-storage/home-hero_8fb65dbf.jpg" alt="Caregiver helping senior at home" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.82)' }} />
         </div>
-        <div className="container relative py-14 md:py-20">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="flex flex-wrap justify-center gap-3 mb-6 animate-float-up">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 border" style={{ background: 'rgba(52,177,196,0.18)', borderColor: 'rgba(52,177,196,0.35)' }}>
-                <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>Supportive Guidance for Families</span>
+        <div className="container relative py-12 md:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+            {/* Left: Text content */}
+            <div className="animate-float-up">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-5 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
+                Navigating Long Term Care Insurance{" "}
+                <span style={{ color: VA_TEAL }}>with Confidence!</span>
+              </h1>
+              <p className="text-lg text-white/85 leading-relaxed mb-6 animate-float-up animate-delay-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+                Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-float-up animate-delay-300">
+                <Link href="/education" className="va-btn text-base px-8 py-4 text-center shadow-lg">
+                  Start Here
+                </Link>
+                <button
+                  className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2"
+                  style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
+                  onClick={async () => {
+                    const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
+                    if (navigator.share && navigator.canShare?.(shareData)) {
+                      try { await navigator.share(shareData); } catch {}
+                    } else {
+                      await navigator.clipboard.writeText(window.location.origin);
+                      toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
+                    }
+                  }}
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share This Free Resource
+                </button>
               </div>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
-              Navigating Long Term Care Insurance{" "}
-              <span style={{ color: VA_TEAL }}>with Confidence!</span>
-            </h1>
-            <p className="text-lg text-white/85 leading-relaxed mb-4 max-w-2xl mx-auto animate-float-up animate-delay-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-              Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
-            </p>
-            <div className="rounded px-5 py-4 mb-8 max-w-2xl mx-auto animate-float-up animate-delay-300 border" style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }}>
-              <p className="text-white font-semibold text-base mb-1" style={{ fontFamily: "'Roboto', sans-serif" }}>This is a completely free resource.</p>
-              <p className="text-white/80 text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>There is no charge, no subscription, and no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.</p>
-            </div>
-            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 animate-float-up animate-delay-400">
-              <Link href="/education" className="va-btn text-base px-8 py-4 w-full sm:w-auto text-center shadow-lg">
-                Start Here — Learn First
-              </Link>
-              <button
-                className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2 w-full sm:w-auto"
-                style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
-                onClick={async () => {
-                  const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
-                  if (navigator.share && navigator.canShare?.(shareData)) {
-                    try { await navigator.share(shareData); } catch {}
-                  } else {
-                    await navigator.clipboard.writeText(window.location.origin);
-                    toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
-                  }
-                }}
-              >
-                <Share2 className="w-4 h-4" />
-                Share This Free Resource
-              </button>
-            </div>
-            <div className="mt-10 animate-fade-in-scale animate-delay-400">
+            {/* Right: Video */}
+            <div className="animate-fade-in-scale animate-delay-200">
               <VideoPlaceholder
                 title="Welcome to LTC Navigator"
                 description="Watch our brief introduction to learn how we can help your family"
@@ -246,16 +269,19 @@ export default function Home() {
 
 
       {/* ── Stats ── */}
-      <section className="py-10 md:py-14 text-white" style={{ background: VA_CHARCOAL }}>
+      <section className="py-10 md:py-14 text-white" style={{ background: VA_BLUE }}>
         <div ref={statsRef} className="reveal container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
             {[
-              { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped", accent: VA_TEAL },
-              { ref: stat2.ref, count: stat2.count, suffix: "%", label: "Claim Success Rate", accent: VA_BLUE },
-              { ref: stat3.ref, count: stat3.count, suffix: "+", label: "Years of Experience", accent: VA_TEAL },
-              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC", accent: VA_BLUE },
+              { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped", accent: '#ffffff' },
+              { ref: stat2.ref, count: stat2.count, suffix: "+", label: "Years of Experience", accent: VA_TEAL },
+              { ref: stat3.ref, count: stat3.count, suffix: "%", label: "Overall Satisfaction", accent: '#ffffff' },
+              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC", accent: VA_TEAL },
             ].map((stat, i) => (
-              <div key={i} className="stat-card p-4 md:p-5 rounded border hover:bg-white/10 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.12)' }}>
+              <div key={i} className="stat-card p-4 md:p-5 rounded border hover:bg-white/10 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)' }}>
+                <div className="flex justify-center mb-2">
+                  <img src="/manus-storage/Dove-Trans_bbc93e8e.gif" alt="" className="w-8 h-8 object-contain opacity-80" />
+                </div>
                 <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: stat.accent }}>
                   <span ref={stat.ref!}>{stat.count}</span>{stat.suffix}
                 </div>
@@ -285,7 +311,7 @@ export default function Home() {
               {
                 num: "2",
                 icon: FileText,
-                title: "Tell Us About Your Policy",
+                title: "About Your Policy",
                 subtitle: "Share Your Policy Details",
                 desc: "Answer a few simple questions about your policy and care needs. No complicated forms — just the information we need to build your personal plan.",
                 color: VA_BLUE,
@@ -296,7 +322,7 @@ export default function Home() {
                 num: "3",
                 icon: Sparkles,
                 title: "Get Your Strategy",
-                subtitle: "Your Personalized Claim Plan",
+                subtitle: "Your Personalized Plan",
                 desc: "Receive a step-by-step, personalized strategy built just for your situation — a clear roadmap that takes the guesswork out of filing your claim.",
                 color: VA_TEAL_DARK,
                 href: "/strategy",
@@ -306,46 +332,35 @@ export default function Home() {
               <div
                 key={step.num}
                 className="relative flex flex-col rounded-xl border-2 p-7 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                style={{ borderColor: i === 1 ? VA_BLUE : (i === 2 ? VA_TEAL : '#e8e8e8'), background: i === 1 ? 'rgba(6,146,215,0.04)' : (i === 2 ? 'rgba(52,177,196,0.04)' : '#fff') }}
+                style={{ borderColor: i === 0 ? VA_TEAL : (i === 1 ? VA_BLUE : VA_TEAL), background: i === 1 ? 'rgba(6,146,215,0.04)' : (i === 2 ? 'rgba(52,177,196,0.04)' : '#fff') }}
               >
                 {/* Step number badge */}
                 <div className="absolute -top-5 left-7 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md" style={{ background: step.color }}>
                   {step.num}
                 </div>
-                <div className="mt-4 mb-4 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: i === 1 ? 'rgba(6,146,215,0.12)' : 'rgba(52,177,196,0.12)' }}>
-                  <step.icon className="w-7 h-7" style={{ color: step.color }} />
+                {/* Icon row + yellow note */}
+                <div className="mt-4 mb-3 flex items-start gap-3">
+                  <div className="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: i === 1 ? 'rgba(6,146,215,0.12)' : 'rgba(52,177,196,0.12)' }}>
+                    <step.icon className="w-7 h-7" style={{ color: step.color }} />
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow whitespace-nowrap self-center">
+                    {i === 0 && "🤝 Let's figure this out together!"}
+                    {i === 1 && "✨ This is where the magic starts!"}
+                    {i === 2 && "🎯 Everything comes together here!"}
+                  </div>
                 </div>
                 <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: i === 1 ? VA_BLUE : VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>{step.subtitle}</div>
                 <h3 className="text-xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{step.title}</h3>
                 <p className="text-sm leading-relaxed flex-1 mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{step.desc}</p>
-                <Link href={step.href} className="inline-flex items-center gap-2 text-sm font-bold transition-colors duration-200 hover:opacity-80" style={{ color: step.color }}>
-                  {step.cta} <ArrowRight className="w-4 h-4" />
+                <Link href={step.href}>
+                  <button className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-lg text-white transition-all duration-200 hover:-translate-y-0.5 hover:opacity-90 shadow" style={{ background: step.color }}>
+                    {step.cta} <ArrowRight className="w-4 h-4" />
+                  </button>
                 </Link>
-                {i === 0 && (
-                  <div className="mt-3 inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
-                    🤝 Let's figure this out together!
-                  </div>
-                )}
-                {i === 1 && (
-                  <div className="mt-3 inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
-                    ✨ This is where the magic starts!
-                  </div>
-                )}
-                {i === 2 && (
-                  <div className="mt-3 inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
-                    🎯 This is where everything comes together!
-                  </div>
-                )}
               </div>
             ))}
           </div>
-          {/* Connector arrows on desktop */}
-          <div className="hidden md:flex justify-center items-center gap-0 mt-8">
-            <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: VA_BODY, fontFamily: "'Open Sans', sans-serif" }}>
-              <CheckCircle2 className="w-5 h-5" style={{ color: VA_TEAL }} />
-              <span>Free to use — no account required to get started</span>
-            </div>
-          </div>
+
         </div>
       </section>
 
@@ -503,10 +518,6 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={chatLeftRef} className="reveal reveal-left">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
-                <MessageSquare className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Always Available</span>
-              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
                 Live <span style={{ color: VA_TEAL }}>Support Chat</span>
               </h2>
@@ -742,36 +753,35 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Home Care CTA (merged) ── */}
-      <section className="py-12 md:py-16 text-white" style={{ background: '#34B1C4' }}>
-        <div className="container">
-          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
-            <div className="flex-shrink-0 flex flex-col items-center">
+      {/* ── Looking for Home Care? (Education-style) ── */}
+      <section className="py-16" style={{ background: '#34B1C4' }}>
+        <div className="container max-w-5xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
+            <div className="flex flex-col justify-center">
+              <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>Looking for Home Care?<br />We Can Help.</h2>
+              <p className="text-white/90 mb-4 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>Most long-term care insurance policies cover home care services when you can no longer perform at least 2 Activities of Daily Living (ADLs) — such as bathing, dressing, or mobility. This is exactly where SC Visiting Angels comes in.</p>
+              <p className="text-white/85 mb-6 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>Our professional caregivers provide the hands-on, documented care that satisfies your policy’s ADL requirements — helping you qualify for and maintain your LTC benefits while receiving compassionate care at home. We work alongside your insurance company every step of the way.</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/contact">
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5" style={{ background: VA_BLUE, color: '#fff', fontFamily: "'Roboto', sans-serif" }}>
+                    <PhoneCall className="w-4 h-4" /> Contact Us
+                  </button>
+                </Link>
+                <a href="https://www.SCVisitingAngels.com" target="_blank" rel="noopener noreferrer">
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5" style={{ background: 'rgba(6,146,215,0.85)', color: '#fff', fontFamily: "'Roboto', sans-serif" }}>
+                    Learn More <ExternalLink className="w-4 h-4" />
+                  </button>
+                </a>
+              </div>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ minHeight: 380 }}>
               <img
-                src="/manus-storage/Dove-White-Transparent_8d7a1c5f.png"
-                alt="SC Visiting Angels dove"
-                className="h-28 md:h-36 w-auto drop-shadow-lg"
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg"
+                alt="SC Visiting Angels caregiver providing compassionate home care to a senior"
+                className="w-full h-full object-cover"
+                style={{ minHeight: 380, objectPosition: 'center' }}
               />
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white" style={{ fontFamily: "'Roboto', sans-serif" }}>
-                Compassionate Home Care in the Upstate
-              </h2>
-              <p className="text-white/85 text-base mb-2" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                SC Visiting Angels is a locally owned and operated home care agency serving families across the Upstate of South Carolina. From personal care and companionship to specialized dementia support, we are here for your family.
-              </p>
-              <p className="text-white/85 text-base" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                Ready to start home care? Visit us at{" "}
-                <a href="https://www.scvisitingangels.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-white hover:text-white/80">scvisitingangels.com</a>
-              </p>
-            </div>
-            <div className="flex-shrink-0">
-              <button
-                onClick={() => window.open('https://www.SCVisitingAngels.com', '_blank')}
-                className="va-btn va-btn-white inline-flex items-center gap-2 whitespace-nowrap text-sm md:text-base px-7 py-3"
-              >
-                Start Care <ArrowRight className="w-4 h-4" />
-              </button>
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(52,177,196,0.3) 0%, transparent 60%)' }} />
             </div>
           </div>
         </div>

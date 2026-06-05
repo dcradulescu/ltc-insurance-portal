@@ -239,7 +239,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {[
                   { href: "/", label: "Home" },
                   { href: "/education", label: "Education" },
-                  { href: "/policy-form", label: "My Policy" },
+                  { href: "/policy-form", label: "Policy" },
                   { href: "/strategy", label: "Strategy" },
                 ].map(({ href, label }) => (
                   <li key={href}>
@@ -353,9 +353,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           >
             <div className="flex justify-center mb-3">
               <img
-                src="/manus-storage/dove-white_ddb5cb9c.png"
+                src="/manus-storage/Dove-Trans_4328daa6.gif"
                 alt="SC Visiting Angels dove"
-                className="w-10 h-10 object-contain opacity-60"
+                className="w-12 h-12 object-contain"
               />
             </div>
             <p style={{ fontFamily: "'Open Sans', sans-serif" }}>

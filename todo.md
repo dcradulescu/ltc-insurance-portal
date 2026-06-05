@@ -778,3 +778,15 @@
 - [ ] Generate caregiver portrait image for home care section (senior female with walker/in bed)
 - [ ] Add enhanced home care section above footer (ADL context, caregiver image, Contact Us + Learn More buttons)
 - [ ] Add LegalDisclaimerFooter and teal home care section to Education page footer area
+
+## Home Page Revision — June 5 (Batch 2)
+- [ ] Remove "Supportive Guidance for Families" button from hero
+- [ ] Move "This is a completely free resource" box to dismissible alert banner below nav, above hero
+- [ ] Hero: two-column layout — text left, video right, video height matches text column
+- [ ] Stats bar: blue background, VA logo on each stat, update numbers (1000+, 22+, 97%), complementary font colors
+- [ ] 3 Easy Steps: remove separator, fix Step 1 border to teal, move titles right of icons, rename "About Your Policy", rename "Your Personalized Claim Plan" to "Your Personalized Plan", convert links to buttons, move yellow badges under top border, fix word wrap, remove "Free to use" text
+- [ ] Chat section: remove "Always Available" label
+- [ ] Our Story: fly-in animation from sides, 3s pause on first quote, rotate every 3s
+- [ ] Home care section: match Education page "Looking for Home Care?" layout, remove emoji label, portrait image, blue buttons
+- [ ] Footer: replace dove with transparent Dove-Trans.gif (no white box)
+- [ ] Favicon: use teal-box white dove (photo.jpg) as favicon for all pages
