@@ -299,8 +299,18 @@ export default function Home() {
 
 
       {/* ── Stats ── */}
-      <section className="py-10 md:py-14 text-white" style={{ background: VA_BLUE }}>
-        <div ref={statsRef} className="reveal container">
+      <section className="relative py-10 md:py-14 text-white overflow-hidden" style={{ background: "#0692D7" }}>
+        {/* floating semi-transparent balls — matches Education "Feeling Comfortable" section */}
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="absolute rounded-full pointer-events-none" style={{
+            width: `${60 + i * 25}px`, height: `${60 + i * 25}px`,
+            background: "rgba(255,255,255,0.08)",
+            top: `${[10,60,20,70,5,55,35,80][i]}%`,
+            left: `${[5,15,70,80,45,90,30,60][i]}%`,
+            transform: "translate(-50%,-50%)",
+          }} />
+        ))}
+        <div ref={statsRef} className="reveal container relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
             {[
               { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped", accent: '#ffffff' },
