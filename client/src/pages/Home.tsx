@@ -404,7 +404,7 @@ export default function Home() {
                   <div className="inline-flex items-center gap-1.5 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
                     {i === 0 && "🤝 Let's figure this out together!"}
                     {i === 1 && "✨ This is where the magic starts!"}
-                    {i === 2 && "🎯 Everything comes together here!"}
+                    {i === 2 && "🎯 Everything Comes Together"}
                   </div>
                 </div>
               </div>
