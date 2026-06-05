@@ -528,6 +528,35 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Scrolling Testimonials ── */}
+      <section className="py-12 md:py-16 overflow-hidden" style={{ background: VA_GREY_BG }}>
+        <div className="container mb-12">
+          <div ref={testimonialsHeaderRef} className="reveal">
+            <VaSectionHeading>What <span style={{ color: VA_TEAL }}>Families</span> Are Saying</VaSectionHeading>
+          </div>
+        </div>
+        <div className="relative">
+          <div className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: `linear-gradient(to right, ${VA_GREY_BG}, transparent)` }} />
+          <div className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: `linear-gradient(to left, ${VA_GREY_BG}, transparent)` }} />
+          <div ref={scrollRef} className="flex gap-6 animate-scroll-left" style={{ width: "max-content" }}>
+            {[...testimonials, ...testimonials].map((testimonial, index) => (
+              <div key={index} className="testimonial-card w-[380px] shrink-0 bg-white rounded border p-6 shadow-sm" style={{ borderColor: '#e0e0e0' }}>
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: testimonial.rating }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm leading-relaxed mb-4 italic" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>"{testimonial.text}"</p>
+                <div className="border-t pt-4" style={{ borderColor: '#e0e0e0' }}>
+                  <div className="font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: index % 2 === 0 ? VA_TEAL : VA_BLUE }}>{testimonial.name}</div>
+                  <div className="text-xs" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>{testimonial.relation}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Our Story ── */}
       <section className="py-20" style={{ background: '#ffffff' }}>
         <div className="container">
@@ -648,35 +677,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Scrolling Testimonials ── */}
-      <section className="py-12 md:py-16 overflow-hidden" style={{ background: VA_GREY_BG }}>
-        <div className="container mb-12">
-          <div ref={testimonialsHeaderRef} className="reveal">
-            <VaSectionHeading>What <span style={{ color: VA_TEAL }}>Families</span> Are Saying</VaSectionHeading>
-          </div>
-        </div>
-        <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: `linear-gradient(to right, ${VA_GREY_BG}, transparent)` }} />
-          <div className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: `linear-gradient(to left, ${VA_GREY_BG}, transparent)` }} />
-          <div ref={scrollRef} className="flex gap-6 animate-scroll-left" style={{ width: "max-content" }}>
-            {[...testimonials, ...testimonials].map((testimonial, index) => (
-              <div key={index} className="testimonial-card w-[380px] shrink-0 bg-white rounded border p-6 shadow-sm" style={{ borderColor: '#e0e0e0' }}>
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <p className="text-sm leading-relaxed mb-4 italic" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>"{testimonial.text}"</p>
-                <div className="border-t pt-4" style={{ borderColor: '#e0e0e0' }}>
-                  <div className="font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: index % 2 === 0 ? VA_TEAL : VA_BLUE }}>{testimonial.name}</div>
-                  <div className="text-xs" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>{testimonial.relation}</div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
