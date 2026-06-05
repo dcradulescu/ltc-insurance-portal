@@ -186,6 +186,13 @@
   }
 }
 
+@layer utilities {
+  .py-section {
+    padding-top: 25px;
+    padding-bottom: 25px;
+  }
+}
+
 @layer components {
   .container {
     width: 100%;

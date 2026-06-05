@@ -2,7 +2,7 @@ import React from 'react';
 
 export function LegalDisclaimerFooter() {
   return (
-    <footer className="py-5 px-4" style={{ background: '#ffffff', borderTop: '1px solid #e8e8e8' }}>
+    <footer className="py-section px-4" style={{ background: '#ffffff', borderTop: '1px solid #e8e8e8' }}>
       <div className="max-w-6xl mx-auto">
 
         {/* Two disclaimer cards */}

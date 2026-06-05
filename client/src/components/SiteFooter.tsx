@@ -27,7 +27,7 @@ export function SiteFooter() {
   return (
     <>
       {/* ── Free Consultation Callout ── */}
-      <section className="py-5" style={{ background: '#F2F6FA', borderTop: '1px solid #e2eaf2', borderBottom: '1px solid #e2eaf2' }}>
+      <section className="py-section" style={{ background: '#F2F6FA', borderTop: '1px solid #e2eaf2', borderBottom: '1px solid #e2eaf2' }}>
         <div className="container">
           <div
             className="flex flex-col md:flex-row items-center justify-between gap-6 rounded-2xl px-8 py-6"
@@ -70,7 +70,7 @@ export function SiteFooter() {
       </section>
 
       {/* ── Looking for Home Care? We Can Help ── */}
-      <section className="py-5" style={{ background: '#ffffff' }}>
+      <section className="py-section" style={{ background: '#ffffff' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch">
             {/* Left: content */}
@@ -193,7 +193,7 @@ export function SiteFooter() {
       </section>
 
       {/* ── Home Care Stats Bar ── */}
-      <section className="py-5 relative overflow-hidden" style={{ background: VA_TEAL }}>
+      <section className="py-section relative overflow-hidden" style={{ background: VA_TEAL }}>
         {[
           { w: 120, h: 120, top: '-20px',  left: '5%',  op: 0.12 },
           { w: 80,  h: 80,  top: '10px',   left: '18%', op: 0.08 },
