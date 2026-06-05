@@ -24,6 +24,9 @@ import {
   Award,
   ThumbsUp,
   MapPin,
+  Gift,
+  Shield,
+  Clock,
 } from "lucide-react";
 
 // VA Brand constants
@@ -739,98 +742,156 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── About SC Visiting Angels ── */}
-      <section className="py-5 text-white" style={{ background: VA_CHARCOAL }}>
-        <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div ref={aboutLeftRef} className="reveal reveal-left">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-6" style={{ background: 'rgba(52,177,196,0.18)' }}>
-                <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>About SC Visiting Angels</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-5 leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
-                Compassionate Home Care<br className="hidden md:block" /> in the Upstate
-              </h2>
-              <p className="text-white text-base leading-relaxed mb-5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                SC Visiting Angels is a locally owned and operated home care agency serving families across the Upstate of South Carolina. For over a decade, we have helped seniors and their families navigate the challenges of aging at home — from personal care and companionship to specialized dementia support.
-              </p>
-              <p className="text-white text-base leading-relaxed mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                Our caregivers are carefully selected, thoroughly trained, and deeply committed to treating every client with the dignity and respect they deserve. We believe that home is where healing happens best.
-              </p>
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                {[
-                  { stat: "10+", label: "Years Serving Upstate SC", accent: VA_TEAL },
-                  { stat: "100%", label: "Locally Owned & Operated", accent: VA_BLUE },
-                  { stat: "24/7", label: "On-Call Support", accent: VA_TEAL },
-                  { stat: "Free", label: "In-Home Consultations", accent: VA_BLUE },
-                ].map(({ stat, label, accent }) => (
-                  <div key={label} className="stat-card rounded p-4 border hover:bg-white/15 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.12)' }}>
-                    <div className="text-2xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: accent }}>{stat}</div>
-                    <div className="text-xs text-white/90 leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
-                  </div>
-                ))}
-              </div>
-              <a
-                href="https://www.scvisitingangels.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="va-btn inline-flex items-center gap-2"
-              >
-                Learn More About Our Services
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-            <div ref={aboutRightRef} className="relative reveal reveal-right">
-              <div className="rounded overflow-hidden shadow-2xl aspect-[4/3] group">
-                <img
-                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/about-va-caregiver-Ba8Vnk5qXtNdwjG55rSFSE.webp"
-                  alt="SC Visiting Angels caregiver reviewing insurance paperwork with elderly client at home"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              </div>
-              <div className="absolute -bottom-4 -left-4 w-28 h-28 rounded-full -z-10" style={{ background: 'rgba(52,177,196,0.2)' }} />
-              <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full -z-10" style={{ background: 'rgba(255,255,255,0.08)' }} />
-              <div className="absolute bottom-6 right-6 bg-white rounded shadow-xl px-4 py-3 flex items-center gap-3 hover:shadow-2xl transition-shadow duration-300">
-                <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png" alt="SC Visiting Angels" className="w-8 h-8 object-contain" />
-                <div>
-                  <div className="text-xs font-bold leading-tight" style={{ color: VA_HEADING, fontFamily: "'Roboto', sans-serif" }}>SC Visiting Angels</div>
-                  <div className="text-xs" style={{ color: '#888' }}>(864) 244-6300</div>
+      {/* ── Home Care Stats Bar ── */}
+      <section className="py-5 relative overflow-hidden" style={{ background: VA_TEAL }}>
+        {/* Floating balls */}
+        {[
+          { w: 120, h: 120, top: '-20px', left: '5%', op: 0.12 },
+          { w: 80,  h: 80,  top: '10px',  left: '18%', op: 0.08 },
+          { w: 160, h: 160, top: '-40px', left: '38%', op: 0.07 },
+          { w: 60,  h: 60,  top: '20px',  left: '55%', op: 0.10 },
+          { w: 100, h: 100, top: '-10px', left: '70%', op: 0.09 },
+          { w: 140, h: 140, top: '-30px', left: '85%', op: 0.08 },
+          { w: 50,  h: 50,  top: '30px',  left: '92%', op: 0.11 },
+          { w: 90,  h: 90,  top: '-5px',  left: '48%', op: 0.06 },
+        ].map((b, i) => (
+          <div key={i} className="absolute rounded-full pointer-events-none" style={{ width: b.w, height: b.h, top: b.top, left: b.left, background: `rgba(255,255,255,${b.op})` }} />
+        ))}
+        <div className="relative container">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { icon: MapPin,      num: '22+',   suffix: '',    label: 'Years Serving Upstate SC' },
+              { icon: Gift,        num: 'FREE',  suffix: '',    label: 'In-Home Consultation' },
+              { icon: Users,       num: '1000',  suffix: '+',   label: 'Families Served' },
+              { icon: Award,       num: 'Yes!',  suffix: '',    label: 'Long Term Care Experts' },
+            ].map(({ icon: Icon, num, suffix, label }) => (
+              <div key={label} className="flex flex-col items-center text-center rounded-xl p-5 shadow-sm" style={{ background: 'rgba(255,255,255,0.18)' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(255,255,255,0.25)' }}>
+                  <Icon className="w-6 h-6 text-white" />
                 </div>
+                <div className="text-2xl md:text-3xl font-bold text-white mb-1" style={{ fontFamily: "'Roboto', sans-serif" }}>{num}{suffix}</div>
+                <div className="text-xs text-white/85 font-medium leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Looking for Home Care? (Education-style) ── */}
-      <section className="py-5" style={{ background: '#34B1C4' }}>
-        <div className="container max-w-5xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
-            <div className="flex flex-col justify-center">
-              <h2 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>Looking for Home Care?<br />We Can Help.</h2>
-              <p className="text-white/90 mb-4 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>Most long-term care insurance policies cover home care services when you can no longer perform at least 2 Activities of Daily Living (ADLs) — such as bathing, dressing, or mobility. This is exactly where SC Visiting Angels comes in.</p>
-              <p className="text-white/85 mb-6 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>Our professional caregivers provide the hands-on, documented care that satisfies your policy’s ADL requirements — helping you qualify for and maintain your LTC benefits while receiving compassionate care at home. We work alongside your insurance company every step of the way.</p>
-              <div className="flex flex-col sm:flex-row gap-3">
+      {/* ── Looking for Home Care? We Can Help ── */}
+      <section className="py-5" style={{ background: '#ffffff' }}>
+        <div className="container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch">
+            {/* Left: content */}
+            <div className="flex flex-col justify-start">
+              {/* Title row with dove */}
+              <div className="flex items-center gap-4 mb-3">
+                <img
+                  src="/manus-storage/Dove-White-Transparent_925915bc.png"
+                  alt="SC Visiting Angels dove"
+                  className="w-14 h-14 object-contain flex-shrink-0"
+                  style={{ filter: 'invert(1) sepia(1) saturate(3) hue-rotate(155deg)', opacity: 0.85 }}
+                />
+                <div>
+                  <h2 className="text-3xl font-bold leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
+                    Looking for Home Care?<br />
+                    <span style={{ color: VA_TEAL }}>We Can Help.</span>
+                  </h2>
+                </div>
+              </div>
+              <hr className="mb-5" style={{ borderColor: VA_TEAL, borderTopWidth: 2 }} />
+
+              {/* Our Services */}
+              <div className="mb-5">
+                <h3 className="text-base font-bold mb-2" style={{ color: VA_HEADING, fontFamily: "'Roboto', sans-serif" }}>Our Home Care Services</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {[
+                    'Personal Care & Bathing Assistance',
+                    'Dressing & Grooming Support',
+                    'Meal Preparation & Nutrition',
+                    'Medication Reminders',
+                    'Companionship & Emotional Support',
+                    "Dementia & Alzheimer\u2019s Care",
+                    'Light Housekeeping',
+                    'Transportation & Errands',
+                    'Respite Care for Family Caregivers',
+                    '24/7 On-Call Support',
+                  ].map((svc) => (
+                    <div key={svc} className="flex items-start gap-2">
+                      <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(52,177,196,0.15)' }}>
+                        <CheckCircle2 className="w-3 h-3" style={{ color: VA_TEAL }} />
+                      </span>
+                      <span className="text-sm leading-snug" style={{ color: VA_BODY, fontFamily: "'Open Sans', sans-serif" }}>{svc}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* What Makes Us Different */}
+              <div className="mb-5 rounded-xl p-4" style={{ background: 'rgba(52,177,196,0.06)', border: '1px solid rgba(52,177,196,0.2)' }}>
+                <h3 className="text-base font-bold mb-2" style={{ color: VA_HEADING, fontFamily: "'Roboto', sans-serif" }}>What Makes Visiting Angels Different</h3>
+                <div className="space-y-1.5">
+                  {[
+                    { icon: Heart,        text: 'Locally owned & operated — we know Upstate SC families personally' },
+                    { icon: Shield,       text: 'Carefully screened, trained, and background-checked caregivers' },
+                    { icon: Star,         text: 'You choose your caregiver — we never assign without your approval' },
+                    { icon: Clock,        text: 'Flexible scheduling — from a few hours to around-the-clock care' },
+                  ].map(({ icon: Icon, text }) => (
+                    <div key={text} className="flex items-start gap-2">
+                      <Icon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: VA_TEAL }} />
+                      <span className="text-sm leading-snug" style={{ color: VA_BODY, fontFamily: "'Open Sans', sans-serif" }}>{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* How We Help with LTC */}
+              <div className="mb-6 rounded-xl p-4" style={{ background: 'rgba(6,146,215,0.06)', border: '1px solid rgba(6,146,215,0.2)' }}>
+                <h3 className="text-base font-bold mb-2" style={{ color: VA_HEADING, fontFamily: "'Roboto', sans-serif" }}>How We Help with Your LTC Insurance</h3>
+                <div className="space-y-1.5">
+                  {[
+                    { icon: BookOpen,  text: 'Education — we explain your ADL requirements and what qualifies for benefits' },
+                    { icon: FileText,  text: 'Policy — we help you understand your coverage, elimination period, and daily benefit' },
+                    { icon: Sparkles,  text: "Strategy — we build a custom care plan that satisfies your insurer\u2019s documentation requirements" },
+                  ].map(({ icon: Icon, text }) => (
+                    <div key={text} className="flex items-start gap-2">
+                      <Icon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: VA_BLUE }} />
+                      <span className="text-sm leading-snug" style={{ color: VA_BODY, fontFamily: "'Open Sans', sans-serif" }}>{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Centered buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/contact">
-                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5" style={{ background: VA_BLUE, color: '#fff', fontFamily: "'Roboto', sans-serif" }}>
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5 text-white" style={{ background: VA_TEAL, fontFamily: "'Roboto', sans-serif" }}>
                     <PhoneCall className="w-4 h-4" /> Contact Us
                   </button>
                 </Link>
                 <a href="https://www.SCVisitingAngels.com" target="_blank" rel="noopener noreferrer">
-                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5" style={{ background: 'rgba(6,146,215,0.85)', color: '#fff', fontFamily: "'Roboto', sans-serif" }}>
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 text-white" style={{ background: VA_BLUE, fontFamily: "'Roboto', sans-serif" }}>
                     Learn More <ExternalLink className="w-4 h-4" />
                   </button>
                 </a>
               </div>
             </div>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ minHeight: 380 }}>
+
+            {/* Right: image — same height as content */}
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl hidden lg:block" style={{ minHeight: 500 }}>
               <img
                 src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg"
                 alt="SC Visiting Angels caregiver providing compassionate home care to a senior"
-                className="w-full h-full object-cover"
-                style={{ minHeight: 380, objectPosition: 'center' }}
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: 'center' }}
               />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(52,177,196,0.3) 0%, transparent 60%)' }} />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(52,177,196,0.25) 0%, transparent 60%)' }} />
+              <div className="absolute bottom-6 left-6 right-6 bg-white/90 rounded-xl px-5 py-4 shadow-lg backdrop-blur-sm">
+                <div className="flex items-center gap-3 mb-1">
+                  <img src="/manus-storage/Dove-White-Transparent_925915bc.png" alt="SC Visiting Angels" className="w-8 h-8 object-contain" style={{ filter: 'invert(1) sepia(1) saturate(3) hue-rotate(155deg)', opacity: 0.85 }} />
+                  <span className="font-bold text-sm" style={{ color: VA_HEADING, fontFamily: "'Roboto', sans-serif" }}>SC Visiting Angels</span>
+                </div>
+                <div className="text-xs" style={{ color: '#666', fontFamily: "'Open Sans', sans-serif" }}>Locally owned · Upstate SC · (864) 244-6300</div>
+              </div>
             </div>
           </div>
         </div>
