@@ -211,7 +211,7 @@ export default function Home() {
                   <span className="text-sm font-bold text-yellow-900" style={{ fontFamily: "'Open Sans', sans-serif" }}>100% Free — No Cost to You</span>
                 </div>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif" }}>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
                 Navigating Long Term Care Insurance{" "}
                 <span style={{ color: VA_TEAL }}>with Confidence!</span>
               </h1>
@@ -303,7 +303,7 @@ export default function Home() {
       <section className="parallax-section relative py-12 md:py-16 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
         <div className="absolute inset-0" style={{ background: `rgba(52,177,196,0.88)` }} />
         <div ref={aloneRef} className="reveal container relative text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
             You Don't Have to Navigate This Alone
           </h2>
           <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
@@ -544,7 +544,7 @@ export default function Home() {
                 <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
                 <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>About SC Visiting Angels</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-5 leading-tight" style={{ fontFamily: "'Roboto', sans-serif" }}>
+              <h2 className="text-3xl md:text-4xl font-bold mb-5 leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
                 Compassionate Home Care<br className="hidden md:block" /> in the Upstate
               </h2>
               <p className="text-white text-base leading-relaxed mb-5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
@@ -660,7 +660,7 @@ export default function Home() {
       <section className="parallax-section relative py-10 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
         <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.88)' }} />
         <div ref={ctaRef} className="reveal container relative text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>Ready to Get Started?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>Ready to Get Started?</h2>
           <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             Begin with our free Education section — it only takes a few minutes and will make completing the form much easier.
           </p>

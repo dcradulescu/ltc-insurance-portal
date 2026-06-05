@@ -694,3 +694,17 @@
 - [x] Add a sticky stage navigation bar so users can jump between stages (intersection-observer driven active state)
 - [x] Preserve OG meta tags, VA brand styling, hero image, CTA, AboutHomeCare, and LegalDisclaimerFooter
 - [x] Keep "Ready to Create Your Strategy?" CTA at the bottom
+
+## Contrast Audit & Heading Color Fixes — June 2026
+
+- [x] Audit all pages for headings on dark/teal/charcoal backgrounds missing explicit white color
+- [x] Fix PrivacyPolicy hero h1 "Privacy Policy" — added color: '#ffffff' to style prop (was missing, section has charcoal bg)
+- [x] Confirmed Home hero h1 "Navigating Long Term Care Insurance" already has color: '#ffffff' ✓
+- [x] Confirmed Home stats section h2 already has color: '#ffffff' ✓
+- [x] Confirmed Home "Compassionate Home Care in the Upstate" h2 already has color: '#ffffff' ✓
+- [x] Confirmed Home bottom CTA h2 "Ready to Get Started?" already has color: '#ffffff' ✓
+- [x] Confirmed Education hero h1 already has color: '#ffffff' ✓
+- [x] Confirmed Education CTA h2 already has color: '#ffffff' ✓
+- [x] Confirmed Contact hero h1 "Contact Us" already has color: '#ffffff' ✓
+- [x] Confirmed section alternation is correct on all pages (no two adjacent sections share same background color)
+- [x] All 54 tests passing, TypeScript 0 errors after all changes

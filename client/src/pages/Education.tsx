@@ -212,7 +212,7 @@ export default function Education() {
             <p className="text-xs uppercase tracking-widest font-semibold mb-4" style={{ color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
               Your Journey, Step by Step
             </p>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
               Understanding LTC Insurance
             </h1>
             <p className="text-lg text-white/80 leading-relaxed mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
@@ -529,7 +529,7 @@ export default function Education() {
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#34B1C4" }} />
             <div style={{ height: 2, width: 40, background: "#34B1C4" }} />
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
             Ready to Create Your Strategy?
           </h2>
           <p className="text-lg text-white/80 mb-8 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
