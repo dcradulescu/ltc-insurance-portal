@@ -3,7 +3,6 @@ import { Layout } from "@/components/Layout";
 import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { AboutHomeCare } from "@/components/AboutHomeCare";
-import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -16,36 +15,39 @@ import {
   Phone,
   Quote,
   Star,
-  CheckCircle,
   MessageSquare,
   Zap,
   Share2,
 } from "lucide-react";
+
+// VA Brand constants
+const VA_TEAL = "#34B1C4";
+const VA_TEAL_DARK = "#2a8fa0";
+const VA_CHARCOAL = "#393F43";
+const VA_GREY_BG = "#ECE8E8";
+const VA_HEADING = "#454545";
+const VA_BODY = "#555555";
 
 const features = [
   {
     icon: BookOpen,
     title: "Education & Resources",
     description: "Comprehensive guides to help you understand your long-term care insurance policy, benefits, and coverage options.",
-    color: "bg-teal/10 text-teal group-hover:bg-teal/20",
   },
   {
     icon: ClipboardList,
     title: "Policy Intake Form",
     description: "Our interactive form captures your specific policy details so we can provide tailored guidance for your situation.",
-    color: "bg-primary/10 text-primary group-hover:bg-primary/20",
   },
   {
     icon: Target,
     title: "Customized Strategy",
     description: "Receive a personalized, step-by-step strategy designed specifically for your policy and care needs.",
-    color: "bg-teal/10 text-teal group-hover:bg-teal/20",
   },
   {
     icon: Phone,
     title: "Live Support Chat",
     description: "Get instant answers to your questions about long-term care insurance through our intelligent support chat.",
-    color: "bg-primary/10 text-primary group-hover:bg-primary/20",
   },
 ];
 
@@ -112,6 +114,35 @@ function useCountUp(target: number, duration = 1800) {
   return { count, ref };
 }
 
+// VA-styled section heading with teal underline divider
+function VaSectionHeading({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
+  return (
+    <div className="text-center mb-10 md:mb-14">
+      <h2 style={{ fontFamily: "'Roboto', sans-serif", color: light ? '#ffffff' : VA_HEADING }} className="text-3xl md:text-4xl font-bold mb-3">
+        {children}
+      </h2>
+      <div className="flex items-center justify-center gap-3 mt-3">
+        <div style={{ height: 2, width: 40, background: VA_TEAL }} />
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: VA_TEAL }} />
+        <div style={{ height: 2, width: 40, background: VA_TEAL }} />
+      </div>
+    </div>
+  );
+}
+
+// VA teal checkmark bullet list item
+function VaCheckItem({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="flex gap-3 group">
+      <span className="text-xl font-bold flex-shrink-0 mt-0.5 transition-transform duration-200 group-hover:scale-110" style={{ color: VA_TEAL }}>✔</span>
+      <div>
+        <h3 className="font-bold mb-0.5 transition-colors duration-200" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{title}</h3>
+        <p className="text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{desc}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [activeQuote, setActiveQuote] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -165,43 +196,42 @@ export default function Home() {
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
           <img src="/manus-storage/home-hero_8fb65dbf.jpg" alt="Caregiver helping senior at home" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/90 via-[#1a2a3a]/75 to-[#1a2a3a]/50" />
+          <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.82)' }} />
         </div>
         <div className="container relative py-14 md:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="flex flex-wrap gap-3 mb-6 animate-float-up">
-                <div className="inline-flex items-center gap-2 bg-teal/20 backdrop-blur-sm rounded-full px-4 py-2 border border-teal/30 hover:bg-teal/30 transition-colors duration-300">
-                  <Heart className="w-4 h-4 text-teal-light" />
-                  <span className="text-sm text-white/90">Supportive Guidance for Families</span>
+                <div className="inline-flex items-center gap-2 rounded px-4 py-2 border" style={{ background: 'rgba(52,177,196,0.18)', borderColor: 'rgba(52,177,196,0.35)' }}>
+                  <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
+                  <span className="text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>Supportive Guidance for Families</span>
                 </div>
-                <div className="inline-flex items-center gap-2 bg-yellow-400/90 backdrop-blur-sm rounded-full px-4 py-2 border border-yellow-300 hover:bg-yellow-400 transition-colors duration-300">
+                <div className="inline-flex items-center gap-2 rounded px-4 py-2 border border-yellow-300" style={{ background: 'rgba(250,204,21,0.92)' }}>
                   <Zap className="w-4 h-4 text-yellow-900" />
-                  <span className="text-sm font-bold text-yellow-900">100% Free — No Cost to You</span>
+                  <span className="text-sm font-bold text-yellow-900" style={{ fontFamily: "'Open Sans', sans-serif" }}>100% Free — No Cost to You</span>
                 </div>
               </div>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-100">
-                Navigating Long Term Care insurance{" "}
-                <span className="text-teal">with Confidence!</span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-100" style={{ fontFamily: "'Roboto', sans-serif" }}>
+                Navigating Long Term Care Insurance{" "}
+                <span style={{ color: VA_TEAL }}>with Confidence!</span>
               </h1>
-              <p className="text-lg text-white/80 leading-relaxed mb-4 max-w-lg animate-float-up animate-delay-200">
+              <p className="text-lg text-white/85 leading-relaxed mb-4 max-w-lg animate-float-up animate-delay-200" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
               </p>
-              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-4 mb-8 max-w-lg animate-float-up animate-delay-300 hover:bg-white/15 transition-colors duration-300">
-                <p className="text-white font-semibold text-base mb-1">This is a completely free resource.</p>
-                <p className="text-white/80 text-sm leading-relaxed">There is no charge, no subscription, and no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.</p>
+              <div className="rounded px-5 py-4 mb-8 max-w-lg animate-float-up animate-delay-300 border" style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)' }}>
+                <p className="text-white font-semibold text-base mb-1" style={{ fontFamily: "'Roboto', sans-serif" }}>This is a completely free resource.</p>
+                <p className="text-white/80 text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>There is no charge, no subscription, and no hidden fees — ever. SC Visiting Angels provides this portal as a gift to families navigating long-term care insurance, because no family should face this process alone.</p>
               </div>
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 animate-float-up animate-delay-400">
-                <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white w-full sm:w-auto shadow-lg hover:shadow-teal/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-                  <Link href="/education">Start Here — Learn First</Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/15 bg-transparent w-full sm:w-auto transition-all duration-300 hover:-translate-y-0.5">
-                  <Link href="/policy-form">Already Educated? Go to Form</Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-base px-6 border-white/30 text-white hover:bg-white/15 bg-transparent flex items-center justify-center gap-2 w-full sm:w-auto transition-all duration-300 hover:-translate-y-0.5"
+                <Link href="/education" className="va-btn text-base px-8 py-4 w-full sm:w-auto text-center shadow-lg">
+                  Start Here — Learn First
+                </Link>
+                <Link href="/policy-form" className="va-btn va-btn-outline text-base px-8 py-4 w-full sm:w-auto text-center" style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}>
+                  Already Educated? Go to Form
+                </Link>
+                <button
+                  className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2 w-full sm:w-auto"
+                  style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
                   onClick={async () => {
                     const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
                     if (navigator.share && navigator.canShare?.(shareData)) {
@@ -214,7 +244,7 @@ export default function Home() {
                 >
                   <Share2 className="w-4 h-4" />
                   Share This Free Resource
-                </Button>
+                </button>
               </div>
             </div>
             <div className="hidden lg:block animate-fade-in-scale animate-delay-300">
@@ -230,7 +260,7 @@ export default function Home() {
       </section>
 
       {/* Mobile video */}
-      <section className="lg:hidden py-5 bg-secondary">
+      <section className="lg:hidden py-5" style={{ background: VA_GREY_BG }}>
         <div className="container">
           <VideoPlaceholder
             title="Welcome to LTC Navigator"
@@ -242,29 +272,24 @@ export default function Home() {
       </section>
 
       {/* ── Features ── */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-14 md:py-18" style={{ background: '#ffffff' }}>
         <div className="container">
-          <div ref={featuresHeaderRef} className="reveal text-center mb-8 md:mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-              How We <span className="text-teal">Help</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Our portal provides everything you need to understand, prepare, and successfully file your long-term care insurance claim.
-            </p>
+          <div ref={featuresHeaderRef} className="reveal">
+            <VaSectionHeading>How We <span style={{ color: VA_TEAL }}>Help</span></VaSectionHeading>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {features.map((feature, i) => (
               <div
                 key={feature.title}
-                className="group feature-card p-6 rounded-xl border border-border bg-white"
-                style={{ transitionDelay: `${i * 80}ms` }}
+                className="group feature-card p-6 rounded border bg-white text-center"
+                style={{ borderColor: '#e0e0e0', transitionDelay: `${i * 80}ms` }}
               >
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 ${feature.color}`}>
-                  <feature.icon className="w-7 h-7 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
+                <div className="w-16 h-16 rounded flex items-center justify-center mb-5 mx-auto transition-all duration-300 group-hover:scale-110" style={{ background: 'rgba(52,177,196,0.12)' }}>
+                  <feature.icon className="w-8 h-8 transition-transform duration-300" style={{ color: VA_TEAL }} />
                 </div>
-                <h3 className="font-serif font-bold text-lg mb-3 text-foreground group-hover:text-teal transition-colors duration-300">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
-                <div className="mt-4 flex items-center gap-1 text-teal text-xs font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-0 group-hover:translate-x-1">
+                <h3 className="font-bold text-lg mb-3 transition-colors duration-300 group-hover:text-[#34B1C4]" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{feature.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{feature.description}</p>
+                <div className="mt-4 flex items-center justify-center gap-1 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300" style={{ color: VA_TEAL }}>
                   <span>Learn more</span>
                   <ArrowRight className="w-3 h-3" />
                 </div>
@@ -276,27 +301,27 @@ export default function Home() {
 
       {/* ── You Don't Have to Navigate This Alone ── */}
       <section className="parallax-section relative py-12 md:py-16 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-dark/90 via-primary/85 to-[#1a2a3a]/90" />
+        <div className="absolute inset-0" style={{ background: `rgba(52,177,196,0.88)` }} />
         <div ref={aloneRef} className="reveal container relative text-center">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>
             You Don't Have to Navigate This Alone
           </h2>
-          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8">
+          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             Thousands of families have trusted us to guide them through the long-term care insurance claims process. Let us create a personalized strategy for your family too.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-              <Link href="/education">Step 1: Learn About LTC <ArrowRight className="w-4 h-4 ml-2" /></Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/15 bg-transparent transition-all duration-300 hover:-translate-y-0.5">
-              <Link href="/policy-form">Step 2: Complete the Form</Link>
-            </Button>
+            <Link href="/education" className="va-btn va-btn-white text-base px-8 py-4 shadow-lg">
+              Step 1: Learn About LTC <ArrowRight className="w-4 h-4 ml-2 inline" />
+            </Link>
+            <Link href="/policy-form" className="va-btn va-btn-outline text-base px-8 py-4" style={{ borderColor: 'rgba(255,255,255,0.6)', color: '#fff', background: 'rgba(255,255,255,0.12)' }}>
+              Step 2: Complete the Form
+            </Link>
           </div>
         </div>
       </section>
 
       {/* ── Stats ── */}
-      <section className="py-10 md:py-14 bg-gradient-to-r from-teal-dark to-primary text-white">
+      <section className="py-10 md:py-14 text-white" style={{ background: VA_CHARCOAL }}>
         <div ref={statsRef} className="reveal container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
             {[
@@ -305,15 +330,15 @@ export default function Home() {
               { ref: stat3.ref, count: stat3.count, suffix: "+", label: "Years of Experience" },
               { ref: null, count: null, suffix: "", label: "100% Free Service", special: true },
             ].map((stat, i) => (
-              <div key={i} className="stat-card p-4 md:p-5 rounded-xl bg-white/10 border border-white/15 hover:bg-white/20 transition-all duration-300">
+              <div key={i} className="stat-card p-4 md:p-5 rounded border hover:bg-white/10 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.12)' }}>
                 {stat.special ? (
-                  <div className="text-3xl md:text-4xl font-serif font-bold text-yellow-300 mb-1">Free</div>
+                  <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>Free</div>
                 ) : (
-                  <div className="text-3xl md:text-4xl font-serif font-bold text-yellow-300 mb-1">
+                  <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>
                     <span ref={stat.ref!}>{stat.count}</span>{stat.suffix}
                   </div>
                 )}
-                <div className="text-xs md:text-sm text-white/80">{stat.label}</div>
+                <div className="text-xs md:text-sm text-white/75" style={{ fontFamily: "'Open Sans', sans-serif" }}>{stat.label}</div>
               </div>
             ))}
           </div>
@@ -321,44 +346,34 @@ export default function Home() {
       </section>
 
       {/* ── Policy Intake Form ── */}
-      <section className="py-12 md:py-16 bg-secondary">
+      <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={intakeLeftRef} className="reveal reveal-left">
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
-                <ClipboardList className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">Personalized Intake</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
+                <ClipboardList className="w-4 h-4" style={{ color: VA_TEAL }} />
+                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Personalized Intake</span>
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Your <span className="text-primary">Policy Intake Form</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
+                Your <span style={{ color: VA_TEAL }}>Policy Intake Form</span>
               </h2>
-              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+              <p className="text-lg leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
                 Our comprehensive intake form captures all the details we need to build your personalized strategy. Complete it once, and we'll create a roadmap tailored specifically to your policy and care situation.
               </p>
               <div className="space-y-4 mb-8">
-                {[
-                  { title: "Complete Policy Details", desc: "Capture your policy number, carrier, coverage dates, and benefit amounts" },
-                  { title: "Organized Documentation", desc: "Store medical records, care assessments, and supporting documents in one secure location" },
-                  { title: "Ready for Your Call", desc: "When you contact your insurance company, you'll have all the information they need" },
-                ].map(({ title, desc }, i) => (
-                  <div key={i} className="flex gap-4 group">
-                    <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1 transition-transform duration-300 group-hover:scale-110" />
-                    <div>
-                      <h3 className="font-serif font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-300">{title}</h3>
-                      <p className="text-sm text-foreground/70">{desc}</p>
-                    </div>
-                  </div>
-                ))}
+                <VaCheckItem title="Complete Policy Details" desc="Capture your policy number, carrier, coverage dates, and benefit amounts" />
+                <VaCheckItem title="Organized Documentation" desc="Store medical records, care assessments, and supporting documents in one secure location" />
+                <VaCheckItem title="Ready for Your Call" desc="When you contact your insurance company, you'll have all the information they need" />
               </div>
-              <Button asChild size="lg" className="text-base px-8 bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-primary/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-                <Link href="/policy-form">Complete Your Intake Form</Link>
-              </Button>
+              <Link href="/policy-form" className="va-btn text-base px-8 py-4 shadow-lg">
+                Complete Your Intake Form
+              </Link>
             </div>
             <div ref={intakeRightRef} className="relative hidden lg:block reveal reveal-right">
               <img
                 src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/intake-form-section-mZs4Ekm9teKNjUckYUJK2U.webp"
                 alt="Care coordinator helping elderly couple complete their LTC insurance intake form at home"
-                className="w-full h-auto rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.01]"
+                className="w-full h-auto rounded shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.01]"
               />
             </div>
           </div>
@@ -366,90 +381,70 @@ export default function Home() {
       </section>
 
       {/* ── Customized Strategy ── */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={stratLeftRef} className="relative hidden lg:block order-2 lg:order-1 reveal reveal-left">
               <img
                 src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/strategy-section-YfSApseWQYDU5UU6xzzqF3.webp"
                 alt="Care coordinator presenting a personalized LTC strategy plan to a family on a tablet"
-                className="w-full h-auto rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.01]"
+                className="w-full h-auto rounded shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.01]"
               />
             </div>
             <div ref={stratRightRef} className="order-1 lg:order-2 reveal reveal-right">
-              <div className="inline-flex items-center gap-2 bg-teal/10 rounded-full px-4 py-2 mb-4">
-                <Target className="w-4 h-4 text-teal" />
-                <span className="text-sm font-medium text-teal-dark">Personalized Guidance</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
+                <Target className="w-4 h-4" style={{ color: VA_TEAL }} />
+                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Personalized Guidance</span>
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Your <span className="text-teal">Customized Strategy</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
+                Your <span style={{ color: VA_TEAL }}>Customized Strategy</span>
               </h2>
-              <p className="text-lg text-foreground/80 leading-relaxed mb-4">
+              <p className="text-lg leading-relaxed mb-4" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
                 Based on your specific policy details and care situation, we create a personalized, step-by-step strategy designed just for you. This roadmap guides you through every phase of the claims process with clarity and confidence.
               </p>
               <div className="space-y-4 mb-6">
-                {[
-                  { title: "Step-by-Step Roadmap", desc: "Know exactly what to do and when to do it, with clear milestones and timelines" },
-                  { title: "Task Checklists", desc: "Track your progress with organized checklists for each phase of your claim" },
-                  { title: "Policy-Specific Guidance", desc: "Recommendations tailored to your unique coverage and care needs" },
-                ].map(({ title, desc }, i) => (
-                  <div key={i} className="flex gap-4 group">
-                    <Zap className="w-6 h-6 text-teal flex-shrink-0 mt-1 transition-transform duration-300 group-hover:scale-110" />
-                    <div>
-                      <h3 className="font-serif font-bold text-foreground mb-1 group-hover:text-teal transition-colors duration-300">{title}</h3>
-                      <p className="text-sm text-foreground/70">{desc}</p>
-                    </div>
-                  </div>
-                ))}
+                <VaCheckItem title="Step-by-Step Roadmap" desc="Know exactly what to do and when to do it, with clear milestones and timelines" />
+                <VaCheckItem title="Task Checklists" desc="Track your progress with organized checklists for each phase of your claim" />
+                <VaCheckItem title="Policy-Specific Guidance" desc="Recommendations tailored to your unique coverage and care needs" />
               </div>
-              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white shadow-lg hover:shadow-teal/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-                <Link href="/strategy">View My Strategy</Link>
-              </Button>
+              <Link href="/strategy" className="va-btn text-base px-8 py-4 shadow-lg">
+                View My Strategy
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Chat Support ── */}
-      <section className="py-12 md:py-16 bg-secondary">
+      <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={chatLeftRef} className="reveal reveal-left">
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
-                <MessageSquare className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">Always Available</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
+                <MessageSquare className="w-4 h-4" style={{ color: VA_TEAL }} />
+                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Always Available</span>
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Live <span className="text-primary">Support Chat</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
+                Live <span style={{ color: VA_TEAL }}>Support Chat</span>
               </h2>
-              <p className="text-lg text-foreground/80 leading-relaxed mb-6">
+              <p className="text-lg leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
                 Have questions? Our intelligent support chat is available 24/7 to provide instant answers about your LTC insurance policy, claims process, and more.
               </p>
               <div className="space-y-4">
-                {[
-                  { title: "Instant Responses", desc: "Get answers to common questions about LTC insurance and the claims process immediately" },
-                  { title: "Available 24/7", desc: "Chat support is available whenever you need it, day or night, to answer your questions" },
-                  { title: "Personalized Help", desc: "Get guidance specific to your situation and policy details" },
-                ].map(({ title, desc }, i) => (
-                  <div key={i} className="flex gap-4 group">
-                    <MessageSquare className="w-6 h-6 text-primary flex-shrink-0 mt-1 transition-transform duration-300 group-hover:scale-110" />
-                    <div>
-                      <h3 className="font-serif font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-300">{title}</h3>
-                      <p className="text-sm text-foreground/70">{desc}</p>
-                    </div>
-                  </div>
-                ))}
+                <VaCheckItem title="Instant Responses" desc="Get answers to common questions about LTC insurance and the claims process immediately" />
+                <VaCheckItem title="Available 24/7" desc="Chat support is available whenever you need it, day or night, to answer your questions" />
+                <VaCheckItem title="Personalized Help" desc="Get guidance specific to your situation and policy details" />
               </div>
             </div>
             <div ref={chatRightRef} className="relative hidden lg:block reveal reveal-right">
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-border hover:shadow-2xl transition-shadow duration-500">
-                <div className="bg-primary/10 p-4 border-b border-border">
+              <div className="bg-white rounded shadow-xl overflow-hidden border hover:shadow-2xl transition-shadow duration-500" style={{ borderColor: '#e0e0e0' }}>
+                <div className="p-4 border-b" style={{ background: 'rgba(52,177,196,0.08)', borderColor: '#e0e0e0' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center pulse-glow">
+                    <div className="w-10 h-10 rounded flex items-center justify-center pulse-glow" style={{ background: VA_TEAL }}>
                       <MessageSquare className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-foreground">Support Chat</div>
+                      <div className="text-sm font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>Support Chat</div>
                       <div className="flex items-center gap-1.5 text-xs text-green-600">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
                         Always here to help
@@ -459,56 +454,58 @@ export default function Home() {
                 </div>
                 <div className="p-4 space-y-3">
                   <div className="flex justify-end">
-                    <div className="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-xs shadow-sm">What does ADL mean?</div>
+                    <div className="text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: VA_TEAL }}>What does ADL mean?</div>
                   </div>
                   <div className="flex justify-start">
-                    <div className="bg-muted text-foreground rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-xs shadow-sm">ADL stands for Activities of Daily Living. It includes bathing, dressing, eating, and more.</div>
+                    <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: '#f0f0f0', color: VA_HEADING }}>ADL stands for Activities of Daily Living. It includes bathing, dressing, eating, and more.</div>
                   </div>
                   <div className="flex justify-end">
-                    <div className="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-xs shadow-sm">How does this help my claim?</div>
+                    <div className="text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: VA_TEAL }}>How does this help my claim?</div>
                   </div>
                   <div className="flex justify-start">
-                    <div className="bg-muted text-foreground rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-xs shadow-sm">Insurance companies use ADL assessments to determine eligibility. We help you document these properly.</div>
+                    <div className="rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm max-w-xs shadow-sm" style={{ background: '#f0f0f0', color: VA_HEADING }}>Insurance companies use ADL assessments to determine eligibility. We help you document these properly.</div>
                   </div>
                 </div>
               </div>
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/10 rounded-full -z-10" />
-              <div className="absolute -top-4 -left-4 w-16 h-16 bg-teal/10 rounded-full -z-10" />
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full -z-10" style={{ background: 'rgba(52,177,196,0.1)' }} />
+              <div className="absolute -top-4 -left-4 w-16 h-16 rounded-full -z-10" style={{ background: 'rgba(52,177,196,0.08)' }} />
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Our Story ── */}
-      <section className="py-20 bg-white">
+      <section className="py-20" style={{ background: '#ffffff' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div ref={storyLeftRef} className="reveal reveal-left relative">
-              <div className="rounded-2xl overflow-hidden shadow-2xl h-[400px] group">
+              <div className="rounded overflow-hidden shadow-2xl h-[400px] group">
                 <img
                   src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/swQpXlcRmPQTVKfl.jpg"
                   alt="Elderly couple embracing a Visiting Angels care coordinator"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-teal/10 rounded-full -z-10" />
-              <div className="absolute -top-4 -left-4 w-16 h-16 bg-primary/10 rounded-full -z-10" />
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full -z-10" style={{ background: 'rgba(52,177,196,0.12)' }} />
+              <div className="absolute -top-4 -left-4 w-16 h-16 rounded-full -z-10" style={{ background: 'rgba(52,177,196,0.08)' }} />
             </div>
             <div ref={storyRightRef} className="reveal reveal-right">
-              <div className="inline-flex items-center gap-2 bg-teal/10 rounded-full px-4 py-2 mb-6">
-                <Heart className="w-4 h-4 text-teal" />
-                <span className="text-sm font-medium text-teal-dark">Real Families, Real Results</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-6" style={{ background: 'rgba(52,177,196,0.12)' }}>
+                <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
+                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Real Families, Real Results</span>
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Our <span className="text-teal">Story</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
+                Our <span style={{ color: VA_TEAL }}>Story</span>
               </h2>
               <div className="relative min-h-[200px] flex items-center">
-                <Quote className="absolute top-0 left-0 w-10 h-10 text-teal/20" />
+                <Quote className="absolute top-0 left-0 w-10 h-10 opacity-20" style={{ color: VA_TEAL }} />
                 {storyQuotes.map((quote, index) => (
                   <p
                     key={index}
-                    className="absolute inset-0 flex items-center text-lg md:text-xl text-foreground/80 italic leading-relaxed pl-6"
+                    className="absolute inset-0 flex items-center text-lg md:text-xl italic leading-relaxed pl-6"
                     style={{
+                      fontFamily: "'Open Sans', sans-serif",
+                      color: VA_BODY,
                       opacity: activeQuote === index ? 1 : 0,
                       transform: activeQuote === index ? "translateY(0)" : (index < activeQuote || (activeQuote === 0 && index === storyQuotes.length - 1)) ? "translateY(-15px)" : "translateY(15px)",
                       transition: "opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)",
@@ -523,33 +520,37 @@ export default function Home() {
                   <button
                     key={index}
                     onClick={() => setActiveQuote(index)}
-                    className={`h-2.5 rounded-full transition-all duration-300 ${activeQuote === index ? "bg-teal w-6" : "bg-teal/30 hover:bg-teal/60 w-2.5"}`}
+                    className="h-2.5 rounded-full transition-all duration-300"
+                    style={{
+                      width: activeQuote === index ? 24 : 10,
+                      background: activeQuote === index ? VA_TEAL : 'rgba(52,177,196,0.3)',
+                    }}
                     aria-label={`Quote ${index + 1}`}
                   />
                 ))}
               </div>
-              <p className="mt-6 text-sm text-muted-foreground">— A Visiting Angels family</p>
+              <p className="mt-6 text-sm" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>— A Visiting Angels family</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── About SC Visiting Angels ── */}
-      <section className="py-14 md:py-20 bg-gradient-to-br from-[#1a3a4a] to-[#2c5060] text-white">
+      <section className="py-14 md:py-20 text-white" style={{ background: VA_CHARCOAL }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div ref={aboutLeftRef} className="reveal reveal-left">
-              <div className="inline-flex items-center gap-2 bg-teal/20 rounded-full px-4 py-2 mb-6">
-                <Heart className="w-4 h-4 text-teal" />
-                <span className="text-sm font-medium text-teal">About SC Visiting Angels</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-6" style={{ background: 'rgba(52,177,196,0.18)' }}>
+                <Heart className="w-4 h-4" style={{ color: VA_TEAL }} />
+                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>About SC Visiting Angels</span>
               </div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-5 leading-tight">
+              <h2 className="text-3xl md:text-4xl font-bold mb-5 leading-tight" style={{ fontFamily: "'Roboto', sans-serif" }}>
                 Compassionate Home Care<br className="hidden md:block" /> in the Upstate
               </h2>
-              <p className="text-white/80 text-base leading-relaxed mb-5">
+              <p className="text-white/80 text-base leading-relaxed mb-5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 SC Visiting Angels is a locally owned and operated home care agency serving families across the Upstate of South Carolina. For over a decade, we have helped seniors and their families navigate the challenges of aging at home — from personal care and companionship to specialized dementia support.
               </p>
-              <p className="text-white/80 text-base leading-relaxed mb-8">
+              <p className="text-white/80 text-base leading-relaxed mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 Our caregivers are carefully selected, thoroughly trained, and deeply committed to treating every client with the dignity and respect they deserve. We believe that home is where healing happens best.
               </p>
               <div className="grid grid-cols-2 gap-4 mb-8">
@@ -559,9 +560,9 @@ export default function Home() {
                   { stat: "24/7", label: "On-Call Support" },
                   { stat: "Free", label: "In-Home Consultations" },
                 ].map(({ stat, label }) => (
-                  <div key={label} className="stat-card bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/20 transition-all duration-300">
-                    <div className="text-2xl font-serif font-bold text-teal mb-1">{stat}</div>
-                    <div className="text-xs text-white/70 leading-snug">{label}</div>
+                  <div key={label} className="stat-card rounded p-4 border hover:bg-white/15 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.12)' }}>
+                    <div className="text-2xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>{stat}</div>
+                    <div className="text-xs text-white/70 leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
                   </div>
                 ))}
               </div>
@@ -569,27 +570,27 @@ export default function Home() {
                 href="https://www.scvisitingangels.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-teal hover:bg-teal-dark text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal/30"
+                className="va-btn inline-flex items-center gap-2"
               >
                 Learn More About Our Services
                 <ArrowRight className="w-4 h-4" />
               </a>
             </div>
             <div ref={aboutRightRef} className="relative reveal reveal-right">
-              <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] group">
+              <div className="rounded overflow-hidden shadow-2xl aspect-[4/3] group">
                 <img
                   src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/swQpXlcRmPQTVKfl.jpg"
                   alt="SC Visiting Angels caregiver with client"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
-              <div className="absolute -bottom-4 -left-4 w-28 h-28 bg-teal/20 rounded-full -z-10" />
-              <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/10 rounded-full -z-10" />
-              <div className="absolute bottom-6 right-6 bg-white text-slate-900 rounded-xl shadow-xl px-4 py-3 flex items-center gap-3 hover:shadow-2xl transition-shadow duration-300">
+              <div className="absolute -bottom-4 -left-4 w-28 h-28 rounded-full -z-10" style={{ background: 'rgba(52,177,196,0.2)' }} />
+              <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full -z-10" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <div className="absolute bottom-6 right-6 bg-white rounded shadow-xl px-4 py-3 flex items-center gap-3 hover:shadow-2xl transition-shadow duration-300">
                 <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png" alt="SC Visiting Angels" className="w-8 h-8 object-contain" />
                 <div>
-                  <div className="text-xs font-bold text-slate-900 leading-tight">SC Visiting Angels</div>
-                  <div className="text-xs text-slate-500">(864) 244-6300</div>
+                  <div className="text-xs font-bold leading-tight" style={{ color: VA_HEADING, fontFamily: "'Roboto', sans-serif" }}>SC Visiting Angels</div>
+                  <div className="text-xs" style={{ color: '#888' }}>(864) 244-6300</div>
                 </div>
               </div>
             </div>
@@ -598,32 +599,27 @@ export default function Home() {
       </section>
 
       {/* ── Scrolling Testimonials ── */}
-      <section className="py-12 md:py-16 bg-secondary overflow-hidden">
+      <section className="py-12 md:py-16 overflow-hidden" style={{ background: VA_GREY_BG }}>
         <div className="container mb-12">
-          <div ref={testimonialsHeaderRef} className="reveal text-center">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-              What <span className="text-teal">Families</span> Are Saying
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Hear from families who have successfully navigated the LTC insurance claims process with our help.
-            </p>
+          <div ref={testimonialsHeaderRef} className="reveal">
+            <VaSectionHeading>What <span style={{ color: VA_TEAL }}>Families</span> Are Saying</VaSectionHeading>
           </div>
         </div>
         <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-secondary to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-secondary to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: `linear-gradient(to right, ${VA_GREY_BG}, transparent)` }} />
+          <div className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: `linear-gradient(to left, ${VA_GREY_BG}, transparent)` }} />
           <div ref={scrollRef} className="flex gap-6 animate-scroll-left" style={{ width: "max-content" }}>
             {[...testimonials, ...testimonials].map((testimonial, index) => (
-              <div key={index} className="testimonial-card w-[380px] shrink-0 bg-white rounded-xl border border-border p-6 shadow-sm">
+              <div key={index} className="testimonial-card w-[380px] shrink-0 bg-white rounded border p-6 shadow-sm" style={{ borderColor: '#e0e0e0' }}>
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-foreground/80 text-sm leading-relaxed mb-4 italic">"{testimonial.text}"</p>
-                <div className="border-t border-border pt-4">
-                  <div className="font-serif font-bold text-foreground">{testimonial.name}</div>
-                  <div className="text-xs text-muted-foreground">{testimonial.relation}</div>
+                <p className="text-sm leading-relaxed mb-4 italic" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>"{testimonial.text}"</p>
+                <div className="border-t pt-4" style={{ borderColor: '#e0e0e0' }}>
+                  <div className="font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{testimonial.name}</div>
+                  <div className="text-xs" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>{testimonial.relation}</div>
                 </div>
               </div>
             ))}
@@ -632,30 +628,28 @@ export default function Home() {
       </section>
 
       {/* ── Four Steps ── */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
         <div className="container">
-          <div ref={stepsHeaderRef} className="reveal text-center mb-8 md:mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Four Simple <span className="text-primary">Steps</span>
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              From sign-up to claim approval — here's how we guide you through the process.
-            </p>
+          <div ref={stepsHeaderRef} className="reveal">
+            <VaSectionHeading>Four Simple <span style={{ color: VA_TEAL }}>Steps</span></VaSectionHeading>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {[
-              { num: "01", title: "Learn First", desc: "Start in the Education section to understand your policy, benefits, ADLs, and what to expect from the claims process.", color: "text-teal", bg: "hover:bg-teal/5", border: "border-transparent hover:border-teal/30" },
-              { num: "02", title: "Complete the Form", desc: "Once you understand your policy, fill out our intake form with your specific insurance details and care needs.", color: "text-primary", bg: "hover:bg-primary/5", border: "border-transparent hover:border-primary/30" },
-              { num: "03", title: "Get Your Strategy", desc: "Receive a customized, step-by-step claim filing strategy tailored to your specific policy and situation.", color: "text-teal", bg: "hover:bg-teal/5", border: "border-transparent hover:border-teal/30" },
-              { num: "04", title: "File With Confidence", desc: "Follow your personalized guide to successfully submit your LTC insurance claim with everything in order.", color: "text-primary", bg: "hover:bg-primary/5", border: "border-transparent hover:border-primary/30" },
+              { num: "01", title: "Learn First", desc: "Start in the Education section to understand your policy, benefits, ADLs, and what to expect from the claims process." },
+              { num: "02", title: "Complete the Form", desc: "Once you understand your policy, fill out our intake form with your specific insurance details and care needs." },
+              { num: "03", title: "Get Your Strategy", desc: "Receive a customized, step-by-step claim filing strategy tailored to your specific policy and situation." },
+              { num: "04", title: "File With Confidence", desc: "Follow your personalized guide to successfully submit your LTC insurance claim with everything in order." },
             ].map((step, i) => (
               <div
                 key={step.num}
-                className={`reveal reveal-delay-${i + 1} relative p-6 rounded-xl border ${step.bg} ${step.border} transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg`}
+                className={`reveal reveal-delay-${i + 1} relative p-6 rounded border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg`}
+                style={{ borderColor: '#e0e0e0', background: '#fff' }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = VA_TEAL)}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = '#e0e0e0')}
               >
-                <div className={`text-6xl font-serif font-bold ${step.color} opacity-20 mb-2`}>{step.num}</div>
-                <h3 className="font-serif font-bold text-lg mb-2 text-foreground">{step.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                <div className="text-6xl font-bold opacity-15 mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>{step.num}</div>
+                <h3 className="font-bold text-lg mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>{step.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>{step.desc}</p>
               </div>
             ))}
           </div>
@@ -664,19 +658,19 @@ export default function Home() {
 
       {/* ── Bottom CTA ── */}
       <section className="parallax-section relative py-10 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/90 to-teal-dark/85" />
+        <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.88)' }} />
         <div ref={ctaRef} className="reveal container relative text-center">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">Ready to Get Started?</h2>
-          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif" }}>Ready to Get Started?</h2>
+          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             Begin with our free Education section — it only takes a few minutes and will make completing the form much easier.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white shadow-lg hover:shadow-teal/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-              <Link href="/education">Start with Education <ArrowRight className="w-4 h-4 ml-2" /></Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/15 bg-transparent transition-all duration-300 hover:-translate-y-0.5">
-              <Link href="/policy-form">Skip to Policy Form</Link>
-            </Button>
+            <Link href="/education" className="va-btn text-base px-8 py-4 shadow-lg">
+              Start with Education <ArrowRight className="w-4 h-4 ml-2 inline" />
+            </Link>
+            <Link href="/policy-form" className="va-btn va-btn-outline text-base px-8 py-4" style={{ borderColor: 'rgba(255,255,255,0.5)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}>
+              Skip to Policy Form
+            </Link>
           </div>
         </div>
       </section>

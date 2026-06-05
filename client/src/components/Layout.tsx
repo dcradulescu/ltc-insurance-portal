@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Phone, Globe, Share2 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -24,13 +23,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => { setMobileMenuOpen(false); }, [location]);
 
   const shareResource = async () => {
     const shareData = {
       title: "LTC Insurance Navigator — Free Resource",
-      text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims. No cost, no signup required.",
+      text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.",
       url: window.location.origin,
     };
     if (navigator.share && navigator.canShare?.(shareData)) {
@@ -42,27 +40,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
-      {/* ── Top bar ── */}
-      <div className="bg-gradient-to-r from-[#1a3a4a] to-[#2c3e50] text-white text-sm">
+    <div className="min-h-screen flex flex-col" style={{ background: "#ffffff", color: "#333333" }}>
+
+      {/* ── VA Top utility bar (teal) ── */}
+      <div style={{ background: "#34B1C4" }} className="text-white text-sm">
         <div className="container flex justify-between items-center py-2">
-          <span className="hidden sm:inline opacity-80 text-xs">Helping families navigate long-term care insurance</span>
-          <div className="flex items-center gap-4">
+          <span className="hidden sm:inline text-white/90 text-xs font-medium tracking-wide">
+            Helping families navigate long-term care insurance — at no cost
+          </span>
+          <div className="flex items-center gap-5">
             <a
               href="tel:+18642446300"
-              className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors duration-200 group"
+              className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors duration-200 group"
             >
               <Phone className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-200" />
-              <span className="hidden sm:inline">(864) 244-6300</span>
+              <span className="hidden sm:inline font-medium">(864) 244-6300</span>
             </a>
             <a
               href="https://www.scvisitingangels.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-white/80 hover:text-white transition-colors duration-200 group"
+              className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors duration-200 group"
             >
               <Globe className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-200" />
-              <span className="hidden sm:inline">SCVisitingAngels.com</span>
+              <span className="hidden sm:inline font-medium">SCVisitingAngels.com</span>
             </a>
           </div>
         </div>
@@ -70,84 +71,91 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* ── Main navigation ── */}
       <header
-        className={`sticky top-0 z-50 bg-white border-b border-border transition-all duration-300 ${
-          scrolled ? "nav-scrolled" : "shadow-sm"
+        className={`sticky top-0 z-50 bg-white border-b transition-all duration-300 ${
+          scrolled ? "nav-scrolled" : ""
         }`}
+        style={{ borderColor: "#e0dede" }}
       >
-        <div className="container flex items-center justify-between h-16">
+        <div className="container flex items-center justify-between h-[70px]">
           {/* Logo */}
           <a
             href="https://www.scvisitingangels.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 no-underline group"
+            className="flex items-center gap-2.5 no-underline group"
           >
             <img
               src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
               alt="SC Visiting Angels"
-              className="w-8 h-8 object-contain transition-transform duration-300 group-hover:scale-110"
+              className="w-9 h-9 object-contain transition-transform duration-300 group-hover:scale-110"
             />
-            <span className="font-serif text-xl font-bold text-foreground tracking-tight group-hover:text-teal transition-colors duration-300">
-              SC Visiting Angels
-            </span>
+            <div className="flex flex-col leading-tight">
+              <span
+                className="font-bold text-base tracking-tight transition-colors duration-200 group-hover:text-[#34B1C4]"
+                style={{ fontFamily: "'Roboto', sans-serif", color: "#454545" }}
+              >
+                SC Visiting Angels
+              </span>
+              <span
+                className="text-[10px] tracking-widest uppercase"
+                style={{ color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}
+              >
+                LTC Insurance Navigator
+              </span>
+            </div>
           </a>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-0.5">
+          <nav className="hidden md:flex items-center gap-0">
             {navLinks.map((link) => {
               const isActive = location === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 no-underline rounded-md nav-link-animated ${
+                  className={`relative px-3.5 py-2 text-xs font-bold uppercase tracking-widest transition-all duration-200 no-underline nav-link-animated ${
                     isActive
-                      ? "text-teal bg-teal/5 active"
-                      : "text-muted-foreground hover:text-teal hover:bg-teal/5"
+                      ? "active"
+                      : ""
                   }`}
+                  style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    color: isActive ? "#34B1C4" : "#454545",
+                  }}
                 >
                   {link.label}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-teal rounded-full" />
-                  )}
                 </Link>
               );
             })}
-            <Button
-              asChild
-              size="sm"
-              className="ml-3 bg-teal hover:bg-teal-dark text-white shadow-sm hover:shadow-md hover:shadow-teal/20 transition-all duration-300 hover:-translate-y-0.5"
+            <a
+              href="/education"
+              className="ml-4 va-btn text-sm"
+              style={{ paddingTop: "0.6rem", paddingBottom: "0.6rem", paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
             >
-              <Link href="/education">Start Here — Free</Link>
-            </Button>
+              Start Here — Free
+            </a>
           </nav>
 
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 hover:bg-slate-100 rounded-md transition-all duration-200 hover:scale-105"
+            className="md:hidden p-2 rounded transition-all duration-200"
+            style={{ color: "#454545" }}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
             <div className="relative w-5 h-5">
-              <X
-                className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-                  mobileMenuOpen ? "opacity-100 rotate-0" : "opacity-0 rotate-90"
-                }`}
-              />
-              <Menu
-                className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-                  mobileMenuOpen ? "opacity-0 -rotate-90" : "opacity-100 rotate-0"
-                }`}
-              />
+              <X className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${mobileMenuOpen ? "opacity-100 rotate-0" : "opacity-0 rotate-90"}`} />
+              <Menu className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${mobileMenuOpen ? "opacity-0 -rotate-90" : "opacity-100 rotate-0"}`} />
             </div>
           </button>
         </div>
 
         {/* Mobile menu */}
         <div
-          className={`md:hidden border-t border-border bg-white overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`md:hidden bg-white overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           }`}
+          style={{ borderTop: "1px solid #e0dede" }}
         >
           <nav className="flex flex-col">
             {navLinks.map((link) => (
@@ -155,22 +163,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`px-5 py-3.5 text-sm font-medium transition-all duration-200 no-underline border-b border-border/50 flex items-center justify-between group ${
-                  location === link.href
-                    ? "text-teal bg-teal/5"
-                    : "text-muted-foreground hover:text-teal hover:bg-teal/5"
-                }`}
+                className="px-5 py-3.5 text-xs font-bold uppercase tracking-widest transition-all duration-200 no-underline flex items-center justify-between"
+                style={{
+                  fontFamily: "'Roboto', sans-serif",
+                  color: location === link.href ? "#34B1C4" : "#454545",
+                  background: location === link.href ? "rgba(52,177,196,0.06)" : "transparent",
+                  borderBottom: "1px solid #e0dede",
+                }}
               >
                 <span>{link.label}</span>
                 {location === link.href && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal" />
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#34B1C4" }} />
                 )}
               </Link>
             ))}
             <div className="p-4">
-              <Button asChild className="w-full bg-teal hover:bg-teal-dark text-white transition-all duration-300">
-                <Link href="/education">Start Here — Free</Link>
-              </Button>
+              <a href="/education" className="va-btn w-full text-center block text-sm">
+                Start Here — Free
+              </a>
             </div>
           </nav>
         </div>
@@ -179,28 +189,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* ── Main content ── */}
       <main className="flex-1">{children}</main>
 
-      {/* ── Footer ── */}
-      <footer className="bg-slate-900 text-white py-12">
+      {/* ── Footer (VA charcoal #393F43) ── */}
+      <footer style={{ background: "#393F43", color: "#ffffff" }} className="py-14">
         <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            {/* Brand */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+
+            {/* Brand column */}
             <div>
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+              <div className="flex items-center gap-2.5 mb-4">
                 <img
                   src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
                   alt="SC Visiting Angels"
-                  className="w-6 h-6 object-contain"
+                  className="w-8 h-8 object-contain"
                 />
-                SC Visiting Angels
-              </h3>
-              <p className="text-slate-400 text-sm mb-3 leading-relaxed">
+                <span
+                  className="font-bold text-base text-white"
+                  style={{ fontFamily: "'Roboto', sans-serif" }}
+                >
+                  SC Visiting Angels
+                </span>
+              </div>
+              <p
+                className="text-sm leading-relaxed mb-4"
+                style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Open Sans', sans-serif" }}
+              >
                 Helping families navigate long-term care insurance with confidence and clarity.
               </p>
               <a
                 href="https://www.scvisitingangels.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-teal hover:text-teal-light text-sm transition-colors duration-200 inline-flex items-center gap-1 group"
+                className="text-sm transition-colors duration-200 inline-flex items-center gap-1 group"
+                style={{ color: "#34B1C4" }}
               >
                 www.scvisitingangels.com
                 <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs">↗</span>
@@ -209,7 +229,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Quick Links</h4>
+              <h4
+                className="font-bold text-sm uppercase tracking-widest mb-5"
+                style={{ fontFamily: "'Roboto', sans-serif", color: "#34B1C4" }}
+              >
+                Quick Links
+              </h4>
               <ul className="space-y-2.5 text-sm">
                 {[
                   { href: "/", label: "Home" },
@@ -220,20 +245,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <li key={href}>
                     <Link
                       href={href}
-                      className="text-slate-400 hover:text-teal transition-colors duration-200 no-underline inline-flex items-center gap-1.5 group"
+                      className="transition-colors duration-200 no-underline inline-flex items-center gap-2 group"
+                      style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Open Sans', sans-serif" }}
                     >
-                      <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-teal transition-colors duration-200" />
-                      {label}
+                      <span
+                        className="text-xs group-hover:text-[#34B1C4] transition-colors duration-200"
+                        style={{ color: "#34B1C4" }}
+                      >✔</span>
+                      <span className="group-hover:text-white transition-colors duration-200">{label}</span>
                     </Link>
                   </li>
                 ))}
                 <li>
                   <button
-                    className="flex items-center gap-1.5 text-slate-400 hover:text-teal transition-colors duration-200 text-sm group"
+                    className="flex items-center gap-2 text-sm transition-colors duration-200 group"
+                    style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Open Sans', sans-serif" }}
                     onClick={shareResource}
                   >
-                    <Share2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-200" />
-                    Share This Resource
+                    <Share2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-200" style={{ color: "#34B1C4" }} />
+                    <span className="group-hover:text-white transition-colors duration-200">Share This Resource</span>
                   </button>
                 </li>
               </ul>
@@ -241,7 +271,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {/* Resources */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Resources</h4>
+              <h4
+                className="font-bold text-sm uppercase tracking-widest mb-5"
+                style={{ fontFamily: "'Roboto', sans-serif", color: "#34B1C4" }}
+              >
+                Resources
+              </h4>
               <ul className="space-y-2.5 text-sm">
                 {[
                   { href: "/contact", label: "Contact Us", external: false },
@@ -255,18 +290,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         href={href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-slate-400 hover:text-teal transition-colors duration-200 inline-flex items-center gap-1.5 group"
+                        className="transition-colors duration-200 inline-flex items-center gap-2 group"
+                        style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Open Sans', sans-serif" }}
                       >
-                        <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-teal transition-colors duration-200" />
-                        {label}
+                        <span style={{ color: "#34B1C4" }} className="text-xs">✔</span>
+                        <span className="group-hover:text-white transition-colors duration-200">{label}</span>
                       </a>
                     ) : (
                       <Link
                         href={href}
-                        className="text-slate-400 hover:text-teal transition-colors duration-200 no-underline inline-flex items-center gap-1.5 group"
+                        className="transition-colors duration-200 no-underline inline-flex items-center gap-2 group"
+                        style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Open Sans', sans-serif" }}
                       >
-                        <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-teal transition-colors duration-200" />
-                        {label}
+                        <span style={{ color: "#34B1C4" }} className="text-xs">✔</span>
+                        <span className="group-hover:text-white transition-colors duration-200">{label}</span>
                       </Link>
                     )}
                   </li>
@@ -276,15 +313,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {/* Contact */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Contact</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
+              <h4
+                className="font-bold text-sm uppercase tracking-widest mb-5"
+                style={{ fontFamily: "'Roboto', sans-serif", color: "#34B1C4" }}
+              >
+                Contact
+              </h4>
+              <ul className="space-y-3 text-sm">
                 <li>
                   <a
                     href="tel:+18642446300"
-                    className="flex items-center gap-2 hover:text-teal transition-colors duration-200 group"
+                    className="flex items-center gap-2 transition-colors duration-200 group"
+                    style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Open Sans', sans-serif" }}
                   >
-                    <Phone className="w-3.5 h-3.5 text-teal flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
-                    (864) 244-6300
+                    <Phone className="w-3.5 h-3.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ color: "#34B1C4" }} />
+                    <span className="group-hover:text-white transition-colors duration-200">(864) 244-6300</span>
                   </a>
                 </li>
                 <li>
@@ -292,10 +335,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     href="https://www.scvisitingangels.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 hover:text-teal transition-colors duration-200 group"
+                    className="flex items-center gap-2 transition-colors duration-200 group"
+                    style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Open Sans', sans-serif" }}
                   >
-                    <Globe className="w-3.5 h-3.5 text-teal flex-shrink-0 group-hover:scale-110 transition-transform duration-200" />
-                    scvisitingangels.com
+                    <Globe className="w-3.5 h-3.5 flex-shrink-0 group-hover:scale-110 transition-transform duration-200" style={{ color: "#34B1C4" }} />
+                    <span className="group-hover:text-white transition-colors duration-200">scvisitingangels.com</span>
                   </a>
                 </li>
               </ul>
@@ -303,17 +347,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Bottom bar */}
-          <div className="border-t border-slate-700/60 pt-8 text-center text-slate-500 text-sm">
-            <p>
+          <div
+            className="pt-8 text-center text-sm"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.45)" }}
+          >
+            <p style={{ fontFamily: "'Open Sans', sans-serif" }}>
               &copy; {new Date().getFullYear()} SC Visiting Angels. All rights reserved.
               &nbsp;·&nbsp;
-              <Link href="/privacy" className="hover:text-teal transition-colors duration-200">Privacy Policy</Link>
+              <Link href="/privacy" className="hover:text-[#34B1C4] transition-colors duration-200">Privacy Policy</Link>
               &nbsp;·&nbsp;
               <a
                 href="https://www.scvisitingangels.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-teal transition-colors duration-200"
+                className="hover:text-[#34B1C4] transition-colors duration-200"
               >
                 www.scvisitingangels.com
               </a>
