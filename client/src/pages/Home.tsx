@@ -642,7 +642,7 @@ export default function Home() {
             ].map((step, i) => (
               <div
                 key={step.num}
-                className={`reveal reveal-delay-${i + 1} relative p-6 rounded border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg`}
+                className={`relative p-6 rounded border transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg`}
                 style={{ borderColor: '#e0e0e0', background: '#fff' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = VA_TEAL)}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = '#e0e0e0')}
