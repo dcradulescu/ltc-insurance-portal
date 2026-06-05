@@ -450,6 +450,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Bottom CTA ── */}
+      <section className="parallax-section relative py-10 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
+        <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.88)' }} />
+        <div ref={ctaRef} className="reveal container relative text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>Ready to Get Started?</h2>
+          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+            Begin with our free Education section — it only takes a few minutes and will make sharing your policy details much easier.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/education" className="va-btn text-base px-8 py-4 shadow-lg">
+              Start with Education <ArrowRight className="w-4 h-4 ml-2 inline" />
+            </Link>
+            <Link href="/policy-form" className="va-btn text-base px-8 py-4" style={{ background: VA_BLUE }}>
+              Skip to Policy Details <ArrowRight className="w-4 h-4 ml-2 inline" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── Chat Support ── */}
       <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
         <div className="container">
@@ -658,25 +677,6 @@ export default function Home() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Bottom CTA ── */}
-      <section className="parallax-section relative py-10 text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
-        <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.88)' }} />
-        <div ref={ctaRef} className="reveal container relative text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>Ready to Get Started?</h2>
-          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-            Begin with our free Education section — it only takes a few minutes and will make sharing your policy details much easier.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/education" className="va-btn text-base px-8 py-4 shadow-lg">
-              Start with Education <ArrowRight className="w-4 h-4 ml-2 inline" />
-            </Link>
-            <Link href="/policy-form" className="va-btn text-base px-8 py-4" style={{ background: VA_BLUE }}>
-              Skip to Policy Details <ArrowRight className="w-4 h-4 ml-2 inline" />
-            </Link>
           </div>
         </div>
       </section>
