@@ -2,7 +2,7 @@ import React from 'react';
 
 export function LegalDisclaimerFooter() {
   return (
-    <footer className="py-10 px-4" style={{ background: '#ffffff', borderTop: '1px solid #e8e8e8' }}>
+    <footer className="py-5 px-4" style={{ background: '#ffffff', borderTop: '1px solid #e8e8e8' }}>
       <div className="max-w-6xl mx-auto">
 
         {/* Two disclaimer cards */}
@@ -61,7 +61,7 @@ export function LegalDisclaimerFooter() {
 
         {/* Professional Consultation — pastel pink, dashed red border, shadow */}
         <div
-          className="rounded-lg px-5 py-4 mb-6"
+          className="rounded-lg px-5 py-4"
           style={{
             background: '#fff0f3',
             border: '1.5px dashed #e57373',
@@ -74,7 +74,6 @@ export function LegalDisclaimerFooter() {
             who can review your specific policy and circumstances.
           </p>
         </div>
-
       </div>
     </footer>
   );
