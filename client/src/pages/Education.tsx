@@ -1,16 +1,36 @@
 import { Helmet } from "react-helmet-async";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { LegalDisclaimerFooter } from '@/components/LegalDisclaimerFooter';
 import { AboutHomeCare } from "@/components/AboutHomeCare";
 import { Layout } from "@/components/Layout";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { 
   BookOpen, CheckCircle, Info, Shield, Heart, Users, 
-  ArrowRight, Sparkles, Brain, DollarSign, Clock, TrendingUp, 
-  ChevronDown, Target, Award, FileText, Phone, Printer
+  ArrowRight, Brain, DollarSign, Clock, TrendingUp, 
+  ChevronDown, Target, Award, FileText, Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+
+function useReveal(threshold = 0.1) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.classList.add("visible");
+          observer.disconnect();
+        }
+      },
+      { threshold }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+  return ref;
+}
 
 export default function Education() {
   const [expandedGlossary, setExpandedGlossary] = useState<number | null>(null);
@@ -19,6 +39,13 @@ export default function Education() {
   const toggleGlossary = (index: number) => {
     setExpandedGlossary(expandedGlossary === index ? null : index);
   };
+
+  const sec1Ref = useReveal();
+  const sec2Ref = useReveal();
+  const sec3Ref = useReveal();
+  const sec4Ref = useReveal();
+  const sec5Ref = useReveal();
+  const resourcesRef = useReveal();
 
   const glossaryTerms = [
     { term: "Activities of Daily Living (ADLs)", def: "Six fundamental self-care activities: Bathing, Dressing, Toileting, Feeding, Continence, and Transferring. Most policies require 2-3 ADLs to be in deficit." },
@@ -34,69 +61,27 @@ export default function Education() {
   ];
 
   const strategySteps = [
-    {
-      num: 1,
-      title: "Complete Your Intake Form",
-      desc: "Gather your policy details, coverage information, and care situation",
-      icon: FileText,
-      color: "text-teal"
-    },
-    {
-      num: 2,
-      title: "Our System Analyzes Your Policy",
-      desc: "We review your specific policy terms, benefits, and requirements",
-      icon: Brain,
-      color: "text-primary"
-    },
-    {
-      num: 3,
-      title: "Generate Your Custom Strategy",
-      desc: "Receive a personalized roadmap tailored to your exact situation",
-      icon: Target,
-      color: "text-teal"
-    },
-    {
-      num: 4,
-      title: "Execute Your Plan",
-      desc: "Follow step-by-step guidance to file your claim successfully",
-      icon: CheckCircle,
-      color: "text-primary"
-    },
+    { num: 1, title: "Complete Your Intake Form", desc: "Gather your policy details, coverage information, and care situation", icon: FileText, color: "text-teal" },
+    { num: 2, title: "Our System Analyzes Your Policy", desc: "We review your specific policy terms, benefits, and requirements", icon: Brain, color: "text-primary" },
+    { num: 3, title: "Generate Your Custom Strategy", desc: "Receive a personalized roadmap tailored to your exact situation", icon: Target, color: "text-teal" },
+    { num: 4, title: "Execute Your Plan", desc: "Follow step-by-step guidance to file your claim successfully", icon: CheckCircle, color: "text-primary" },
   ];
 
   const ltcProcessSteps = [
     {
       phase: "Before Filing",
-      items: [
-        "Request claims packet from insurance company",
-        "Gather all medical documentation",
-        "Begin care services with qualified provider",
-        "Document ADL deficits thoroughly"
-      ],
-      icon: Clock,
-      color: "teal"
+      items: ["Request claims packet from insurance company", "Gather all medical documentation", "Begin care services with qualified provider", "Document ADL deficits thoroughly"],
+      icon: Clock, color: "teal"
     },
     {
       phase: "During Filing",
-      items: [
-        "Complete claim packet comprehensively",
-        "Submit all documents in one package",
-        "Prepare for third-party assessment",
-        "Maintain detailed care logs"
-      ],
-      icon: FileText,
-      color: "primary"
+      items: ["Complete claim packet comprehensively", "Submit all documents in one package", "Prepare for third-party assessment", "Maintain detailed care logs"],
+      icon: FileText, color: "primary"
     },
     {
       phase: "After Approval",
-      items: [
-        "Submit monthly invoices and logs",
-        "Track benefit usage and maximums",
-        "Maintain ongoing communication",
-        "Plan for long-term care needs"
-      ],
-      icon: TrendingUp,
-      color: "teal"
+      items: ["Submit monthly invoices and logs", "Track benefit usage and maximums", "Maintain ongoing communication", "Plan for long-term care needs"],
+      icon: TrendingUp, color: "teal"
     },
   ];
 
@@ -116,30 +101,29 @@ export default function Education() {
         <meta name="twitter:description" content="Free education on long-term care insurance: understand your policy, benefits, ADLs, elimination periods, and how to file a claim." />
         <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-education-5pEx3gNnpSRGB9hKqZu9Pb.png" />
       </Helmet>
-      {/* Hero Section - Matching Home Page Style */}
+
+      {/* ── Hero ── */}
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
-          <img 
-            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg" 
-            alt="" 
-            className="w-full h-full object-cover" 
+          <img
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg"
+            alt=""
+            className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a2a3a]/85 via-[#1a2a3a]/70 to-[#1a2a3a]/50" />
         </div>
         <div className="container relative py-14 md:py-20">
           <div className="max-w-3xl">
-            {/* Step progress badges */}
-            <div className="flex flex-wrap items-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-6 animate-float-up">
               <div className="inline-flex items-center gap-2 bg-teal/20 backdrop-blur-sm rounded-full px-4 py-2 border border-teal/30">
                 <BookOpen className="w-4 h-4 text-teal-light" />
                 <span className="text-sm text-white/90">Education & Resources</span>
               </div>
-              <div className="inline-flex items-center gap-2 bg-teal hover:bg-teal-dark rounded-full px-4 py-2 border border-teal/60 shadow-lg">
+              <div className="inline-flex items-center gap-2 bg-teal rounded-full px-4 py-2 border border-teal/60 shadow-lg">
                 <span className="text-sm font-bold text-white">Step 1 of 3 — Learn First</span>
               </div>
             </div>
-            {/* Step flow indicator */}
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-6 animate-float-up animate-delay-100">
               <div className="flex items-center gap-1.5 bg-teal rounded-lg px-3 py-1.5">
                 <span className="w-5 h-5 rounded-full bg-white text-teal text-xs font-bold flex items-center justify-center">1</span>
                 <span className="text-xs font-semibold text-white">Learn</span>
@@ -155,23 +139,23 @@ export default function Education() {
                 <span className="text-xs font-semibold text-white/60">Strategy</span>
               </div>
             </div>
-            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-float-up animate-delay-200">
               Master Your <span className="text-teal">LTC Insurance</span>
             </h1>
-            <p className="text-lg text-white/80 leading-relaxed mb-8 max-w-lg">
-              Start here — learn how long-term care insurance works, understand key definitions, and discover how we create your personalized strategy. This is your first step before completing the policy form.
+            <p className="text-lg text-white/80 leading-relaxed mb-8 max-w-lg animate-float-up animate-delay-300">
+              Start here — learn how long-term care insurance works, understand key definitions, and discover how we create your personalized strategy.
             </p>
-            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
-              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 animate-float-up animate-delay-400">
+              <Button asChild size="lg" className="text-base px-8 bg-teal hover:bg-teal-dark text-white w-full sm:w-auto shadow-lg hover:shadow-teal/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
                 <a href="#definitions">Start Learning Now</a>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent w-full sm:w-auto">
+              <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/30 text-white hover:bg-white/10 bg-transparent w-full sm:w-auto transition-all duration-300 hover:-translate-y-0.5">
                 <Link href="/policy-form">Already Learned? Go to Form →</Link>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="text-base px-6 border-white/30 text-white hover:bg-white/10 bg-transparent flex items-center justify-center gap-2 print:hidden w-full sm:w-auto"
+                className="text-base px-6 border-white/30 text-white hover:bg-white/10 bg-transparent flex items-center justify-center gap-2 print:hidden w-full sm:w-auto transition-all duration-300 hover:-translate-y-0.5"
                 onClick={() => window.print()}
               >
                 <Printer className="w-4 h-4" />
@@ -182,10 +166,10 @@ export default function Education() {
         </div>
       </section>
 
-      {/* Section 1: How LTC Insurance Works */}
+      {/* ── Section 1: How LTC Insurance Works ── */}
       <section className="py-12 md:py-16 bg-white">
         <div className="container">
-          <div className="text-center mb-8 md:mb-12">
+          <div ref={sec1Ref} className="reveal text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               How LTC Insurance <span className="text-teal">Works</span>
             </h2>
@@ -201,14 +185,15 @@ export default function Education() {
               return (
                 <div
                   key={idx}
-                  className="group p-6 rounded-xl border border-border bg-white hover:shadow-lg hover:border-teal/30 transition-all duration-300"
+                  className="group feature-card p-6 rounded-xl border border-border bg-white"
+                  style={{ transitionDelay: `${idx * 100}ms` }}
                 >
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 ${
                     step.color === 'teal' ? 'bg-teal/10 text-teal group-hover:bg-teal/20' : 'bg-primary/10 text-primary group-hover:bg-primary/20'
                   }`}>
-                    <Icon className="w-7 h-7" />
+                    <Icon className="w-7 h-7 transition-transform duration-300 group-hover:scale-110" />
                   </div>
-                  <h3 className="font-serif font-bold text-lg mb-3 text-foreground">{step.phase}</h3>
+                  <h3 className="font-serif font-bold text-lg mb-3 text-foreground group-hover:text-teal transition-colors duration-300">{step.phase}</h3>
                   <ul className="space-y-2">
                     {step.items.map((item, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -223,7 +208,7 @@ export default function Education() {
           </div>
 
           {/* Video Explainer */}
-          <div className="mb-16 rounded-2xl overflow-hidden shadow-lg">
+          <div className="mb-16 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
               <video
                 className="absolute top-0 left-0 w-full h-full"
@@ -250,37 +235,19 @@ export default function Education() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[
-                {
-                  icon: DollarSign,
-                  title: "Coverage Amounts",
-                  desc: "Policies specify daily, monthly, or lifetime maximums for what they'll pay toward care costs.",
-                  color: "text-teal"
-                },
-                {
-                  icon: Clock,
-                  title: "Elimination Period",
-                  desc: "You pay out-of-pocket for a set number of days before insurance begins paying benefits.",
-                  color: "text-primary"
-                },
-                {
-                  icon: Heart,
-                  title: "ADL Requirements",
-                  desc: "Most policies require deficits in 2-3 Activities of Daily Living to trigger benefits.",
-                  color: "text-teal"
-                },
-                {
-                  icon: Shield,
-                  title: "Financial Protection",
-                  desc: "LTC insurance protects your assets from devastating care costs that can exceed $100K annually.",
-                  color: "text-primary"
-                },
+                { icon: DollarSign, title: "Coverage Amounts", desc: "Policies specify daily, monthly, or lifetime maximums for what they'll pay toward care costs.", color: "text-teal" },
+                { icon: Clock, title: "Elimination Period", desc: "You pay out-of-pocket for a set number of days before insurance begins paying benefits.", color: "text-primary" },
+                { icon: Heart, title: "ADL Requirements", desc: "Most policies require deficits in 2-3 Activities of Daily Living to trigger benefits.", color: "text-teal" },
+                { icon: Shield, title: "Financial Protection", desc: "LTC insurance protects your assets from devastating care costs that can exceed $100K annually.", color: "text-primary" },
               ].map((concept, i) => {
                 const Icon = concept.icon;
                 return (
-                  <div key={i} className="flex gap-4">
-                    <Icon className={`w-6 h-6 ${concept.color} flex-shrink-0 mt-1`} />
+                  <div key={i} className="flex gap-4 group p-3 rounded-lg hover:bg-white/60 transition-colors duration-200">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 transition-all duration-300 ${concept.color === 'text-teal' ? 'bg-teal/10 text-teal group-hover:bg-teal/20' : 'bg-primary/10 text-primary group-hover:bg-primary/20'}`}>
+                      <Icon className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                    </div>
                     <div>
-                      <h4 className="font-serif font-bold text-foreground mb-2">{concept.title}</h4>
+                      <h4 className="font-serif font-bold text-foreground mb-1.5 group-hover:text-teal transition-colors duration-200">{concept.title}</h4>
                       <p className="text-sm text-muted-foreground">{concept.desc}</p>
                     </div>
                   </div>
@@ -291,10 +258,10 @@ export default function Education() {
         </div>
       </section>
 
-      {/* Section 2: Definitions */}
+      {/* ── Section 2: Definitions ── */}
       <section className="py-12 md:py-16 bg-white" id="definitions">
         <div className="container">
-          <div className="text-center mb-8 md:mb-12">
+          <div ref={sec2Ref} className="reveal text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               Key <span className="text-teal">Definitions</span>
             </h2>
@@ -304,7 +271,7 @@ export default function Education() {
           </div>
 
           {/* Video Explainer - Understanding ADLs */}
-          <div className="mb-16 rounded-2xl overflow-hidden shadow-lg">
+          <div className="mb-16 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
               <video
                 className="absolute top-0 left-0 w-full h-full"
@@ -325,44 +292,55 @@ export default function Education() {
           </div>
 
           {/* Glossary Accordion */}
-          <div className="max-w-4xl mx-auto space-y-3">
+          <div className="max-w-4xl mx-auto space-y-2.5">
             {glossaryTerms.map((item, i) => (
               <div
                 key={i}
                 onClick={() => toggleGlossary(i)}
                 className="cursor-pointer group"
               >
-                <div className={`p-4 rounded-lg border transition-all duration-300 ${
-                  expandedGlossary === i 
-                    ? "bg-white border-teal/50 shadow-md" 
-                    : "bg-white border-border hover:border-teal/30"
+                <div className={`rounded-xl border transition-all duration-300 overflow-hidden ${
+                  expandedGlossary === i
+                    ? "bg-white border-teal/50 shadow-md shadow-teal/10"
+                    : "bg-white border-border hover:border-teal/40 hover:shadow-sm"
                 }`}>
-                  <div className="flex items-center justify-between">
-                    <h4 className={`font-serif font-bold transition-colors ${
-                      expandedGlossary === i ? "text-teal" : "text-foreground group-hover:text-teal"
-                    }`}>
-                      {item.term}
-                    </h4>
-                    <ChevronDown className={`w-5 h-5 text-teal transition-transform duration-300 ${
+                  <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                        expandedGlossary === i ? "bg-teal text-white" : "bg-teal/10 text-teal group-hover:bg-teal/20"
+                      }`}>
+                        {i + 1}
+                      </span>
+                      <h4 className={`font-serif font-bold transition-colors duration-200 ${
+                        expandedGlossary === i ? "text-teal" : "text-foreground group-hover:text-teal"
+                      }`}>
+                        {item.term}
+                      </h4>
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-teal flex-shrink-0 transition-transform duration-300 ${
                       expandedGlossary === i ? "rotate-180" : ""
                     }`} />
                   </div>
-                  {expandedGlossary === i && (
-                    <div className="mt-4 pt-4 border-t border-teal/20 animate-in fade-in slide-in-from-top-2">
-                      <p className="text-sm text-muted-foreground leading-relaxed">{item.def}</p>
+                  <div className={`overflow-hidden transition-all duration-300 ${
+                    expandedGlossary === i ? "max-h-48" : "max-h-0"
+                  }`}>
+                    <div className="px-4 pb-4 pt-0 border-t border-teal/20">
+                      <p className="text-sm text-muted-foreground leading-relaxed pt-3">{item.def}</p>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Pro Tip */}
-          <div className="mt-12 p-6 bg-secondary rounded-xl border border-border">
+          <div className="mt-10 max-w-4xl mx-auto p-5 bg-teal/5 rounded-xl border border-teal/20 hover:border-teal/40 transition-colors duration-200">
             <div className="flex items-start gap-4">
-              <Info className="w-6 h-6 text-teal flex-shrink-0 mt-0.5" />
+              <div className="w-8 h-8 rounded-lg bg-teal/15 flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-teal" />
+              </div>
               <div>
-                <h4 className="font-serif font-bold text-foreground mb-2">Pro Tip</h4>
+                <h4 className="font-serif font-bold text-foreground mb-1.5">Pro Tip</h4>
                 <p className="text-sm text-muted-foreground">
                   Print or bookmark this glossary. You'll want to reference these terms when reviewing your policy documents and communicating with your insurance company.
                 </p>
@@ -372,126 +350,90 @@ export default function Education() {
         </div>
       </section>
 
-      {/* Section 3: How Strategy Creation Works */}
+      {/* ── Section 3: How Strategy Creation Works ── */}
       <section className="py-12 md:py-16 bg-secondary">
         <div className="container">
-          <div className="text-center mb-8 md:mb-12">
+          <div ref={sec3Ref} className="reveal text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               How We Create Your <span className="text-teal">Strategy</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Our intelligent system analyzes your unique policy and situation to generate a personalized, step-by-step action plan.
+              Our intelligent system analyzes your specific policy and creates a personalized action plan in minutes.
             </p>
           </div>
 
           {/* Strategy Steps */}
-          <div className="max-w-4xl mx-auto space-y-4 mb-12">
-            {strategySteps.map((step, idx) => {
+          <div className="max-w-3xl mx-auto space-y-4 mb-16">
+            {strategySteps.map((step) => {
               const Icon = step.icon;
-              const isActive = activeStep === idx;
-              
+              const isActive = activeStep === step.num - 1;
               return (
                 <div
-                  key={idx}
-                  onClick={() => setActiveStep(idx)}
-                  className="cursor-pointer group"
-                >
-                  <div className={`p-6 rounded-xl border transition-all duration-300 ${
+                  key={step.num}
+                  onClick={() => setActiveStep(isActive ? -1 : step.num - 1)}
+                  className={`group cursor-pointer rounded-xl border transition-all duration-300 overflow-hidden ${
                     isActive
-                      ? "bg-white border-teal/50 shadow-md"
-                      : "bg-white border-border hover:border-teal/30"
-                  }`}>
-                    <div className="flex items-start gap-6">
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-lg transition-all ${
+                      ? "border-teal/50 bg-white shadow-md shadow-teal/10"
+                      : "border-border bg-white hover:border-teal/30 hover:shadow-sm"
+                  }`}
+                >
+                  <div className="p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                         isActive
-                          ? "bg-teal text-white"
-                          : "bg-secondary text-foreground"
+                          ? step.color === "text-teal" ? "bg-teal text-white" : "bg-primary text-white"
+                          : step.color === "text-teal" ? "bg-teal/10 text-teal group-hover:bg-teal/20" : "bg-primary/10 text-primary group-hover:bg-primary/20"
                       }`}>
-                        {step.num}
+                        <Icon className="w-6 h-6 transition-transform duration-300 group-hover:scale-110" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className={`font-serif text-xl font-bold transition-colors ${
-                          isActive ? "text-teal" : "text-foreground"
-                        }`}>
+                      <div>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className={`text-xs font-bold uppercase tracking-wider transition-colors duration-200 ${isActive ? "text-teal" : "text-muted-foreground"}`}>
+                            Step {step.num}
+                          </span>
+                        </div>
+                        <h3 className={`font-serif font-bold text-base transition-colors duration-200 ${isActive ? "text-teal" : "text-foreground group-hover:text-teal"}`}>
                           {step.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground mt-1">{step.desc}</p>
-                        
-                        {isActive && (
-                          <div className="mt-4 pt-4 border-t border-teal/20 animate-in fade-in slide-in-from-top-2">
-                            <p className="text-sm font-semibold text-foreground mb-3">What happens in this step:</p>
-                            <ul className="space-y-2">
-                              {step.num === 1 && (
-                                <>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Enter your policy number and carrier information
-                                  </li>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Describe your current care situation
-                                  </li>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Share relevant medical and care details
-                                  </li>
-                                </>
-                              )}
-                              {step.num === 2 && (
-                                <>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Our system reads your policy terms
-                                  </li>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Identifies coverage limits and requirements
-                                  </li>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Analyzes your specific situation
-                                  </li>
-                                </>
-                              )}
-                              {step.num === 3 && (
-                                <>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Receive a customized action plan
-                                  </li>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Get specific timelines and milestones
-                                  </li>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Access policy-specific guidance
-                                  </li>
-                                </>
-                              )}
-                              {step.num === 4 && (
-                                <>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Follow your personalized roadmap
-                                  </li>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    Track your progress with checklists
-                                  </li>
-                                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                                    <CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />
-                                    File your claim with confidence
-                                  </li>
-                                </>
-                              )}
-                            </ul>
-                          </div>
-                        )}
+                        <p className="text-sm text-muted-foreground mt-0.5">{step.desc}</p>
                       </div>
-                      <ArrowRight className={`w-5 h-5 transition-all ${
-                        isActive ? "text-teal rotate-90" : "text-muted-foreground"
-                      }`} />
+                    </div>
+                    <ArrowRight className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
+                      isActive ? "text-teal rotate-90" : "text-muted-foreground group-hover:text-teal group-hover:translate-x-1"
+                    }`} />
+                  </div>
+                  <div className={`overflow-hidden transition-all duration-300 ${isActive ? "max-h-48" : "max-h-0"}`}>
+                    <div className="px-5 pb-5 border-t border-teal/20 pt-4">
+                      <ul className="space-y-2">
+                        {step.num === 1 && (
+                          <>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Have your policy documents ready</li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Know your current care situation</li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Takes about 10-15 minutes to complete</li>
+                          </>
+                        )}
+                        {step.num === 2 && (
+                          <>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />AI analyzes your specific policy terms</li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Cross-references with LTC best practices</li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Identifies your unique requirements</li>
+                          </>
+                        )}
+                        {step.num === 3 && (
+                          <>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Receive a prioritized action plan</li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Get specific timelines and milestones</li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Access policy-specific guidance</li>
+                          </>
+                        )}
+                        {step.num === 4 && (
+                          <>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Follow your personalized roadmap</li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />Track your progress with checklists</li>
+                            <li className="flex items-start gap-2 text-sm text-muted-foreground"><CheckCircle className="w-4 h-4 text-teal flex-shrink-0 mt-0.5" />File your claim with confidence</li>
+                          </>
+                        )}
+                      </ul>
                     </div>
                   </div>
                 </div>
@@ -500,37 +442,23 @@ export default function Education() {
           </div>
 
           {/* Why This Approach Works */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div ref={sec4Ref} className="reveal grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              {
-                icon: Brain,
-                title: "Intelligent Analysis",
-                desc: "Our system understands LTC insurance complexity and applies it to your specific situation.",
-                color: "text-teal"
-              },
-              {
-                icon: Target,
-                title: "Personalized Guidance",
-                desc: "No generic advice—your strategy is tailored to your policy terms and care needs.",
-                color: "text-primary"
-              },
-              {
-                icon: Award,
-                title: "Proven Success",
-                desc: "Families using our strategies experience faster approvals and fewer denials.",
-                color: "text-teal"
-              },
+              { icon: Brain, title: "Intelligent Analysis", desc: "Our system understands LTC insurance complexity and applies it to your specific situation.", color: "text-teal" },
+              { icon: Target, title: "Personalized Guidance", desc: "No generic advice—your strategy is tailored to your policy terms and care needs.", color: "text-primary" },
+              { icon: Award, title: "Proven Success", desc: "Families using our strategies experience faster approvals and fewer denials.", color: "text-teal" },
             ].map((benefit, i) => {
               const Icon = benefit.icon;
               return (
                 <div
                   key={i}
-                  className="group p-6 rounded-xl border border-border bg-white hover:shadow-lg hover:border-teal/30 transition-all duration-300"
+                  className="group feature-card p-6 rounded-xl border border-border bg-white"
+                  style={{ transitionDelay: `${i * 80}ms` }}
                 >
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${benefit.color === 'text-teal' ? 'bg-teal/10 text-teal group-hover:bg-teal/20' : 'bg-primary/10 text-primary group-hover:bg-primary/20'}`}>
-                    <Icon className="w-7 h-7" />
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 ${benefit.color === 'text-teal' ? 'bg-teal/10 text-teal group-hover:bg-teal/20' : 'bg-primary/10 text-primary group-hover:bg-primary/20'}`}>
+                    <Icon className="w-7 h-7 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" />
                   </div>
-                  <h3 className="font-serif font-bold text-lg mb-3 text-foreground">{benefit.title}</h3>
+                  <h3 className="font-serif font-bold text-lg mb-3 text-foreground group-hover:text-teal transition-colors duration-300">{benefit.title}</h3>
                   <p className="text-sm text-muted-foreground">{benefit.desc}</p>
                 </div>
               );
@@ -539,10 +467,10 @@ export default function Education() {
         </div>
       </section>
 
-      {/* Success Metrics Section */}
+      {/* ── Success Metrics ── */}
       <section className="py-12 md:py-16 bg-white">
         <div className="container">
-          <div className="text-center mb-8 md:mb-12">
+          <div ref={sec5Ref} className="reveal text-center mb-8 md:mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               Our <span className="text-teal">Track Record</span>
             </h2>
@@ -551,62 +479,31 @@ export default function Education() {
             </p>
           </div>
 
-          {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-            <AnimatedCounter
-              end={500}
-              duration={2500}
-              label="Families Helped"
-              suffix="+"
-            />
-            <AnimatedCounter
-              end={95}
-              duration={2500}
-              label="Claims Approved"
-              suffix="%"
-            />
-            <AnimatedCounter
-              end={30}
-              duration={2500}
-              label="Average Days to Approval"
-              suffix=" days"
-            />
+            <AnimatedCounter end={500} duration={2500} label="Families Helped" suffix="+" />
+            <AnimatedCounter end={95} duration={2500} label="Claims Approved" suffix="%" />
+            <AnimatedCounter end={30} duration={2500} label="Average Days to Approval" suffix=" days" />
           </div>
 
-          {/* Metrics Description Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              {
-                icon: Users,
-                title: "Trusted by Families",
-                desc: "Families nationwide rely on our platform to navigate the complex LTC insurance claims process with confidence.",
-                color: "text-teal"
-              },
-              {
-                icon: CheckCircle,
-                title: "High Success Rate",
-                desc: "Our personalized strategies and expert guidance result in significantly higher approval rates compared to industry averages.",
-                color: "text-primary"
-              },
-              {
-                icon: TrendingUp,
-                title: "Faster Approvals",
-                desc: "By organizing documentation and following our proven process, families get their claims approved faster.",
-                color: "text-teal"
-              },
+              { icon: Users, title: "Trusted by Families", desc: "Families nationwide rely on our platform to navigate the complex LTC insurance claims process with confidence.", color: "text-teal" },
+              { icon: CheckCircle, title: "High Success Rate", desc: "Our personalized strategies and expert guidance result in significantly higher approval rates compared to industry averages.", color: "text-primary" },
+              { icon: TrendingUp, title: "Faster Approvals", desc: "By organizing documentation and following our proven process, families get their claims approved faster.", color: "text-teal" },
             ].map((metric, i) => {
               const Icon = metric.icon;
               return (
                 <div
                   key={i}
-                  className="group p-6 rounded-xl border border-border bg-white hover:shadow-lg hover:border-teal/30 transition-all duration-300"
+                  className="group feature-card p-6 rounded-xl border border-border bg-white"
+                  style={{ transitionDelay: `${i * 80}ms` }}
                 >
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-colors ${
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 ${
                     metric.color === 'text-teal' ? 'bg-teal/10 text-teal group-hover:bg-teal/20' : 'bg-primary/10 text-primary group-hover:bg-primary/20'
                   }`}>
-                    <Icon className="w-7 h-7" />
+                    <Icon className="w-7 h-7 transition-transform duration-300 group-hover:scale-110" />
                   </div>
-                  <h3 className="font-serif font-bold text-lg mb-3 text-foreground">{metric.title}</h3>
+                  <h3 className="font-serif font-bold text-lg mb-3 text-foreground group-hover:text-teal transition-colors duration-300">{metric.title}</h3>
                   <p className="text-sm text-muted-foreground">{metric.desc}</p>
                 </div>
               );
@@ -615,10 +512,10 @@ export default function Education() {
         </div>
       </section>
 
-      {/* Resources Reference Section — anchors used by ChronologicalChecklist document links */}
+      {/* ── Resource Library ── */}
       <section className="py-16 bg-white" id="resources">
         <div className="container max-w-4xl">
-          <div className="text-center mb-10">
+          <div ref={resourcesRef} className="reveal text-center mb-10">
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">
               LTC Insurance <span className="text-teal">Resource Library</span>
             </h2>
@@ -627,7 +524,7 @@ export default function Education() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { id: "plan-of-care", title: "Plan of Care", desc: "A Plan of Care is a written document prepared by a licensed healthcare professional that outlines the specific care services needed, frequency, and goals. Most LTC carriers require a current Plan of Care to initiate and maintain benefits." },
               { id: "poa", title: "Power of Attorney (POA)", desc: "A legal document granting a designated person authority to act on behalf of the insured in financial and/or healthcare matters. Many carriers require a copy on file before discussing the policy with anyone other than the insured." },
@@ -643,9 +540,13 @@ export default function Education() {
               { id: "inflation", title: "Inflation Rider / Protection", desc: "An inflation rider increases your benefit amounts annually (typically 3–5% compound or simple interest) to help keep pace with rising care costs. Check your policy for the specific percentage and whether it is simple or compound growth." },
               { id: "glossary", title: "Full Glossary", desc: "See the Key Definitions section above for a complete glossary of LTC insurance terms including ADLs, Elimination Period, Daily Maximum, Lifetime Maximum, Claim Number, Case Manager, and more." },
             ].map((item) => (
-              <div key={item.id} id={item.id} className="p-5 rounded-xl border border-border bg-white hover:shadow-md hover:border-teal/30 transition-all duration-300 scroll-mt-24">
-                <h3 className="font-serif font-bold text-foreground mb-2 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-teal flex-shrink-0" />
+              <div
+                key={item.id}
+                id={item.id}
+                className="group p-5 rounded-xl border border-border bg-white hover:shadow-md hover:border-teal/40 hover:-translate-y-0.5 transition-all duration-300 scroll-mt-24"
+              >
+                <h3 className="font-serif font-bold text-foreground mb-2 flex items-center gap-2 group-hover:text-teal transition-colors duration-200">
+                  <FileText className="w-4 h-4 text-teal flex-shrink-0 transition-transform duration-300 group-hover:scale-110" />
                   {item.title}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
@@ -655,37 +556,31 @@ export default function Education() {
         </div>
       </section>
 
-      {/* CTA Section - Matching Home Page Style */}
-      <section
-        className="parallax-section relative py-12 md:py-16 text-white"
-        style={{
-          backgroundImage: "url('/manus-storage/education-hero_6c3e985b.jpg')",
-        }}
-      >
+      {/* ── CTA ── */}
+      <section className="parallax-section relative py-12 md:py-16 text-white">
         <div className="absolute inset-0 bg-gradient-to-br from-teal-dark/90 via-primary/85 to-[#1a2a3a]/90" />
         <div className="container relative text-center">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4 animate-float-up">
             Ready to Create Your Strategy?
           </h2>
-          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8">
+          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8 animate-float-up animate-delay-100">
             Now that you understand how LTC insurance works, complete your policy form to generate your personalized action plan.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90">
+          <div className="flex flex-wrap justify-center gap-4 animate-float-up animate-delay-200">
+            <Button asChild size="lg" className="text-base px-8 bg-white text-teal-dark hover:bg-white/90 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               <Link href="/policy-form">
                 Complete the Policy Form <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/10 bg-transparent">
+            <Button asChild variant="outline" size="lg" className="text-base px-8 border-white/40 text-white hover:bg-white/10 bg-transparent transition-all duration-300 hover:-translate-y-0.5">
               <Link href="/contact">Talk to Someone</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* About Home Care - just above disclaimer */}
       <AboutHomeCare />
-          <LegalDisclaimerFooter />
+      <LegalDisclaimerFooter />
     </Layout>
   );
 }

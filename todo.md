@@ -673,3 +673,15 @@
 - [x] Wrap CareCalculator, PdfDeliveryPanel, SMSNotificationManager, GanttTimeline, ChronologicalChecklist, PolicySummaryCard with React.lazy()
 - [x] Wrap hasStrategy content block in Suspense with spinner fallback
 - [x] TypeScript clean (0 errors) after lazy conversion
+
+## Aesthetic Audit & Animation Enhancement — June 2026
+
+- [x] Global CSS: added keyframes (scale-in, shimmer, check-pop, pulse-glow, step-fill, step-slide-in/out, float-up, fade-in-scale, menu-slide-down, accordion-open), scroll-reveal classes (.reveal, .reveal-left, .reveal-right with stagger delays), feature-card hover lift, stat-card hover, testimonial-card hover, nav-link animated underline, button press effect, glass-card, gradient-text, input focus glow
+- [x] Home page: full rewrite with useReveal hook on all sections, count-up stats animation, feature card hover lift with gradient overlay, quote crossfade in Our Story, parallax CTA section, staggered entrance animations, About SC Visiting Angels section
+- [x] Layout/Nav: scroll-shadow nav (nav-scrolled class activates on scroll), animated active nav underline (::after pseudo-element expands on hover/active), mobile menu slide-down animation, footer link hover states with translate-x
+- [x] Education page: full rewrite with useReveal, stagger animations on phase cards, glossary card hover, accordion spring animation, hero entrance animations
+- [x] Strategy page: checklist item check animation (check-pop keyframe), improved hover states with teal border, sticky progress bar with gradient fill
+- [x] PolicyForm: gradient progress bar (from-teal to-teal-dark) with 500ms ease-out transition, active step scale-125 icon, completed steps show ✅ with hover scale, active dot indicator below current step label
+- [x] Added useScrollReveal hook to client/src/hooks/ directory for reuse
+- [x] Added animate-scale-in keyframe to index.css
+- [x] All 54 tests passing, TypeScript 0 errors after all changes

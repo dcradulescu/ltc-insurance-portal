@@ -943,19 +943,40 @@ export default function PolicyForm() {
           {/* Progress */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-slate-500">Step {step + 1} of {steps.length}</span>
-              <span className="text-sm font-medium text-teal">{completionPct}% Complete</span>
+              <span className="text-sm text-slate-500 font-medium">Step {step + 1} of {steps.length}</span>
+              <span className="text-sm font-bold text-teal">{completionPct}% Complete</span>
             </div>
-            <div className="w-full bg-slate-200 rounded-full h-2">
-              <div className="bg-teal h-2 rounded-full transition-all" style={{ width: `${((step + 1) / steps.length) * 100}%` }} />
+            <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-teal to-teal-dark h-2.5 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+              />
             </div>
-            <div className="flex justify-between mt-3">
-              {steps.map((s, i) => (
-                <button key={i} onClick={() => { if (i < step) setStep(i); }} disabled={i > step} className={`text-xs text-center flex-1 px-1 ${i === step ? "text-teal font-semibold" : i < step ? "text-green-600 cursor-pointer" : "text-slate-400 cursor-not-allowed opacity-50"}`}>
-                  <span className="block text-lg mb-0.5">{s.icon}</span>
-                  <span className="hidden sm:block">{s.title}</span>
-                </button>
-              ))}
+            <div className="flex justify-between mt-4">
+              {steps.map((s, i) => {
+                const isActive = i === step;
+                const isDone = i < step;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => { if (i < step) setStep(i); }}
+                    disabled={i > step}
+                    className={`group text-xs text-center flex-1 px-1 transition-all duration-200 ${
+                      isActive ? "text-teal font-semibold" : isDone ? "text-green-600 cursor-pointer hover:text-teal" : "text-slate-400 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    <span className={`block text-lg mb-0.5 transition-transform duration-200 ${
+                      isActive ? "scale-125" : isDone ? "group-hover:scale-110" : ""
+                    }`}>
+                      {isDone ? "✅" : s.icon}
+                    </span>
+                    <span className="hidden sm:block">{s.title}</span>
+                    {isActive && (
+                      <span className="block w-1.5 h-1.5 rounded-full bg-teal mx-auto mt-1" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

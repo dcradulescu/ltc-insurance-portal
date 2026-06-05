@@ -136,9 +136,12 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
+    letter-spacing: -0.01em;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -150,6 +153,27 @@
   input[type="checkbox"]:not(:disabled),
   input[type="radio"]:not(:disabled) {
     @apply cursor-pointer;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Better focus rings */
+  :focus-visible {
+    outline: 2px solid oklch(0.70 0.12 180);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Input focus glow */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    box-shadow: 0 0 0 3px oklch(0.70 0.12 180 / 0.15);
+    border-color: oklch(0.70 0.12 180) !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
   }
 }
 
@@ -181,9 +205,245 @@
       max-width: 1280px;
     }
   }
+
+  /* ── Scroll-reveal base state ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-32px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(32px);
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  /* Stagger delays */
+  .reveal-delay-1 { transition-delay: 0.08s; }
+  .reveal-delay-2 { transition-delay: 0.16s; }
+  .reveal-delay-3 { transition-delay: 0.24s; }
+  .reveal-delay-4 { transition-delay: 0.32s; }
+
+  /* ── Feature card hover lift ── */
+  .feature-card {
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease,
+                border-color 0.3s ease;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, oklch(0.70 0.12 180 / 0.06), oklch(0.588 0.158 241.966 / 0.04));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -12px oklch(0.70 0.12 180 / 0.2);
+    border-color: oklch(0.70 0.12 180 / 0.35) !important;
+  }
+  .feature-card:hover::before {
+    opacity: 1;
+  }
+
+  /* ── Stat counter card ── */
+  .stat-card {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 32px -8px oklch(0.70 0.12 180 / 0.18);
+  }
+
+  /* ── Testimonial card ── */
+  .testimonial-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .testimonial-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -8px oklch(0.30 0.01 65 / 0.15);
+  }
+
+  /* ── Nav link underline animation ── */
+  .nav-link-animated {
+    position: relative;
+  }
+  .nav-link-animated::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    right: 50%;
+    height: 2px;
+    background: oklch(0.70 0.12 180);
+    border-radius: 1px;
+    transition: left 0.25s ease, right 0.25s ease;
+  }
+  .nav-link-animated:hover::after,
+  .nav-link-animated.active::after {
+    left: 8px;
+    right: 8px;
+  }
+
+  /* ── Button press effect ── */
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+
+  /* ── Shimmer loading skeleton ── */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      oklch(0.92 0.006 200) 25%,
+      oklch(0.96 0.004 200) 50%,
+      oklch(0.92 0.006 200) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* ── Checklist item check animation ── */
+  .checklist-item-complete {
+    animation: check-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* ── Pulse glow for active elements ── */
+  .pulse-glow {
+    animation: pulse-glow 2.5s ease-in-out infinite;
+  }
+
+  /* ── Gradient text ── */
+  .gradient-text {
+    background: linear-gradient(135deg, oklch(0.70 0.12 180), oklch(0.588 0.158 241.966));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Glass card effect ── */
+  .glass-card {
+    background: oklch(1 0 0 / 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid oklch(0.92 0.006 200 / 0.6);
+  }
+
+  /* ── Step progress dot fill ── */
+  .step-dot-fill {
+    animation: step-fill 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  /* ── Form step slide transition ── */
+  .step-enter {
+    animation: step-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .step-exit {
+    animation: step-slide-out 0.25s ease-in forwards;
+  }
 }
 
-/* Parallax section */
+/* ══════════════════════════════════════════════
+   KEYFRAMES
+══════════════════════════════════════════════ */
+
+@keyframes scale-in {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes check-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  70% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.70 0.12 180 / 0.4); }
+  50% { box-shadow: 0 0 0 8px oklch(0.70 0.12 180 / 0); }
+}
+
+@keyframes step-fill {
+  from { transform: scale(0.6); opacity: 0.5; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes step-slide-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes step-slide-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-24px); }
+}
+
+@keyframes float-up {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-scale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hero entrance ── */
+.animate-float-up {
+  animation: float-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-fade-in-scale {
+  animation: fade-in-scale 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-400 { animation-delay: 0.4s; }
+.animate-delay-500 { animation-delay: 0.5s; }
+.animate-delay-600 { animation-delay: 0.6s; }
+
+/* ══════════════════════════════════════════════
+   PARALLAX SECTION
+══════════════════════════════════════════════ */
 .parallax-section {
   background-attachment: fixed;
   background-position: center;
@@ -197,7 +457,9 @@
   }
 }
 
-/* Testimonial carousel */
+/* ══════════════════════════════════════════════
+   TESTIMONIAL CAROUSEL
+══════════════════════════════════════════════ */
 @keyframes scroll-left {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -211,20 +473,54 @@
   animation-play-state: paused;
 }
 
-/* Fading quotes */
+/* ══════════════════════════════════════════════
+   FADING QUOTES
+══════════════════════════════════════════════ */
 @keyframes fade-quote {
   0%, 8% { opacity: 0; transform: translateY(10px); }
   12%, 28% { opacity: 1; transform: translateY(0); }
   32%, 100% { opacity: 0; transform: translateY(-10px); }
 }
 
-/* ============================================================
-   Print styles — Education page (and any page using window.print())
-   ============================================================ */
+/* ══════════════════════════════════════════════
+   STICKY NAV SCROLL SHADOW
+══════════════════════════════════════════════ */
+.nav-scrolled {
+  box-shadow: 0 4px 20px -4px oklch(0.30 0.01 65 / 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: oklch(1 0 0 / 0.95) !important;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+}
+
+/* ══════════════════════════════════════════════
+   MOBILE MENU SLIDE
+══════════════════════════════════════════════ */
+@keyframes menu-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mobile-menu-open {
+  animation: menu-slide-down 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ══════════════════════════════════════════════
+   ACCORDION SPRING ANIMATION
+══════════════════════════════════════════════ */
+@keyframes accordion-open {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.accordion-content-open {
+  animation: accordion-open 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ══════════════════════════════════════════════
+   PRINT STYLES
+══════════════════════════════════════════════ */
 @media print {
-  /* Hide chrome: nav, header, footer, chat widget, video placeholders,
-     hero background images, step badges, CTA buttons, and
-     any element explicitly marked print:hidden via Tailwind */
   header,
   nav,
   footer,
@@ -232,14 +528,12 @@
     display: none !important;
   }
 
-  /* Reset page background to white */
   body,
   main {
     background: white !important;
     color: black !important;
   }
 
-  /* Ensure headings are dark on white */
   h1, h2, h3, h4, h5, h6 {
     color: #1a2a3a !important;
   }
@@ -248,19 +542,16 @@
     color: #333 !important;
   }
 
-  /* Remove shadows that look bad on paper */
   * {
     box-shadow: none !important;
     text-shadow: none !important;
   }
 
-  /* Prevent page breaks inside cards and list items */
   li,
   tr {
     break-inside: avoid;
   }
 
-  /* Page margins */
   @page {
     margin: 1.5cm 2cm;
   }

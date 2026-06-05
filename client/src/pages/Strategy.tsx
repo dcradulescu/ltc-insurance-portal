@@ -441,11 +441,11 @@ export default function Strategy() {
           const catInfo = categoryLabels[cat] || { label: cat, icon: "📌" };
           const allDone = completedCount === catTasks.length;
           return (
-            <AccordionItem key={cat} value={cat} className="border rounded-xl overflow-hidden bg-white shadow-sm">
-              <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-50 transition-colors">
+            <AccordionItem key={cat} value={cat} className="border rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+              <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-50 transition-colors group">
                 <div className="flex items-center gap-3 flex-1">
                   <span className="text-base">{catInfo.icon}</span>
-                  <span className="text-sm font-semibold text-slate-800">{catInfo.label}</span>
+                  <span className="text-sm font-semibold text-slate-800 group-hover:text-teal transition-colors duration-200">{catInfo.label}</span>
                   <Badge variant={allDone ? "default" : "secondary"} className={`text-xs ${allDone ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}`}>
                     {completedCount}/{catTasks.length}
                   </Badge>
@@ -456,22 +456,22 @@ export default function Strategy() {
                   {catTasks.map(task => (
                     <label
                       key={task.id}
-                      className={`flex items-start gap-3 p-2.5 rounded-lg cursor-pointer transition-all ${
+                      className={`group/task flex items-start gap-3 p-2.5 rounded-lg cursor-pointer transition-all duration-200 ${
                         task.completed
-                          ? "bg-green-50/50"
+                          ? "bg-green-50 border border-green-100"
                           : task.critical
-                            ? "bg-amber-50 border border-amber-200"
-                            : "hover:bg-slate-50"
+                            ? "bg-amber-50 border border-amber-200 hover:border-amber-300 hover:bg-amber-100/50"
+                            : "border border-transparent hover:bg-slate-50 hover:border-slate-200"
                       }`}
                     >
                       <Checkbox
                         checked={task.completed}
                         onCheckedChange={() => toggleTask(stage, tasks, task.id)}
-                        className="mt-0.5"
+                        className={`mt-0.5 transition-transform duration-150 ${task.completed ? "scale-110" : "group-hover/task:scale-105"}`}
                       />
                       <div className="flex-1 min-w-0">
-                        <span className={`text-sm leading-relaxed ${
-                          task.completed ? "line-through text-slate-400" : task.critical ? "font-medium text-amber-800" : "text-slate-700"
+                        <span className={`text-sm leading-relaxed transition-all duration-200 ${
+                          task.completed ? "line-through text-slate-400" : task.critical ? "font-medium text-amber-800" : "text-slate-700 group-hover/task:text-slate-900"
                         }`}>
                           {task.critical && !task.completed && (
                             <AlertTriangle className="w-3.5 h-3.5 inline mr-1.5 text-amber-500" />
@@ -479,7 +479,7 @@ export default function Strategy() {
                           {task.label}
                         </span>
                       </div>
-                      {task.completed && <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />}
+                      {task.completed && <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 animate-scale-in" />}
                     </label>
                   ))}
                 </div>
