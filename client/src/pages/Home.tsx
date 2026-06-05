@@ -379,7 +379,7 @@ export default function Home() {
       </section>
 
       {/* ── Policy Intake Form ── */}
-      <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
+      <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={intakeLeftRef} className="reveal reveal-left">
@@ -414,7 +414,7 @@ export default function Home() {
       </section>
 
       {/* ── Customized Strategy ── */}
-      <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
+      <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={stratLeftRef} className="relative hidden lg:block order-2 lg:order-1 reveal reveal-left">
@@ -449,7 +449,7 @@ export default function Home() {
       </section>
 
       {/* ── Chat Support ── */}
-      <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
+      <section className="py-12 md:py-16" style={{ background: '#ffffff' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div ref={chatLeftRef} className="reveal reveal-left">
