@@ -135,6 +135,8 @@ export default function Home() {
   const aboutRightRef = useReveal();
   const testimonialsHeaderRef = useReveal();
   const ctaRef = useReveal();
+  const eduLeftRef = useReveal();
+  const eduRightRef = useReveal();
   const intakeLeftRef = useReveal();
   const intakeRightRef = useReveal();
   const stratLeftRef = useReveal();
@@ -340,6 +342,42 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Step 1: Education ── */}
+      <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
+        <div className="container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div ref={eduLeftRef} className="relative hidden lg:block reveal reveal-left">
+              <img
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/education-section-hero-Yk9ZFnvFnvFnvFnvFnvF.webp"
+                onError={(e) => { (e.target as HTMLImageElement).src = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/intake-form-section-mZs4Ekm9teKNjUckYUJK2U.webp'; }}
+                alt="Senior reading about long-term care insurance with a cup of coffee"
+                className="w-full h-auto rounded shadow-xl hover:shadow-2xl transition-shadow duration-500 hover:scale-[1.01]"
+              />
+            </div>
+            <div ref={eduRightRef} className="reveal reveal-right">
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
+                <BookOpen className="w-4 h-4" style={{ color: VA_TEAL }} />
+                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Step 1 of 3</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
+                Start with <span style={{ color: VA_TEAL }}>Education</span>
+              </h2>
+              <p className="text-lg leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
+                Most families feel overwhelmed because they don't know what their policy actually covers. Our free Education section explains everything in plain language — no insurance jargon, no confusing terms. Just clear answers to the questions every family asks.
+              </p>
+              <div className="space-y-4 mb-8">
+                <VaCheckItem title="Understand Your Policy" desc="Learn what ADLs are, what your elimination period means, and exactly what benefits you're entitled to" />
+                <VaCheckItem title="Know What to Expect" desc="Understand the claims process from start to finish before you make a single phone call" />
+                <VaCheckItem title="Free & No Account Required" desc="Access all educational resources instantly — no sign-up, no cost, no obligation" />
+              </div>
+              <Link href="/education" className="va-btn text-base px-8 py-4 shadow-lg">
+                Start Learning <ArrowRight className="w-4 h-4 ml-2 inline" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Policy Intake Form ── */}
       <section className="py-12 md:py-16" style={{ background: VA_GREY_BG }}>
         <div className="container">
@@ -389,7 +427,7 @@ export default function Home() {
             <div ref={stratRightRef} className="order-1 lg:order-2 reveal reveal-right">
               <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.12)' }}>
                 <Target className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Personalized Guidance</span>
+                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Step 3 of 3</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
                 Your <span style={{ color: VA_TEAL }}>Customized Strategy</span>
