@@ -531,7 +531,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={chatRightRef} className="relative hidden lg:block reveal reveal-right">
-              <div className="bg-white rounded shadow-xl overflow-hidden border hover:shadow-2xl transition-shadow duration-500" style={{ borderColor: '#e0e0e0' }}>
+              <div className="bg-white rounded shadow-xl overflow-hidden border" style={{ borderColor: '#e0e0e0' }}>
                 <div className="p-4 border-b" style={{ background: 'rgba(52,177,196,0.08)', borderColor: '#e0e0e0' }}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded flex items-center justify-center pulse-glow" style={{ background: VA_TEAL }}>
@@ -619,7 +619,7 @@ export default function Home() {
                   ))}
                 </div>
                 <p className="text-sm leading-relaxed mb-4 italic" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>"{testimonial.text}"</p>
-                <div className="border-t pt-4" style={{ borderColor: '#e0e0e0' }}>
+                <div className="pt-4">
                   <div className="font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: index % 2 === 0 ? VA_TEAL : VA_BLUE }}>{testimonial.name}</div>
                   <div className="text-xs" style={{ color: '#888', fontFamily: "'Open Sans', sans-serif" }}>{testimonial.relation}</div>
                 </div>
