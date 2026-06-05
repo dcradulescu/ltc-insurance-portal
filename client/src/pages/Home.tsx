@@ -338,7 +338,7 @@ export default function Home() {
                     <span ref={stat.ref!}>{stat.count}</span>{stat.suffix}
                   </div>
                 )}
-                <div className="text-xs md:text-sm text-white/75" style={{ fontFamily: "'Open Sans', sans-serif" }}>{stat.label}</div>
+                <div className="text-xs md:text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>{stat.label}</div>
               </div>
             ))}
           </div>
@@ -547,10 +547,10 @@ export default function Home() {
               <h2 className="text-3xl md:text-4xl font-bold mb-5 leading-tight" style={{ fontFamily: "'Roboto', sans-serif" }}>
                 Compassionate Home Care<br className="hidden md:block" /> in the Upstate
               </h2>
-              <p className="text-white/80 text-base leading-relaxed mb-5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-white text-base leading-relaxed mb-5" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 SC Visiting Angels is a locally owned and operated home care agency serving families across the Upstate of South Carolina. For over a decade, we have helped seniors and their families navigate the challenges of aging at home — from personal care and companionship to specialized dementia support.
               </p>
-              <p className="text-white/80 text-base leading-relaxed mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-white text-base leading-relaxed mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 Our caregivers are carefully selected, thoroughly trained, and deeply committed to treating every client with the dignity and respect they deserve. We believe that home is where healing happens best.
               </p>
               <div className="grid grid-cols-2 gap-4 mb-8">
@@ -562,7 +562,7 @@ export default function Home() {
                 ].map(({ stat, label }) => (
                   <div key={label} className="stat-card rounded p-4 border hover:bg-white/15 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.12)' }}>
                     <div className="text-2xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: VA_TEAL }}>{stat}</div>
-                    <div className="text-xs text-white/70 leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
+                    <div className="text-xs text-white/90 leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{label}</div>
                   </div>
                 ))}
               </div>

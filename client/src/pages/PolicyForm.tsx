@@ -906,8 +906,8 @@ export default function PolicyForm() {
               {/* Step flow indicator */}
               <div className="flex items-center gap-2 mb-5">
                 <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
-                  <span className="w-5 h-5 rounded-full bg-white/20 text-white/60 text-xs font-bold flex items-center justify-center">1</span>
-                  <span className="text-xs font-semibold text-white/60">Learn</span>
+                  <span className="w-5 h-5 rounded-full bg-white/30 text-white text-xs font-bold flex items-center justify-center">1</span>
+                  <span className="text-xs font-semibold text-white/85">Learn</span>
                 </div>
                 <div className="w-6 h-px bg-white/40" />
                 <div className="flex items-center gap-1.5 bg-teal rounded-lg px-3 py-1.5">
@@ -916,12 +916,12 @@ export default function PolicyForm() {
                 </div>
                 <div className="w-6 h-px bg-white/40" />
                 <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
-                  <span className="w-5 h-5 rounded-full bg-white/20 text-white/60 text-xs font-bold flex items-center justify-center">3</span>
-                  <span className="text-xs font-semibold text-white/60">Strategy</span>
+                  <span className="w-5 h-5 rounded-full bg-white/30 text-white text-xs font-bold flex items-center justify-center">3</span>
+                  <span className="text-xs font-semibold text-white/85">Strategy</span>
                 </div>
               </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif mb-4 leading-tight">Tell Us About Your <span className="text-teal">Policy</span></h1>
-              <p className="text-slate-300 max-w-lg text-base leading-relaxed">Complete this form to receive a personalized strategy for filing your long-term care insurance claim. All information is securely stored and can be edited at any time.</p>
+              <p className="text-white/90 max-w-lg text-base leading-relaxed">Complete this form to receive a personalized strategy for filing your long-term care insurance claim. All information is securely stored and can be edited at any time.</p>
             </div>
             <div className="hidden lg:block">
               <VideoPlaceholder title="How to Complete the Policy Form" description="Watch this guide to understand what information you'll need and how to find it in your policy documents" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/prngCKWDVnvVgXBI.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/UZLuXdBXwBOgyGSg.mp4" />

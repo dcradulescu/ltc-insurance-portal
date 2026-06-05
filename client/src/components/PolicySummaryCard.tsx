@@ -48,11 +48,11 @@ export function PolicySummaryCard({ policy }: PolicySummaryCardProps) {
             </div>
             <div>
               <h2 className="font-serif text-lg font-bold text-white">{policy.insuredFullName || "Insured"}</h2>
-              <p className="text-white/60 text-sm">Policy #{policy.policyNumber || "N/A"}</p>
+              <p className="text-white/85 text-sm">Policy #{policy.policyNumber || "N/A"}</p>
             </div>
           </div>
           <div className="text-right hidden sm:block">
-            <p className="text-white/60 text-xs uppercase tracking-wider">Carrier</p>
+            <p className="text-white/85 text-xs uppercase tracking-wider">Carrier</p>
             <p className="text-white font-medium text-sm">{policy.carrierName || "N/A"}</p>
           </div>
         </div>

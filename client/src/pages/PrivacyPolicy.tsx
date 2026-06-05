@@ -37,7 +37,7 @@ export default function PrivacyPolicy() {
         <div className="container max-w-3xl">
           <p className="text-xs uppercase tracking-widest font-semibold mb-3" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Legal</p>
           <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif" }}>Privacy Policy</h1>
-          <p className="text-white/60 text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>Effective Date: June 1, 2025 &nbsp;·&nbsp; Last Updated: June 1, 2025</p>
+          <p className="text-white/85 text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>Effective Date: June 1, 2025 &nbsp;·&nbsp; Last Updated: June 1, 2025</p>
           <div className="flex items-center gap-3 mt-5">
             <div style={{ height: 2, width: 40, background: VA_TEAL }} />
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: VA_TEAL }} />

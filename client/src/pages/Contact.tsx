@@ -53,7 +53,7 @@ export default function Contact() {
         <div className="container relative">
           <div className="flex items-center gap-3 mb-3">
             <MessageCircle className="w-6 h-6" style={{ color: VA_TEAL }} />
-            <span className="text-sm uppercase tracking-widest text-white/60 font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>Get in Touch</span>
+            <span className="text-sm uppercase tracking-widest text-white/85 font-semibold" style={{ fontFamily: "'Open Sans', sans-serif" }}>Get in Touch</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif" }}>Contact Us</h1>
           <p className="text-white/80 max-w-2xl" style={{ fontFamily: "'Open Sans', sans-serif" }}>We're here to help you navigate the long-term care insurance claims process. Reach out with any questions or concerns.</p>
