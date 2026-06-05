@@ -20,6 +20,10 @@ import {
   CheckCircle2,
   PhoneCall,
   ExternalLink,
+  Users,
+  Award,
+  ThumbsUp,
+  MapPin,
 } from "lucide-react";
 
 // VA Brand constants
@@ -313,19 +317,22 @@ export default function Home() {
         <div ref={statsRef} className="reveal container relative">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
             {[
-              { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped", accent: '#ffffff' },
-              { ref: stat2.ref, count: stat2.count, suffix: "+", label: "Years of Experience", accent: VA_TEAL },
-              { ref: stat3.ref, count: stat3.count, suffix: "%", label: "Overall Satisfaction", accent: '#ffffff' },
-              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC", accent: VA_TEAL },
+              { ref: stat1.ref, count: stat1.count, suffix: "+", label: "Families Helped",         icon: Users,    accent: '#ffffff' },
+              { ref: stat2.ref, count: stat2.count, suffix: "+", label: "Years of Experience",     icon: Award,    accent: '#34B1C4' },
+              { ref: stat3.ref, count: stat3.count, suffix: "%", label: "Overall Satisfaction",    icon: ThumbsUp, accent: '#ffffff' },
+              { ref: stat4.ref, count: stat4.count, suffix: "+", label: "Years Serving Upstate SC", icon: MapPin,   accent: '#34B1C4' },
             ].map((stat, i) => (
-              <div key={i} className="stat-card p-4 md:p-5 rounded border hover:bg-white/10 transition-all duration-300" style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)' }}>
-                <div className="flex justify-center mb-2">
-                  <img src="/manus-storage/Dove-Trans_bbc93e8e.gif" alt="" className="w-8 h-8 object-contain opacity-80" />
+              <div key={i} className="stat-card p-5 md:p-6 rounded-xl border hover:bg-white/10 transition-all duration-300 flex flex-col items-center" style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)' }}>
+                {/* Icon */}
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(255,255,255,0.18)' }}>
+                  <stat.icon className="w-6 h-6 text-white" />
                 </div>
+                {/* Number */}
                 <div className="text-3xl md:text-4xl font-bold mb-1" style={{ fontFamily: "'Roboto', sans-serif", color: stat.accent }}>
                   <span ref={stat.ref!}>{stat.count}</span>{stat.suffix}
                 </div>
-                <div className="text-xs md:text-sm text-white/90" style={{ fontFamily: "'Open Sans', sans-serif" }}>{stat.label}</div>
+                {/* Label */}
+                <div className="text-xs md:text-sm text-white/90 leading-snug" style={{ fontFamily: "'Open Sans', sans-serif" }}>{stat.label}</div>
               </div>
             ))}
           </div>
