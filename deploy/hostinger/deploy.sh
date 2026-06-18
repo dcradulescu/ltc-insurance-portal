@@ -31,6 +31,9 @@ fi
 cd "${APP_DIR}"
 ln -sfn "${SHARED_ENV}" .env
 
+echo "==> Checking pnpm version"
+bash deploy/hostinger/check-pnpm-version.sh
+
 echo "==> Ensuring runtime directories"
 sudo mkdir -p "${UPLOAD_DIR}" /var/log/ltc-insurance-portal
 sudo chown -R "$USER:www-data" "${APP_ROOT}/shared"
