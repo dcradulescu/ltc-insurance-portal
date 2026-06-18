@@ -66,6 +66,7 @@ async function startServer() {
   validateStartupConfiguration();
 
   const app = express();
+  app.set("trust proxy", 1);
   const server = createServer(app);
 
   if (process.env.NODE_ENV !== "test") {
