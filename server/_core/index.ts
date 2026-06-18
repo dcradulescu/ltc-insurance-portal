@@ -136,11 +136,12 @@ async function startServer() {
   app.use("/api/trpc/email", heavyLimiter);
   app.use("/api/trpc", generalLimiter);
 
-  app.use(express.json({ limit: "1mb" }));
-  app.use(express.urlencoded({ limit: "1mb", extended: true }));
-
+  // Larger tRPC payload routes must be registered before the default 1 MB parser.
+  // Otherwise the default parser rejects the request before the route-specific parser can run.
   app.use("/api/trpc/email", express.json({ limit: "10mb" }));
   app.use("/api/trpc/pdfDelivery", express.json({ limit: "10mb" }));
+  app.use(express.json({ limit: "1mb" }));
+  app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
   registerLocalStorageRoutes(app);
   registerStorageProxy(app);
