@@ -1,0 +1,9 @@
+# LTC Insurance Portal — cron examples
+# Edit with: crontab -e
+# Replace CHANGE_ME_STRONG_PASSWORD with the MySQL app user's password.
+
+# Daily MySQL backup at 2:15 AM server time
+15 2 * * * DB_PASSWORD='CHANGE_ME_STRONG_PASSWORD' bash /var/www/ltc-insurance-portal/current/deploy/hostinger/backup-db.sh >> /var/log/ltc-insurance-portal/backup.log 2>&1
+
+# PM2 process list save check every day at 3:10 AM
+10 3 * * * /usr/bin/pm2 save >> /var/log/ltc-insurance-portal/pm2-save.log 2>&1
