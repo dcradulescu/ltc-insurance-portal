@@ -10,6 +10,7 @@ import {
   taskCompletions, InsertTaskCompletion, TaskCompletion,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { storageDelete } from "./storage";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -144,6 +145,17 @@ export async function getDocumentsByTaskId(taskId: string, userId: number): Prom
 export async function deleteDocument(id: number, userId: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select()
+    .from(documentUploads)
+    .where(and(eq(documentUploads.id, id), eq(documentUploads.userId, userId)))
+    .limit(1);
+
+  const document = rows[0];
+  if (!document) return;
+
+  await storageDelete(document.fileKey);
   await db.delete(documentUploads).where(and(eq(documentUploads.id, id), eq(documentUploads.userId, userId)));
 }
 
