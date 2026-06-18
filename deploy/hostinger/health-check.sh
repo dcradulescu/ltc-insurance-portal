@@ -16,6 +16,16 @@ curl -fsSI "${APP_URL}" | head -n 20
 printf '\n==> Local login page check\n'
 curl -fsS "${APP_URL}/login" | grep -i "LTC Portal" >/dev/null
 
+printf '\n==> Public tRPC health check\n'
+curl -fsS "${APP_URL}/api/trpc/system.health" >/dev/null
+
+printf '\n==> Protected API unauthenticated check\n'
+STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${APP_URL}/api/trpc/policy.get")
+if [[ "${STATUS_CODE}" != "401" && "${STATUS_CODE}" != "400" ]]; then
+  echo "Expected protected API to reject unauthenticated request, got HTTP ${STATUS_CODE}"
+  exit 1
+fi
+
 if [[ -n "${PUBLIC_URL}" ]]; then
   printf '\n==> Public HTTPS check: %s\n' "${PUBLIC_URL}"
   curl -fsSI "${PUBLIC_URL}" | head -n 20
