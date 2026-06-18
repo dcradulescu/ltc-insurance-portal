@@ -36,19 +36,27 @@ Use this before exposing the portal publicly.
 - [ ] Twilio credentials are configured only if SMS is enabled
 - [ ] Zapier webhook is correct for production
 
+## Data access and privacy
+
+- [ ] Sensitive document routes are scoped to the authenticated user
+- [ ] Sensitive policy routes are scoped to the authenticated user
+- [ ] Hard-coded `userId = 1` access has been removed from sensitive write/read paths
+- [ ] Uploaded files require a valid session before download
+- [ ] Public routes expose only non-sensitive metadata
+
 ## Manus decoupling
 
-- [ ] Manus OAuth replaced
-- [ ] Manus storage replaced
-- [ ] Manus domains removed from CORS/CSP
-- [ ] Manus Vite runtime/debug tooling removed or made conditional
+- [ ] Legacy OAuth replaced or confirmed disabled for production login
+- [ ] Legacy storage proxy replaced or confirmed unused
+- [ ] Hosted-preview domains removed from CORS/CSP
+- [ ] Hosted-runtime/debug tooling removed or made conditional
 
 ## Production validation
 
 - [ ] `pnpm check` passes
 - [ ] `pnpm test` passes
 - [ ] `pnpm build` passes
-- [ ] `pnpm db:push` completed against production database
+- [ ] database sync completed against production database
 - [ ] Login tested
 - [ ] Upload/download flow tested
 - [ ] Email sending tested
