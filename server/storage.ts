@@ -89,6 +89,17 @@ async function getLocal(relKey: string): Promise<StorageGetResult> {
   return { key, url: `${publicBase}/${encodeURI(key)}` };
 }
 
+async function deleteLocal(relKey: string): Promise<void> {
+  const absolutePath = getLocalAbsolutePath(relKey);
+  try {
+    await fs.unlink(absolutePath);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT") return;
+    throw error;
+  }
+}
+
 function unsupportedProvider(provider: StorageProvider): never {
   throw new Error(
     `Storage provider ${provider} is not implemented yet. Use OBJECT_STORAGE_PROVIDER=local for VPS deployment or implement the provider adapter.`
@@ -127,6 +138,21 @@ export async function storageGet(relKey: string): Promise<StorageGetResult> {
   switch (provider) {
     case "local":
       return getLocal(relKey);
+    case "r2":
+    case "s3":
+    case "manus":
+      return unsupportedProvider(provider);
+    default:
+      return unsupportedProvider(provider);
+  }
+}
+
+export async function storageDelete(relKey: string): Promise<void> {
+  const provider = getStorageProvider();
+
+  switch (provider) {
+    case "local":
+      return deleteLocal(relKey);
     case "r2":
     case "s3":
     case "manus":
