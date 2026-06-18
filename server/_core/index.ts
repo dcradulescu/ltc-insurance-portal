@@ -13,6 +13,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { getCspExternalSources, isOriginAllowed } from "./originConfig";
 
 // Structured logger — replaces console.log in production
 // pino-pretty is optional (dev only); fall back to plain JSON if unavailable
@@ -49,44 +50,28 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-type OriginPattern = string | RegExp;
+function buildProductionCsp() {
+  const configuredSources = getCspExternalSources();
 
-function parseCommaSeparatedEnv(value: string | undefined): string[] {
-  return (value ?? "")
-    .split(",")
-    .map(item => item.trim())
-    .filter(Boolean);
-}
-
-function getConfiguredOrigins(): string[] {
-  return [
-    process.env.APP_PUBLIC_URL,
-    ...parseCommaSeparatedEnv(process.env.ALLOWED_ORIGINS),
-  ].filter((origin): origin is string => Boolean(origin));
-}
-
-function getAllowedOrigins(): OriginPattern[] {
-  const configuredOrigins = getConfiguredOrigins();
-
-  return [
-    ...configuredOrigins,
-    /^https?:\/\/localhost(:\d+)?$/,
-    /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
-    ...(process.env.ALLOW_MANUS_ORIGINS === "true"
-      ? [
-          "https://ltcportal.manus.space",
-          "https://ltcportal-7pnqfuuw.manus.space",
-          /^https:\/\/\d+-[a-z0-9]+-[a-z0-9]+\.us\d+\.manus\.computer$/,
-        ]
-      : []),
-  ];
-}
-
-const ALLOWED_ORIGINS = getAllowedOrigins();
-const CONFIGURED_CSP_ORIGINS = getConfiguredOrigins();
-
-function cspExternalOrigins(): string[] {
-  return CONFIGURED_CSP_ORIGINS.length > 0 ? CONFIGURED_CSP_ORIGINS : [];
+  return {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://fonts.googleapis.com", ...configuredSources],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https://*.cloudfront.net",
+        ...configuredSources,
+      ],
+      connectSrc: ["'self'", "https://hooks.zapier.com", ...configuredSources],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  };
 }
 
 async function startServer() {
@@ -113,39 +98,7 @@ async function startServer() {
     helmet({
       // Allow inline scripts needed by Vite HMR in development
       contentSecurityPolicy:
-        process.env.NODE_ENV === "production"
-          ? {
-              directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: [
-                  "'self'",
-                  "https://fonts.googleapis.com",
-                  ...cspExternalOrigins(),
-                ],
-                styleSrc: [
-                  "'self'",
-                  "'unsafe-inline'",
-                  "https://fonts.googleapis.com",
-                ],
-                fontSrc: ["'self'", "https://fonts.gstatic.com"],
-                imgSrc: [
-                  "'self'",
-                  "data:",
-                  "blob:",
-                  "https://*.cloudfront.net",
-                  ...cspExternalOrigins(),
-                ],
-                connectSrc: [
-                  "'self'",
-                  "https://hooks.zapier.com",
-                  ...cspExternalOrigins(),
-                ],
-                frameSrc: ["'none'"],
-                objectSrc: ["'none'"],
-                upgradeInsecureRequests: [],
-              },
-            }
-          : false, // Disable CSP in development to allow Vite HMR
+        process.env.NODE_ENV === "production" ? buildProductionCsp() : false,
       crossOriginEmbedderPolicy: false, // Required for CDN images
     })
   );
@@ -155,13 +108,7 @@ async function startServer() {
     cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (curl, mobile apps, same-origin)
-        if (!origin) return callback(null, true);
-        const allowed = ALLOWED_ORIGINS.some(pattern =>
-          typeof pattern === "string"
-            ? pattern === origin
-            : pattern.test(origin)
-        );
-        if (allowed) return callback(null, true);
+        if (isOriginAllowed(origin)) return callback(null, true);
         callback(new Error(`CORS: origin ${origin} not allowed`));
       },
       credentials: true,
@@ -222,7 +169,7 @@ async function startServer() {
   app.use("/api/trpc/pdfDelivery", express.json({ limit: "10mb" }));
 
   // ── Application routes ────────────────────────────────────────────────────
-  // Storage proxy for /manus-storage/* paths
+  // Storage proxy for legacy hosted-storage paths
   registerStorageProxy(app);
 
   // OAuth callback under /api/oauth/callback
