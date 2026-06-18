@@ -10,14 +10,12 @@ import pino from "pino";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
-import { registerLocalStorageRoutes } from "./localStorageStatic";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { getCspExternalSources, isOriginAllowed } from "./originConfig";
+import { registerLocalStorageRoutes } from "../storage";
 
-// Structured logger — replaces console.log in production
-// pino-pretty is optional (dev only); fall back to plain JSON if unavailable
 function buildLogger() {
   const level = process.env.NODE_ENV === "production" ? "info" : "debug";
   if (process.env.NODE_ENV !== "production") {
@@ -25,7 +23,7 @@ function buildLogger() {
       require.resolve("pino-pretty");
       return pino({ level, transport: { target: "pino-pretty", options: { colorize: true } } });
     } catch {
-      // pino-pretty not installed — use plain JSON output
+      // pino-pretty not installed; use plain JSON output
     }
   }
   return pino({ level });
@@ -60,13 +58,7 @@ function buildProductionCsp() {
       scriptSrc: ["'self'", "https://fonts.googleapis.com", ...configuredSources],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: [
-        "'self'",
-        "data:",
-        "blob:",
-        "https://*.cloudfront.net",
-        ...configuredSources,
-      ],
+      imgSrc: ["'self'", "data:", "blob:", "https://*.cloudfront.net", ...configuredSources],
       connectSrc: ["'self'", "https://hooks.zapier.com", ...configuredSources],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
@@ -79,36 +71,27 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  // ── HTTP request logger ──────────────────────────────────────────────────
   if (process.env.NODE_ENV !== "test") {
     app.use(
       pinoHttp({
         logger,
-        // Skip logging for static assets and health checks
         autoLogging: {
-          ignore: req =>
-            req.url?.startsWith("/assets/") ||
-            req.url === "/api/trpc/system.health",
+          ignore: req => req.url?.startsWith("/assets/") || req.url === "/api/trpc/system.health",
         },
       })
     );
   }
 
-  // ── Security headers (Helmet) ────────────────────────────────────────────
   app.use(
     helmet({
-      // Allow inline scripts needed by Vite HMR in development
-      contentSecurityPolicy:
-        process.env.NODE_ENV === "production" ? buildProductionCsp() : false,
-      crossOriginEmbedderPolicy: false, // Required for CDN images
+      contentSecurityPolicy: process.env.NODE_ENV === "production" ? buildProductionCsp() : false,
+      crossOriginEmbedderPolicy: false,
     })
   );
 
-  // ── CORS ─────────────────────────────────────────────────────────────────
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (curl, mobile apps, same-origin)
         if (isOriginAllowed(origin)) return callback(null, true);
         callback(new Error(`CORS: origin ${origin} not allowed`));
       },
@@ -118,8 +101,6 @@ async function startServer() {
     })
   );
 
-  // ── Rate limiting ─────────────────────────────────────────────────────────
-  // General API rate limit: 200 req / 15 min per IP
   const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
@@ -129,20 +110,15 @@ async function startServer() {
     skip: req => process.env.NODE_ENV === "development",
   });
 
-  // Strict limit for LLM/PDF routes: 20 req / 15 min per IP
   const heavyLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 20,
     standardHeaders: true,
     legacyHeaders: false,
-    message: {
-      error:
-        "Too many strategy or PDF requests. Please wait 15 minutes before trying again.",
-    },
+    message: { error: "Too many strategy or PDF requests. Please wait 15 minutes before trying again." },
     skip: req => process.env.NODE_ENV === "development",
   });
 
-  // OAuth endpoints: 10 req / 15 min per IP
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
@@ -153,32 +129,20 @@ async function startServer() {
   });
 
   app.use("/api/oauth", authLimiter);
-  app.use(
-    "/api/trpc/strategy.generate",
-    heavyLimiter
-  );
+  app.use("/api/trpc/strategy.generate", heavyLimiter);
   app.use("/api/trpc/email", heavyLimiter);
   app.use("/api/trpc", generalLimiter);
 
-  // ── Body parsers ──────────────────────────────────────────────────────────
-  // Default: 1 MB limit for most routes
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
-  // Override with larger limit only for PDF/email delivery routes
   app.use("/api/trpc/email", express.json({ limit: "10mb" }));
   app.use("/api/trpc/pdfDelivery", express.json({ limit: "10mb" }));
 
-  // ── Application routes ────────────────────────────────────────────────────
   registerLocalStorageRoutes(app);
-
-  // Storage proxy for legacy hosted-storage paths
   registerStorageProxy(app);
-
-  // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
-  // tRPC API
   app.use(
     "/api/trpc",
     createExpressMiddleware({
@@ -192,7 +156,6 @@ async function startServer() {
     })
   );
 
-  // ── Static / Vite ─────────────────────────────────────────────────────────
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
