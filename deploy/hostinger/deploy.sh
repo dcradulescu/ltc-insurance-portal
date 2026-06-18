@@ -7,6 +7,7 @@ SHARED_ENV="${SHARED_ENV:-${APP_ROOT}/shared/.env}"
 BRANCH="${BRANCH:-hostinger-vps-deployment}"
 REPO_URL="${REPO_URL:-https://github.com/dcradulescu/ltc-insurance-portal.git}"
 APP_NAME="${APP_NAME:-ltc-insurance-portal}"
+UPLOAD_DIR="${UPLOAD_DIR:-${APP_ROOT}/shared/uploads}"
 
 if [[ ! -f "${SHARED_ENV}" ]]; then
   echo "Missing environment file: ${SHARED_ENV}"
@@ -28,13 +29,12 @@ else
 fi
 
 cd "${APP_DIR}"
-
 ln -sfn "${SHARED_ENV}" .env
 
 echo "==> Ensuring runtime directories"
-sudo mkdir -p "${APP_ROOT}/storage" /var/log/ltc-insurance-portal
-sudo chown -R "$USER:www-data" "${APP_ROOT}/storage"
-sudo chmod 2750 "${APP_ROOT}/storage"
+sudo mkdir -p "${UPLOAD_DIR}" /var/log/ltc-insurance-portal
+sudo chown -R "$USER:www-data" "${APP_ROOT}/shared"
+sudo chmod 2750 "${APP_ROOT}/shared" "${UPLOAD_DIR}"
 sudo chown -R "$USER:$USER" /var/log/ltc-insurance-portal
 
 echo "==> Installing dependencies"
