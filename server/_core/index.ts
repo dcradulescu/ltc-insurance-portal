@@ -13,6 +13,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { registerLocalAuthRoutes } from "./localAuth";
 import { requireApiSession } from "./sessionGate";
 import { requirePageSession } from "./pageGate";
+import { validateStartupConfiguration } from "./startupValidation";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -62,6 +63,8 @@ function buildProductionCsp() {
 }
 
 async function startServer() {
+  validateStartupConfiguration();
+
   const app = express();
   const server = createServer(app);
 
