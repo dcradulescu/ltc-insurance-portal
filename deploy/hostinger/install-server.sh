@@ -29,9 +29,10 @@ npm install -g pnpm pm2
 echo "==> Creating application directories"
 mkdir -p "${APP_ROOT}/current" "${APP_ROOT}/shared" "${APP_ROOT}/backups" "${APP_ROOT}/storage" "${APP_LOG_DIR}"
 chown -R "${APP_USER}:${APP_USER}" "${APP_ROOT}" "${APP_LOG_DIR}"
+chgrp -R www-data "${APP_ROOT}/storage"
 chmod 750 "${APP_ROOT}/shared"
 chmod 750 "${APP_ROOT}/backups"
-chmod 750 "${APP_ROOT}/storage"
+chmod 2750 "${APP_ROOT}/storage"
 
 echo "==> Configuring firewall"
 ufw allow OpenSSH
