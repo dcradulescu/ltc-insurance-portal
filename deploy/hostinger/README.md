@@ -29,6 +29,8 @@ Recommended VPS layout:
 
 The app now has a VPS-local admin login at `/login`. This is enough to remove the immediate Manus OAuth dependency for an owner/operator deployment.
 
+Browser pages, tRPC APIs, and uploaded files should all require an authenticated session in production. Keep the three session-gate flags enabled in the production environment file.
+
 This is not yet a full multi-user public auth system. Before accepting public users, complete user-owned data access, account lifecycle management, audit logging, and a production security review.
 
 ## Server install
@@ -72,18 +74,26 @@ LOCAL_STORAGE_ROOT=/var/www/ltc-insurance-portal/shared/uploads
 LOCAL_STORAGE_PUBLIC_BASE_URL=/uploaded-files
 ```
 
+Production auth gates that should remain enabled:
+
+```bash
+REQUIRE_AUTH_FOR_PAGES=true
+REQUIRE_AUTH_FOR_API=true
+REQUIRE_AUTH_FOR_FILE_ACCESS=true
+```
+
 Generate secrets:
 
 ```bash
-openssl rand -base64 48   # JWT_SECRET
-openssl rand -base64 32   # LOCAL_ADMIN_PASSWORD
+openssl rand -base64 48
+openssl rand -base64 32
 ```
 
 Features that need additional configuration:
 
-- SMTP email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_SECURE`
-- Twilio SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`
-- Zapier: `VITE_ZAPIER_WEBHOOK_URL`
+- SMTP email settings
+- Twilio SMS settings
+- Zapier webhook setting
 
 ## MySQL bootstrap
 
@@ -143,7 +153,7 @@ After deployment, open:
 https://ltc.example.com/login
 ```
 
-Use the `LOCAL_ADMIN_EMAIL` and `LOCAL_ADMIN_PASSWORD` values from `/var/www/ltc-insurance-portal/shared/.env`.
+Use the local admin values from `/var/www/ltc-insurance-portal/shared/.env`.
 
 ## Health check
 
@@ -163,9 +173,10 @@ Completed on this branch:
 
 - VPS deployment scaffolding
 - local VPS file storage provider
-- Express serving for `/uploaded-files/`
+- Express serving for uploaded files
 - configurable production origins helper
 - temporary VPS-local admin login
+- page, API, and uploaded-file session gates
 
 Still required for true public production:
 
