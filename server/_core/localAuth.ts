@@ -5,14 +5,14 @@ import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 
-const LOCAL_AUTH_OPEN_ID = "portal-operator";
+const LOCAL_AUTH_OPEN_ID = "local-admin";
 
 function getLocalAuthConfig() {
   return {
     enabled: (process.env.LOCAL_AUTH_ENABLED || "true").toLowerCase() === "true",
     email: process.env.LOCAL_ADMIN_EMAIL || "",
     password: process.env.LOCAL_ADMIN_PASSWORD || "",
-    name: process.env.LOCAL_ADMIN_NAME || "Portal Operator",
+    name: process.env.LOCAL_ADMIN_NAME || "Portal Administrator",
   };
 }
 
