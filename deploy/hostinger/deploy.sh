@@ -37,8 +37,8 @@ sudo chown -R "$USER:www-data" "${APP_ROOT}/shared"
 sudo chmod 2750 "${APP_ROOT}/shared" "${UPLOAD_DIR}"
 sudo chown -R "$USER:$USER" /var/log/ltc-insurance-portal
 
-echo "==> Installing dependencies"
-pnpm install --frozen-lockfile
+echo "==> Installing dependencies, including build tooling"
+NODE_ENV=development pnpm install --frozen-lockfile --prod=false
 
 echo "==> Running TypeScript check"
 pnpm check
