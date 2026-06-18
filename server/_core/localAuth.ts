@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Express, Request, Response } from "express";
 import * as db from "../db";
@@ -13,6 +14,13 @@ function getLocalAuthConfig() {
     password: process.env.LOCAL_ADMIN_PASSWORD || "",
     name: process.env.LOCAL_ADMIN_NAME || "Portal Administrator",
   };
+}
+
+function safeCompare(a: string, b: string): boolean {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  if (left.length !== right.length) return false;
+  return timingSafeEqual(left, right);
 }
 
 function escapeHtml(value: string): string {
@@ -66,25 +74,14 @@ function renderLoginPage(errorMessage = ""): string {
 
 async function ensureLocalAdminUser(email: string, name: string) {
   const existing = await db.getUserByOpenId(LOCAL_AUTH_OPEN_ID);
-  if (!existing) {
-    await db.upsertUser({
-      openId: LOCAL_AUTH_OPEN_ID,
-      name,
-      email,
-      loginMethod: "local",
-      role: "admin",
-      lastSignedIn: new Date(),
-    });
-  } else {
-    await db.upsertUser({
-      openId: LOCAL_AUTH_OPEN_ID,
-      name: existing.name || name,
-      email: existing.email || email,
-      loginMethod: existing.loginMethod || "local",
-      role: existing.role === "admin" ? "admin" : "admin",
-      lastSignedIn: new Date(),
-    });
-  }
+  await db.upsertUser({
+    openId: LOCAL_AUTH_OPEN_ID,
+    name: existing?.name || name,
+    email: existing?.email || email,
+    loginMethod: existing?.loginMethod || "local",
+    role: "admin",
+    lastSignedIn: new Date(),
+  });
 }
 
 export function registerLocalAuthRoutes(app: Express) {
@@ -106,8 +103,10 @@ export function registerLocalAuthRoutes(app: Express) {
 
     const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
     const password = typeof req.body?.password === "string" ? req.body.password : "";
+    const emailMatches = safeCompare(email, config.email.toLowerCase());
+    const passwordMatches = safeCompare(password, config.password);
 
-    if (email !== config.email.toLowerCase() || password !== config.password) {
+    if (!emailMatches || !passwordMatches) {
       res.status(401).type("html").send(renderLoginPage("Invalid email or password."));
       return;
     }
