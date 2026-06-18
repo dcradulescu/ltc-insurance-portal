@@ -15,7 +15,7 @@ import type {
   GetUserInfoWithJwtResponse,
 } from "./types/manusTypes";
 
-const LOCAL_AUTH_OPEN_ID = "local-admin";
+const LOCAL_AUTH_OPEN_ID = "portal-operator";
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
@@ -113,7 +113,7 @@ class SDKServer {
     if (session.openId !== LOCAL_AUTH_OPEN_ID) return undefined;
 
     const email = process.env.LOCAL_ADMIN_EMAIL || null;
-    const name = process.env.LOCAL_ADMIN_NAME || session.name || "Portal Administrator";
+    const name = process.env.LOCAL_ADMIN_NAME || session.name || "Portal Operator";
 
     await db.upsertUser({
       openId: LOCAL_AUTH_OPEN_ID,
