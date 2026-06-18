@@ -4,6 +4,8 @@ import type { NextFunction, Request, Response } from "express";
 import { sdk } from "./sdk";
 
 const PUBLIC_TRPC_PATHS = new Set([
+  "/auth.me",
+  "/system.health",
   "/api/trpc/auth.me",
   "/api/trpc/system.health",
 ]);
@@ -15,9 +17,9 @@ function isAuthRequired(): boolean {
 function hasPublicPathPrefix(path: string): boolean {
   if (PUBLIC_TRPC_PATHS.has(path)) return true;
 
-  // tRPC batching and query strings are handled by Express before req.path,
-  // but keep this tolerant for proxies and future adapters.
-  return Array.from(PUBLIC_TRPC_PATHS).some(publicPath => path.startsWith(`${publicPath}/`));
+  return Array.from(PUBLIC_TRPC_PATHS).some(publicPath =>
+    path.startsWith(`${publicPath}/`)
+  );
 }
 
 export async function requireApiSession(
