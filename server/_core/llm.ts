@@ -154,7 +154,6 @@ const normalizeMessage = (message: Message) => {
 
   const contentParts = ensureArray(message.content).map(normalizeContentPart);
 
-  // If there's only text content, collapse to a single string for compatibility
   if (contentParts.length === 1 && contentParts[0].type === "text") {
     return {
       role,
@@ -209,17 +208,6 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
-
-const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
-  }
-};
-
 const normalizeResponseFormat = ({
   responseFormat,
   response_format,
@@ -265,6 +253,46 @@ const normalizeResponseFormat = ({
   };
 };
 
+function getConfiguredApiKey(): string {
+  return (
+    process.env.LLM_API_KEY ||
+    process.env.OPENAI_API_KEY ||
+    ENV.forgeApiKey ||
+    ""
+  ).trim();
+}
+
+function getConfiguredApiUrl(): string {
+  const explicitUrl = (process.env.LLM_API_URL || "").trim();
+  if (explicitUrl) return explicitUrl;
+
+  const openAiBaseUrl = (process.env.OPENAI_BASE_URL || "").trim();
+  if (openAiBaseUrl) {
+    return `${openAiBaseUrl.replace(/\/$/, "")}/chat/completions`;
+  }
+
+  if (ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0) {
+    return `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`;
+  }
+
+  return "https://api.openai.com/v1/chat/completions";
+}
+
+function getConfiguredModel(): string {
+  return (
+    process.env.LLM_MODEL ||
+    process.env.OPENAI_MODEL ||
+    process.env.BUILT_IN_FORGE_MODEL ||
+    "gpt-4.1-mini"
+  ).trim();
+}
+
+const assertApiKey = () => {
+  if (!getConfiguredApiKey()) {
+    throw new Error("LLM API key is not configured. Set LLM_API_KEY or OPENAI_API_KEY.");
+  }
+};
+
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   assertApiKey();
 
@@ -277,10 +305,12 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     output_schema,
     responseFormat,
     response_format,
+    maxTokens,
+    max_tokens,
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: getConfiguredModel(),
     messages: messages.map(normalizeMessage),
   };
 
@@ -296,10 +326,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
-  }
+  payload.max_tokens = maxTokens || max_tokens || 32768;
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
@@ -312,11 +339,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  const response = await fetch(getConfiguredApiUrl(), {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${getConfiguredApiKey()}`,
     },
     body: JSON.stringify(payload),
   });

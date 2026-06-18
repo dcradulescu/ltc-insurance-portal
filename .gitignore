@@ -80,7 +80,7 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# parcel-bundler cache (https://parceljs.org/)
+# parcel-bundler cache
 .cache
 .parcel-cache
 
@@ -105,6 +105,15 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Local VPS-only files
+deploy/hostinger/*.local.sh
+
+# Uploaded documents and runtime storage
+storage/
+uploads/
+shared/uploads/
+var/uploads/
 
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/

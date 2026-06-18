@@ -1,0 +1,26 @@
+name: Build Check
+
+on:
+  push:
+    branches:
+      - hostinger-vps-deployment
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm with Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.4.1 --activate
+          pnpm --version
+      - run: pnpm install --frozen-lockfile --prod=false
+      - run: pnpm check
+      - run: pnpm build

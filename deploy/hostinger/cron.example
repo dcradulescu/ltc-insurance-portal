@@ -1,0 +1,9 @@
+# LTC Insurance Portal — cron examples
+# Install with: crontab -e
+# Keep real credentials in a protected root-only wrapper script or environment file.
+
+# Daily database backup at 2:15 AM server time
+15 2 * * * /var/www/ltc-insurance-portal/current/deploy/hostinger/run-backup.local.sh >> /var/log/ltc-insurance-portal/backup.log 2>&1
+
+# Weekly PM2 resurrect check on Sundays at 3:00 AM
+0 3 * * 0 /usr/bin/pm2 resurrect >> /var/log/ltc-insurance-portal/pm2-resurrect.log 2>&1

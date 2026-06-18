@@ -2,13 +2,21 @@ import type { CookieOptions, Request } from "express";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 
-function isIpAddress(host: string) {
-  // Basic IPv4 check and IPv6 presence detection.
+function getHostname(req: Request): string {
+  const forwardedHost = req.headers["x-forwarded-host"];
+  const host = Array.isArray(forwardedHost)
+    ? forwardedHost[0]
+    : forwardedHost?.split(",")[0] || req.hostname;
+
+  return host.split(":")[0].trim().toLowerCase();
+}
+
+function isIpAddress(host: string): boolean {
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
   return host.includes(":");
 }
 
-function isSecureRequest(req: Request) {
+function isSecureRequest(req: Request): boolean {
   if (req.protocol === "https") return true;
 
   const forwardedProto = req.headers["x-forwarded-proto"];
@@ -21,16 +29,20 @@ function isSecureRequest(req: Request) {
   return protoList.some(proto => proto.trim().toLowerCase() === "https");
 }
 
+function getConfiguredCookieDomain(): string | undefined {
+  const configured = process.env.SESSION_COOKIE_DOMAIN?.trim();
+  if (!configured) return undefined;
+  return configured.startsWith(".") ? configured : `.${configured}`;
+}
+
 export function getSessionCookieOptions(
   req: Request
 ): Pick<CookieOptions, "domain" | "httpOnly" | "path" | "sameSite" | "secure"> {
-  const hostname = req.hostname;
+  const hostname = getHostname(req);
   const secure = isSecureRequest(req);
-  
-  // For local development, don't set domain or sameSite=none
   const isLocalhost = LOCAL_HOSTS.has(hostname) || isIpAddress(hostname);
-  
-  if (isLocalhost) {
+
+  if (isLocalhost || !secure) {
     return {
       httpOnly: true,
       path: "/",
@@ -39,15 +51,11 @@ export function getSessionCookieOptions(
     };
   }
 
-  // For production, set domain and use sameSite=none with secure
-  const shouldSetDomain = hostname && !hostname.startsWith(".");
-  const domain = shouldSetDomain ? `.${hostname}` : undefined;
-
   return {
-    domain,
+    domain: getConfiguredCookieDomain(),
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: true, // Always require secure for sameSite=none
+    sameSite: "lax",
+    secure: true,
   };
 }

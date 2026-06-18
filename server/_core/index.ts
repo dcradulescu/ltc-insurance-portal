@@ -10,24 +10,21 @@ import pino from "pino";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
+import { registerLocalAuthRoutes } from "./localAuth";
+import { requireApiSession } from "./sessionGate";
+import { requirePageSession } from "./pageGate";
+import { validateStartupConfiguration } from "./startupValidation";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { getCspExternalSources, isOriginAllowed } from "./originConfig";
+import { registerLocalStorageRoutes } from "../storage";
 
-// Structured logger — replaces console.log in production
-// pino-pretty is optional (dev only); fall back to plain JSON if unavailable
 function buildLogger() {
   const level = process.env.NODE_ENV === "production" ? "info" : "debug";
-  if (process.env.NODE_ENV !== "production") {
-    try {
-      require.resolve("pino-pretty");
-      return pino({ level, transport: { target: "pino-pretty", options: { colorize: true } } });
-    } catch {
-      // pino-pretty not installed — use plain JSON output
-    }
-  }
   return pino({ level });
 }
+
 export const logger = buildLogger();
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -42,33 +39,40 @@ function isPortAvailable(port: number): Promise<boolean> {
 
 async function findAvailablePort(startPort: number = 3000): Promise<number> {
   for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
+    if (await isPortAvailable(port)) return port;
   }
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-// Allowed origins for CORS
-const ALLOWED_ORIGINS = [
-  "https://ltcportal.manus.space",
-  "https://ltcportal-7pnqfuuw.manus.space",
-  /^https?:\/\/localhost(:\d+)?$/,
-  /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
-  // Manus sandbox preview URLs
-  /^https:\/\/\d+-[a-z0-9]+-[a-z0-9]+\.us\d+\.manus\.computer$/,
-];
+function buildProductionCsp() {
+  const configuredSources = getCspExternalSources();
+
+  return {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://fonts.googleapis.com", ...configuredSources],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https://*.cloudfront.net", ...configuredSources],
+      connectSrc: ["'self'", "https://hooks.zapier.com", ...configuredSources],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  };
+}
 
 async function startServer() {
+  validateStartupConfiguration();
+
   const app = express();
+  app.set("trust proxy", 1);
   const server = createServer(app);
 
-  // ── HTTP request logger ──────────────────────────────────────────────────
   if (process.env.NODE_ENV !== "test") {
     app.use(
       pinoHttp({
         logger,
-        // Skip logging for static assets and health checks
         autoLogging: {
           ignore: req =>
             req.url?.startsWith("/assets/") ||
@@ -78,65 +82,18 @@ async function startServer() {
     );
   }
 
-  // ── Security headers (Helmet) ────────────────────────────────────────────
   app.use(
     helmet({
-      // Allow inline scripts needed by Vite HMR in development
       contentSecurityPolicy:
-        process.env.NODE_ENV === "production"
-          ? {
-              directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: [
-                  "'self'",
-                  "https://fonts.googleapis.com",
-                  // Umami analytics
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
-                ],
-                styleSrc: [
-                  "'self'",
-                  "'unsafe-inline'",
-                  "https://fonts.googleapis.com",
-                ],
-                fontSrc: ["'self'", "https://fonts.gstatic.com"],
-                imgSrc: [
-                  "'self'",
-                  "data:",
-                  "blob:",
-                  "https://d2xsxph8kpxj0f.cloudfront.net",
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
-                  "https://*.cloudfront.net",
-                ],
-                connectSrc: [
-                  "'self'",
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
-                  "https://hooks.zapier.com",
-                ],
-                frameSrc: ["'none'"],
-                objectSrc: ["'none'"],
-                upgradeInsecureRequests: [],
-              },
-            }
-          : false, // Disable CSP in development to allow Vite HMR
-      crossOriginEmbedderPolicy: false, // Required for CDN images
+        process.env.NODE_ENV === "production" ? buildProductionCsp() : false,
+      crossOriginEmbedderPolicy: false,
     })
   );
 
-  // ── CORS ─────────────────────────────────────────────────────────────────
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (curl, mobile apps, same-origin)
-        if (!origin) return callback(null, true);
-        const allowed = ALLOWED_ORIGINS.some(pattern =>
-          typeof pattern === "string"
-            ? pattern === origin
-            : pattern.test(origin)
-        );
-        if (allowed) return callback(null, true);
+        if (isOriginAllowed(origin)) return callback(null, true);
         callback(new Error(`CORS: origin ${origin} not allowed`));
       },
       credentials: true,
@@ -145,8 +102,6 @@ async function startServer() {
     })
   );
 
-  // ── Rate limiting ─────────────────────────────────────────────────────────
-  // General API rate limit: 200 req / 15 min per IP
   const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
@@ -156,20 +111,17 @@ async function startServer() {
     skip: req => process.env.NODE_ENV === "development",
   });
 
-  // Strict limit for LLM/PDF routes: 20 req / 15 min per IP
   const heavyLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 20,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
-      error:
-        "Too many strategy or PDF requests. Please wait 15 minutes before trying again.",
+      error: "Too many strategy or PDF requests. Please wait 15 minutes before trying again.",
     },
     skip: req => process.env.NODE_ENV === "development",
   });
 
-  // OAuth endpoints: 10 req / 15 min per IP
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
@@ -180,30 +132,24 @@ async function startServer() {
   });
 
   app.use("/api/oauth", authLimiter);
-  app.use(
-    "/api/trpc/strategy.generate",
-    heavyLimiter
-  );
+  app.use("/api/auth/local", authLimiter);
+  app.use("/api/trpc/strategy.generate", heavyLimiter);
   app.use("/api/trpc/email", heavyLimiter);
   app.use("/api/trpc", generalLimiter);
 
-  // ── Body parsers ──────────────────────────────────────────────────────────
-  // Default: 1 MB limit for most routes
+  // Larger tRPC payload routes must be registered before the default 1 MB parser.
+  // Otherwise the default parser rejects the request before the route-specific parser can run.
+  app.use("/api/trpc/email", express.json({ limit: "10mb" }));
+  app.use("/api/trpc/pdfDelivery", express.json({ limit: "10mb" }));
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
-  // Override with larger limit only for PDF/email delivery routes
-  app.use("/api/trpc/email", express.json({ limit: "10mb" }));
-  app.use("/api/trpc/pdfDelivery", express.json({ limit: "10mb" }));
-
-  // ── Application routes ────────────────────────────────────────────────────
-  // Storage proxy for /manus-storage/* paths
+  registerLocalStorageRoutes(app);
   registerStorageProxy(app);
-
-  // OAuth callback under /api/oauth/callback
+  registerLocalAuthRoutes(app);
   registerOAuthRoutes(app);
 
-  // tRPC API
+  app.use("/api/trpc", requireApiSession);
   app.use(
     "/api/trpc",
     createExpressMiddleware({
@@ -217,14 +163,15 @@ async function startServer() {
     })
   );
 
-  // ── Static / Vite ─────────────────────────────────────────────────────────
+  app.use(requirePageSession);
+
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
+  const preferredPort = Number.parseInt(process.env.PORT || "3000", 10);
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {

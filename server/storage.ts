@@ -1,102 +1,189 @@
-// Preconfigured storage helpers for Manus WebDev templates
-// Uses the Biz-provided storage proxy (Authorization: Bearer <token>)
+import fs from "fs/promises";
+import { createReadStream } from "fs";
+import path from "path";
+import crypto from "crypto";
+import { COOKIE_NAME } from "@shared/const";
+import { parse as parseCookieHeader } from "cookie";
+import type { Express, Request } from "express";
+import { sdk } from "./_core/sdk";
 
-import { ENV } from './_core/env';
+export type StoragePutResult = {
+  key: string;
+  url: string;
+};
 
-type StorageConfig = { baseUrl: string; apiKey: string };
+export type StorageGetResult = {
+  key: string;
+  url: string;
+};
 
-function getStorageConfig(): StorageConfig {
-  const baseUrl = ENV.forgeApiUrl;
-  const apiKey = ENV.forgeApiKey;
+type StorageProvider = "local" | "r2" | "s3" | "manus";
 
-  if (!baseUrl || !apiKey) {
-    throw new Error(
-      "Storage proxy credentials missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY"
-    );
+function getStorageProvider(): StorageProvider {
+  const provider = (process.env.OBJECT_STORAGE_PROVIDER || "local").toLowerCase();
+  if (["local", "r2", "s3", "manus"].includes(provider)) {
+    return provider as StorageProvider;
   }
-
-  return { baseUrl: baseUrl.replace(/\/+$/, ""), apiKey };
+  throw new Error(`Unsupported OBJECT_STORAGE_PROVIDER: ${provider}`);
 }
 
-function buildUploadUrl(baseUrl: string, relKey: string): URL {
-  const url = new URL("v1/storage/upload", ensureTrailingSlash(baseUrl));
-  url.searchParams.set("path", normalizeKey(relKey));
-  return url;
+function isFileAuthRequired(): boolean {
+  return (process.env.REQUIRE_AUTH_FOR_FILE_ACCESS || "true").toLowerCase() === "true";
 }
 
-async function buildDownloadUrl(
-  baseUrl: string,
-  relKey: string,
-  apiKey: string
-): Promise<string> {
-  const downloadApiUrl = new URL(
-    "v1/storage/downloadUrl",
-    ensureTrailingSlash(baseUrl)
-  );
-  downloadApiUrl.searchParams.set("path", normalizeKey(relKey));
-  const response = await fetch(downloadApiUrl, {
-    method: "GET",
-    headers: buildAuthHeaders(apiKey),
-  });
-  return (await response.json()).url;
-}
-
-function ensureTrailingSlash(value: string): string {
-  return value.endsWith("/") ? value : `${value}/`;
+async function hasValidSession(req: Request): Promise<boolean> {
+  if (!isFileAuthRequired()) return true;
+  const cookies = parseCookieHeader(req.headers.cookie || "");
+  const sessionCookie = cookies[COOKIE_NAME];
+  const session = await sdk.verifySession(sessionCookie);
+  return Boolean(session);
 }
 
 function normalizeKey(relKey: string): string {
-  return relKey.replace(/^\/+/, "");
+  const normalized = relKey.replace(/^\/+/, "").replace(/\.\.+/g, "");
+  if (!normalized) throw new Error("Storage key cannot be empty");
+  return normalized;
 }
 
-function toFormData(
-  data: Buffer | Uint8Array | string,
-  contentType: string,
-  fileName: string
-): FormData {
-  const blob =
-    typeof data === "string"
-      ? new Blob([data], { type: contentType })
-      : new Blob([data as any], { type: contentType });
-  const form = new FormData();
-  form.append("file", blob, fileName || "file");
-  return form;
+function getLocalStorageRoot(): string {
+  return process.env.LOCAL_STORAGE_ROOT || "/var/www/ltc-insurance-portal/shared/uploads";
 }
 
-function buildAuthHeaders(apiKey: string): HeadersInit {
-  return { Authorization: `Bearer ${apiKey}` };
+function getLocalPublicBaseUrl(): string {
+  return process.env.LOCAL_STORAGE_PUBLIC_BASE_URL || "/uploaded-files";
+}
+
+function getLocalAbsolutePath(relKey: string): string {
+  const key = normalizeKey(relKey);
+  const storageRoot = path.resolve(getLocalStorageRoot());
+  const absolutePath = path.resolve(storageRoot, key);
+
+  if (!absolutePath.startsWith(storageRoot + path.sep) && absolutePath !== storageRoot) {
+    throw new Error("Invalid storage key path");
+  }
+
+  return absolutePath;
+}
+
+function toBuffer(data: Buffer | Uint8Array | string): Buffer {
+  return Buffer.isBuffer(data) ? data : Buffer.from(data);
+}
+
+async function putLocal(
+  relKey: string,
+  data: Buffer | Uint8Array | string
+): Promise<StoragePutResult> {
+  const key = normalizeKey(relKey);
+  const absolutePath = getLocalAbsolutePath(key);
+
+  await fs.mkdir(path.dirname(absolutePath), { recursive: true });
+  await fs.writeFile(absolutePath, toBuffer(data), { mode: 0o640 });
+
+  const publicBase = getLocalPublicBaseUrl().replace(/\/+$/, "");
+  return { key, url: `${publicBase}/${encodeURI(key)}` };
+}
+
+async function getLocal(relKey: string): Promise<StorageGetResult> {
+  const key = normalizeKey(relKey);
+  const publicBase = getLocalPublicBaseUrl().replace(/\/+$/, "");
+  return { key, url: `${publicBase}/${encodeURI(key)}` };
+}
+
+async function deleteLocal(relKey: string): Promise<void> {
+  const absolutePath = getLocalAbsolutePath(relKey);
+  try {
+    await fs.unlink(absolutePath);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT") return;
+    throw error;
+  }
+}
+
+function unsupportedProvider(provider: StorageProvider): never {
+  throw new Error(
+    `Storage provider ${provider} is not implemented yet. Use OBJECT_STORAGE_PROVIDER=local for VPS deployment or implement the provider adapter.`
+  );
+}
+
+export function generateStorageKey(prefix: string, fileName: string): string {
+  const safePrefix = normalizeKey(prefix).replace(/\/+$/, "");
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const id = crypto.randomUUID();
+  return `${safePrefix}/${id}-${safeName}`;
 }
 
 export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
-  contentType = "application/octet-stream"
-): Promise<{ key: string; url: string }> {
-  const { baseUrl, apiKey } = getStorageConfig();
-  const key = normalizeKey(relKey);
-  const uploadUrl = buildUploadUrl(baseUrl, key);
-  const formData = toFormData(data, contentType, key.split("/").pop() ?? key);
-  const response = await fetch(uploadUrl, {
-    method: "POST",
-    headers: buildAuthHeaders(apiKey),
-    body: formData,
-  });
+  _contentType = "application/octet-stream"
+): Promise<StoragePutResult> {
+  const provider = getStorageProvider();
 
-  if (!response.ok) {
-    const message = await response.text().catch(() => response.statusText);
-    throw new Error(
-      `Storage upload failed (${response.status} ${response.statusText}): ${message}`
-    );
+  switch (provider) {
+    case "local":
+      return putLocal(relKey, data);
+    case "r2":
+    case "s3":
+    case "manus":
+      return unsupportedProvider(provider);
+    default:
+      return unsupportedProvider(provider);
   }
-  const url = (await response.json()).url;
-  return { key, url };
 }
 
-export async function storageGet(relKey: string): Promise<{ key: string; url: string; }> {
-  const { baseUrl, apiKey } = getStorageConfig();
-  const key = normalizeKey(relKey);
-  return {
-    key,
-    url: await buildDownloadUrl(baseUrl, key, apiKey),
-  };
+export async function storageGet(relKey: string): Promise<StorageGetResult> {
+  const provider = getStorageProvider();
+
+  switch (provider) {
+    case "local":
+      return getLocal(relKey);
+    case "r2":
+    case "s3":
+    case "manus":
+      return unsupportedProvider(provider);
+    default:
+      return unsupportedProvider(provider);
+  }
+}
+
+export async function storageDelete(relKey: string): Promise<void> {
+  const provider = getStorageProvider();
+
+  switch (provider) {
+    case "local":
+      return deleteLocal(relKey);
+    case "r2":
+    case "s3":
+    case "manus":
+      return unsupportedProvider(provider);
+    default:
+      return unsupportedProvider(provider);
+  }
+}
+
+export function registerLocalStorageRoutes(app: Express): void {
+  const publicBase = getLocalPublicBaseUrl().replace(/\/+$/, "");
+
+  app.get(`${publicBase}/*`, async (req, res) => {
+    if (!(await hasValidSession(req))) {
+      res.status(401).send("Authentication required");
+      return;
+    }
+
+    const key = (req.params as Record<string, string>)[0];
+    if (!key) {
+      res.status(400).send("Missing file key");
+      return;
+    }
+
+    try {
+      const absolutePath = getLocalAbsolutePath(decodeURIComponent(key));
+      await fs.access(absolutePath);
+      res.setHeader("Cache-Control", "private, no-store");
+      createReadStream(absolutePath).pipe(res);
+    } catch {
+      res.status(404).send("File not found");
+    }
+  });
 }
