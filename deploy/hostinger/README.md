@@ -68,7 +68,7 @@ DATABASE_URL=mysql://<user>:<password>@127.0.0.1:3306/<database>
 LOCAL_AUTH_ENABLED=true
 LOCAL_ADMIN_EMAIL=<admin-email>
 LOCAL_ADMIN_PASSWORD=<strong-random-password>
-LOCAL_ADMIN_NAME=Portal Administrator
+LOCAL_ADMIN_NAME=Portal Operator
 OBJECT_STORAGE_PROVIDER=local
 LOCAL_STORAGE_ROOT=/var/www/ltc-insurance-portal/shared/uploads
 LOCAL_STORAGE_PUBLIC_BASE_URL=/uploaded-files
@@ -116,15 +116,11 @@ mkdir -p shared shared/uploads backups
 cp current/.env.hostinger.example shared/.env
 nano shared/.env
 cd current
-ln -sfn ../shared/.env .env
-pnpm install --frozen-lockfile
-pnpm check
-pnpm build
-pnpm db:push
-pm2 start ecosystem.config.cjs
-pm2 save
+bash deploy/hostinger/deploy.sh
 pm2 startup
 ```
+
+Use `deploy/hostinger/deploy.sh` for deployment instead of manually running install, build, migration, and PM2 commands. The deploy script checks pnpm compatibility, installs build tooling, runs TypeScript checks, builds the app, synchronizes the database, and starts or reloads PM2.
 
 ## Nginx
 
@@ -166,6 +162,10 @@ curl -I https://ltc.example.com/
 pm2 status
 pm2 logs ltc-insurance-portal --lines 100
 ```
+
+## Backups
+
+Configure both database and uploaded-document backups after first successful deployment. See `deploy/hostinger/CRON.md`.
 
 ## Manus decoupling status
 
