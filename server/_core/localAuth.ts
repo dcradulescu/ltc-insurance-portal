@@ -5,14 +5,14 @@ import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 
-const LOCAL_AUTH_OPEN_ID = "local-admin";
+const LOCAL_AUTH_OPEN_ID = "portal-operator";
 
 function getLocalAuthConfig() {
   return {
     enabled: (process.env.LOCAL_AUTH_ENABLED || "true").toLowerCase() === "true",
     email: process.env.LOCAL_ADMIN_EMAIL || "",
     password: process.env.LOCAL_ADMIN_PASSWORD || "",
-    name: process.env.LOCAL_ADMIN_NAME || "Portal Administrator",
+    name: process.env.LOCAL_ADMIN_NAME || "Portal Operator",
   };
 }
 
@@ -66,7 +66,7 @@ function renderLoginPage(errorMessage = ""): string {
       <input id="password" name="password" type="password" autocomplete="current-password" required />
       <button type="submit">Sign in</button>
     </form>
-    <small>This local login is intended for independent VPS hosting and can be replaced later with a full provider such as Clerk or Auth.js.</small>
+    <small>This local login is intended for independent VPS hosting and should be upgraded before public multi-user launch.</small>
   </main>
 </body>
 </html>`;
