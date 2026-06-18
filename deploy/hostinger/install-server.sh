@@ -15,7 +15,7 @@ apt update
 apt upgrade -y
 
 echo "==> Installing base packages"
-apt install -y nginx mysql-server git curl ufw unzip ca-certificates gnupg build-essential certbot python3-certbot-nginx
+apt install -y nginx mysql-server git curl ufw unzip ca-certificates gnupg build-essential certbot python3-certbot-nginx apache2-utils
 
 echo "==> Installing Node.js 22"
 if ! command -v node >/dev/null 2>&1 || [[ "$(node -v | cut -d. -f1 | tr -d v)" -lt 22 ]]; then
