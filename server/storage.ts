@@ -2,7 +2,10 @@ import fs from "fs/promises";
 import { createReadStream } from "fs";
 import path from "path";
 import crypto from "crypto";
-import type { Express } from "express";
+import { COOKIE_NAME } from "@shared/const";
+import { parse as parseCookieHeader } from "cookie";
+import type { Express, Request } from "express";
+import { sdk } from "./_core/sdk";
 
 export type StoragePutResult = {
   key: string;
@@ -22,6 +25,18 @@ function getStorageProvider(): StorageProvider {
     return provider as StorageProvider;
   }
   throw new Error(`Unsupported OBJECT_STORAGE_PROVIDER: ${provider}`);
+}
+
+function isFileAuthRequired(): boolean {
+  return (process.env.REQUIRE_AUTH_FOR_FILE_ACCESS || "true").toLowerCase() === "true";
+}
+
+async function hasValidSession(req: Request): Promise<boolean> {
+  if (!isFileAuthRequired()) return true;
+  const cookies = parseCookieHeader(req.headers.cookie || "");
+  const sessionCookie = cookies[COOKIE_NAME];
+  const session = await sdk.verifySession(sessionCookie);
+  return Boolean(session);
 }
 
 function normalizeKey(relKey: string): string {
@@ -125,6 +140,11 @@ export function registerLocalStorageRoutes(app: Express): void {
   const publicBase = getLocalPublicBaseUrl().replace(/\/+$/, "");
 
   app.get(`${publicBase}/*`, async (req, res) => {
+    if (!(await hasValidSession(req))) {
+      res.status(401).send("Authentication required");
+      return;
+    }
+
     const key = (req.params as Record<string, string>)[0];
     if (!key) {
       res.status(400).send("Missing file key");
