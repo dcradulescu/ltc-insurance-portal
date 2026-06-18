@@ -10,6 +10,7 @@ import pino from "pino";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
+import { registerLocalStorageRoutes } from "./localStorageStatic";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -169,6 +170,8 @@ async function startServer() {
   app.use("/api/trpc/pdfDelivery", express.json({ limit: "10mb" }));
 
   // ── Application routes ────────────────────────────────────────────────────
+  registerLocalStorageRoutes(app);
+
   // Storage proxy for legacy hosted-storage paths
   registerStorageProxy(app);
 
