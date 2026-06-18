@@ -1,6 +1,8 @@
 import fs from "fs/promises";
+import { createReadStream } from "fs";
 import path from "path";
 import crypto from "crypto";
+import type { Express } from "express";
 
 export type StoragePutResult = {
   key: string;
@@ -29,11 +31,23 @@ function normalizeKey(relKey: string): string {
 }
 
 function getLocalStorageRoot(): string {
-  return process.env.LOCAL_STORAGE_ROOT || "/var/www/ltc-insurance-portal/storage";
+  return process.env.LOCAL_STORAGE_ROOT || "/var/www/ltc-insurance-portal/shared/uploads";
 }
 
 function getLocalPublicBaseUrl(): string {
   return process.env.LOCAL_STORAGE_PUBLIC_BASE_URL || "/uploaded-files";
+}
+
+function getLocalAbsolutePath(relKey: string): string {
+  const key = normalizeKey(relKey);
+  const storageRoot = path.resolve(getLocalStorageRoot());
+  const absolutePath = path.resolve(storageRoot, key);
+
+  if (!absolutePath.startsWith(storageRoot + path.sep) && absolutePath !== storageRoot) {
+    throw new Error("Invalid storage key path");
+  }
+
+  return absolutePath;
 }
 
 function toBuffer(data: Buffer | Uint8Array | string): Buffer {
@@ -45,15 +59,10 @@ async function putLocal(
   data: Buffer | Uint8Array | string
 ): Promise<StoragePutResult> {
   const key = normalizeKey(relKey);
-  const storageRoot = getLocalStorageRoot();
-  const absolutePath = path.join(storageRoot, key);
-
-  if (!absolutePath.startsWith(path.resolve(storageRoot))) {
-    throw new Error("Invalid storage key path");
-  }
+  const absolutePath = getLocalAbsolutePath(key);
 
   await fs.mkdir(path.dirname(absolutePath), { recursive: true });
-  await fs.writeFile(absolutePath, toBuffer(data));
+  await fs.writeFile(absolutePath, toBuffer(data), { mode: 0o640 });
 
   const publicBase = getLocalPublicBaseUrl().replace(/\/+$/, "");
   return { key, url: `${publicBase}/${encodeURI(key)}` };
@@ -110,4 +119,25 @@ export async function storageGet(relKey: string): Promise<StorageGetResult> {
     default:
       return unsupportedProvider(provider);
   }
+}
+
+export function registerLocalStorageRoutes(app: Express): void {
+  const publicBase = getLocalPublicBaseUrl().replace(/\/+$/, "");
+
+  app.get(`${publicBase}/*`, async (req, res) => {
+    const key = (req.params as Record<string, string>)[0];
+    if (!key) {
+      res.status(400).send("Missing file key");
+      return;
+    }
+
+    try {
+      const absolutePath = getLocalAbsolutePath(decodeURIComponent(key));
+      await fs.access(absolutePath);
+      res.setHeader("Cache-Control", "private, no-store");
+      createReadStream(absolutePath).pipe(res);
+    } catch {
+      res.status(404).send("File not found");
+    }
+  });
 }
