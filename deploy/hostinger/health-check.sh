@@ -4,7 +4,7 @@ set -euo pipefail
 APP_URL="${APP_URL:-http://127.0.0.1:3000}"
 PUBLIC_URL="${PUBLIC_URL:-}"
 APP_NAME="${APP_NAME:-ltc-insurance-portal}"
-STORAGE_ROOT="${STORAGE_ROOT:-/var/www/ltc-insurance-portal/storage}"
+UPLOAD_ROOT="${UPLOAD_ROOT:-/var/www/ltc-insurance-portal/shared/uploads}"
 
 printf '\n==> PM2 status\n'
 pm2 describe "${APP_NAME}" >/dev/null
@@ -13,21 +13,27 @@ pm2 status "${APP_NAME}"
 printf '\n==> Local HTTP check: %s\n' "${APP_URL}"
 curl -fsSI "${APP_URL}" | head -n 20
 
+printf '\n==> Local login page check\n'
+curl -fsS "${APP_URL}/login" | grep -i "LTC Portal" >/dev/null
+
 if [[ -n "${PUBLIC_URL}" ]]; then
   printf '\n==> Public HTTPS check: %s\n' "${PUBLIC_URL}"
   curl -fsSI "${PUBLIC_URL}" | head -n 20
+
+  printf '\n==> Public login page check\n'
+  curl -fsS "${PUBLIC_URL}/login" | grep -i "LTC Portal" >/dev/null
 fi
 
-printf '\n==> Storage directory check\n'
-if [[ ! -d "${STORAGE_ROOT}" ]]; then
-  echo "Missing storage directory: ${STORAGE_ROOT}"
+printf '\n==> Upload directory check\n'
+if [[ ! -d "${UPLOAD_ROOT}" ]]; then
+  echo "Missing upload directory: ${UPLOAD_ROOT}"
   exit 1
 fi
-if [[ ! -w "${STORAGE_ROOT}" ]]; then
-  echo "Storage directory is not writable: ${STORAGE_ROOT}"
+if [[ ! -w "${UPLOAD_ROOT}" ]]; then
+  echo "Upload directory is not writable: ${UPLOAD_ROOT}"
   exit 1
 fi
-ls -ld "${STORAGE_ROOT}"
+ls -ld "${UPLOAD_ROOT}"
 
 printf '\n==> Nginx config check\n'
 if command -v nginx >/dev/null 2>&1; then
