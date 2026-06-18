@@ -46,8 +46,8 @@ pnpm check
 echo "==> Building app"
 pnpm build
 
-echo "==> Running database migrations"
-pnpm db:push
+echo "==> Synchronizing database"
+bash deploy/hostinger/db-sync.sh
 
 echo "==> Starting/reloading PM2 app"
 if pm2 describe "${APP_NAME}" >/dev/null 2>&1; then
