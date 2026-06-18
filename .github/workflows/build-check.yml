@@ -16,9 +16,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.4.1
+      - name: Enable pnpm with Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.4.1 --activate
+          pnpm --version
       - run: pnpm install --frozen-lockfile --prod=false
       - run: pnpm check
       - run: pnpm build
