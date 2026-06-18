@@ -31,6 +31,12 @@ cd "${APP_DIR}"
 
 ln -sfn "${SHARED_ENV}" .env
 
+echo "==> Ensuring runtime directories"
+sudo mkdir -p "${APP_ROOT}/storage" /var/log/ltc-insurance-portal
+sudo chown -R "$USER:www-data" "${APP_ROOT}/storage"
+sudo chmod 2750 "${APP_ROOT}/storage"
+sudo chown -R "$USER:$USER" /var/log/ltc-insurance-portal
+
 echo "==> Installing dependencies"
 pnpm install --frozen-lockfile
 
@@ -42,10 +48,6 @@ pnpm build
 
 echo "==> Running database migrations"
 pnpm db:push
-
-echo "==> Ensuring PM2 log directory exists"
-sudo mkdir -p /var/log/ltc-insurance-portal
-sudo chown -R "$USER:$USER" /var/log/ltc-insurance-portal
 
 echo "==> Starting/reloading PM2 app"
 if pm2 describe "${APP_NAME}" >/dev/null 2>&1; then
