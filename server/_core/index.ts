@@ -49,15 +49,45 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-// Allowed origins for CORS
-const ALLOWED_ORIGINS = [
-  "https://ltcportal.manus.space",
-  "https://ltcportal-7pnqfuuw.manus.space",
-  /^https?:\/\/localhost(:\d+)?$/,
-  /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
-  // Manus sandbox preview URLs
-  /^https:\/\/\d+-[a-z0-9]+-[a-z0-9]+\.us\d+\.manus\.computer$/,
-];
+type OriginPattern = string | RegExp;
+
+function parseCommaSeparatedEnv(value: string | undefined): string[] {
+  return (value ?? "")
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function getConfiguredOrigins(): string[] {
+  return [
+    process.env.APP_PUBLIC_URL,
+    ...parseCommaSeparatedEnv(process.env.ALLOWED_ORIGINS),
+  ].filter((origin): origin is string => Boolean(origin));
+}
+
+function getAllowedOrigins(): OriginPattern[] {
+  const configuredOrigins = getConfiguredOrigins();
+
+  return [
+    ...configuredOrigins,
+    /^https?:\/\/localhost(:\d+)?$/,
+    /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
+    ...(process.env.ALLOW_MANUS_ORIGINS === "true"
+      ? [
+          "https://ltcportal.manus.space",
+          "https://ltcportal-7pnqfuuw.manus.space",
+          /^https:\/\/\d+-[a-z0-9]+-[a-z0-9]+\.us\d+\.manus\.computer$/,
+        ]
+      : []),
+  ];
+}
+
+const ALLOWED_ORIGINS = getAllowedOrigins();
+const CONFIGURED_CSP_ORIGINS = getConfiguredOrigins();
+
+function cspExternalOrigins(): string[] {
+  return CONFIGURED_CSP_ORIGINS.length > 0 ? CONFIGURED_CSP_ORIGINS : [];
+}
 
 async function startServer() {
   const app = express();
@@ -90,9 +120,7 @@ async function startServer() {
                 scriptSrc: [
                   "'self'",
                   "https://fonts.googleapis.com",
-                  // Umami analytics
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
+                  ...cspExternalOrigins(),
                 ],
                 styleSrc: [
                   "'self'",
@@ -104,16 +132,13 @@ async function startServer() {
                   "'self'",
                   "data:",
                   "blob:",
-                  "https://d2xsxph8kpxj0f.cloudfront.net",
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
                   "https://*.cloudfront.net",
+                  ...cspExternalOrigins(),
                 ],
                 connectSrc: [
                   "'self'",
-                  "https://*.manus.space",
-                  "https://*.manus.computer",
                   "https://hooks.zapier.com",
+                  ...cspExternalOrigins(),
                 ],
                 frameSrc: ["'none'"],
                 objectSrc: ["'none'"],
