@@ -499,7 +499,7 @@ export default function Home() {
             <div ref={intakeRightRef} className="relative hidden lg:flex reveal reveal-right">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 420 }}>
                 <img
-                  src="/manus-storage/step2-policy-portrait_817e452f.jpg"
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step2-policy-portrait_817e452f.jpg"
                   alt="Care coordinator helping elderly couple with LTC insurance details"
                   className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
                 />
@@ -520,7 +520,7 @@ export default function Home() {
             <div ref={stratLeftRef} className="relative hidden lg:flex order-2 lg:order-1 reveal reveal-left">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 420 }}>
                 <img
-                  src="/manus-storage/step3-strategy-portrait_174b8901.jpg"
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step3-strategy-portrait_174b8901.jpg"
                   alt="Care coordinator presenting a personalized LTC strategy plan to a family"
                   className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
                 />
