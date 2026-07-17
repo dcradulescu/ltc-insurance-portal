@@ -355,12 +355,12 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <div ref={eduLeftRef} className="relative flex lg:flex reveal reveal-left">
-              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 320, height: '100%' }}>
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 400, height: '100%' }}>
                 <img
                   src="/manus-storage/step1-education-portrait_12e03f47.jpg"
                   alt="Adult woman calmly reading LTC insurance documents at home"
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                  className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(52,177,196,0.92)' }}>
                   <BookOpen className="w-3.5 h-3.5 text-white" />
@@ -421,12 +421,12 @@ export default function Home() {
               </div>
             </div>
             <div ref={intakeRightRef} className="relative flex lg:flex reveal reveal-right">
-              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 320, height: '100%' }}>
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 400, height: '100%' }}>
                 <img
                   src="/manus-storage/step2-policy-portrait_c1ad3e85.jpg"
                   alt="Care coordinator helping elderly couple with LTC insurance details"
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                  className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(6,146,215,0.92)' }}>
                   <ClipboardList className="w-3.5 h-3.5 text-white" />
@@ -443,12 +443,12 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <div ref={stratLeftRef} className="relative flex lg:flex order-2 lg:order-1 reveal reveal-left">
-              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 320, height: '100%' }}>
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ minHeight: 400, height: '100%' }}>
                 <img
                   src="/manus-storage/step3-strategy-portrait_17093b40.jpg"
                   alt="Care coordinator presenting a personalized LTC strategy plan to a family"
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover object-top hover:scale-[1.02] transition-transform duration-500"
+                  className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(52,177,196,0.92)' }}>
                   <Target className="w-3.5 h-3.5 text-white" />

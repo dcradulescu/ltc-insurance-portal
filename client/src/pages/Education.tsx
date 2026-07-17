@@ -640,6 +640,26 @@ export default function Education() {
         ]} />
       </Stage>
 
+      {/* ── Academy Teaser CTA ── */}
+      <section className="py-section" style={{ background: "linear-gradient(135deg, #E8F4F8 0%, #F0FAFB 100%)" }}>
+        <div className="container text-center max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "rgba(52,177,196,0.2)", color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
+            🎓 Learn Through Video
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: "#393F43" }}>
+            Deepen Your Knowledge with the <span style={{ color: "#34B1C4" }}>LTC Academy</span>
+          </h2>
+          <p className="text-lg mb-8 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: "#555" }}>
+            Ready to go deeper? Our LTC Academy features expert-led video lessons that walk you through every stage of the long-term care insurance journey. Learn at your own pace with downloadable guides, checklists, and resources.
+          </p>
+          <Button asChild size="lg" className="text-base px-8 font-semibold shadow-lg hover:-translate-y-0.5 transition-all duration-200" style={{ background: "#34B1C4", color: "#fff", fontFamily: "'Roboto', sans-serif" }}>
+            <Link href="/academy">
+              Explore the LTC Academy <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="py-section text-white" style={{ background: "#393F43" }}>
         <div className="container text-center max-w-2xl">
