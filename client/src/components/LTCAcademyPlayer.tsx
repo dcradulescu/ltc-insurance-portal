@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock, Zap, Settings as GearIcon, Star, Award } from "lucide-react";
 
 interface Video {
   id: string;
@@ -300,13 +300,27 @@ export function LTCAcademyPlayer() {
 
         {/* Key Points Section */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
-              <Lightbulb className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-4 mb-6">
+            {/* Decorative Icon Circle with Gear Elements */}
+            <div className="relative">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 4px 12px rgba(74, 159, 181, 0.3)" }}>
+                <Lightbulb className="w-7 h-7 text-white" />
+              </div>
+              {/* Decorative gear elements around the circle */}
+              <Settings className="w-5 h-5 absolute -top-1 -right-1" style={{ color: "#4A9FB5", opacity: 0.6 }} />
+              <Settings className="w-4 h-4 absolute -bottom-1 -left-2" style={{ color: "#4A9FB5", opacity: 0.5 }} />
+              <Star className="w-3 h-3 absolute top-0 -left-3" style={{ color: "#FFD700", opacity: 0.7 }} />
             </div>
-            <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-              Key Points
-            </h3>
+            <div>
+              <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+                Key Points
+              </h3>
+              <p className="text-xs" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
+                Essential takeaways from this lesson
+              </p>
+            </div>
+            {/* Decorative accent line */}
+            <div className="flex-1 h-0.5 ml-4" style={{ background: "linear-gradient(to right, #4A9FB5, transparent)", opacity: 0.5 }}></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -333,13 +347,30 @@ export function LTCAcademyPlayer() {
 
         {/* Downloads Section */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
-              <Download className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-4 mb-6">
+            {/* Decorative Icon Circle with Badge */}
+            <div className="relative">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 4px 12px rgba(74, 159, 181, 0.3)" }}>
+                <Download className="w-7 h-7 text-white" />
+              </div>
+              {/* Decorative badge element */}
+              <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: "#FFD700", boxShadow: "0 2px 8px rgba(255, 215, 0, 0.3)" }}>
+                <Award className="w-3 h-3" style={{ color: "#1B3A5C" }} />
+              </div>
+              {/* Decorative accent dots */}
+              <div className="absolute w-2 h-2 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.4, bottom: "-8px", right: "0px" }}></div>
+              <div className="absolute w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.3, bottom: "-6px", left: "-8px" }}></div>
             </div>
-            <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-              Resources for This Video
-            </h3>
+            <div>
+              <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+                Resources for This Video
+              </h3>
+              <p className="text-xs" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
+                Download guides, templates, and reference materials
+              </p>
+            </div>
+            {/* Decorative accent line */}
+            <div className="flex-1 h-0.5 ml-4" style={{ background: "linear-gradient(to right, #4A9FB5, transparent)", opacity: 0.5 }}></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
