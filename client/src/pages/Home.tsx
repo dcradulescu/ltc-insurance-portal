@@ -39,6 +39,18 @@ const VA_GREY_BG = "#F2F6FA";
 const VA_HEADING = "#454545";
 const VA_BODY = "#555555";
 
+// Character-Inspired Color Palettes from Official Guides
+const CHARACTER_COLORS = {
+  maya: { primary: "#34B1C4", secondary: "#0E5A6F", accent: "#E8F4F8", light: "#B8E6ED" },
+  professor: { primary: "#8B4513", secondary: "#5C2E0F", accent: "#F5EBE0", light: "#D4A574" },
+  david: { primary: "#6B8FBF", secondary: "#3D5A8C", accent: "#E8EEF7", light: "#B8D4E8" },
+  elena: { primary: "#E89BB5", secondary: "#D4758A", accent: "#FDF0F5", light: "#F0D4E0" },
+  rose: { primary: "#B896D4", secondary: "#8B5FA3", accent: "#F3E8FB", light: "#D9C5E8" },
+  sarah: { primary: "#4FA3A3", secondary: "#2D7A7A", accent: "#E0F5F5", light: "#A8D9D9" },
+  michael: { primary: "#1B3A5C", secondary: "#0F2438", accent: "#E6EEF7", light: "#99B8D9" },
+  buddy: { primary: "#8B6F47", secondary: "#5C4A2F", accent: "#F5F0E8", light: "#C9B8A0" },
+};
+
 
 
 const testimonials = [
@@ -362,19 +374,19 @@ export default function Home() {
                   loading="lazy"
                   className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
                 />
-                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(52,177,196,0.92)' }}>
+                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.maya.primary }}>
                   <BookOpen className="w-3.5 h-3.5 text-white" />
                   <span className="text-xs font-bold text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>Step 1 of 3</span>
                 </div>
               </div>
             </div>
             <div ref={eduRightRef} className="reveal reveal-right flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: 'rgba(52,177,196,0.12)' }}>
-                <BookOpen className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Step 1 of 3</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: CHARACTER_COLORS.maya.accent }}>
+                <BookOpen className="w-4 h-4" style={{ color: CHARACTER_COLORS.maya.primary }} />
+                <span className="text-sm font-semibold" style={{ color: CHARACTER_COLORS.maya.primary, fontFamily: "'Open Sans', sans-serif" }}>Step 1 of 3</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
-                Start with <span style={{ color: VA_TEAL }}>Education</span>
+                Start with <span style={{ color: CHARACTER_COLORS.maya.primary }}>Education</span>
               </h2>
               <p className="text-lg leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
                 Most families feel overwhelmed because they don't know what their policy actually covers. Our free Education section explains everything in plain language — no insurance jargon, no confusing terms. Just clear answers to the questions every family asks.
@@ -399,12 +411,12 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <div ref={intakeLeftRef} className="reveal reveal-left flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: 'rgba(6,146,215,0.12)' }}>
-                <ClipboardList className="w-4 h-4" style={{ color: VA_BLUE }} />
-                <span className="text-sm font-semibold" style={{ color: VA_BLUE, fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: CHARACTER_COLORS.david.accent }}>
+                <ClipboardList className="w-4 h-4" style={{ color: CHARACTER_COLORS.david.primary }} />
+                <span className="text-sm font-semibold" style={{ color: CHARACTER_COLORS.david.primary, fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
-                Tell Us About <span style={{ color: VA_BLUE }}>Your Policy</span>
+                Tell Us About <span style={{ color: CHARACTER_COLORS.david.primary }}>Your Policy</span>
               </h2>
               <p className="text-lg leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
                 Answer a few simple questions about your policy and care needs. It only takes a few minutes, and every answer helps us build a strategy that's tailored specifically to your situation.
@@ -415,7 +427,7 @@ export default function Home() {
                 <VaCheckItem title="Ready for Your Call" desc="When you contact your insurance company, you'll have all the information they need" />
               </div>
               <div className="flex justify-center">
-                <Link href="/policy-form" className="va-btn text-base px-8 py-4 shadow-lg" style={{ background: VA_BLUE }}>
+                <Link href="/policy-form" className="va-btn text-base px-8 py-4 shadow-lg" style={{ background: CHARACTER_COLORS.david.primary }}>
                   Share My Policy Details <ArrowRight className="w-4 h-4 ml-2 inline" />
                 </Link>
               </div>
@@ -428,7 +440,7 @@ export default function Home() {
                   loading="lazy"
                   className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
                 />
-                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(6,146,215,0.92)' }}>
+                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.david.primary }}>
                   <ClipboardList className="w-3.5 h-3.5 text-white" />
                   <span className="text-xs font-bold text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
                 </div>
@@ -450,19 +462,19 @@ export default function Home() {
                   loading="lazy"
                   className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
                 />
-                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: 'rgba(52,177,196,0.92)' }}>
+                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.rose.primary }}>
                   <Target className="w-3.5 h-3.5 text-white" />
                   <span className="text-xs font-bold text-white" style={{ fontFamily: "'Open Sans', sans-serif" }}>Step 3 of 3</span>
                 </div>
               </div>
             </div>
             <div ref={stratRightRef} className="order-1 lg:order-2 reveal reveal-right flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: 'rgba(52,177,196,0.12)' }}>
-                <Target className="w-4 h-4" style={{ color: VA_TEAL }} />
-                <span className="text-sm font-semibold" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Step 3 of 3</span>
+              <div className="inline-flex items-center gap-2 rounded px-4 py-2 mb-4 lg:hidden" style={{ background: CHARACTER_COLORS.rose.accent }}>
+                <Target className="w-4 h-4" style={{ color: CHARACTER_COLORS.rose.primary }} />
+                <span className="text-sm font-semibold" style={{ color: CHARACTER_COLORS.rose.primary, fontFamily: "'Open Sans', sans-serif" }}>Step 3 of 3</span>
               </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
-                Your <span style={{ color: VA_TEAL }}>Customized Strategy</span>
+                Your <span style={{ color: CHARACTER_COLORS.rose.primary }}>Customized Strategy</span>
               </h2>
               <p className="text-lg leading-relaxed mb-4" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
                 Based on your specific policy details and care situation, we create a personalized, step-by-step strategy designed just for you. This roadmap guides you through every phase of the claims process with clarity and confidence.
@@ -473,7 +485,7 @@ export default function Home() {
                 <VaCheckItem title="Policy-Specific Guidance" desc="Recommendations tailored to your unique coverage and care needs" />
               </div>
               <div className="flex justify-center">
-                <Link href="/strategy" className="va-btn text-base px-8 py-4 shadow-lg">
+                <Link href="/strategy" className="va-btn text-base px-8 py-4 shadow-lg" style={{ background: CHARACTER_COLORS.rose.primary }}>
                   View My Strategy
                 </Link>
               </div>
