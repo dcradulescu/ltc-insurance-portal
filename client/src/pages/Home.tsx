@@ -355,7 +355,7 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <div ref={eduLeftRef} className="relative flex lg:flex reveal reveal-left">
-              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: 'auto' }}>
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: eduRightRef?.current?.offsetHeight ? `${eduRightRef.current.offsetHeight}px` : 'auto' }}>
                 <img
                   src="/manus-storage/step1-education-portrait_12e03f47.jpg"
                   alt="Adult woman calmly reading LTC insurance documents at home"
@@ -421,7 +421,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={intakeRightRef} className="relative flex lg:flex reveal reveal-right">
-              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: 'auto' }}>
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: intakeLeftRef?.current?.offsetHeight ? `${intakeLeftRef.current.offsetHeight}px` : 'auto' }}>
                 <img
                   src="/manus-storage/step2-policy-portrait_c1ad3e85.jpg"
                   alt="Care coordinator helping elderly couple with LTC insurance details"
@@ -443,7 +443,7 @@ export default function Home() {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
             <div ref={stratLeftRef} className="relative flex lg:flex order-2 lg:order-1 reveal reveal-left">
-              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: 'auto' }}>
+              <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: stratRightRef?.current?.offsetHeight ? `${stratRightRef.current.offsetHeight}px` : 'auto' }}>
                 <img
                   src="/manus-storage/step3-strategy-portrait_17093b40.jpg"
                   alt="Care coordinator presenting a personalized LTC strategy plan to a family"
