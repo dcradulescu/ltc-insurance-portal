@@ -302,18 +302,16 @@ export default function Education() {
             <p className="text-lg text-white/80 leading-relaxed mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>
               Long-term care insurance can feel overwhelming. This guide walks you through the real experience — from the moment you realize a loved one needs help, all the way through what happens after your claim is approved — so you know exactly what to expect at every step.
             </p>
-            <div className="flex flex-nowrap gap-2 mb-6 overflow-x-auto pb-1">
-              {STAGES.map((s, i) => (
-                <button
-                  key={s.id}
-                  onClick={() => { const el = document.getElementById(s.id); if (el) el.scrollIntoView({ behavior: "smooth" }); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all duration-200 hover:opacity-90 whitespace-nowrap flex-shrink-0"
-                  style={{ background: i === 0 ? "#34B1C4" : "rgba(255,255,255,0.15)", color: "#fff", fontFamily: "'Roboto', sans-serif", border: "1px solid rgba(255,255,255,0.25)" }}
-                >
-                  <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">{i + 1}</span>
-                  {s.label}
-                </button>
-              ))}
+            {/* Video Player */}
+            <div className="relative mb-8 rounded-lg overflow-hidden shadow-lg" style={{ background: "rgba(0,0,0,0.3)", aspectRatio: "16/9" }}>
+              <video
+                controls
+                className="w-full h-full object-cover"
+                style={{ background: "#000" }}
+              >
+                <source src="/manus-storage/education-video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
             <button
               onClick={() => window.print()}
