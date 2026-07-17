@@ -7,6 +7,7 @@ import { toast } from "sonner";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/education", label: "Education" },
+  { href: "/academy", label: "Academy" },
   { href: "/policy-form", label: "Policy" },
   { href: "/strategy", label: "Strategy" },
   { href: "/contact", label: "Contact" },

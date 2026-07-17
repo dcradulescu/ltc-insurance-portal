@@ -14,6 +14,7 @@ import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Profile from "./pages/Profile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Academy from "./pages/Academy";
 import { ChatWidget } from "./components/ChatWidget";
 import { TermsGate } from "./components/TermsGate";
 import { usePolicyContext } from "./contexts/PolicyContext";
@@ -39,6 +40,7 @@ function Router() {
         <Route path={"/terms"} component={Terms} />
         <Route path={"/privacy"} component={PrivacyPolicy} />
         <Route path={"/profile"} component={Profile} />
+        <Route path={"/academy"} component={Academy} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
