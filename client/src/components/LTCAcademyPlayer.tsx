@@ -300,17 +300,30 @@ export function LTCAcademyPlayer() {
 
         {/* Key Points Section */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            {/* Decorative Icon Circle with Gear Elements */}
-            <div className="relative">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 4px 12px rgba(74, 159, 181, 0.3)" }}>
+          <div className="flex items-center gap-4 mb-6 relative">
+            {/* Animated background accent shapes */}
+            <div className="absolute -left-8 -top-4 w-20 h-20 rounded-full" style={{ backgroundColor: "#E8F4F8", opacity: 0.4, animation: "pulse 3s ease-in-out infinite" }}></div>
+            <div className="absolute -right-12 -top-2 w-12 h-12 rounded-full" style={{ backgroundColor: "#FFD700", opacity: 0.15 }}></div>
+            
+            {/* Decorative Icon Circle with Enhanced Elements */}
+            <div className="relative z-10">
+              {/* Animated glow background */}
+              <div className="absolute inset-0 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.2, animation: "pulse 2s ease-in-out infinite", transform: "scale(1.2)" }}></div>
+              
+              <div className="w-14 h-14 rounded-full flex items-center justify-center relative z-20" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 8px 24px rgba(74, 159, 181, 0.4)" }}>
                 <Lightbulb className="w-7 h-7 text-white" />
               </div>
+              
               {/* Decorative character prop elements - Maya's work gear */}
-              <Clipboard className="w-5 h-5 absolute -top-1 -right-1" style={{ color: "#4A9FB5", opacity: 0.7 }} />
-              <BookOpen className="w-4 h-4 absolute -bottom-1 -left-2" style={{ color: "#4A9FB5", opacity: 0.6 }} />
-              <Star className="w-3 h-3 absolute top-0 -left-3" style={{ color: "#FFD700", opacity: 0.8 }} />
+              <Clipboard className="w-5 h-5 absolute -top-2 -right-2 transition-transform hover:rotate-12" style={{ color: "#4A9FB5", opacity: 0.8 }} />
+              <BookOpen className="w-4 h-4 absolute -bottom-1 -left-3 transition-transform hover:-rotate-12" style={{ color: "#4A9FB5", opacity: 0.7 }} />
+              <Star className="w-4 h-4 absolute top-1 -left-4" style={{ color: "#FFD700", opacity: 0.9 }} />
+              
+              {/* Decorative accent dots */}
+              <div className="absolute w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FF6B9D", opacity: 0.6, top: "-8px", right: "8px" }}></div>
+              <div className="absolute w-1 h-1 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.5, bottom: "4px", right: "-6px" }}></div>
             </div>
+            
             <div>
               <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
                 Key Points
@@ -319,9 +332,21 @@ export function LTCAcademyPlayer() {
                 Essential takeaways from this lesson
               </p>
             </div>
-            {/* Decorative accent line */}
-            <div className="flex-1 h-0.5 ml-4" style={{ background: "linear-gradient(to right, #4A9FB5, transparent)", opacity: 0.5 }}></div>
+            
+            {/* Decorative accent line with gradient */}
+            <div className="flex-1 h-1 ml-4 rounded-full" style={{ background: "linear-gradient(to right, #4A9FB5, #FFD700, transparent)", opacity: 0.6 }}></div>
+            
+            {/* Floating accent shape */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg" style={{ backgroundColor: "#E8F4F8", opacity: 0.3, transform: "rotate(45deg)" }}></div>
           </div>
+          
+          {/* Animated CSS */}
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { opacity: 0.4; }
+              50% { opacity: 0.7; }
+            }
+          `}</style>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {selectedVideo.keyPoints.map((point, idx) => (
@@ -347,20 +372,34 @@ export function LTCAcademyPlayer() {
 
         {/* Downloads Section */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            {/* Decorative Icon Circle with Badge */}
-            <div className="relative">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 4px 12px rgba(74, 159, 181, 0.3)" }}>
+          <div className="flex items-center gap-4 mb-6 relative">
+            {/* Animated background accent shapes */}
+            <div className="absolute -left-8 -top-4 w-24 h-24 rounded-full" style={{ backgroundColor: "#FFD700", opacity: 0.08 }}></div>
+            <div className="absolute -right-12 -bottom-2 w-16 h-16 rounded-lg" style={{ backgroundColor: "#4A9FB5", opacity: 0.1, transform: "rotate(45deg)" }}></div>
+            
+            {/* Decorative Icon Circle with Enhanced Elements */}
+            <div className="relative z-10">
+              {/* Animated glow background */}
+              <div className="absolute inset-0 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.2, animation: "pulse 2s ease-in-out infinite", transform: "scale(1.2)" }}></div>
+              
+              <div className="w-14 h-14 rounded-full flex items-center justify-center relative z-20" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 8px 24px rgba(74, 159, 181, 0.4)" }}>
                 <Download className="w-7 h-7 text-white" />
               </div>
+              
               {/* Decorative character prop elements - Maya's ID Badge */}
-              <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: "#FFD700", boxShadow: "0 2px 8px rgba(255, 215, 0, 0.3)" }}>
-                <Badge className="w-3 h-3" style={{ color: "#1B3A5C" }} />
+              <div className="absolute -top-3 -right-3 w-7 h-7 rounded-full flex items-center justify-center transition-transform hover:scale-110" style={{ backgroundColor: "#FFD700", boxShadow: "0 4px 12px rgba(255, 215, 0, 0.4)" }}>
+                <Badge className="w-4 h-4" style={{ color: "#1B3A5C" }} />
               </div>
+              
               {/* Decorative hydration bottle and accent elements */}
-              <Droplet className="w-3 h-3 absolute" style={{ color: "#4A9FB5", opacity: 0.5, bottom: "-8px", right: "0px" }} />
-              <FileText className="w-2.5 h-2.5 absolute" style={{ color: "#4A9FB5", opacity: 0.4, bottom: "-6px", left: "-8px" }} />
+              <Droplet className="w-4 h-4 absolute transition-transform hover:scale-110" style={{ color: "#FF6B9D", opacity: 0.7, bottom: "-10px", right: "-2px" }} />
+              <FileText className="w-3 h-3 absolute transition-transform hover:scale-110" style={{ color: "#4A9FB5", opacity: 0.6, bottom: "-8px", left: "-10px" }} />
+              
+              {/* Decorative accent dots */}
+              <div className="absolute w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FF6B9D", opacity: 0.5, top: "2px", right: "-8px" }}></div>
+              <div className="absolute w-1 h-1 rounded-full" style={{ backgroundColor: "#FFD700", opacity: 0.6, bottom: "-12px", right: "4px" }}></div>
             </div>
+            
             <div>
               <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
                 Resources for This Video
@@ -369,51 +408,87 @@ export function LTCAcademyPlayer() {
                 Download guides, templates, and reference materials
               </p>
             </div>
-            {/* Decorative accent line */}
-            <div className="flex-1 h-0.5 ml-4" style={{ background: "linear-gradient(to right, #4A9FB5, transparent)", opacity: 0.5 }}></div>
+            
+            {/* Decorative accent line with gradient */}
+            <div className="flex-1 h-1 ml-4 rounded-full" style={{ background: "linear-gradient(to right, #4A9FB5, #FF6B9D, transparent)", opacity: 0.6 }}></div>
+            
+            {/* Floating accent shape */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full" style={{ backgroundColor: "#FFD700", opacity: 0.2 }}></div>
           </div>
+          
+          {/* Animated CSS */}
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { opacity: 0.4; }
+              50% { opacity: 0.7; }
+            }
+          `}</style>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {selectedVideo.downloads.map((download, idx) => (
-              <a
-                key={idx}
-                href={download.url}
-                download
-                className="p-6 rounded-2xl border-2 transition-all duration-300 group cursor-pointer hover:scale-105"
-                style={{
-                  backgroundColor: "#FFFFFF",
-                  borderColor: "#E8E8E8",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#4A9FB5";
-                  e.currentTarget.style.backgroundColor = "#E8F4F8";
-                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(74, 159, 181, 0.2)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "#E8E8E8";
-                  e.currentTarget.style.backgroundColor = "#FFFFFF";
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.05)";
-                }}
-              >
-                <div className="flex flex-col items-center text-center gap-3">
-                  <div className="p-3 rounded-xl" style={{ backgroundColor: "#E8F4F8", color: "#4A9FB5" }}>
-                    {getDownloadIcon(download.icon)}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {selectedVideo.downloads.map((download, idx) => {
+              const colors = [
+                { border: "#4A9FB5", bg: "#E8F4F8", icon: "#4A9FB5", accent: "#FFD700", accentBg: "#FFF9E6" },
+                { border: "#FF6B9D", bg: "#FFE8F0", icon: "#FF6B9D", accent: "#4A9FB5", accentBg: "#E8F4F8" },
+                { border: "#4A9FB5", bg: "#E8F4F8", icon: "#4A9FB5", accent: "#FF6B9D", accentBg: "#FFE8F0" },
+              ];
+              const color = colors[idx % colors.length];
+              
+              return (
+                <a
+                  key={idx}
+                  href={download.url}
+                  download
+                  className="relative p-6 rounded-3xl border-3 transition-all duration-300 group cursor-pointer hover:scale-105 overflow-hidden"
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    borderColor: color.border,
+                    boxShadow: `0 8px 24px ${color.border}20`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = color.bg;
+                    e.currentTarget.style.boxShadow = `0 12px 32px ${color.border}40`;
+                    e.currentTarget.style.transform = "translateY(-4px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#FFFFFF";
+                    e.currentTarget.style.boxShadow = `0 8px 24px ${color.border}20`;
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  {/* Decorative background accent */}
+                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full" style={{ backgroundColor: color.accent, opacity: 0.08 }}></div>
+                  <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full" style={{ backgroundColor: color.border, opacity: 0.05 }}></div>
+                  
+                  <div className="flex flex-col items-center text-center gap-4 relative z-10">
+                    {/* Icon container with gradient background */}
+                    <div className="relative">
+                      <div className="absolute inset-0 rounded-2xl" style={{ background: `linear-gradient(135deg, ${color.bg}, ${color.accentBg})`, opacity: 0.5 }}></div>
+                      <div className="p-4 rounded-2xl relative z-10 transition-transform group-hover:scale-110" style={{ backgroundColor: color.bg, color: color.icon }}>
+                        {getDownloadIcon(download.icon)}
+                      </div>
+                    </div>
+                    
+                    {/* Text content */}
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: color.border, fontFamily: "Aptos, sans-serif", letterSpacing: "0.1em" }}>
+                        Download
+                      </p>
+                      <p className="text-sm font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+                        {download.name}
+                      </p>
+                    </div>
+                    
+                    {/* Download button */}
+                    <div className="mt-3 p-3 rounded-xl transition-all group-hover:scale-110" style={{ backgroundColor: color.border, boxShadow: `0 4px 12px ${color.border}30` }}>
+                      <Download className="w-5 h-5 text-white" />
+                    </div>
+                    
+                    {/* Decorative accent dot */}
+                    <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color.accent }}></div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "#999999", fontFamily: "Aptos, sans-serif" }}>
-                      Download
-                    </p>
-                    <p className="text-sm font-semibold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-                      {download.name}
-                    </p>
-                  </div>
-                  <div className="mt-2 p-2 rounded-lg" style={{ backgroundColor: "#4A9FB5" }}>
-                    <Download className="w-4 h-4 text-white" />
-                  </div>
-                </div>
-              </a>
-            ))}
+                </a>
+              );
+            })}
           </div>
         </div>
 
