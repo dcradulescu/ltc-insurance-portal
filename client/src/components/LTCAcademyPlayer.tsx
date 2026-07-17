@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, MoreVertical } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock } from "lucide-react";
 
 interface Video {
   id: string;
@@ -8,6 +8,7 @@ interface Video {
   description: string;
   duration: string;
   instructor: string;
+  keyPoints: string[];
   downloads: {
     name: string;
     url: string;
@@ -20,9 +21,16 @@ const ACADEMY_VIDEOS: Video[] = [
     id: "video-1",
     title: "What is Long-Term Care Insurance?",
     youtubeId: "jNQXAC9IVRw",
-    description: "Discover the fundamentals of long-term care insurance and how it protects your family's financial future. Learn what LTC insurance covers, who needs it, and how it differs from other insurance types. The Professor walks you through real-world scenarios showing how LTC insurance helps families manage care costs.",
+    description: "Discover the fundamentals of long-term care insurance and how it protects your family's financial future.",
     duration: "12:45",
     instructor: "The Professor",
+    keyPoints: [
+      "LTC insurance covers costs of extended care services (in-home, assisted living, nursing homes)",
+      "Benefits protect your family's savings from catastrophic care expenses",
+      "Coverage typically begins after an elimination period (30-90 days)",
+      "Policies can be purchased at any age, but earlier is more affordable",
+      "Average daily costs range from $150-$300+ depending on location and care type"
+    ],
     downloads: [
       { name: "LTC Insurance Basics Guide", url: "https://example.com/ltc-basics-guide.pdf", icon: "pdf" },
       { name: "Coverage Comparison Chart", url: "https://example.com/coverage-chart.pdf", icon: "pdf" },
@@ -33,9 +41,16 @@ const ACADEMY_VIDEOS: Video[] = [
     id: "video-2",
     title: "Understanding Your Policy Documents",
     youtubeId: "jNQXAC9IVRw",
-    description: "Navigate your insurance policy with confidence. This comprehensive walkthrough explains policy language, coverage limits, elimination periods, and benefit amounts. The Professor breaks down confusing terms and shows you exactly where to find important information on your policy documents.",
+    description: "Navigate your insurance policy with confidence. Learn policy language, coverage limits, and benefit amounts.",
     duration: "15:20",
     instructor: "The Professor",
+    keyPoints: [
+      "Schedule of Benefits page shows your daily/monthly maximum and lifetime limit",
+      "Elimination period is the waiting period before benefits begin",
+      "Benefit triggers define when you qualify for coverage (ADL limitations, cognitive impairment)",
+      "Riders and endorsements add optional coverage (inflation protection, waiver of premium)",
+      "Contact information for claims is typically on the back of your insurance card"
+    ],
     downloads: [
       { name: "Policy Glossary", url: "https://example.com/policy-glossary.pdf", icon: "pdf" },
       { name: "Document Checklist", url: "https://example.com/doc-checklist.pdf", icon: "pdf" },
@@ -46,9 +61,16 @@ const ACADEMY_VIDEOS: Video[] = [
     id: "video-3",
     title: "Filing Your LTC Insurance Claim",
     youtubeId: "jNQXAC9IVRw",
-    description: "Master the claim filing process step-by-step. From initial notification to documentation requirements, learn exactly what your insurance company needs. The Professor shares insider tips on avoiding common mistakes and ensuring your claim processes smoothly and quickly.",
+    description: "Master the claim filing process step-by-step. Learn what your insurance company needs and common pitfalls.",
     duration: "18:30",
     instructor: "The Professor",
+    keyPoints: [
+      "Notify your insurance company within 30 days of needing care services",
+      "Gather medical documentation proving you meet benefit triggers (ADL assessments)",
+      "Submit claim forms with physician certification and care plan",
+      "Insurance company will conduct independent assessment (usually within 30 days)",
+      "Keep detailed records of all correspondence and documentation submitted"
+    ],
     downloads: [
       { name: "Claim Filing Checklist", url: "https://example.com/claim-checklist.pdf", icon: "pdf" },
       { name: "Required Documentation List", url: "https://example.com/required-docs.pdf", icon: "pdf" },
@@ -59,9 +81,16 @@ const ACADEMY_VIDEOS: Video[] = [
     id: "video-4",
     title: "Managing Benefits After Approval",
     youtubeId: "jNQXAC9IVRw",
-    description: "Your claim is approved—now what? Learn how to manage ongoing benefits, maintain documentation, report changes, and maximize your coverage. The Professor explains benefit payments, care coordination, and how to keep your claim in good standing.",
+    description: "Learn how to manage ongoing benefits, maintain documentation, and keep your claim in good standing.",
     duration: "14:15",
     instructor: "The Professor",
+    keyPoints: [
+      "Submit monthly care logs documenting services received and costs incurred",
+      "Report any changes in care needs, providers, or living situation immediately",
+      "Keep receipts and invoices for all care expenses to support reimbursement requests",
+      "Review benefit statements monthly to ensure accuracy of payments",
+      "Maintain regular communication with your insurance case manager"
+    ],
     downloads: [
       { name: "Benefits Management Guide", url: "https://example.com/benefits-guide.pdf", icon: "pdf" },
       { name: "Care Log Template", url: "https://example.com/care-log.pdf", icon: "pdf" },
@@ -72,9 +101,16 @@ const ACADEMY_VIDEOS: Video[] = [
     id: "video-5",
     title: "Real Stories: How LTC Insurance Helped Families",
     youtubeId: "jNQXAC9IVRw",
-    description: "Hear from real families about their LTC insurance experiences. Rose shares how her policy covered in-home care costs, Michael explains how it protected his family's savings, and Elena reveals how early planning made all the difference. These inspiring stories show the real-world impact of LTC insurance.",
+    description: "Hear from real families about their LTC insurance experiences and how it made a difference.",
     duration: "16:50",
     instructor: "The Professor & Guests",
+    keyPoints: [
+      "Rose's story: In-home care policy covered $120,000 in care costs over 3 years",
+      "Michael's experience: Policy protected family savings and allowed him to stay in his home",
+      "Elena's insight: Early planning and understanding policy details made claim process smooth",
+      "Common theme: Families wish they had understood their policies better earlier",
+      "Key takeaway: Having a plan and knowing your coverage provides peace of mind"
+    ],
     downloads: [
       { name: "Family Success Stories", url: "https://example.com/success-stories.pdf", icon: "pdf" },
       { name: "Planning Timeline", url: "https://example.com/timeline.pdf", icon: "pdf" },
@@ -84,8 +120,9 @@ const ACADEMY_VIDEOS: Video[] = [
 ];
 
 export function LTCAcademyPlayer() {
-  const [selectedVideo, setSelectedVideo] = useState<Video>(ACADEMY_VIDEOS[0]);
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const selectedVideo = ACADEMY_VIDEOS[selectedVideoIndex];
 
   const getDownloadIcon = (type: "pdf" | "doc" | "guide") => {
     switch (type) {
@@ -98,246 +135,331 @@ export function LTCAcademyPlayer() {
     }
   };
 
+  const goToNext = () => {
+    if (selectedVideoIndex < ACADEMY_VIDEOS.length - 1) {
+      setSelectedVideoIndex(selectedVideoIndex + 1);
+    }
+  };
+
+  const goToPrevious = () => {
+    if (selectedVideoIndex > 0) {
+      setSelectedVideoIndex(selectedVideoIndex - 1);
+    }
+  };
+
   return (
-    <div className="w-full" style={{ backgroundColor: "#F8F9FA" }}>
-      {/* Header - Character Guide Style */}
+    <div className="w-full min-h-screen" style={{ backgroundColor: "#F8F9FA" }}>
+      {/* Header with Branding */}
       <div className="relative overflow-hidden border-b-4" style={{ borderColor: "#4A9FB5", backgroundColor: "#1B3A5C" }}>
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 right-0 w-96 h-96 rounded-full" style={{ backgroundColor: "#4A9FB5" }}></div>
         </div>
-        <div className="relative max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
-              <BookOpen className="w-6 h-6 text-white" />
+        <div className="relative max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
+                <BookOpen className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
+                  LTC Academy
+                </h1>
+                <p className="text-sm" style={{ color: "#B0D4E3", fontFamily: "Aptos, sans-serif" }}>
+                  Master long-term care insurance with our comprehensive video series
+                </p>
+              </div>
             </div>
-            <h1 className="text-4xl font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
-              LTC Academy
-            </h1>
+            <div className="text-right">
+              <p className="text-sm font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
+                Video {selectedVideoIndex + 1} of {ACADEMY_VIDEOS.length}
+              </p>
+              <p className="text-xs" style={{ color: "#B0D4E3", fontFamily: "Aptos, sans-serif" }}>
+                {Math.round(((selectedVideoIndex + 1) / ACADEMY_VIDEOS.length) * 100)}% Complete
+              </p>
+            </div>
           </div>
-          <p className="text-lg" style={{ color: "#B0D4E3", fontFamily: "Aptos, sans-serif" }}>
-            Master long-term care insurance with our comprehensive video series
-          </p>
         </div>
       </div>
 
-      {/* Main Player Container */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex gap-6" style={{ height: "700px" }}>
-          {/* Left Sidebar - Video Menu (20%) */}
-          <div className="w-1/5 flex flex-col gap-3 overflow-y-auto pr-3 pb-4">
-            <div className="mb-2">
-              <h3 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                📚 Video Series
-              </h3>
+      {/* Progress Bar */}
+      <div className="relative h-2 bg-gray-200" style={{ backgroundColor: "#E8E8E8" }}>
+        <div
+          className="h-full transition-all duration-500"
+          style={{
+            backgroundColor: "#4A9FB5",
+            width: `${((selectedVideoIndex + 1) / ACADEMY_VIDEOS.length) * 100}%`,
+          }}
+        ></div>
+        {/* Animated progress indicator */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full shadow-lg transform transition-all duration-500"
+          style={{
+            left: `${((selectedVideoIndex + 1) / ACADEMY_VIDEOS.length) * 100}%`,
+            marginLeft: "-12px",
+            backgroundColor: "#4A9FB5",
+            boxShadow: "0 0 0 4px rgba(74, 159, 181, 0.2)",
+          }}
+        ></div>
+      </div>
+
+      {/* Main Content Container */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Video Player Section */}
+        <div className="mb-8">
+          {/* Video Title and Info */}
+          <div className="mb-4">
+            <h2 className="text-3xl font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+              {selectedVideo.title}
+            </h2>
+            <div className="flex items-center gap-4 text-sm">
+              <span className="font-semibold" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
+                Presented by {selectedVideo.instructor}
+              </span>
+              <span className="flex items-center gap-1" style={{ color: "#999999", fontFamily: "Aptos, sans-serif" }}>
+                <Clock className="w-4 h-4" />
+                {selectedVideo.duration}
+              </span>
             </div>
-            {ACADEMY_VIDEOS.map((video) => (
-              <button
-                key={video.id}
-                onClick={() => setSelectedVideo(video)}
-                className="transition-all duration-300 group text-left"
+          </div>
+
+          {/* Main Video Player - Full Width */}
+          <div
+            className="relative w-full rounded-3xl overflow-hidden mb-6"
+            style={{
+              backgroundColor: "#000000",
+              border: "4px solid #4A9FB5",
+              boxShadow: "0 12px 40px rgba(74, 159, 181, 0.25)",
+              aspectRatio: "16 / 9",
+            }}
+          >
+            {/* Play Button Overlay */}
+            <div
+              className="absolute inset-0 flex items-center justify-center z-10 group cursor-pointer"
+              onClick={() => setIsPlaying(!isPlaying)}
+            >
+              <div
+                className="w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-2xl"
                 style={{
-                  padding: "14px 12px",
-                  borderRadius: "8px",
-                  border: selectedVideo.id === video.id ? "2px solid #4A9FB5" : "2px solid #E8E8E8",
-                  backgroundColor: selectedVideo.id === video.id ? "#E8F4F8" : "#FFFFFF",
-                  boxShadow: selectedVideo.id === video.id ? "0 4px 12px rgba(74, 159, 181, 0.15)" : "0 2px 6px rgba(0, 0, 0, 0.05)",
+                  backgroundColor: "rgba(74, 159, 181, 0.95)",
+                  backdropFilter: "blur(8px)",
                 }}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-wide mb-1 transition-colors" style={{
-                      color: selectedVideo.id === video.id ? "#4A9FB5" : "#999999",
-                      fontFamily: "Aptos, sans-serif"
-                    }}>
-                      {video.duration}
-                    </p>
-                    <h4 className="text-sm font-bold leading-tight transition-colors" style={{
-                      color: selectedVideo.id === video.id ? "#1B3A5C" : "#333333",
-                      fontFamily: "Aptos, sans-serif"
-                    }}>
-                      {video.title}
-                    </h4>
-                    <p className="text-xs mt-1" style={{
-                      color: selectedVideo.id === video.id ? "#4A9FB5" : "#999999",
-                      fontFamily: "Aptos, sans-serif"
-                    }}>
-                      {video.instructor}
-                    </p>
-                  </div>
-                  {selectedVideo.id === video.id && (
-                    <ChevronRight className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#4A9FB5" }} />
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Center - Video Player (60%) */}
-          <div className="w-3/5 flex flex-col gap-4">
-            {/* Video Player Container - Character Guide Style */}
-            <div className="relative w-full flex-1 rounded-2xl overflow-hidden" style={{
-              border: "3px solid #4A9FB5",
-              backgroundColor: "#000000",
-              boxShadow: "0 8px 24px rgba(74, 159, 181, 0.2)"
-            }}>
-              {/* Play Button Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center z-10 group cursor-pointer" onClick={() => setIsPlaying(!isPlaying)}>
-                <div className="w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110" style={{
-                  backgroundColor: "rgba(74, 159, 181, 0.9)",
-                  backdropFilter: "blur(4px)"
-                }}>
-                  {isPlaying ? (
-                    <Pause className="w-10 h-10 text-white ml-1" />
-                  ) : (
-                    <Play className="w-10 h-10 text-white ml-1" />
-                  )}
-                </div>
-              </div>
-
-              {/* YouTube Embed */}
-              <iframe
-                width="100%"
-                height="100%"
-                src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=0&rel=0`}
-                title={selectedVideo.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full"
-              />
-
-              {/* Custom Controls Bar */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/50 to-transparent p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
-                    <Play className="w-5 h-5" />
-                  </button>
-                  <div className="w-48 h-1 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
-                    <div className="h-full w-1/3 rounded-full" style={{ backgroundColor: "#4A9FB5" }}></div>
-                  </div>
-                  <span className="text-white text-xs font-bold">{selectedVideo.duration}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
-                    <Volume2 className="w-5 h-5" />
-                  </button>
-                  <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
-                    <Settings className="w-5 h-5" />
-                  </button>
-                </div>
+                {isPlaying ? (
+                  <Pause className="w-12 h-12 text-white ml-1" />
+                ) : (
+                  <Play className="w-12 h-12 text-white ml-1" />
+                )}
               </div>
             </div>
 
-            {/* Video Info - Character Guide Style */}
-            <div className="rounded-2xl p-6 border-2" style={{
-              backgroundColor: "#E8F4F8",
-              borderColor: "#4A9FB5",
-              boxShadow: "0 4px 12px rgba(74, 159, 181, 0.1)"
-            }}>
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-                    {selectedVideo.title}
-                  </h2>
-                  <p className="text-sm font-semibold" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                    Presented by {selectedVideo.instructor}
-                  </p>
+            {/* YouTube Embed */}
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=0&rel=0`}
+              title={selectedVideo.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+            />
+
+            {/* Custom Controls Bar with Character Colors */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/60 to-transparent p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <button
+                  className="p-2 rounded-lg hover:bg-white/20 transition-colors"
+                  style={{ color: "#4A9FB5" }}
+                >
+                  <Play className="w-5 h-5" />
+                </button>
+                <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
+                  <div className="h-full w-1/3 rounded-full" style={{ backgroundColor: "#4A9FB5" }}></div>
                 </div>
-                <button className="p-2 rounded-lg hover:bg-white transition-colors" style={{ color: "#4A9FB5" }}>
-                  <MoreVertical className="w-5 h-5" />
+                <span className="text-white text-xs font-bold whitespace-nowrap">{selectedVideo.duration}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
+                  <Volume2 className="w-5 h-5" />
+                </button>
+                <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
+                  <Settings className="w-5 h-5" />
+                </button>
+                <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
+                  <Maximize2 className="w-5 h-5" />
                 </button>
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
-                {selectedVideo.description}
-              </p>
             </div>
           </div>
 
-          {/* Right Sidebar - Downloads (20%) */}
-          <div className="w-1/5 flex flex-col gap-4 overflow-y-auto pl-3 pb-4">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                📥 Resources
-              </h3>
-            </div>
+          {/* Video Description */}
+          <p className="text-base leading-relaxed mb-6" style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
+            {selectedVideo.description}
+          </p>
+        </div>
 
-            {/* Downloads Section */}
-            <div className="space-y-3">
-              {selectedVideo.downloads.map((download, idx) => (
-                <a
-                  key={idx}
-                  href={download.url}
-                  download
-                  className="flex flex-col gap-2 p-4 rounded-xl transition-all duration-300 group cursor-pointer hover:scale-105"
-                  style={{
-                    border: "2px solid #E8E8E8",
-                    backgroundColor: "#FFFFFF",
-                    boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "#4A9FB5";
-                    e.currentTarget.style.backgroundColor = "#E8F4F8";
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(74, 159, 181, 0.15)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "#E8E8E8";
-                    e.currentTarget.style.backgroundColor = "#FFFFFF";
-                    e.currentTarget.style.boxShadow = "0 2px 6px rgba(0, 0, 0, 0.05)";
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 p-2 rounded-lg transition-colors" style={{ backgroundColor: "#E8F4F8", color: "#4A9FB5" }}>
-                      {getDownloadIcon(download.icon)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#999999", fontFamily: "Aptos, sans-serif" }}>
-                        Download
-                      </p>
-                      <p className="text-sm font-semibold truncate" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-                        {download.name}
-                      </p>
-                    </div>
-                  </div>
-                </a>
-              ))}
+        {/* Key Points Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
+              <Lightbulb className="w-5 h-5 text-white" />
             </div>
+            <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+              Key Points
+            </h3>
+          </div>
 
-            {/* Info Box - Character Guide Style */}
-            <div className="mt-auto p-4 rounded-xl border-2" style={{
-              backgroundColor: "#FFF9E6",
-              borderColor: "#FFD700",
-              boxShadow: "0 4px 12px rgba(255, 215, 0, 0.1)"
-            }}>
-              <p className="text-xs leading-relaxed font-semibold" style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
-                💡 <strong>Pro Tip:</strong> Download resources to reference while watching or share with family.
-              </p>
-            </div>
-
-            {/* Interactive Progress */}
-            <div className="p-4 rounded-xl border-2" style={{
-              backgroundColor: "#F0F8FA",
-              borderColor: "#4A9FB5",
-              boxShadow: "0 4px 12px rgba(74, 159, 181, 0.1)"
-            }}>
-              <p className="text-xs font-bold uppercase mb-2" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                Your Progress
-              </p>
-              <div className="w-full h-2 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
-                <div className="h-full w-1/3 rounded-full transition-all duration-300" style={{ backgroundColor: "#4A9FB5" }}></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {selectedVideo.keyPoints.map((point, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg hover:scale-105"
+                style={{
+                  backgroundColor: "#E8F4F8",
+                  borderColor: "#4A9FB5",
+                  boxShadow: "0 4px 12px rgba(74, 159, 181, 0.1)",
+                }}
+              >
+                <div className="flex gap-3">
+                  <CheckCircle2 className="w-6 h-6 flex-shrink-0 mt-0.5" style={{ color: "#4A9FB5" }} />
+                  <p className="text-sm leading-relaxed" style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
+                    {point}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs mt-2" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
-                1 of {ACADEMY_VIDEOS.length} videos completed
-              </p>
-            </div>
+            ))}
           </div>
         </div>
+
+        {/* Downloads Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
+              <Download className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+              Resources for This Video
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {selectedVideo.downloads.map((download, idx) => (
+              <a
+                key={idx}
+                href={download.url}
+                download
+                className="p-6 rounded-2xl border-2 transition-all duration-300 group cursor-pointer hover:scale-105"
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  borderColor: "#E8E8E8",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "#4A9FB5";
+                  e.currentTarget.style.backgroundColor = "#E8F4F8";
+                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(74, 159, 181, 0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "#E8E8E8";
+                  e.currentTarget.style.backgroundColor = "#FFFFFF";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.05)";
+                }}
+              >
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="p-3 rounded-xl" style={{ backgroundColor: "#E8F4F8", color: "#4A9FB5" }}>
+                    {getDownloadIcon(download.icon)}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "#999999", fontFamily: "Aptos, sans-serif" }}>
+                      Download
+                    </p>
+                    <p className="text-sm font-semibold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+                      {download.name}
+                    </p>
+                  </div>
+                  <div className="mt-2 p-2 rounded-lg" style={{ backgroundColor: "#4A9FB5" }}>
+                    <Download className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Navigation Section */}
+        <div className="flex items-center justify-between py-8 border-t-2" style={{ borderColor: "#E8E8E8" }}>
+          <button
+            onClick={goToPrevious}
+            disabled={selectedVideoIndex === 0}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+            style={{
+              backgroundColor: selectedVideoIndex === 0 ? "#E8E8E8" : "#4A9FB5",
+              color: selectedVideoIndex === 0 ? "#999999" : "#FFFFFF",
+              fontFamily: "Aptos, sans-serif",
+            }}
+          >
+            <ChevronLeft className="w-5 h-5" />
+            Previous Video
+          </button>
+
+          <div className="text-center">
+            <p className="text-sm font-semibold" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
+              {selectedVideoIndex + 1} of {ACADEMY_VIDEOS.length}
+            </p>
+            <div className="flex gap-2 mt-2">
+              {ACADEMY_VIDEOS.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedVideoIndex(idx)}
+                  className="w-3 h-3 rounded-full transition-all duration-300 hover:scale-125"
+                  style={{
+                    backgroundColor: idx === selectedVideoIndex ? "#4A9FB5" : "#E8E8E8",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={goToNext}
+            disabled={selectedVideoIndex === ACADEMY_VIDEOS.length - 1}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+            style={{
+              backgroundColor: selectedVideoIndex === ACADEMY_VIDEOS.length - 1 ? "#E8E8E8" : "#4A9FB5",
+              color: selectedVideoIndex === ACADEMY_VIDEOS.length - 1 ? "#999999" : "#FFFFFF",
+              fontFamily: "Aptos, sans-serif",
+            }}
+          >
+            Next Video
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Completion Message */}
+        {selectedVideoIndex === ACADEMY_VIDEOS.length - 1 && (
+          <div
+            className="mt-8 p-6 rounded-2xl border-2 text-center"
+            style={{
+              backgroundColor: "#FFF9E6",
+              borderColor: "#FFD700",
+              boxShadow: "0 8px 20px rgba(255, 215, 0, 0.15)",
+            }}
+          >
+            <p className="text-lg font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+              🎉 Congratulations!
+            </p>
+            <p style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
+              You've completed the LTC Academy series. You now have the knowledge to confidently navigate your long-term care insurance journey.
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Series Info Footer - Character Guide Style */}
-      <div className="border-t-4 mt-8 px-6 py-8" style={{ borderColor: "#4A9FB5", backgroundColor: "#F0F8FA" }}>
-        <div className="max-w-7xl mx-auto">
+      {/* Footer */}
+      <div className="border-t-4 mt-12 px-6 py-8" style={{ borderColor: "#4A9FB5", backgroundColor: "#F0F8FA" }}>
+        <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center p-4 rounded-xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
+            <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
               <div className="text-3xl font-bold mb-2" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
                 {ACADEMY_VIDEOS.length}
               </div>
@@ -345,7 +467,7 @@ export function LTCAcademyPlayer() {
                 Videos in Series
               </p>
             </div>
-            <div className="text-center p-4 rounded-xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
+            <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
               <div className="text-3xl font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
                 {ACADEMY_VIDEOS.reduce((sum, v) => sum + v.downloads.length, 0)}
               </div>
@@ -353,7 +475,7 @@ export function LTCAcademyPlayer() {
                 Downloadable Resources
               </p>
             </div>
-            <div className="text-center p-4 rounded-xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
+            <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
               <div className="text-3xl font-bold mb-2" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
                 100%
               </div>
@@ -361,7 +483,7 @@ export function LTCAcademyPlayer() {
                 Free Access
               </p>
             </div>
-            <div className="text-center p-4 rounded-xl" style={{ backgroundColor: "#E8F4F8", border: "2px solid #4A9FB5" }}>
+            <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#E8F4F8", border: "2px solid #4A9FB5" }}>
               <div className="text-3xl font-bold mb-2" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
                 👨‍🎓
               </div>
