@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock, Zap, Settings as GearIcon, Star, Award } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock, Zap, Clipboard, Droplet, Badge, Star, Award } from "lucide-react";
 
 interface Video {
   id: string;
@@ -306,10 +306,10 @@ export function LTCAcademyPlayer() {
               <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 4px 12px rgba(74, 159, 181, 0.3)" }}>
                 <Lightbulb className="w-7 h-7 text-white" />
               </div>
-              {/* Decorative gear elements around the circle */}
-              <Settings className="w-5 h-5 absolute -top-1 -right-1" style={{ color: "#4A9FB5", opacity: 0.6 }} />
-              <Settings className="w-4 h-4 absolute -bottom-1 -left-2" style={{ color: "#4A9FB5", opacity: 0.5 }} />
-              <Star className="w-3 h-3 absolute top-0 -left-3" style={{ color: "#FFD700", opacity: 0.7 }} />
+              {/* Decorative character prop elements - Maya's work gear */}
+              <Clipboard className="w-5 h-5 absolute -top-1 -right-1" style={{ color: "#4A9FB5", opacity: 0.7 }} />
+              <BookOpen className="w-4 h-4 absolute -bottom-1 -left-2" style={{ color: "#4A9FB5", opacity: 0.6 }} />
+              <Star className="w-3 h-3 absolute top-0 -left-3" style={{ color: "#FFD700", opacity: 0.8 }} />
             </div>
             <div>
               <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
@@ -353,13 +353,13 @@ export function LTCAcademyPlayer() {
               <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 4px 12px rgba(74, 159, 181, 0.3)" }}>
                 <Download className="w-7 h-7 text-white" />
               </div>
-              {/* Decorative badge element */}
+              {/* Decorative character prop elements - Maya's ID Badge */}
               <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: "#FFD700", boxShadow: "0 2px 8px rgba(255, 215, 0, 0.3)" }}>
-                <Award className="w-3 h-3" style={{ color: "#1B3A5C" }} />
+                <Badge className="w-3 h-3" style={{ color: "#1B3A5C" }} />
               </div>
-              {/* Decorative accent dots */}
-              <div className="absolute w-2 h-2 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.4, bottom: "-8px", right: "0px" }}></div>
-              <div className="absolute w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.3, bottom: "-6px", left: "-8px" }}></div>
+              {/* Decorative hydration bottle and accent elements */}
+              <Droplet className="w-3 h-3 absolute" style={{ color: "#4A9FB5", opacity: 0.5, bottom: "-8px", right: "0px" }} />
+              <FileText className="w-2.5 h-2.5 absolute" style={{ color: "#4A9FB5", opacity: 0.4, bottom: "-6px", left: "-8px" }} />
             </div>
             <div>
               <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
