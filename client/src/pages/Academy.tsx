@@ -5,41 +5,40 @@ import { Link } from "wouter";
 import { Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const VA_TEAL = "#34B1C4";
 const TOTAL_VIDEOS = 4;
 
+const TIMELINE_STEPS = [
+  { number: 1, title: "Understand Basics", description: "Learn LTC insurance fundamentals", color: "#4A9FB5" },
+  { number: 2, title: "Review Your Policy", description: "Gather and review policy details", color: "#FFD700" },
+  { number: 3, title: "Prepare Documents", description: "Collect required documentation", color: "#FF6B9D" },
+  { number: 4, title: "Submit Claim", description: "File your claim with confidence", color: "#1B3A5C" },
+];
+
 export default function Academy() {
+  const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
+
   useEffect(() => {
-    const updateProgressBar = () => {
+    const updateTimeline = () => {
       const stored = localStorage.getItem('ltc-academy-completed');
-      let completed = 0;
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          completed = parsed.length;
+          setCompletedVideos(new Set(parsed));
         } catch (e) {
           console.error('Failed to parse completion data:', e);
         }
       }
-      const percentage = Math.round((completed / TOTAL_VIDEOS) * 100);
-      const progressBar = document.getElementById('academy-progress-bar');
-      const progressText = document.getElementById('academy-progress-text');
-      if (progressBar) {
-        progressBar.style.width = percentage + '%';
-      }
-      if (progressText) {
-        progressText.textContent = percentage + '%';
-      }
     };
 
-    updateProgressBar();
-    window.addEventListener('storage', updateProgressBar);
-    const interval = setInterval(updateProgressBar, 500);
+    updateTimeline();
+    window.addEventListener('storage', updateTimeline);
+    const interval = setInterval(updateTimeline, 500);
 
     return () => {
-      window.removeEventListener('storage', updateProgressBar);
+      window.removeEventListener('storage', updateTimeline);
       clearInterval(interval);
     };
   }, []);
@@ -72,7 +71,7 @@ export default function Academy() {
                 <span style={{ color: VA_TEAL }}>Academy</span>
               </h1>
               <p className="text-lg text-white/85 leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                Learn from expert instructors who guide you through every step of the long-term care insurance journey. Our comprehensive video series breaks down complex topics into easy-to-understand lessons covering policy basics, the claims process, and strategies to maximize your benefits.
+                Master long-term care insurance with our comprehensive video series.
               </p>
               <div className="animate-float-up animate-delay-300 flex flex-row gap-3 sm:gap-4 justify-center">
                 <Link href="#academy-content" className="va-btn text-base px-8 py-4 text-center shadow-lg">
@@ -109,30 +108,52 @@ export default function Academy() {
         </div>
       </section>
 
-      {/* Thin Progress Timeline */}
-      <section className="bg-white py-4 border-b border-gray-200">
+      {/* Academy Timeline - Numbered and Colored */}
+      <section className="bg-white py-12 border-b border-gray-200">
         <div className="container">
-          <div className="flex items-center justify-between">
-            {/* Progress bar background */}
-            <div className="flex-1 h-1 bg-gray-200 rounded-full relative">
-              {/* Progress fill - updated by useEffect */}
-              <div 
-                className="h-full bg-gradient-to-r rounded-full transition-all duration-300"
-                style={{ 
-                  width: '0%',
-                  background: 'linear-gradient(to right, ' + VA_TEAL + ', #34B1C4)'
-                }}
-                id="academy-progress-bar"
-              />
-            </div>
-            {/* Progress percentage text */}
-            <span 
-              className="ml-4 text-sm font-semibold whitespace-nowrap"
-              style={{ color: VA_TEAL, fontFamily: "Aptos, sans-serif" }}
-              id="academy-progress-text"
-            >
-              0%
-            </span>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-4">
+            {TIMELINE_STEPS.map((step, idx) => {
+              const isCompleted = completedVideos.has('video-' + step.number);
+              const isCurrent = idx === completedVideos.size && completedVideos.size < TOTAL_VIDEOS;
+              
+              return (
+                <div key={step.number} className="flex flex-col items-center">
+                  {/* Timeline circle */}
+                  <div
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl mb-4 transition-all duration-300 shadow-md"
+                    style={{
+                      backgroundColor: step.color,
+                      opacity: isCompleted || isCurrent ? 1 : 0.6,
+                      transform: isCompleted || isCurrent ? 'scale(1.1)' : 'scale(1)',
+                    }}
+                  >
+                    {isCompleted ? '✓' : step.number}
+                  </div>
+                  
+                  {/* Step title */}
+                  <h3
+                    className="text-center font-bold text-sm md:text-base mb-2 transition-colors duration-300"
+                    style={{
+                      color: isCompleted || isCurrent ? step.color : '#999',
+                      fontFamily: 'Aptos, sans-serif',
+                    }}
+                  >
+                    {step.title}
+                  </h3>
+                  
+                  {/* Step description */}
+                  <p
+                    className="text-center text-xs md:text-sm leading-relaxed transition-colors duration-300"
+                    style={{
+                      color: isCompleted || isCurrent ? '#555' : '#aaa',
+                      fontFamily: 'Aptos, sans-serif',
+                    }}
+                  >
+                    {step.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -566,9 +566,12 @@
 - [x] Save completed videos to localStorage whenever state changes
 - [x] Data persists across browser sessions (per-device storage)
 - [x] Rebuild Academy page with homepage-style hero banner
-- [x] Add thin progress timeline bar below hero banner
-- [x] Connect progress bar to localStorage completion tracking
-- [x] Progress bar updates in real-time as videos are marked complete
+- [x] Replace thin progress bar with numbered, colored timeline
+- [x] Timeline shows 4 steps with different colors (teal, gold, pink, dark blue)
+- [x] Timeline displays step titles and descriptions
+- [x] Completed steps show checkmark instead of number
+- [x] Timeline updates in real-time as videos are marked complete
+- [x] Timeline items scale and brighten when completed or current
 
 ## Mobile Responsiveness (June 2026)
 - [x] Mobile nav: hamburger menu in Layout.tsx for screens < md
