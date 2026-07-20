@@ -358,7 +358,7 @@ export default function Home() {
       <section className="py-section" style={{ background: VA_GREY_BG }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
-            <div ref={eduLeftRef} className="relative flex lg:flex reveal reveal-left">
+            <div ref={eduLeftRef} className="relative flex lg:flex reveal reveal-left w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: eduRightRef?.current?.offsetHeight ? `${eduRightRef.current.offsetHeight}px` : 'auto' }}>
                 <img
                   src="/manus-storage/step1-education-portrait_12e03f47.jpg"
@@ -425,7 +425,7 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-            <div ref={intakeRightRef} className="relative flex lg:flex reveal reveal-right">
+            <div ref={intakeRightRef} className="relative flex lg:flex reveal reveal-right w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: intakeLeftRef?.current?.offsetHeight ? `${intakeLeftRef.current.offsetHeight}px` : 'auto' }}>
                 <img
                   src="/manus-storage/step2-policy-portrait_c1ad3e85.jpg"
@@ -448,7 +448,7 @@ export default function Home() {
       <section className="py-section" style={{ background: VA_GREY_BG }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-stretch">
-            <div ref={stratLeftRef} className="relative flex lg:flex order-2 lg:order-1 reveal reveal-left">
+            <div ref={stratLeftRef} className="relative flex lg:flex order-2 lg:order-1 reveal reveal-left w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: stratRightRef?.current?.offsetHeight ? `${stratRightRef.current.offsetHeight}px` : 'auto' }}>
                 <img
                   src="/manus-storage/step3-strategy-portrait_17093b40.jpg"
