@@ -365,6 +365,7 @@ export default function Home() {
                   alt="Adult woman calmly reading LTC insurance documents at home"
                   loading="lazy"
                   className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
+                  style={{ objectPosition: 'center' }}
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.maya.primary }}>
                   <BookOpen className="w-3.5 h-3.5 text-white" />
@@ -431,6 +432,7 @@ export default function Home() {
                   alt="Care coordinator helping elderly couple with LTC insurance details"
                   loading="lazy"
                   className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
+                  style={{ objectPosition: 'center' }}
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.david.primary }}>
                   <ClipboardList className="w-3.5 h-3.5 text-white" />
@@ -453,6 +455,7 @@ export default function Home() {
                   alt="Care coordinator presenting a personalized LTC strategy plan to a family"
                   loading="lazy"
                   className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
+                  style={{ objectPosition: 'center' }}
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.rose.primary }}>
                   <Target className="w-3.5 h-3.5 text-white" />
