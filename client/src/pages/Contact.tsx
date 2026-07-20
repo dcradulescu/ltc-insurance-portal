@@ -153,10 +153,12 @@ export default function Contact() {
                     <Label htmlFor="message" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_HEADING }}>Message *</Label>
                     <Textarea id="message" value={form.message} onChange={e => update("message", e.target.value)} placeholder="Tell us how we can help you..." rows={5} required />
                   </div>
-                  <button type="submit" disabled={sending} className="va-btn inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
-                    {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    {sending ? "Sending..." : "Send Message"}
-                  </button>
+                  <div className="flex justify-center pt-4">
+                    <button type="submit" disabled={sending} className="va-btn inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                      {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      {sending ? "Sending..." : "Send Message"}
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>

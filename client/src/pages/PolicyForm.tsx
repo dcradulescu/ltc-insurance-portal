@@ -1637,8 +1637,8 @@ export default function PolicyForm() {
           )}
 
           {/* Navigation */}
-          <div className="flex justify-between items-center mt-8 pt-6 border-t">
-            <div className="flex gap-2">
+          <div className="flex flex-col gap-4 mt-8 pt-6 border-t">
+            <div className="flex flex-row gap-3 sm:gap-4 justify-center flex-wrap">
               <Button variant="outline" onClick={handlePrev} className="gap-1">
                 <ArrowLeft className="w-4 h-4" /> {step > 0 ? "Previous" : "Education"}
               </Button>
@@ -1667,8 +1667,6 @@ export default function PolicyForm() {
               >
                 Clear All Data
               </Button>
-            </div>
-            <div className="flex gap-2">
               <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-1">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
               </Button>
