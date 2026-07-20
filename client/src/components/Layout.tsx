@@ -6,7 +6,6 @@ import { toast } from "sonner";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/education", label: "Education" },
   { href: "/academy", label: "Academy" },
   { href: "/policy-form", label: "Policy" },
   { href: "/strategy", label: "Strategy" },
@@ -136,7 +135,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               );
             })}
             <a
-              href="/education"
+              href="/academy"
               className="ml-4 va-btn text-sm"
               style={{ paddingTop: "0.6rem", paddingBottom: "0.6rem", paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
             >

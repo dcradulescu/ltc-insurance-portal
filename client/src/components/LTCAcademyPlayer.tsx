@@ -29,7 +29,10 @@ const ACADEMY_VIDEOS: Video[] = [
       "Benefits protect your family's savings from catastrophic care expenses",
       "Coverage typically begins after an elimination period (30-90 days)",
       "Policies can be purchased at any age, but earlier is more affordable",
-      "Average daily costs range from $150-$300+ depending on location and care type"
+      "Average daily costs range from $150-$300+ depending on location and care type",
+      "Activities of Daily Living (ADLs) - The six basic self-care tasks: bathing, dressing, eating, transferring, toileting, and continence. Most policies require inability to perform at least 2 ADLs to qualify.",
+      "Cognitive Impairment - A deterioration of intellectual capacity requiring supervision for safety. Alzheimer's and dementia typically qualify as alternative triggers to ADL deficits.",
+      "Benefit Trigger - The specific conditions that must be met before your policy begins paying benefits. Most use ADL deficits or cognitive impairment as triggers."
     ],
     downloads: [
       { name: "LTC Insurance Basics Guide", url: "https://example.com/ltc-basics-guide.pdf", icon: "pdf" },
@@ -49,7 +52,12 @@ const ACADEMY_VIDEOS: Video[] = [
       "Elimination period is the waiting period before benefits begin",
       "Benefit triggers define when you qualify for coverage (ADL limitations, cognitive impairment)",
       "Riders and endorsements add optional coverage (inflation protection, waiver of premium)",
-      "Contact information for claims is typically on the back of your insurance card"
+      "Contact information for claims is typically on the back of your insurance card",
+      "Daily Benefit Amount - The maximum dollar amount your policy pays per day. If care costs exceed this amount, you pay the difference out-of-pocket.",
+      "Benefit Pool - The total lifetime maximum calculated as Daily Benefit × Benefit Period. Once exhausted, benefits end permanently.",
+      "Inflation Rider - An optional feature that automatically increases your daily benefit by 3-5% annually, either simple or compound interest.",
+      "Indemnity vs. Reimbursement - Indemnity pays the full daily benefit regardless of actual costs; Reimbursement pays only documented actual costs up to the daily maximum.",
+      "Waiver of Premium - A provision that suspends premium payments once you begin receiving benefits. Contact your carrier to activate this once approved."
     ],
     downloads: [
       { name: "Policy Glossary", url: "https://example.com/policy-glossary.pdf", icon: "pdf" },
@@ -69,7 +77,11 @@ const ACADEMY_VIDEOS: Video[] = [
       "Gather medical documentation proving you meet benefit triggers (ADL assessments)",
       "Submit claim forms with physician certification and care plan",
       "Insurance company will conduct independent assessment (usually within 30 days)",
-      "Keep detailed records of all correspondence and documentation submitted"
+      "Keep detailed records of all correspondence and documentation submitted",
+      "Claims Packet - The set of forms required to initiate a claim, including Claimant Statement, Attending Physician Statement, and functional assessment. Incomplete packets are the most common cause of delays.",
+      "Third-Party Assessment - An in-person evaluation by an independent nurse hired by the insurance company to verify ADL deficits. Present as you normally are, not at your best.",
+      "Case Manager - A representative assigned by your insurance company to manage your claim, determine approved care hours, and serve as your primary contact. Build a professional relationship with them.",
+      "Assignment of Benefits (AOB) - An arrangement where the insurance company pays the care provider directly, eliminating the need for families to front costs each month."
     ],
     downloads: [
       { name: "Claim Filing Checklist", url: "https://example.com/claim-checklist.pdf", icon: "pdf" },
@@ -89,7 +101,11 @@ const ACADEMY_VIDEOS: Video[] = [
       "Report any changes in care needs, providers, or living situation immediately",
       "Keep receipts and invoices for all care expenses to support reimbursement requests",
       "Review benefit statements monthly to ensure accuracy of payments",
-      "Maintain regular communication with your insurance case manager"
+      "Maintain regular communication with your insurance case manager",
+      "Care Logs - Daily records of every care visit including date, caregiver name, start/end time, and services provided. Missing or incomplete logs are the most common reason for delayed reimbursements.",
+      "Periodic Review - A reassessment conducted every 90-180 days to confirm continued eligibility. Be prepared to demonstrate ongoing care needs at each review.",
+      "Appeals Process - A formal process to challenge claim denials or benefit reductions. Most carriers have a 60-180 day window to file. Act quickly if benefits are denied.",
+      "Benefit Pool Exhaustion - When the total lifetime maximum has been paid out. Track your running balance carefully and explore supplemental options as you approach exhaustion."
     ],
     downloads: [
       { name: "Benefits Management Guide", url: "https://example.com/benefits-guide.pdf", icon: "pdf" },
@@ -122,7 +138,17 @@ const ACADEMY_VIDEOS: Video[] = [
 export function LTCAcademyPlayer() {
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
   const selectedVideo = ACADEMY_VIDEOS[selectedVideoIndex];
+
+  // Mark video as completed when user navigates away or completes it
+  const markVideoCompleted = (videoId: string) => {
+    setCompletedVideos(prev => {
+      const newSet = new Set(prev);
+      newSet.add(videoId);
+      return newSet;
+    });
+  };
 
   const getDownloadIcon = (type: "pdf" | "doc" | "guide") => {
     switch (type) {
@@ -137,15 +163,19 @@ export function LTCAcademyPlayer() {
 
   const goToNext = () => {
     if (selectedVideoIndex < ACADEMY_VIDEOS.length - 1) {
+      markVideoCompleted(selectedVideo.id);
       setSelectedVideoIndex(selectedVideoIndex + 1);
     }
   };
 
   const goToPrevious = () => {
+    markVideoCompleted(selectedVideo.id);
     if (selectedVideoIndex > 0) {
       setSelectedVideoIndex(selectedVideoIndex - 1);
     }
   };
+
+  const progressPercentage = Math.round(((completedVideos.size) / ACADEMY_VIDEOS.length) * 100);
 
   return (
     <div className="w-full min-h-screen" style={{ backgroundColor: "#F8F9FA" }}>
@@ -174,7 +204,7 @@ export function LTCAcademyPlayer() {
                 Video {selectedVideoIndex + 1} of {ACADEMY_VIDEOS.length}
               </p>
               <p className="text-xs" style={{ color: "#B0D4E3", fontFamily: "Aptos, sans-serif" }}>
-                {Math.round(((selectedVideoIndex + 1) / ACADEMY_VIDEOS.length) * 100)}% Complete
+                {progressPercentage}% Completed ({completedVideos.size} of {ACADEMY_VIDEOS.length})
               </p>
             </div>
           </div>
@@ -512,16 +542,27 @@ export function LTCAcademyPlayer() {
             <p className="text-sm font-semibold" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
               {selectedVideoIndex + 1} of {ACADEMY_VIDEOS.length}
             </p>
-            <div className="flex gap-2 mt-2">
-              {ACADEMY_VIDEOS.map((_, idx) => (
+            <div className="flex gap-3 mt-2">
+              {ACADEMY_VIDEOS.map((video, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedVideoIndex(idx)}
-                  className="w-3 h-3 rounded-full transition-all duration-300 hover:scale-125"
-                  style={{
-                    backgroundColor: idx === selectedVideoIndex ? "#4A9FB5" : "#E8E8E8",
-                  }}
-                />
+                  className="relative transition-all duration-300 hover:scale-125"
+                  title={video.title}
+                >
+                  {completedVideos.has(video.id) ? (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{
+                        backgroundColor: idx === selectedVideoIndex ? "#4A9FB5" : "#E8E8E8",
+                      }}
+                    />
+                  )}
+                </button>
               ))}
             </div>
           </div>
@@ -583,10 +624,10 @@ export function LTCAcademyPlayer() {
             </div>
             <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
               <div className="text-3xl font-bold mb-2" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                100%
+                {progressPercentage}%
               </div>
               <p className="text-sm font-semibold" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
-                Free Access
+                Your Progress
               </p>
             </div>
             <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#E8F4F8", border: "2px solid #4A9FB5" }}>
