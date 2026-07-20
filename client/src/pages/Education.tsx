@@ -473,7 +473,7 @@ export default function Education() {
           <p className="text-white/85 text-lg mb-8 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
             You now understand your policy and what triggers a claim. Your personalized strategy is just a few questions away — and it's completely free.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-row gap-3 sm:gap-4 justify-center">
             <button
               onClick={() => window.location.href = '/policy-form'}
               className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg text-base font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5"
@@ -760,7 +760,7 @@ export default function Education() {
         <div className="container relative text-center max-w-2xl">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white" style={{ fontFamily: "'Roboto', sans-serif" }}>Feeling Comfortable to Move Forward?</h2>
           <p className="text-white/85 text-lg mb-8" style={{ fontFamily: "'Open Sans', sans-serif" }}>You've read the journey and learned the terms. Your personalized strategy is ready to be built — it only takes a few minutes.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-row gap-3 sm:gap-4 justify-center">
             <button onClick={() => window.location.href = '/policy-form'}
               className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg text-base font-bold shadow-lg transition-all duration-200 hover:-translate-y-0.5"
               style={{ background: "#fff", color: "#0692D7", fontFamily: "'Roboto', sans-serif" }}
