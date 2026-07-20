@@ -564,11 +564,11 @@
 - [x] Add localStorage persistence for Academy video completion tracking
 - [x] Load completed videos from localStorage on component mount
 - [x] Save completed videos to localStorage whenever state changes
-- [x] Progress bar reflects persisted completion count
-- [x] Timeline shows which milestones have been completed based on stored data
 - [x] Data persists across browser sessions (per-device storage)
-- [x] Remove dark LTC Academy banner from Academy page
-- [x] Remove "Your Learning Journey" timeline from Academy page
+- [x] Rebuild Academy page with homepage-style hero banner
+- [x] Add thin progress timeline bar below hero banner
+- [x] Connect progress bar to localStorage completion tracking
+- [x] Progress bar updates in real-time as videos are marked complete
 
 ## Mobile Responsiveness (June 2026)
 - [x] Mobile nav: hamburger menu in Layout.tsx for screens < md
