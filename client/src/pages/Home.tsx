@@ -258,35 +258,17 @@ export default function Home() {
           <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.82)' }} />
         </div>
         <div className="container relative py-section">
-          {/* Row 1: Heading (left) + Video (right) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start mb-6">
-            {/* Left: Heading */}
-            <div className="animate-float-up flex items-center h-full">
-              <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
+            {/* Left: Heading + Description + Buttons */}
+            <div className="animate-float-up flex flex-col">
+              <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold leading-tight mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>
                 Navigating Long Term Care Insurance{" "}
                 <span style={{ color: VA_TEAL }}>with Confidence!</span>
               </h1>
-            </div>
-            {/* Right: Video */}
-            <div className="animate-fade-in-scale animate-delay-200">
-              <VideoPlaceholder
-                title="Welcome to LTC Navigator"
-                description="Watch our brief introduction to learn how we can help your family"
-                thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg"
-                videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/MjPhBEQZfvIrfZms.mp4"
-              />
-            </div>
-          </div>
-          {/* Row 2: Description (left) + Buttons (right, aligned under video) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
-            {/* Left: Description */}
-            <div className="animate-float-up animate-delay-200">
-              <p className="text-lg text-white/85 leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif" }}>
+              <p className="text-lg text-white/85 leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
               </p>
-            </div>
-            {/* Right: Buttons (aligned under video) */}
-            <div className="animate-float-up animate-delay-300 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-start lg:justify-start">
+              <div className="animate-float-up animate-delay-300 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link href="/education" className="va-btn text-base px-8 py-4 text-center shadow-lg">
                 Start Here
               </Link>
@@ -306,6 +288,16 @@ export default function Home() {
                 <Share2 className="w-4 h-4" />
                 Share This Free Resource
               </button>
+              </div>
+            </div>
+            {/* Right: Video */}
+            <div className="animate-fade-in-scale animate-delay-200">
+              <VideoPlaceholder
+                title="Welcome to LTC Navigator"
+                description="Watch our brief introduction to learn how we can help your family"
+                thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg"
+                videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/MjPhBEQZfvIrfZms.mp4"
+              />
             </div>
           </div>
         </div>
