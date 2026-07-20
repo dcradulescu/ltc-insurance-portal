@@ -361,11 +361,10 @@ export default function Home() {
             <div ref={eduLeftRef} className="relative flex lg:flex reveal reveal-left w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: eduRightRef?.current?.offsetHeight ? `${eduRightRef.current.offsetHeight}px` : 'auto' }}>
                 <img
-                  src="/manus-storage/step1-education-portrait_12e03f47.jpg"
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step1-education-600x450-26Zj4spKh33ZER3qyicxip.webp"
                   alt="Adult woman calmly reading LTC insurance documents at home"
                   loading="lazy"
-                  className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
-                  style={{ objectPosition: 'center 50px', clipPath: 'inset(50px 0 200px 0)' }}
+                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.maya.primary }}>
                   <BookOpen className="w-3.5 h-3.5 text-white" />
@@ -428,11 +427,10 @@ export default function Home() {
             <div ref={intakeRightRef} className="relative flex lg:flex reveal reveal-right w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: intakeLeftRef?.current?.offsetHeight ? `${intakeLeftRef.current.offsetHeight}px` : 'auto' }}>
                 <img
-                  src="/manus-storage/step2-policy-portrait_c1ad3e85.jpg"
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step2-policy-600x450-nicJag3knmKGCq79iEqaXB.webp"
                   alt="Care coordinator helping elderly couple with LTC insurance details"
                   loading="lazy"
-                  className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
-                  style={{ objectPosition: 'center 50px', clipPath: 'inset(50px 0 200px 0)' }}
+                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.david.primary }}>
                   <ClipboardList className="w-3.5 h-3.5 text-white" />
@@ -451,11 +449,10 @@ export default function Home() {
             <div ref={stratLeftRef} className="relative flex lg:flex order-2 lg:order-1 reveal reveal-left w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: stratRightRef?.current?.offsetHeight ? `${stratRightRef.current.offsetHeight}px` : 'auto' }}>
                 <img
-                  src="/manus-storage/step3-strategy-portrait_17093b40.jpg"
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step3-strategy-600x450-UExwXyk7heWTvVJSZ4gdVY.webp"
                   alt="Care coordinator presenting a personalized LTC strategy plan to a family"
                   loading="lazy"
-                  className="w-full h-full object-contain hover:scale-[1.02] transition-transform duration-500"
-                  style={{ objectPosition: 'center 50px', clipPath: 'inset(50px 0 200px 0)' }}
+                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded px-3 py-1.5 shadow-md" style={{ background: CHARACTER_COLORS.rose.primary }}>
                   <Target className="w-3.5 h-3.5 text-white" />
