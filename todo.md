@@ -569,7 +569,6 @@
 - [x] Data persists across browser sessions (per-device storage)
 - [x] Remove dark LTC Academy banner from Academy page
 - [x] Remove "Your Learning Journey" timeline from Academy page
-- [x] Add simple light-themed welcome banner above video player
 
 ## Mobile Responsiveness (June 2026)
 - [x] Mobile nav: hamburger menu in Layout.tsx for screens < md
