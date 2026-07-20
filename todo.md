@@ -560,6 +560,14 @@
 - [x] Redesign strategy PDF: SC Visiting Angels aesthetic, pastel section boxes, branded headers, readable typography, logical flow, full content
 - [x] Embed photos, icons, and hero sections into strategy PDF (cover hero photo, section icon badges, pastel info boxes)
 
+## Academy Progress Persistence (July 2026)
+- [x] Add localStorage persistence for Academy video completion tracking
+- [x] Load completed videos from localStorage on component mount
+- [x] Save completed videos to localStorage whenever state changes
+- [x] Progress bar reflects persisted completion count
+- [x] Timeline shows which milestones have been completed based on stored data
+- [x] Data persists across browser sessions (per-device storage)
+
 ## Mobile Responsiveness (June 2026)
 - [x] Mobile nav: hamburger menu in Layout.tsx for screens < md
 - [x] Mobile PolicyForm: single-column layout, full-width buttons, readable step indicator

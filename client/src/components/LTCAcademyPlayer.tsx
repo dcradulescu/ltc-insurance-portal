@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock, Zap, Clipboard, Droplet, Badge, Star, Award } from "lucide-react";
+import { useEffect } from "react";
 
 interface Video {
   id: string;
@@ -140,6 +141,24 @@ export function LTCAcademyPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
   const selectedVideo = ACADEMY_VIDEOS[selectedVideoIndex];
+
+  // Load completed videos from local storage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('ltc-academy-completed');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setCompletedVideos(new Set(parsed));
+      } catch (e) {
+        console.error('Failed to parse stored completion data:', e);
+      }
+    }
+  }, []);
+
+  // Save completed videos to local storage whenever they change
+  useEffect(() => {
+    localStorage.setItem('ltc-academy-completed', JSON.stringify(Array.from(completedVideos)));
+  }, [completedVideos]);
 
   // Mark video as completed when user navigates away or completes it
   const markVideoCompleted = (videoId: string) => {
