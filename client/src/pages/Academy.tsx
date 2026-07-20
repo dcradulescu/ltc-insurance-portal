@@ -74,6 +74,87 @@ export default function Academy() {
         </div>
       </section>
 
+      {/* Progress Timeline */}
+      <section className="bg-white py-12 border-b-2" style={{ borderColor: "#E8E8E8" }}>
+        <div className="container">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+              Your Learning Journey
+            </h2>
+            <p className="text-gray-600" style={{ fontFamily: "Aptos, sans-serif" }}>
+              Follow these key milestones to master long-term care insurance
+            </p>
+          </div>
+
+          {/* Timeline */}
+          <div className="relative">
+            {/* Timeline line */}
+            <div className="absolute top-6 left-0 right-0 h-1 bg-gradient-to-r" style={{ background: "linear-gradient(to right, #4A9FB5, #FFD700, #FF6B9D)" }}></div>
+
+            {/* Timeline points */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
+              {[
+                {
+                  number: 1,
+                  title: "Understand Basics",
+                  description: "Learn LTC insurance fundamentals and policy types",
+                  color: "#4A9FB5",
+                  icon: "📚",
+                },
+                {
+                  number: 2,
+                  title: "Review Your Policy",
+                  description: "Gather and review your specific policy details",
+                  color: "#FFD700",
+                  icon: "📋",
+                },
+                {
+                  number: 3,
+                  title: "Prepare Documents",
+                  description: "Collect required medical and financial documents",
+                  color: "#FF6B9D",
+                  icon: "📄",
+                },
+                {
+                  number: 4,
+                  title: "Submit Claim",
+                  description: "File your claim with confidence and follow up",
+                  color: "#1B3A5C",
+                  icon: "✅",
+                },
+              ].map((point, idx) => (
+                <div key={idx} className="flex flex-col items-center">
+                  {/* Circle point */}
+                  <button
+                    onClick={() => {
+                      document.getElementById("academy-content")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-2xl font-bold text-white transition-all duration-300 hover:scale-110 hover:shadow-lg cursor-pointer mb-4"
+                    style={{
+                      backgroundColor: point.color,
+                      boxShadow: `0 4px 12px ${point.color}40`,
+                    }}
+                    title={`Go to: ${point.title}`}
+                  >
+                    {point.icon}
+                  </button>
+
+                  {/* Content */}
+                  <div className="text-center">
+                    <h3 className="font-bold text-sm md:text-base mb-1" style={{ color: point.color, fontFamily: "Aptos, sans-serif" }}>
+                      {point.title}
+                    </h3>
+                    <p className="text-xs md:text-sm text-gray-600" style={{ fontFamily: "Aptos, sans-serif" }}>
+                      {point.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div id="academy-content">
         <LTCAcademyPlayer />
       </div>
