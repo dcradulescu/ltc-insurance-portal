@@ -268,7 +268,7 @@ export default function Home() {
               <p className="text-lg text-white/85 leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif" }}>
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
               </p>
-              <div className="animate-float-up animate-delay-300 flex flex-col gap-3 items-center">
+              <div className="animate-float-up animate-delay-300 flex flex-row gap-3 sm:gap-4 justify-center">
               <Link href="/education" className="va-btn text-base px-8 py-4 text-center shadow-lg">
                 Start Here
               </Link>
