@@ -408,154 +408,138 @@ export function LTCAcademyPlayer() {
           </button>
         </div>
 
-        {/* Key Points by Step - Grouped and Expandable */}
-        <div className="my-12">
-          <h3 className="text-2xl font-bold mb-8" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-            Your LTC Journey: Educational Guide
-          </h3>
+        {/* Two-Column Layout: Education (75%) + Resources (25%) */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 my-12">
+          {/* Left Column: Educational Guide (75% - 3 columns) */}
+          <div className="lg:col-span-3">
+            <h3 className="text-2xl font-bold mb-8" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+              Your LTC Journey: Educational Guide
+            </h3>
 
-          <div className="space-y-8">
-            {STEP_EDUCATION.map((step) => (
-              <div key={step.stepNumber} className="rounded-2xl overflow-hidden border-2" style={{ borderColor: step.stepColor, backgroundColor: "#FFFFFF" }}>
-                {/* Step Header */}
-                <div className="p-6" style={{ backgroundColor: step.stepColor }}>
-                  <h4 className="text-xl font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
-                    Step {step.stepNumber}: {step.stepTitle}
+            <div className="space-y-6">
+              {STEP_EDUCATION.map((step) => (
+                <div key={step.stepNumber} className="rounded-lg overflow-hidden border" style={{ borderColor: "#E0E0E0", backgroundColor: "#FFFFFF", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+                  {/* Step Header */}
+                  <div className="p-5" style={{ backgroundColor: step.stepColor }}>
+                    <h4 className="text-lg font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
+                      Step {step.stepNumber}: {step.stepTitle}
+                    </h4>
+                  </div>
+
+                  {/* Accordion Terms */}
+                  <div className="p-0">
+                    <Accordion type="single" collapsible className="w-full">
+                      {step.terms.map((item, idx) => (
+                        <AccordionItem key={idx} value={`step-${step.stepNumber}-term-${idx}`} className="border-b border-gray-100 last:border-b-0">
+                          <AccordionTrigger className="hover:no-underline py-4 px-5 hover:bg-gray-50" style={{ fontFamily: "Aptos, sans-serif" }}>
+                            <div className="flex items-start gap-3 text-left">
+                              <div
+                                className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-white text-xs font-bold"
+                                style={{ backgroundColor: step.stepColor }}
+                              >
+                                {idx + 1}
+                              </div>
+                              <span className="font-semibold text-gray-800">
+                                {item.term}
+                              </span>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pb-0 bg-gray-50">
+                            <div className="px-5 py-4 space-y-4">
+                              {/* Definition */}
+                              <div>
+                                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
+                                  Definition
+                                </p>
+                                <p style={{ color: "#555", fontFamily: "Aptos, sans-serif", fontSize: "14px", lineHeight: "1.5" }}>
+                                  {item.definition}
+                                </p>
+                              </div>
+
+                              {/* Why It Matters */}
+                              <div>
+                                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
+                                  Why It Matters Now
+                                </p>
+                                <p style={{ color: "#555", fontFamily: "Aptos, sans-serif", fontSize: "14px", lineHeight: "1.5" }}>
+                                  {item.whyMatters}
+                                </p>
+                              </div>
+
+                              {/* Long-term Impact */}
+                              <div
+                                className="p-3 rounded-lg border-l-4"
+                                style={{ backgroundColor: "#F5F5F5", borderColor: step.stepColor }}
+                              >
+                                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
+                                  Long-Term Impact
+                                </p>
+                                <p style={{ color: "#555", fontFamily: "Aptos, sans-serif", fontSize: "14px", lineHeight: "1.5" }}>
+                                  {item.longTermImpact}
+                                </p>
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column: Resources (25% - 1 column) - Sticky */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              <div className="rounded-lg overflow-hidden border" style={{ borderColor: "#E0E0E0", backgroundColor: "#FFFFFF", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+                {/* Resources Header */}
+                <div className="p-5" style={{ backgroundColor: "#1B3A5C" }}>
+                  <h4 className="text-base font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
+                    Resources
                   </h4>
-                  <p className="text-sm text-white/80 mt-1" style={{ fontFamily: "Aptos, sans-serif" }}>
-                    Learn key terms and concepts for this stage
+                  <p className="text-xs text-gray-300 mt-1" style={{ fontFamily: "Aptos, sans-serif" }}>
+                    For this video
                   </p>
                 </div>
 
-                {/* Accordion Terms */}
-                <div className="p-6">
-                  <Accordion type="single" collapsible className="w-full">
-                    {step.terms.map((item, idx) => (
-                      <AccordionItem key={idx} value={`step-${step.stepNumber}-term-${idx}`}>
-                        <AccordionTrigger className="hover:no-underline py-4" style={{ fontFamily: "Aptos, sans-serif" }}>
-                          <div className="flex items-start gap-3 text-left">
-                            <div
-                              className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-white text-xs font-bold"
-                              style={{ backgroundColor: step.stepColor }}
-                            >
-                              {idx + 1}
-                            </div>
-                            <span className="font-semibold" style={{ color: step.stepColor }}>
-                              {item.term}
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pb-4">
-                          <div className="ml-9 space-y-4">
-                            {/* Definition */}
-                            <div>
-                              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
-                                What It Means
-                              </p>
-                              <p style={{ color: "#555", fontFamily: "Aptos, sans-serif" }}>
-                                {item.definition}
-                              </p>
-                            </div>
-
-                            {/* Why It Matters */}
-                            <div>
-                              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
-                                Why It Matters Now
-                              </p>
-                              <p style={{ color: "#555", fontFamily: "Aptos, sans-serif" }}>
-                                {item.whyMatters}
-                              </p>
-                            </div>
-
-                            {/* Long-term Impact */}
-                            <div
-                              className="p-3 rounded-lg border-l-4"
-                              style={{ backgroundColor: `${step.stepColor}15`, borderColor: step.stepColor }}
-                            >
-                              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
-                                Long-Term Impact
-                              </p>
-                              <p style={{ color: "#555", fontFamily: "Aptos, sans-serif" }}>
-                                {item.longTermImpact}
-                              </p>
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Resources Section */}
-        <div className="my-12">
-          <h3 className="text-2xl font-bold mb-8" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-            Resources for This Video
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {selectedVideo.downloads.map((download, idx) => {
-              const colors = [
-                { border: "#4A9FB5", bg: "#E8F4F8", icon: "#4A9FB5", accent: "#FFD700", accentBg: "#FFF9E6" },
-                { border: "#FF6B9D", bg: "#FFE8F0", icon: "#FF6B9D", accent: "#4A9FB5", accentBg: "#E8F4F8" },
-                { border: "#4A9FB5", bg: "#E8F4F8", icon: "#4A9FB5", accent: "#FF6B9D", accentBg: "#FFE8F0" },
-              ];
-              const color = colors[idx % colors.length];
-
-              return (
-                <a
-                  key={idx}
-                  href={download.url}
-                  download
-                  className="relative p-6 rounded-3xl border-3 transition-all duration-300 group cursor-pointer hover:scale-105 overflow-hidden"
-                  style={{
-                    backgroundColor: "#FFFFFF",
-                    borderColor: color.border,
-                    boxShadow: `0 8px 24px ${color.border}20`,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = color.bg;
-                    e.currentTarget.style.boxShadow = `0 12px 32px ${color.border}40`;
-                    e.currentTarget.style.transform = "translateY(-4px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#FFFFFF";
-                    e.currentTarget.style.boxShadow = `0 8px 24px ${color.border}20`;
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  <div className="absolute top-0 right-0 w-24 h-24 rounded-full" style={{ backgroundColor: color.accent, opacity: 0.08 }}></div>
-                  <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full" style={{ backgroundColor: color.border, opacity: 0.05 }}></div>
-
-                  <div className="flex flex-col items-center text-center gap-4 relative z-10">
-                    <div className="relative">
-                      <div className="absolute inset-0 rounded-2xl" style={{ background: `linear-gradient(135deg, ${color.bg}, ${color.accentBg})`, opacity: 0.5 }}></div>
-                      <div className="p-4 rounded-2xl relative z-10 transition-transform group-hover:scale-110" style={{ backgroundColor: color.bg, color: color.icon }}>
+                {/* Download Buttons */}
+                <div className="p-4 space-y-3">
+                  {selectedVideo.downloads.map((download, idx) => (
+                    <a
+                      key={idx}
+                      href={download.url}
+                      download
+                      className="flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 hover:shadow-md hover:border-gray-400"
+                      style={{
+                        borderColor: "#E0E0E0",
+                        backgroundColor: "#F9F9F9",
+                        textDecoration: "none",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#F0F0F0";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "#F9F9F9";
+                      }}
+                    >
+                      <div style={{ color: "#4A9FB5" }}>
                         {getDownloadIcon(download.icon)}
                       </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: color.border, fontFamily: "Aptos, sans-serif", letterSpacing: "0.1em" }}>
-                        Download
-                      </p>
-                      <p className="text-sm font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-                        {download.name}
-                      </p>
-                    </div>
-
-                    <div className="mt-3 p-3 rounded-xl transition-all group-hover:scale-110" style={{ backgroundColor: color.border, boxShadow: `0 4px 12px ${color.border}30` }}>
-                      <Download className="w-5 h-5 text-white" />
-                    </div>
-
-                    <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color.accent }}></div>
-                  </div>
-                </a>
-              );
-            })}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: "Aptos, sans-serif" }}>
+                          {download.name}
+                        </p>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: "Aptos, sans-serif" }}>
+                          Download
+                        </p>
+                      </div>
+                      <Download className="w-4 h-4 flex-shrink-0" style={{ color: "#4A9FB5" }} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
