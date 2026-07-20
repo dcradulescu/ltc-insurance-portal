@@ -1,6 +1,13 @@
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock, Zap, Clipboard, Droplet, Badge, Star, Award } from "lucide-react";
-import { useEffect } from "react";
+'use client';
+
+import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock, Zap, Clipboard, Droplet, Badge, Star, Award, ChevronDown } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 interface Video {
   id: string;
@@ -17,6 +24,140 @@ interface Video {
   }[];
 }
 
+// Step-based educational content organized by timeline step
+const STEP_EDUCATION = [
+  {
+    stepNumber: 1,
+    stepTitle: "Understand Basics",
+    stepColor: "#4A9FB5",
+    terms: [
+      {
+        term: "Activities of Daily Living (ADLs)",
+        definition: "The six basic self-care tasks used by insurance companies to determine care need: bathing, dressing, eating, transferring (moving from bed to chair), toileting, and continence.",
+        whyMatters: "Most LTC policies require inability to perform at least 2 ADLs to qualify for benefits.",
+        longTermImpact: "Understanding ADLs is the foundation for knowing when your policy will pay. This concept applies throughout your entire claim journey."
+      },
+      {
+        term: "Cognitive Impairment",
+        definition: "A deterioration or loss of intellectual capacity that requires substantial supervision for safety. Alzheimer's disease, dementia, and other neurological conditions typically qualify.",
+        whyMatters: "This is an alternative trigger to ADL deficits in most policies.",
+        longTermImpact: "If ADL deficits are not present but cognitive impairment is, your policy may still pay benefits — check your specific trigger language."
+      },
+      {
+        term: "Benefit Trigger",
+        definition: "The specific condition(s) that must be met before your policy begins paying benefits. Most policies use ADL deficits (typically 2 of 6) and/or cognitive impairment as triggers.",
+        whyMatters: "Understanding your policy's exact trigger language is the first step before initiating a claim.",
+        longTermImpact: "This determines everything about your claim eligibility and timing. Review it carefully now."
+      },
+      {
+        term: "Elimination Period",
+        definition: "A waiting period — similar to a deductible — during which you pay for care out-of-pocket before insurance benefits begin. Common periods are 30, 60, 90, or 100 days. The clock starts when you begin receiving qualifying care.",
+        whyMatters: "You must pay for care during this period. Plan your finances accordingly before benefits kick in.",
+        longTermImpact: "This affects your immediate out-of-pocket costs and financial planning for the first months of care."
+      }
+    ]
+  },
+  {
+    stepNumber: 2,
+    stepTitle: "Review Your Policy",
+    stepColor: "#FFD700",
+    terms: [
+      {
+        term: "Daily Benefit Amount",
+        definition: "The maximum dollar amount your policy will pay per day for qualifying care. For example, $200/day means the policy pays up to $200 for each day of care, regardless of actual cost.",
+        whyMatters: "If your care costs exceed your daily benefit, you pay the difference.",
+        longTermImpact: "This number directly impacts your monthly out-of-pocket costs for the entire duration of your care."
+      },
+      {
+        term: "Benefit Pool",
+        definition: "The total lifetime maximum your policy will pay, calculated as Daily Benefit × Benefit Period. A $200/day policy with a 3-year benefit period has a pool of approximately $219,000.",
+        whyMatters: "Track your pool balance carefully — once exhausted, benefits end permanently.",
+        longTermImpact: "You need to know this number to plan for long-term care costs beyond your policy's lifetime maximum."
+      },
+      {
+        term: "Inflation Rider",
+        definition: "An optional policy feature that automatically increases your daily benefit amount each year, typically by 3–5% simple or compound. Compound riders grow significantly faster over time.",
+        whyMatters: "If your policy has this rider, your effective daily benefit today may be higher than the original amount purchased.",
+        longTermImpact: "This protects you from inflation eroding your benefits over a multi-year care period."
+      },
+      {
+        term: "Indemnity vs. Reimbursement",
+        definition: "Indemnity policies pay the full daily benefit regardless of actual care costs. Reimbursement policies pay only actual documented care costs up to the daily maximum.",
+        whyMatters: "Knowing your policy type determines how you document and submit care costs for reimbursement.",
+        longTermImpact: "This affects how you manage invoices, receipts, and monthly reimbursement requests throughout your claim."
+      },
+      {
+        term: "Waiver of Premium",
+        definition: "A provision that suspends your premium payments once you begin receiving benefits. You continue to be covered without paying premiums during the claim period.",
+        whyMatters: "Stop paying premiums once your claim is approved — contact your carrier immediately to activate this provision.",
+        longTermImpact: "This can save thousands of dollars over a multi-year care period."
+      }
+    ]
+  },
+  {
+    stepNumber: 3,
+    stepTitle: "Prepare Documents",
+    stepColor: "#FF6B9D",
+    terms: [
+      {
+        term: "Claims Packet",
+        definition: "The set of forms required to initiate a claim, typically including a Claimant Statement, Attending Physician Statement, and functional assessment form. Incomplete packets are the most common cause of claim delays.",
+        whyMatters: "Gather all required documents before submitting anything. Send everything together with a cover letter listing all enclosed items.",
+        longTermImpact: "A complete, organized packet speeds up approval and can mean the difference between quick payment and months of delays."
+      },
+      {
+        term: "Third-Party Assessment",
+        definition: "An in-person evaluation by an independent registered nurse hired by the insurance company to verify ADL deficits. The assessor looks for consistency between medical records and observed functional ability.",
+        whyMatters: "On assessment day, the insured should present as they normally are — not at their best. Minimizing limitations can result in claim denial.",
+        longTermImpact: "This assessment directly determines your approved care level and benefit amount."
+      },
+      {
+        term: "Case Manager",
+        definition: "A representative assigned by the insurance company to manage your ongoing claim, determine approved care hours, and serve as your primary contact.",
+        whyMatters: "Build a professional relationship with your case manager — they have significant influence over your approved care level.",
+        longTermImpact: "Your case manager is your advocate throughout the entire claims process and ongoing benefit period."
+      },
+      {
+        term: "Assignment of Benefits (AOB)",
+        definition: "An arrangement where the insurance company pays the care provider directly, eliminating the need for the family to front care costs each month.",
+        whyMatters: "Ask your case manager about AOB at approval — it simplifies billing significantly for ongoing home care.",
+        longTermImpact: "This eliminates cash flow problems and reduces administrative burden for families managing care."
+      }
+    ]
+  },
+  {
+    stepNumber: 4,
+    stepTitle: "Submit Claim",
+    stepColor: "#1B3A5C",
+    terms: [
+      {
+        term: "Care Logs",
+        definition: "Daily records of every care visit, including date, caregiver name, start/end time, and services provided. Required by most carriers for monthly reimbursement.",
+        whyMatters: "Missing or incomplete care logs are the most common reason for delayed or denied reimbursements after approval.",
+        longTermImpact: "Accurate care logs ensure you get paid every month without delays or disputes."
+      },
+      {
+        term: "Periodic Review",
+        definition: "A reassessment conducted by the case manager every 90–180 days to confirm continued eligibility and review the care plan.",
+        whyMatters: "Be prepared to demonstrate ongoing care needs at each review. Significant improvement could affect benefit continuation.",
+        longTermImpact: "These reviews happen throughout your entire claim period and can affect your benefits."
+      },
+      {
+        term: "Appeals Process",
+        definition: "A formal process to challenge a claim denial or benefit reduction. Typically requires a written appeal letter, additional medical documentation, and sometimes an independent medical examination.",
+        whyMatters: "Most carriers have a 60–180 day window to file an appeal. Act quickly if benefits are denied or reduced.",
+        longTermImpact: "Understanding your appeal rights protects you if the insurance company denies or reduces your benefits."
+      },
+      {
+        term: "Benefit Pool Exhaustion",
+        definition: "When the total lifetime maximum has been paid out and no further benefits are available under the policy.",
+        whyMatters: "Track your running balance carefully. When approaching exhaustion, begin exploring supplemental options — not at the last minute.",
+        longTermImpact: "Planning ahead for what happens after benefits end ensures continuity of care for your loved one."
+      }
+    ]
+  }
+];
+
 const ACADEMY_VIDEOS: Video[] = [
   {
     id: "video-1",
@@ -31,9 +172,6 @@ const ACADEMY_VIDEOS: Video[] = [
       "Coverage typically begins after an elimination period (30-90 days)",
       "Policies can be purchased at any age, but earlier is more affordable",
       "Average daily costs range from $150-$300+ depending on location and care type",
-      "Activities of Daily Living (ADLs) - The six basic self-care tasks: bathing, dressing, eating, transferring, toileting, and continence. Most policies require inability to perform at least 2 ADLs to qualify.",
-      "Cognitive Impairment - A deterioration of intellectual capacity requiring supervision for safety. Alzheimer's and dementia typically qualify as alternative triggers to ADL deficits.",
-      "Benefit Trigger - The specific conditions that must be met before your policy begins paying benefits. Most use ADL deficits or cognitive impairment as triggers."
     ],
     downloads: [
       { name: "LTC Insurance Basics Guide", url: "https://example.com/ltc-basics-guide.pdf", icon: "pdf" },
@@ -54,11 +192,6 @@ const ACADEMY_VIDEOS: Video[] = [
       "Benefit triggers define when you qualify for coverage (ADL limitations, cognitive impairment)",
       "Riders and endorsements add optional coverage (inflation protection, waiver of premium)",
       "Contact information for claims is typically on the back of your insurance card",
-      "Daily Benefit Amount - The maximum dollar amount your policy pays per day. If care costs exceed this amount, you pay the difference out-of-pocket.",
-      "Benefit Pool - The total lifetime maximum calculated as Daily Benefit × Benefit Period. Once exhausted, benefits end permanently.",
-      "Inflation Rider - An optional feature that automatically increases your daily benefit by 3-5% annually, either simple or compound interest.",
-      "Indemnity vs. Reimbursement - Indemnity pays the full daily benefit regardless of actual costs; Reimbursement pays only documented actual costs up to the daily maximum.",
-      "Waiver of Premium - A provision that suspends premium payments once you begin receiving benefits. Contact your carrier to activate this once approved."
     ],
     downloads: [
       { name: "Policy Glossary", url: "https://example.com/policy-glossary.pdf", icon: "pdf" },
@@ -79,10 +212,6 @@ const ACADEMY_VIDEOS: Video[] = [
       "Submit claim forms with physician certification and care plan",
       "Insurance company will conduct independent assessment (usually within 30 days)",
       "Keep detailed records of all correspondence and documentation submitted",
-      "Claims Packet - The set of forms required to initiate a claim, including Claimant Statement, Attending Physician Statement, and functional assessment. Incomplete packets are the most common cause of delays.",
-      "Third-Party Assessment - An in-person evaluation by an independent nurse hired by the insurance company to verify ADL deficits. Present as you normally are, not at your best.",
-      "Case Manager - A representative assigned by your insurance company to manage your claim, determine approved care hours, and serve as your primary contact. Build a professional relationship with them.",
-      "Assignment of Benefits (AOB) - An arrangement where the insurance company pays the care provider directly, eliminating the need for families to front costs each month."
     ],
     downloads: [
       { name: "Claim Filing Checklist", url: "https://example.com/claim-checklist.pdf", icon: "pdf" },
@@ -103,35 +232,11 @@ const ACADEMY_VIDEOS: Video[] = [
       "Keep receipts and invoices for all care expenses to support reimbursement requests",
       "Review benefit statements monthly to ensure accuracy of payments",
       "Maintain regular communication with your insurance case manager",
-      "Care Logs - Daily records of every care visit including date, caregiver name, start/end time, and services provided. Missing or incomplete logs are the most common reason for delayed reimbursements.",
-      "Periodic Review - A reassessment conducted every 90-180 days to confirm continued eligibility. Be prepared to demonstrate ongoing care needs at each review.",
-      "Appeals Process - A formal process to challenge claim denials or benefit reductions. Most carriers have a 60-180 day window to file. Act quickly if benefits are denied.",
-      "Benefit Pool Exhaustion - When the total lifetime maximum has been paid out. Track your running balance carefully and explore supplemental options as you approach exhaustion."
     ],
     downloads: [
       { name: "Benefits Management Guide", url: "https://example.com/benefits-guide.pdf", icon: "pdf" },
       { name: "Care Log Template", url: "https://example.com/care-log.pdf", icon: "pdf" },
       { name: "Monthly Reporting Form", url: "https://example.com/monthly-report.docx", icon: "doc" },
-    ],
-  },
-  {
-    id: "video-5",
-    title: "Real Stories: How LTC Insurance Helped Families",
-    youtubeId: "jNQXAC9IVRw",
-    description: "Hear from real families about their LTC insurance experiences and how it made a difference.",
-    duration: "16:50",
-    instructor: "The Professor & Guests",
-    keyPoints: [
-      "Rose's story: In-home care policy covered $120,000 in care costs over 3 years",
-      "Michael's experience: Policy protected family savings and allowed him to stay in his home",
-      "Elena's insight: Early planning and understanding policy details made claim process smooth",
-      "Common theme: Families wish they had understood their policies better earlier",
-      "Key takeaway: Having a plan and knowing your coverage provides peace of mind"
-    ],
-    downloads: [
-      { name: "Family Success Stories", url: "https://example.com/success-stories.pdf", icon: "pdf" },
-      { name: "Planning Timeline", url: "https://example.com/timeline.pdf", icon: "pdf" },
-      { name: "Discussion Guide", url: "https://example.com/discussion-guide.docx", icon: "doc" },
     ],
   },
 ];
@@ -184,6 +289,7 @@ export function LTCAcademyPlayer() {
     if (selectedVideoIndex < ACADEMY_VIDEOS.length - 1) {
       markVideoCompleted(selectedVideo.id);
       setSelectedVideoIndex(selectedVideoIndex + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -191,287 +297,204 @@ export function LTCAcademyPlayer() {
     markVideoCompleted(selectedVideo.id);
     if (selectedVideoIndex > 0) {
       setSelectedVideoIndex(selectedVideoIndex - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const progressPercentage = Math.round(((completedVideos.size) / ACADEMY_VIDEOS.length) * 100);
 
   return (
-    <div className="w-full min-h-screen" style={{ backgroundColor: "#F8F9FA" }}>
-      {/* Header with Branding */}
-      <div className="relative overflow-hidden border-b-4" style={{ borderColor: "#4A9FB5", backgroundColor: "#1B3A5C" }}>
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full" style={{ backgroundColor: "#4A9FB5" }}></div>
-        </div>
-        <div className="relative max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
-                  LTC Academy
-                </h1>
-                <p className="text-sm" style={{ color: "#B0D4E3", fontFamily: "Aptos, sans-serif" }}>
-                  Master long-term care insurance with our comprehensive video series
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
-                Video {selectedVideoIndex + 1} of {ACADEMY_VIDEOS.length}
-              </p>
-              <p className="text-xs" style={{ color: "#B0D4E3", fontFamily: "Aptos, sans-serif" }}>
-                {progressPercentage}% Completed ({completedVideos.size} of {ACADEMY_VIDEOS.length})
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="relative h-2 bg-gray-200" style={{ backgroundColor: "#E8E8E8" }}>
-        <div
-          className="h-full transition-all duration-500"
-          style={{
-            backgroundColor: "#4A9FB5",
-            width: `${((selectedVideoIndex + 1) / ACADEMY_VIDEOS.length) * 100}%`,
-          }}
-        ></div>
-        {/* Animated progress indicator */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full shadow-lg transform transition-all duration-500"
-          style={{
-            left: `${((selectedVideoIndex + 1) / ACADEMY_VIDEOS.length) * 100}%`,
-            marginLeft: "-12px",
-            backgroundColor: "#4A9FB5",
-            boxShadow: "0 0 0 4px rgba(74, 159, 181, 0.2)",
-          }}
-        ></div>
-      </div>
-
-      {/* Main Content Container */}
+    <div className="w-full" style={{ backgroundColor: "#F8F9FA" }}>
+      {/* Video Section */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Video Player Section */}
-        <div className="mb-8">
-          {/* Video Title and Info */}
-          <div className="mb-4">
-            <h2 className="text-3xl font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-              {selectedVideo.title}
-            </h2>
-            <div className="flex items-center gap-4 text-sm">
-              <span className="font-semibold" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                Presented by {selectedVideo.instructor}
-              </span>
-              <span className="flex items-center gap-1" style={{ color: "#999999", fontFamily: "Aptos, sans-serif" }}>
-                <Clock className="w-4 h-4" />
-                {selectedVideo.duration}
-              </span>
+        {/* Video Title and Info */}
+        <div className="mb-4">
+          <h2 className="text-3xl font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+            {selectedVideo.title}
+          </h2>
+          <div className="flex items-center gap-4 text-sm">
+            <span className="font-semibold" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
+              Presented by {selectedVideo.instructor}
+            </span>
+            <span className="flex items-center gap-1" style={{ color: "#999999", fontFamily: "Aptos, sans-serif" }}>
+              <Clock className="w-4 h-4" />
+              {selectedVideo.duration}
+            </span>
+          </div>
+        </div>
+
+        {/* Main Video Player */}
+        <div
+          className="relative w-full rounded-3xl overflow-hidden mb-6"
+          style={{
+            backgroundColor: "#000000",
+            border: "4px solid #4A9FB5",
+            boxShadow: "0 12px 40px rgba(74, 159, 181, 0.25)",
+            aspectRatio: "16 / 9",
+          }}
+        >
+          {/* Play Button Overlay */}
+          <div
+            className="absolute inset-0 flex items-center justify-center z-10 group cursor-pointer"
+            onClick={() => setIsPlaying(!isPlaying)}
+          >
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-2xl"
+              style={{
+                backgroundColor: "rgba(74, 159, 181, 0.95)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              {isPlaying ? (
+                <Pause className="w-12 h-12 text-white ml-1" />
+              ) : (
+                <Play className="w-12 h-12 text-white ml-1" />
+              )}
             </div>
           </div>
 
-          {/* Main Video Player - Full Width */}
-          <div
-            className="relative w-full rounded-3xl overflow-hidden mb-6"
+          {/* YouTube Embed */}
+          <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=0&rel=0`}
+            title={selectedVideo.title}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full"
+          />
+        </div>
+
+        {/* Video Description */}
+        <p className="text-base leading-relaxed mb-8" style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
+          {selectedVideo.description}
+        </p>
+
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between py-8 border-t-2 border-b-2" style={{ borderColor: "#E8E8E8" }}>
+          <button
+            onClick={goToPrevious}
+            disabled={selectedVideoIndex === 0}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
             style={{
-              backgroundColor: "#000000",
-              border: "4px solid #4A9FB5",
-              boxShadow: "0 12px 40px rgba(74, 159, 181, 0.25)",
-              aspectRatio: "16 / 9",
+              backgroundColor: selectedVideoIndex === 0 ? "#E8E8E8" : "#4A9FB5",
+              color: selectedVideoIndex === 0 ? "#999999" : "#FFFFFF",
+              fontFamily: "Aptos, sans-serif",
             }}
           >
-            {/* Play Button Overlay */}
-            <div
-              className="absolute inset-0 flex items-center justify-center z-10 group cursor-pointer"
-              onClick={() => setIsPlaying(!isPlaying)}
-            >
-              <div
-                className="w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-2xl"
-                style={{
-                  backgroundColor: "rgba(74, 159, 181, 0.95)",
-                  backdropFilter: "blur(8px)",
-                }}
-              >
-                {isPlaying ? (
-                  <Pause className="w-12 h-12 text-white ml-1" />
-                ) : (
-                  <Play className="w-12 h-12 text-white ml-1" />
-                )}
-              </div>
-            </div>
+            <ChevronLeft className="w-5 h-5" />
+            Previous Video
+          </button>
 
-            {/* YouTube Embed */}
-            <iframe
-              width="100%"
-              height="100%"
-              src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=0&rel=0`}
-              title={selectedVideo.title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
-            />
-
-            {/* Custom Controls Bar with Character Colors */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/60 to-transparent p-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1">
-                <button
-                  className="p-2 rounded-lg hover:bg-white/20 transition-colors"
-                  style={{ color: "#4A9FB5" }}
-                >
-                  <Play className="w-5 h-5" />
-                </button>
-                <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: "#E8E8E8" }}>
-                  <div className="h-full w-1/3 rounded-full" style={{ backgroundColor: "#4A9FB5" }}></div>
-                </div>
-                <span className="text-white text-xs font-bold whitespace-nowrap">{selectedVideo.duration}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
-                  <Volume2 className="w-5 h-5" />
-                </button>
-                <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
-                  <Settings className="w-5 h-5" />
-                </button>
-                <button className="p-2 rounded-lg hover:bg-white/20 transition-colors" style={{ color: "#4A9FB5" }}>
-                  <Maximize2 className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
+              {selectedVideoIndex + 1} of {ACADEMY_VIDEOS.length}
+            </p>
           </div>
 
-          {/* Video Description */}
-          <p className="text-base leading-relaxed mb-6" style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
-            {selectedVideo.description}
-          </p>
+          <button
+            onClick={goToNext}
+            disabled={selectedVideoIndex === ACADEMY_VIDEOS.length - 1}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+            style={{
+              backgroundColor: selectedVideoIndex === ACADEMY_VIDEOS.length - 1 ? "#E8E8E8" : "#4A9FB5",
+              color: selectedVideoIndex === ACADEMY_VIDEOS.length - 1 ? "#999999" : "#FFFFFF",
+              fontFamily: "Aptos, sans-serif",
+            }}
+          >
+            Next Video
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Key Points Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6 relative">
-            {/* Animated background accent shapes */}
-            <div className="absolute -left-8 -top-4 w-20 h-20 rounded-full" style={{ backgroundColor: "#E8F4F8", opacity: 0.4, animation: "pulse 3s ease-in-out infinite" }}></div>
-            <div className="absolute -right-12 -top-2 w-12 h-12 rounded-full" style={{ backgroundColor: "#FFD700", opacity: 0.15 }}></div>
-            
-            {/* Decorative Icon Circle with Enhanced Elements */}
-            <div className="relative z-10">
-              {/* Animated glow background */}
-              <div className="absolute inset-0 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.2, animation: "pulse 2s ease-in-out infinite", transform: "scale(1.2)" }}></div>
-              
-              <div className="w-14 h-14 rounded-full flex items-center justify-center relative z-20" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 8px 24px rgba(74, 159, 181, 0.4)" }}>
-                <Lightbulb className="w-7 h-7 text-white" />
-              </div>
-              
-              {/* Decorative character prop elements - Maya's work gear */}
-              <Clipboard className="w-5 h-5 absolute -top-2 -right-2 transition-transform hover:rotate-12" style={{ color: "#4A9FB5", opacity: 0.8 }} />
-              <BookOpen className="w-4 h-4 absolute -bottom-1 -left-3 transition-transform hover:-rotate-12" style={{ color: "#4A9FB5", opacity: 0.7 }} />
-              <Star className="w-4 h-4 absolute top-1 -left-4" style={{ color: "#FFD700", opacity: 0.9 }} />
-              
-              {/* Decorative accent dots */}
-              <div className="absolute w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FF6B9D", opacity: 0.6, top: "-8px", right: "8px" }}></div>
-              <div className="absolute w-1 h-1 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.5, bottom: "4px", right: "-6px" }}></div>
-            </div>
-            
-            <div>
-              <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-                Key Points
-              </h3>
-              <p className="text-xs" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                Essential takeaways from this lesson
-              </p>
-            </div>
-            
-            {/* Decorative accent line with gradient */}
-            <div className="flex-1 h-1 ml-4 rounded-full" style={{ background: "linear-gradient(to right, #4A9FB5, #FFD700, transparent)", opacity: 0.6 }}></div>
-            
-            {/* Floating accent shape */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg" style={{ backgroundColor: "#E8F4F8", opacity: 0.3, transform: "rotate(45deg)" }}></div>
-          </div>
-          
-          {/* Animated CSS */}
-          <style>{`
-            @keyframes pulse {
-              0%, 100% { opacity: 0.4; }
-              50% { opacity: 0.7; }
-            }
-          `}</style>
+        {/* Key Points by Step - Grouped and Expandable */}
+        <div className="my-12">
+          <h3 className="text-2xl font-bold mb-8" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+            Your LTC Journey: Educational Guide
+          </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {selectedVideo.keyPoints.map((point, idx) => (
-              <div
-                key={idx}
-                className="p-4 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg hover:scale-105"
-                style={{
-                  backgroundColor: "#E8F4F8",
-                  borderColor: "#4A9FB5",
-                  boxShadow: "0 4px 12px rgba(74, 159, 181, 0.1)",
-                }}
-              >
-                <div className="flex gap-3">
-                  <CheckCircle2 className="w-6 h-6 flex-shrink-0 mt-0.5" style={{ color: "#4A9FB5" }} />
-                  <p className="text-sm leading-relaxed" style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
-                    {point}
+          <div className="space-y-8">
+            {STEP_EDUCATION.map((step) => (
+              <div key={step.stepNumber} className="rounded-2xl overflow-hidden border-2" style={{ borderColor: step.stepColor, backgroundColor: "#FFFFFF" }}>
+                {/* Step Header */}
+                <div className="p-6" style={{ backgroundColor: step.stepColor }}>
+                  <h4 className="text-xl font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
+                    Step {step.stepNumber}: {step.stepTitle}
+                  </h4>
+                  <p className="text-sm text-white/80 mt-1" style={{ fontFamily: "Aptos, sans-serif" }}>
+                    Learn key terms and concepts for this stage
                   </p>
+                </div>
+
+                {/* Accordion Terms */}
+                <div className="p-6">
+                  <Accordion type="single" collapsible className="w-full">
+                    {step.terms.map((item, idx) => (
+                      <AccordionItem key={idx} value={`step-${step.stepNumber}-term-${idx}`}>
+                        <AccordionTrigger className="hover:no-underline py-4" style={{ fontFamily: "Aptos, sans-serif" }}>
+                          <div className="flex items-start gap-3 text-left">
+                            <div
+                              className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-white text-xs font-bold"
+                              style={{ backgroundColor: step.stepColor }}
+                            >
+                              {idx + 1}
+                            </div>
+                            <span className="font-semibold" style={{ color: step.stepColor }}>
+                              {item.term}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4">
+                          <div className="ml-9 space-y-4">
+                            {/* Definition */}
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
+                                What It Means
+                              </p>
+                              <p style={{ color: "#555", fontFamily: "Aptos, sans-serif" }}>
+                                {item.definition}
+                              </p>
+                            </div>
+
+                            {/* Why It Matters */}
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
+                                Why It Matters Now
+                              </p>
+                              <p style={{ color: "#555", fontFamily: "Aptos, sans-serif" }}>
+                                {item.whyMatters}
+                              </p>
+                            </div>
+
+                            {/* Long-term Impact */}
+                            <div
+                              className="p-3 rounded-lg border-l-4"
+                              style={{ backgroundColor: `${step.stepColor}15`, borderColor: step.stepColor }}
+                            >
+                              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: step.stepColor, fontFamily: "Aptos, sans-serif" }}>
+                                Long-Term Impact
+                              </p>
+                              <p style={{ color: "#555", fontFamily: "Aptos, sans-serif" }}>
+                                {item.longTermImpact}
+                              </p>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Downloads Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6 relative">
-            {/* Animated background accent shapes */}
-            <div className="absolute -left-8 -top-4 w-24 h-24 rounded-full" style={{ backgroundColor: "#FFD700", opacity: 0.08 }}></div>
-            <div className="absolute -right-12 -bottom-2 w-16 h-16 rounded-lg" style={{ backgroundColor: "#4A9FB5", opacity: 0.1, transform: "rotate(45deg)" }}></div>
-            
-            {/* Decorative Icon Circle with Enhanced Elements */}
-            <div className="relative z-10">
-              {/* Animated glow background */}
-              <div className="absolute inset-0 rounded-full" style={{ backgroundColor: "#4A9FB5", opacity: 0.2, animation: "pulse 2s ease-in-out infinite", transform: "scale(1.2)" }}></div>
-              
-              <div className="w-14 h-14 rounded-full flex items-center justify-center relative z-20" style={{ backgroundColor: "#4A9FB5", boxShadow: "0 8px 24px rgba(74, 159, 181, 0.4)" }}>
-                <Download className="w-7 h-7 text-white" />
-              </div>
-              
-              {/* Decorative character prop elements - Maya's ID Badge */}
-              <div className="absolute -top-3 -right-3 w-7 h-7 rounded-full flex items-center justify-center transition-transform hover:scale-110" style={{ backgroundColor: "#FFD700", boxShadow: "0 4px 12px rgba(255, 215, 0, 0.4)" }}>
-                <Badge className="w-4 h-4" style={{ color: "#1B3A5C" }} />
-              </div>
-              
-              {/* Decorative hydration bottle and accent elements */}
-              <Droplet className="w-4 h-4 absolute transition-transform hover:scale-110" style={{ color: "#FF6B9D", opacity: 0.7, bottom: "-10px", right: "-2px" }} />
-              <FileText className="w-3 h-3 absolute transition-transform hover:scale-110" style={{ color: "#4A9FB5", opacity: 0.6, bottom: "-8px", left: "-10px" }} />
-              
-              {/* Decorative accent dots */}
-              <div className="absolute w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "#FF6B9D", opacity: 0.5, top: "2px", right: "-8px" }}></div>
-              <div className="absolute w-1 h-1 rounded-full" style={{ backgroundColor: "#FFD700", opacity: 0.6, bottom: "-12px", right: "4px" }}></div>
-            </div>
-            
-            <div>
-              <h3 className="text-2xl font-bold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-                Resources for This Video
-              </h3>
-              <p className="text-xs" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                Download guides, templates, and reference materials
-              </p>
-            </div>
-            
-            {/* Decorative accent line with gradient */}
-            <div className="flex-1 h-1 ml-4 rounded-full" style={{ background: "linear-gradient(to right, #4A9FB5, #FF6B9D, transparent)", opacity: 0.6 }}></div>
-            
-            {/* Floating accent shape */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full" style={{ backgroundColor: "#FFD700", opacity: 0.2 }}></div>
-          </div>
-          
-          {/* Animated CSS */}
-          <style>{`
-            @keyframes pulse {
-              0%, 100% { opacity: 0.4; }
-              50% { opacity: 0.7; }
-            }
-          `}</style>
+        {/* Resources Section */}
+        <div className="my-12">
+          <h3 className="text-2xl font-bold mb-8" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
+            Resources for This Video
+          </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {selectedVideo.downloads.map((download, idx) => {
@@ -481,7 +504,7 @@ export function LTCAcademyPlayer() {
                 { border: "#4A9FB5", bg: "#E8F4F8", icon: "#4A9FB5", accent: "#FF6B9D", accentBg: "#FFE8F0" },
               ];
               const color = colors[idx % colors.length];
-              
+
               return (
                 <a
                   key={idx}
@@ -504,20 +527,17 @@ export function LTCAcademyPlayer() {
                     e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
-                  {/* Decorative background accent */}
                   <div className="absolute top-0 right-0 w-24 h-24 rounded-full" style={{ backgroundColor: color.accent, opacity: 0.08 }}></div>
                   <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full" style={{ backgroundColor: color.border, opacity: 0.05 }}></div>
-                  
+
                   <div className="flex flex-col items-center text-center gap-4 relative z-10">
-                    {/* Icon container with gradient background */}
                     <div className="relative">
                       <div className="absolute inset-0 rounded-2xl" style={{ background: `linear-gradient(135deg, ${color.bg}, ${color.accentBg})`, opacity: 0.5 }}></div>
                       <div className="p-4 rounded-2xl relative z-10 transition-transform group-hover:scale-110" style={{ backgroundColor: color.bg, color: color.icon }}>
                         {getDownloadIcon(download.icon)}
                       </div>
                     </div>
-                    
-                    {/* Text content */}
+
                     <div>
                       <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: color.border, fontFamily: "Aptos, sans-serif", letterSpacing: "0.1em" }}>
                         Download
@@ -526,137 +546,16 @@ export function LTCAcademyPlayer() {
                         {download.name}
                       </p>
                     </div>
-                    
-                    {/* Download button */}
+
                     <div className="mt-3 p-3 rounded-xl transition-all group-hover:scale-110" style={{ backgroundColor: color.border, boxShadow: `0 4px 12px ${color.border}30` }}>
                       <Download className="w-5 h-5 text-white" />
                     </div>
-                    
-                    {/* Decorative accent dot */}
+
                     <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color.accent }}></div>
                   </div>
                 </a>
               );
             })}
-          </div>
-        </div>
-
-        {/* Navigation Section */}
-        <div className="flex items-center justify-between py-8 border-t-2" style={{ borderColor: "#E8E8E8" }}>
-          <button
-            onClick={goToPrevious}
-            disabled={selectedVideoIndex === 0}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
-            style={{
-              backgroundColor: selectedVideoIndex === 0 ? "#E8E8E8" : "#4A9FB5",
-              color: selectedVideoIndex === 0 ? "#999999" : "#FFFFFF",
-              fontFamily: "Aptos, sans-serif",
-            }}
-          >
-            <ChevronLeft className="w-5 h-5" />
-            Previous Video
-          </button>
-
-          <div className="text-center">
-            <p className="text-sm font-semibold" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
-              {selectedVideoIndex + 1} of {ACADEMY_VIDEOS.length}
-            </p>
-            <div className="flex gap-3 mt-2">
-              {ACADEMY_VIDEOS.map((video, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedVideoIndex(idx)}
-                  className="relative transition-all duration-300 hover:scale-125"
-                  title={video.title}
-                >
-                  {completedVideos.has(video.id) ? (
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: "#4A9FB5" }}>
-                      <CheckCircle2 className="w-4 h-4 text-white" />
-                    </div>
-                  ) : (
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{
-                        backgroundColor: idx === selectedVideoIndex ? "#4A9FB5" : "#E8E8E8",
-                      }}
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={goToNext}
-            disabled={selectedVideoIndex === ACADEMY_VIDEOS.length - 1}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
-            style={{
-              backgroundColor: selectedVideoIndex === ACADEMY_VIDEOS.length - 1 ? "#E8E8E8" : "#4A9FB5",
-              color: selectedVideoIndex === ACADEMY_VIDEOS.length - 1 ? "#999999" : "#FFFFFF",
-              fontFamily: "Aptos, sans-serif",
-            }}
-          >
-            Next Video
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Completion Message */}
-        {selectedVideoIndex === ACADEMY_VIDEOS.length - 1 && (
-          <div
-            className="mt-8 p-6 rounded-2xl border-2 text-center"
-            style={{
-              backgroundColor: "#FFF9E6",
-              borderColor: "#FFD700",
-              boxShadow: "0 8px 20px rgba(255, 215, 0, 0.15)",
-            }}
-          >
-            <p className="text-lg font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-              🎉 Congratulations!
-            </p>
-            <p style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
-              You've completed the LTC Academy series. You now have the knowledge to confidently navigate your long-term care insurance journey.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="border-t-4 mt-12 px-6 py-8" style={{ borderColor: "#4A9FB5", backgroundColor: "#F0F8FA" }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
-              <div className="text-3xl font-bold mb-2" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                {ACADEMY_VIDEOS.length}
-              </div>
-              <p className="text-sm font-semibold" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
-                Videos in Series
-              </p>
-            </div>
-            <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
-              <div className="text-3xl font-bold mb-2" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-                {ACADEMY_VIDEOS.reduce((sum, v) => sum + v.downloads.length, 0)}
-              </div>
-              <p className="text-sm font-semibold" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
-                Downloadable Resources
-              </p>
-            </div>
-            <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "2px solid #E8E8E8" }}>
-              <div className="text-3xl font-bold mb-2" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                {progressPercentage}%
-              </div>
-              <p className="text-sm font-semibold" style={{ color: "#666666", fontFamily: "Aptos, sans-serif" }}>
-                Your Progress
-              </p>
-            </div>
-            <div className="text-center p-4 rounded-2xl" style={{ backgroundColor: "#E8F4F8", border: "2px solid #4A9FB5" }}>
-              <div className="text-3xl font-bold mb-2" style={{ color: "#4A9FB5", fontFamily: "Aptos, sans-serif" }}>
-                👨‍🎓
-              </div>
-              <p className="text-sm font-semibold" style={{ color: "#1B3A5C", fontFamily: "Aptos, sans-serif" }}>
-                Expert Instruction
-              </p>
-            </div>
           </div>
         </div>
       </div>

@@ -819,3 +819,15 @@
 - [x] Add footer stats showing video count, resources, and free access
 - [x] Ensure responsive design for mobile devices
 - [x] Verify TypeScript compilation (0 errors)
+
+
+## Academy Page Complete Rebuild (July 2026)
+- [x] Restructure Academy page: hero banner, timeline, video, navigation, key points, resources, footer
+- [x] Create grouped key points by step (Step 1-4) with expandable accordions
+- [x] Integrate real LTC education content from TERM_STAGES
+- [x] Add accordion sections for each term/definition under its step
+- [x] Include plain-language explanations and long-term impact for each term
+- [x] Ensure all 4 steps visible on every Academy page regardless of video
+- [x] Test timeline dynamic updates based on user progress
+- [x] Verify responsive design on mobile and desktop
+- [x] Test expandable accordions functionality
