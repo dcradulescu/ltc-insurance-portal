@@ -71,12 +71,17 @@ export default function Academy() {
                 <span style={{ color: VA_TEAL }}>Academy</span>
               </h1>
               <p className="text-lg text-white/85 leading-relaxed mb-6" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-                Master long-term care insurance with our comprehensive video series.
+                Master long-term care insurance with our comprehensive video series. Each lesson is designed to help you understand your policy, navigate the claims process, and take action with confidence.
               </p>
               <div className="animate-float-up animate-delay-300 flex flex-row gap-3 sm:gap-4 justify-center">
-                <Link href="#academy-content" className="va-btn text-base px-8 py-4 text-center shadow-lg">
-                  Start Learning
-                </Link>
+                <button
+                  onClick={() => {
+                    window.open('/ltc-insurance-guide.pdf', '_blank');
+                  }}
+                  className="va-btn text-base px-8 py-4 text-center shadow-lg flex items-center justify-center gap-2"
+                >
+                  📄 Print Guide
+                </button>
                 <button
                   className="va-btn va-btn-outline text-base px-6 py-4 flex items-center justify-center gap-2"
                   style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}

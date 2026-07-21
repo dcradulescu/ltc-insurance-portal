@@ -269,7 +269,7 @@ export default function Home() {
                 Filing a long-term care insurance claim can be overwhelming. We provide the education, tools, and personalized strategies your family needs to successfully navigate the process.
               </p>
               <div className="animate-float-up animate-delay-300 flex flex-row gap-3 sm:gap-4 justify-center">
-              <Link href="/education" className="va-btn text-base px-8 py-4 text-center shadow-lg">
+              <Link href="/academy" className="va-btn text-base px-8 py-4 text-center shadow-lg">
                 Start Here
               </Link>
               <button
