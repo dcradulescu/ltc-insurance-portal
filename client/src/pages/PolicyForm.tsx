@@ -936,13 +936,12 @@ export default function PolicyForm() {
       </section>
 
       {/* ✨ What You Get Section */}
-      <section className="py-section" style={{ background: '#f8f9fa' }}>
+      <section className="py-section" style={{ background: '#FFFFFF' }}>
         <div className="container max-w-5xl">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 rounded-full px-5 py-2 mb-4" style={{ background: 'rgba(6,146,215,0.12)', border: '1px solid rgba(6,146,215,0.3)' }}>
-              <Sparkles className="w-4 h-4" style={{ color: '#0692D7' }} />
-              <span className="text-sm font-bold" style={{ color: '#0692D7', fontFamily: "'Open Sans', sans-serif" }}>This is where the magic happens</span>
+            <div className="inline-flex items-center gap-2 rounded-full px-5 py-2 mb-4" style={{ background: 'rgba(52,177,196,0.15)', border: '1px solid rgba(52,177,196,0.4)' }}>
+              <span className="text-sm font-bold" style={{ color: '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>✨ Magic Made Here ✨</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>
               Here's What You'll <span style={{ color: '#0692D7' }}>Receive</span>
@@ -1002,47 +1001,12 @@ export default function PolicyForm() {
             ))}
           </div>
 
-          {/* Sample strategy preview card */}
-          <div className="rounded-2xl border-2 overflow-hidden shadow-xl" style={{ borderColor: '#34B1C4' }}>
-            <div className="px-6 py-4 flex items-center gap-3" style={{ background: '#34B1C4' }}>
-              <Sparkles className="w-5 h-5 text-white" />
-              <span className="text-white font-bold text-base" style={{ fontFamily: "'Roboto', sans-serif" }}>Sample: Your Custom Strategy Preview</span>
-              <span className="ml-auto text-white/80 text-xs font-medium">What you'll receive after completing Step 2</span>
-            </div>
-            <div className="p-6 bg-white">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  { step: "Week 1", title: "Notify Your Insurer", tasks: ["Call claims department", "Request claim forms", "Confirm elimination period"] },
-                  { step: "Week 2", title: "Gather Documentation", tasks: ["Physician certification", "ADL assessment form", "Care plan from provider"] },
-                  { step: "Week 3", title: "Submit & Follow Up", tasks: ["Submit complete claim packet", "Confirm receipt in writing", "Track approval timeline"] },
-                ].map((phase, i) => (
-                  <div key={i} className="rounded-lg p-4 border" style={{ borderColor: '#e8e8e8', background: '#f9f9f9' }}>
-                    <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: i === 1 ? '#0692D7' : '#34B1C4', fontFamily: "'Open Sans', sans-serif" }}>{phase.step}</div>
-                    <div className="font-bold text-sm mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>{phase.title}</div>
-                    <ul className="space-y-1.5">
-                      {phase.tasks.map((task, j) => (
-                        <li key={j} className="flex items-start gap-2 text-xs" style={{ color: '#666666', fontFamily: "'Open Sans', sans-serif" }}>
-                          <span className="mt-0.5 flex-shrink-0" style={{ color: i === 1 ? '#0692D7' : '#34B1C4' }}>&#10003;</span>
-                          {task}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 pt-4 border-t flex items-center justify-between" style={{ borderColor: '#e8e8e8' }}>
-                <p className="text-xs italic" style={{ color: '#999', fontFamily: "'Open Sans', sans-serif" }}>This is a sample preview. Your actual strategy will be tailored to your specific policy and care situation.</p>
-                <a href="#policy-form-start" className="inline-flex items-center gap-1.5 text-sm font-bold" style={{ color: '#0692D7', fontFamily: "'Open Sans', sans-serif" }}>
-                  Get My Real Strategy <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          </div>
+
         </div>
       </section>
 
       {/* Form */}
-      <section id="policy-form-start" className="py-section bg-white">
+      <section id="policy-form-start" className="py-section" style={{ background: '#F0F8F5' }}>
         <div className="container max-w-4xl">
           {/* Progress */}
           <div className="mb-8">
