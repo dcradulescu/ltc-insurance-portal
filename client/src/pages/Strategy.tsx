@@ -695,8 +695,8 @@ export default function Strategy() {
               {/* How Do You Want to See Your Custom Plan? */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
                 <div className="text-center mb-8">
-                  <h2 className="font-serif text-3xl font-bold text-slate-900 mb-2">How Do You Want to See Your Custom Plan?</h2>
-                  <p className="text-slate-600 max-w-2xl mx-auto">Choose your preferred way to view and interact with your personalized LTC insurance claim strategy</p>
+                  <h2 className="font-serif text-3xl font-bold text-slate-900 mb-2">Your <span style={{ color: '#34B1C4' }}>Personalized Strategy</span></h2>
+                  <p className="text-slate-600 max-w-2xl mx-auto text-base leading-relaxed">Below are different ways to view your step-by-step claim plan. Choose the view that works best for you — you can switch between them anytime.</p>
                 </div>
 
                 {/* Plan View Selector */}
@@ -778,10 +778,10 @@ export default function Strategy() {
               {/* WRITTEN PLAN VIEW */}
               {planView === "written" && (
                 <div className="space-y-5 md:space-y-8">
-                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
                       <h3 className="font-serif text-xl font-bold text-slate-900">Written Plan</h3>
-                      <p className="text-sm text-slate-600 mt-1">Your complete personalized strategy document</p>
+                      <p className="text-sm text-slate-600 mt-1">Read your complete strategy in one document. Includes care recommendations, next steps, and important details about your policy.</p>
                     </div>
                     <div className="p-6">
                       {recommendations && (
@@ -826,10 +826,10 @@ export default function Strategy() {
               {/* TIMELINE VIEW */}
               {planView === "timeline" && (
                 <div className="space-y-5 md:space-y-8">
-                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
                       <h3 className="font-serif text-xl font-bold text-slate-900">Timeline</h3>
-                      <p className="text-sm text-slate-600 mt-1">Interactive Gantt chart showing your 3-stage claim process</p>
+                      <p className="text-sm text-slate-600 mt-1">See your claim process on a calendar. Shows when each task should be completed and how long each stage takes.</p>
                     </div>
                     <div className="px-4 py-5 md:px-6 overflow-x-auto">
                       <div className="min-w-[600px]">
@@ -874,8 +874,8 @@ export default function Strategy() {
 
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-blue-50">
-                      <h3 className="font-serif text-xl font-bold text-slate-900">By Stage</h3>
-                      <p className="text-sm text-slate-600 mt-1">View and manage tasks organized by claim stage</p>
+                      <h3 className="font-serif text-xl font-bold text-slate-900">Interactive Checklist</h3>
+                      <p className="text-sm text-slate-600 mt-1">Check off tasks as you complete them. Organized by the 3 stages of your claim process. Track your progress and see what's next.</p>
                     </div>
                     <div className="p-6 space-y-5 md:space-y-8">
                       {/* Stage 1 */}
@@ -993,8 +993,8 @@ export default function Strategy() {
                         <Download className="w-4.5 h-4.5 text-teal" />
                       </div>
                       <div>
-                        <h3 className="font-serif text-xl font-bold text-slate-900">Download Your Plan</h3>
-                        <p className="text-sm text-slate-600">Download your strategy as a PDF for offline access</p>
+                        <h3 className="font-serif text-xl font-bold text-slate-900">Download Your Strategy</h3>
+                        <p className="text-sm text-slate-600">Save your complete strategy as a PDF. You can print it, share it with family, or keep it for your records.</p>
                       </div>
                     </div>
 
@@ -1058,7 +1058,7 @@ export default function Strategy() {
                       </div>
                       <div>
                         <h3 className="font-serif text-xl font-bold text-slate-900">Care Cost Calculator</h3>
-                        <p className="text-sm text-slate-600">Calculate your potential care costs based on your policy</p>
+                        <p className="text-sm text-slate-600">Estimate your out-of-pocket costs. See how your daily benefit amount, elimination period, and lifetime maximum affect what you'll pay.</p>
                       </div>
                     </div>
                     <CareCalculator
@@ -1078,8 +1078,8 @@ export default function Strategy() {
                         <Mail className="w-4.5 h-4.5 text-teal" />
                       </div>
                       <div>
-                        <h3 className="font-serif text-xl font-bold text-slate-900">Send My Plan</h3>
-                        <p className="text-sm text-slate-600">Share your strategy with family members or advisors</p>
+                        <h3 className="font-serif text-xl font-bold text-slate-900">Share Your Strategy</h3>
+                        <p className="text-sm text-slate-600">Email your strategy to family, caregivers, or advisors. You can also set up SMS reminders for important tasks.</p>
                       </div>
                     </div>
 
