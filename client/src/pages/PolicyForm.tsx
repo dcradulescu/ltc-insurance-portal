@@ -1008,8 +1008,29 @@ export default function PolicyForm() {
       {/* Form */}
       <section id="policy-form-start" className="py-section" style={{ background: '#F0F8F5' }}>
         <div className="container max-w-4xl">
-          {/* Progress */}
-          <div className="mb-8">
+          {/* Intro Section */}
+          <div className="mb-12">
+            <div className="inline-flex items-center gap-2 text-teal mb-4">
+              <ClipboardList className="w-5 h-5" />
+              <span className="text-sm font-bold" style={{ fontFamily: "'Open Sans', sans-serif" }}>Step 2 of 3</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>
+              Tell Us About Your <span style={{ color: '#34B1C4' }}>Policy</span>
+            </h2>
+            <p className="text-lg leading-relaxed max-w-3xl" style={{ fontFamily: "'Open Sans', sans-serif", color: '#555555' }}>
+              We'll ask you a few simple questions about your insurance policy and care situation. Your answers help us create a personalized strategy tailored specifically to your needs. You can save and come back anytime — your information is securely stored.
+            </p>
+          </div>
+          {/* Form Container */}
+          <div className="bg-white rounded-lg border-2" style={{ borderColor: '#A8D9D9', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            {/* Form Header */}
+            <div className="px-6 md:px-8 py-6 border-b" style={{ borderColor: '#E0F5F5' }}>
+              <h3 className="text-xl font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Complete Your Policy Information</h3>
+              <p className="text-sm mt-2" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Fill out each section below. Required fields are marked with an asterisk (*).</p>
+            </div>
+
+            {/* Progress */}
+            <div className="px-6 md:px-8 py-6 border-b" style={{ borderColor: '#E0F5F5' }}>
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-slate-500 font-medium">Step {step + 1} of {steps.length}</span>
               <span className="text-sm font-bold text-teal">{completionPct}% Complete</span>
@@ -1048,11 +1069,15 @@ export default function PolicyForm() {
             </div>
           </div>
 
+          {/* Step Content */}
+          <div className="px-6 md:px-8 py-8">
           {/* Step 0: Insured Person */}
           {step === 0 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Insured Person Information</h2>
-              <p className="text-sm text-slate-600">Enter the details of the person covered by the LTC insurance policy.</p>
+              <div>
+                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>About the <span style={{ color: '#34B1C4' }}>Insured Person</span></h3>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Start by telling us about the person who holds the LTC insurance policy — the person who will receive care. Use the information exactly as it appears on the policy documents.</p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Full Name of Insured" name="insuredFullName" isRequired>
                   <Input id="insuredFullName" value={form.insuredFullName} onChange={e => { update("insuredFullName", e.target.value); clearError("insuredFullName"); }} placeholder="Enter full legal name" className={fieldErrors.insuredFullName ? "border-red-500 focus-visible:ring-red-500" : ""} />
@@ -1112,8 +1137,10 @@ export default function PolicyForm() {
           {/* Step 1: LTC Ins Company */}
           {step === 1 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Long Term Care Insurance Company</h2>
-              <p className="text-sm text-slate-600">Enter the details of your LTC insurance carrier. This information can be found on your policy declaration page.</p>
+              <div>
+                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Your <span style={{ color: '#34B1C4' }}>Insurance Company</span></h3>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Next, we need to know about your insurance company. You can find this information on your policy declaration page or any billing statement from your carrier.</p>
+              </div>
               <TooltipField label="LTC Insurance Company Name" name="carrierName" isRequired>
                 <Input id="carrierName" value={form.carrierName} onChange={e => { update("carrierName", e.target.value); clearError("carrierName"); }} placeholder="e.g., Genworth, John Hancock, Mutual of Omaha" className={fieldErrors.carrierName ? "border-red-500 focus-visible:ring-red-500" : ""} />
                 {fieldErrors.carrierName && <p className="text-xs text-red-600 mt-1">{fieldErrors.carrierName}</p>}
@@ -1146,8 +1173,10 @@ export default function PolicyForm() {
           {/* Step 2: Policy Info */}
           {step === 2 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Policy Info</h2>
-              <p className="text-sm text-slate-600">Enter your policy identification and case management information.</p>
+              <div>
+                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Your <span style={{ color: '#34B1C4' }}>Policy Details</span></h3>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Tell us about your specific policy. Your policy number, claim number, and other details help us understand your coverage and create an accurate strategy.</p>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Policy Number" name="policyNumber" isRequired>
                   <Input id="policyNumber" value={form.policyNumber} onChange={e => { update("policyNumber", e.target.value); clearError("policyNumber"); }} placeholder="Your policy number" className={fieldErrors.policyNumber ? "border-red-500 focus-visible:ring-red-500" : ""} />
@@ -1194,8 +1223,10 @@ export default function PolicyForm() {
           {/* Step 3: Coverage Details */}
           {step === 3 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Coverage Details</h2>
-              <p className="text-sm text-slate-600">Enter the coverage details from your LTC insurance policy. These are critical for generating your personalized strategy.</p>
+              <div>
+                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Your <span style={{ color: '#34B1C4' }}>Coverage Details</span></h3>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Now tell us about your specific coverage. This includes your daily and lifetime benefits, your elimination period, and other important policy features. You can find this information in your policy document.</p>
+              </div>
               <div className="bg-teal/10 border border-gray-300 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Financial Benefits</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -1367,7 +1398,10 @@ export default function PolicyForm() {
           {/* Step 4: Qualifying */}
           {step === 4 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Is it likely that I&apos;ll qualify?</h2>
+              <div>
+                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Do You <span style={{ color: '#34B1C4' }}>Qualify?</span></h3>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Now tell us about your current care needs and health conditions. This helps us determine if you meet your policy's requirements to file a claim right now.</p>
+              </div>
 
               {/* Qualification context banner */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -1573,8 +1607,10 @@ export default function PolicyForm() {
           {/* Step 5: Review */}
           {step === 5 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-slate-800 border-b pb-2">Review Your Information</h2>
-              <p className="text-sm text-slate-600">Review the information below. You can go back to any step to make changes. Once you're satisfied, save and proceed to generate your personalized strategy.</p>
+              <div>
+                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Review & <span style={{ color: '#34B1C4' }}>Generate</span></h3>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Take a moment to review your information below. You can go back to any step to make changes. Once you're satisfied, click "Generate Strategy" to create your personalized plan. You'll receive a downloadable PDF with your step-by-step checklist and next actions.</p>
+              </div>
               <div className="grid gap-4">
                 {[
                   { title: "Insured Person", items: [["Name", form.insuredFullName], ["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["POA Name", form.poa_name], ["POA Relationship", form.poa_relationship]] },
@@ -1656,6 +1692,8 @@ export default function PolicyForm() {
               </Button>
             )}
           </div>
+          </div>
+        </div>
         </div>
       </section>
 
