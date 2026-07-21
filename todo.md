@@ -947,3 +947,4 @@
 - [x] Verify all buttons work correctly
 - [x] Test print guide PDF functionality
 - [x] Verify video playback on Academy
+- [x] Fix legal disclaimers section width to match full page width

@@ -84,8 +84,7 @@ export function SiteFooter() {
                 />
                 <div>
                   <h2 className="text-3xl font-bold leading-tight" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>
-                    Looking for Home Care?<br />
-                    <span style={{ color: VA_TEAL }}>We Can Help.</span>
+                    Looking for Home Care? <span style={{ color: VA_TEAL }}>We Can Help.</span>
                   </h2>
                 </div>
               </div>
