@@ -920,8 +920,8 @@
 
 ### Academy Layout Improvements
 - [ ] Implement collapsible steps: Step 1 contracts when Step 2 clicked, shows Step 2 info
-- [ ] Keep Resources sidebar sticky at top right
-- [ ] Include ALL resources in logical order
+- [x] Keep Resources sidebar sticky at top right
+- [x] Include ALL resources in logical order
 - [ ] Update timeline when user clicks Next/Previous video buttons
 - [ ] Create resources in same format/UX as website (clean headers, footers, pastels, cards, bullets)
 - [ ] Add blue sections with background bubbles for resources
@@ -930,20 +930,20 @@
 - [ ] Vary layout per section to keep visually interesting
 
 ### Policy Page Redesign
-- [ ] Change section under hero banner to white background
-- [ ] Change policy form section to very light pastel green background
+- [x] Change section under hero banner to white background
+- [x] Change policy form section to very light pastel green background
 - [ ] Remove text and buttons above "Tell Us About Your Policy" title (looks messy)
 - [ ] Add explanation of what page does and what to do
 - [ ] Replace hero banner video with YouTube video explaining LTC policy
 - [ ] Add rollover effects to "Here's What You'll Receive" cards (consistent across all)
-- [ ] Replace "This is where the magic happens" text with elegant graphic (award with ribbon, "Magic Made Here")
-- [ ] Remove "Sample: Your Custom Strategy Preview" section
+- [x] Replace "This is where the magic happens" text with elegant graphic (award with ribbon, "Magic Made Here")
+- [x] Remove "Sample: Your Custom Strategy Preview" section
 - [ ] Use same format as removed preview section to enclose the form (draws attention)
 
 ### Testing & Verification
-- [ ] Test all changes on desktop
-- [ ] Test all changes on mobile/tablet
-- [ ] Verify no broken links or navigation issues
-- [ ] Verify all buttons work correctly
-- [ ] Test print guide PDF functionality
-- [ ] Verify video playback on Academy
+- [x] Test all changes on desktop
+- [x] Test all changes on mobile/tablet
+- [x] Verify no broken links or navigation issues
+- [x] Verify all buttons work correctly
+- [x] Test print guide PDF functionality
+- [x] Verify video playback on Academy
