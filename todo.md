@@ -913,7 +913,7 @@
 ### Academy Page Enhancements
 - [x] Add instructions/description under Academy title
 - [x] Replace "Start Learning" button with "Print Guide" button
-- [ ] Create Print Guide PDF (LTC Insurance education guide - pops over page, doesn't navigate away)
+- [x] Create Print Guide PDF (LTC Insurance education guide - pops over page, doesn't navigate away)
 - [ ] Add sample LTC Insurance videos for each section (until user creates custom videos)
 - [ ] Create decorative flowchart background (faint, barely contrasting with light pastel gray)
 - [ ] Make Academy look more professional overall

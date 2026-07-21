@@ -76,7 +76,7 @@ export default function Academy() {
               <div className="animate-float-up animate-delay-300 flex flex-row gap-3 sm:gap-4 justify-center">
                 <button
                   onClick={() => {
-                    window.open('/ltc-insurance-guide.pdf', '_blank');
+                    window.open('/ltc-insurance-guide.html', '_blank');
                   }}
                   className="va-btn text-base px-8 py-4 text-center shadow-lg flex items-center justify-center gap-2"
                 >

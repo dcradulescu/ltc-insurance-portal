@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock, Zap, Clipboard, Droplet, Badge, Star, Award, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   Accordion,
   AccordionItem,
@@ -174,9 +175,9 @@ const ACADEMY_VIDEOS: Video[] = [
       "Average daily costs range from $150-$300+ depending on location and care type",
     ],
     downloads: [
-      { name: "LTC Insurance Basics Guide", url: "https://example.com/ltc-basics-guide.pdf", icon: "pdf" },
-      { name: "Coverage Comparison Chart", url: "https://example.com/coverage-chart.pdf", icon: "pdf" },
-      { name: "Planning Worksheet", url: "https://example.com/planning-worksheet.docx", icon: "doc" },
+      { name: "LTC Insurance Basics Guide", url: "#", icon: "pdf" },
+      { name: "Coverage Comparison Chart", url: "#", icon: "pdf" },
+      { name: "Planning Worksheet", url: "#", icon: "doc" },
     ],
   },
   {
@@ -194,9 +195,9 @@ const ACADEMY_VIDEOS: Video[] = [
       "Contact information for claims is typically on the back of your insurance card",
     ],
     downloads: [
-      { name: "Policy Glossary", url: "https://example.com/policy-glossary.pdf", icon: "pdf" },
-      { name: "Document Checklist", url: "https://example.com/doc-checklist.pdf", icon: "pdf" },
-      { name: "Key Terms Reference", url: "https://example.com/key-terms.docx", icon: "doc" },
+      { name: "Policy Glossary", url: "#", icon: "pdf" },
+      { name: "Document Checklist", url: "#", icon: "pdf" },
+      { name: "Key Terms Reference", url: "#", icon: "doc" },
     ],
   },
   {
@@ -214,9 +215,9 @@ const ACADEMY_VIDEOS: Video[] = [
       "Keep detailed records of all correspondence and documentation submitted",
     ],
     downloads: [
-      { name: "Claim Filing Checklist", url: "https://example.com/claim-checklist.pdf", icon: "pdf" },
-      { name: "Required Documentation List", url: "https://example.com/required-docs.pdf", icon: "pdf" },
-      { name: "Claim Form Template", url: "https://example.com/claim-form.docx", icon: "doc" },
+      { name: "Claim Filing Checklist", url: "#", icon: "pdf" },
+      { name: "Required Documentation List", url: "#", icon: "pdf" },
+      { name: "Claim Form Template", url: "#", icon: "doc" },
     ],
   },
   {
@@ -234,9 +235,9 @@ const ACADEMY_VIDEOS: Video[] = [
       "Maintain regular communication with your insurance case manager",
     ],
     downloads: [
-      { name: "Benefits Management Guide", url: "https://example.com/benefits-guide.pdf", icon: "pdf" },
-      { name: "Care Log Template", url: "https://example.com/care-log.pdf", icon: "pdf" },
-      { name: "Monthly Reporting Form", url: "https://example.com/monthly-report.docx", icon: "doc" },
+      { name: "Benefits Management Guide", url: "#", icon: "pdf" },
+      { name: "Care Log Template", url: "#", icon: "pdf" },
+      { name: "Monthly Reporting Form", url: "#", icon: "doc" },
     ],
   },
 ];
@@ -509,6 +510,12 @@ export function LTCAcademyPlayer() {
                     <a
                       key={idx}
                       href={download.url}
+                      onClick={(e) => {
+                        if (download.url === "#") {
+                          e.preventDefault();
+                          toast.info("Coming Soon", { description: `${download.name} will be available soon.` });
+                        }
+                      }}
                       download
                       className="flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 hover:shadow-md hover:border-gray-400"
                       style={{

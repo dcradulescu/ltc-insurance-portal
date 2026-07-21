@@ -80,6 +80,15 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
     setProgress(0);
   }, []);
 
+  const handleError = useCallback(() => {
+    setIsPlaying(false);
+    setShowControls(true);
+  }, []);
+
+  const handleCanPlay = useCallback(() => {
+    // Video is ready to play
+  }, []);
+
   // If we have a video URL, render the actual video player
   if (videoUrl) {
     return (
@@ -96,6 +105,8 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
             poster={thumbnailUrl}
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
+            onError={handleError}
+            onCanPlay={handleCanPlay}
             muted={isMuted}
             playsInline
             preload="metadata"
