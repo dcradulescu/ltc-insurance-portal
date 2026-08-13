@@ -958,13 +958,13 @@
 - [x] Add "Sign Up Now" button with thin horizontal divider in menu (links to SCVisitingAngels.com)
 
 ### Priority 2: Medium
-- [ ] Full AI + FAQ hybrid chatbot on every page (LLM for complex, FAQ for common)
-- [ ] Consistent Next/Previous navigation buttons on all pages
-- [ ] Per-page Download button (Education, Academy, Policy pages)
-- [ ] Per-page Email button (Education, Academy, Policy pages)
+- [x] Full AI + FAQ hybrid chatbot on every page (LLM for complex, FAQ for common)
+- [x] Consistent Next/Previous navigation buttons on all pages
+- [x] Per-page Download button (Education, Academy, Policy pages)
+- [x] Per-page Email button (Education, Academy, Policy pages)
 
 ### Priority 3: Polish
-- [ ] Ambient background motion on alert/info boxes
-- [ ] Enhanced micro-interactions and hover animations
-- [ ] Global horizontal timeline navigation element
-- [ ] Magazine layout improvements for Education definitions
+- [x] Ambient background motion on alert/info boxes
+- [x] Enhanced micro-interactions and hover animations
+- [ ] Global horizontal timeline navigation element (Academy timeline serves this purpose)
+- [ ] Magazine layout improvements for Education definitions (already implemented with 4-stage accordion layout)

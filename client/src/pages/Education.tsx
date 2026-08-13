@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+import { PageNavigation } from "@/components/PageNavigation";
 import {
   ArrowRight, Heart, FileSearch, ClipboardList, CheckCircle2,
   ChevronDown, ChevronUp, AlertCircle, Lightbulb, Info, Printer,
@@ -872,6 +873,11 @@ export default function Education() {
           </div>
         </div>
       </section>
+
+      {/* Page Navigation */}
+      <div className="container max-w-3xl pb-8">
+        <PageNavigation />
+      </div>
 
     </Layout>
   );

@@ -6,6 +6,7 @@ import { Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { useEffect, useState } from "react";
+import { PageNavigation } from "@/components/PageNavigation";
 
 const VA_TEAL = "#34B1C4";
 const TOTAL_VIDEOS = 4;
@@ -165,6 +166,10 @@ export default function Academy() {
 
       <div id="academy-content">
         <LTCAcademyPlayer />
+      </div>
+      {/* Page Navigation */}
+      <div className="container max-w-6xl pb-8">
+        <PageNavigation />
       </div>
     </Layout>
   );
