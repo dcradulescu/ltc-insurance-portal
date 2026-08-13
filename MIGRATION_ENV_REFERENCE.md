@@ -97,6 +97,29 @@ All media files are in `backup-media/` directory:
 - `backup-media/manus-storage/` — 8 files (logos, hero images, favicon)
 - Upload these to your new storage and update URLs in source code
 
+### 5a. Media Audit Findings (Cleanup During Migration)
+
+**Issue 1: Missing video file**
+- `education-video.mp4` is referenced in `client/src/pages/Education.tsx` but was never uploaded
+- Action: Upload a real education video to your new storage and update the `<source>` tag
+
+**Issue 2: Mismatched file extensions (7 files)**
+- The following `.jpg` files are actually PNG-encoded internally:
+  - `BCGoGYVjjQPMxhEc.jpg`
+  - `NXdvbYzcqmcgIfxG.jpg`
+  - `ZFmUJyMqNgTRQtRW.jpg`
+  - `gwMDIGGTHLJRGnPt.jpg`
+  - `lSMqOjgOjuvfRlJs.jpg`
+  - `prngCKWDVnvVgXBI.jpg`
+  - `swQpXlcRmPQTVKfl.jpg`
+- Action: Rename to `.png` or re-encode as JPEG, then update all source references
+- Ensure your new CDN/host serves correct MIME types regardless of extension
+
+**Issue 3: Duplicate GIF files**
+- `Dove-Trans_4328daa6.gif` and `Dove-Trans_bbc93e8e.gif` are identical files
+- Action: Keep one canonical copy, update all references to use the single file
+- Referenced in: `client/src/components/Layout.tsx` or similar navigation components
+
 ### 6. Vite Plugin
 Remove `vite-plugin-manus-runtime` from `vite.config.ts`.
 
