@@ -949,3 +949,22 @@
 - [x] Verify video playback on Academy
 - [x] Fix legal disclaimers section width to match full page width
 - [x] Test email functionality with sample strategy PDF to daniel@scvisitingangels.com
+
+## Audit Remediation (August 2026)
+
+### Priority 1: Critical
+- [x] Build Right-Side Helper Frame (Video + Downloads + Chatbot panel, docked right on desktop, bottom drawer on mobile)
+- [x] Add Google Calendar booking link to Contact page
+- [x] Add "Sign Up Now" button with thin horizontal divider in menu (links to SCVisitingAngels.com)
+
+### Priority 2: Medium
+- [ ] Full AI + FAQ hybrid chatbot on every page (LLM for complex, FAQ for common)
+- [ ] Consistent Next/Previous navigation buttons on all pages
+- [ ] Per-page Download button (Education, Academy, Policy pages)
+- [ ] Per-page Email button (Education, Academy, Policy pages)
+
+### Priority 3: Polish
+- [ ] Ambient background motion on alert/info boxes
+- [ ] Enhanced micro-interactions and hover animations
+- [ ] Global horizontal timeline navigation element
+- [ ] Magazine layout improvements for Education definitions

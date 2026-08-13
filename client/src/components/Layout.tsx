@@ -1,10 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Phone, Globe, Share2 } from "lucide-react";
+import { Menu, X, Phone, Globe, Share2, ExternalLink } from "lucide-react";
 import { SiteFooter } from "@/components/SiteFooter";
+import { RightHelperPanel } from "@/components/RightHelperPanel";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
-const navLinks = [
+const navLinks: { href: string; label: string }[] = [
   { href: "/", label: "Home" },
   { href: "/academy", label: "Academy" },
   { href: "/policy-form", label: "Policy" },
@@ -134,12 +135,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            {/* Divider + Sign Up Now */}
+            <span className="mx-3 h-6 w-px" style={{ background: "#e0dede" }} />
             <a
-              href="/academy"
-              className="ml-4 va-btn text-sm"
-              style={{ paddingTop: "0.6rem", paddingBottom: "0.6rem", paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
+              href="https://www.SCVisitingAngels.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-2 inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider px-4 py-2 rounded transition-all duration-200 no-underline"
+              style={{
+                background: "linear-gradient(135deg, #FF6B9D, #E8567F)",
+                color: "#ffffff",
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: "0.7rem",
+                letterSpacing: "0.08em",
+                boxShadow: "0 2px 8px rgba(255,107,157,0.3)",
+              }}
             >
-              Start Here
+              Sign Up Now
+              <ExternalLink className="w-3 h-3" />
             </a>
           </nav>
 
@@ -184,9 +197,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 )}
               </Link>
             ))}
+            {/* Divider */}
+            <div className="mx-5 my-2" style={{ borderTop: "1px solid #e0dede", width: "80%" }} />
+            {/* Sign Up Now button */}
             <div className="p-4">
-              <a href="/education" className="va-btn w-full text-center block text-sm">
-                Start Here
+              <a
+                href="https://www.SCVisitingAngels.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full text-center block text-sm font-bold uppercase tracking-wider py-3 rounded transition-all duration-200 no-underline"
+                style={{
+                  background: "linear-gradient(135deg, #FF6B9D, #E8567F)",
+                  color: "#ffffff",
+                  fontFamily: "'Roboto', sans-serif",
+                  boxShadow: "0 2px 8px rgba(255,107,157,0.3)",
+                }}
+              >
+                Sign Up Now
               </a>
             </div>
           </nav>
@@ -194,7 +221,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* ── Main content ── */}
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 lg:mr-[280px]">{children}</main>
+
+      {/* ── Right Helper Panel (Video + Downloads + Chat) ── */}
+      <RightHelperPanel />
 
       {/* ── Shared Site Footer (consultation callout, home care, stats, legal disclaimer) ── */}
       <SiteFooter />

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Phone, Mail, Clock, Send, Loader2, MessageCircle } from "lucide-react";
+import { Phone, Mail, Clock, Send, Loader2, MessageCircle, Calendar, ExternalLink } from "lucide-react";
 
 const VA_TEAL = "#34B1C4";
 const VA_BLUE = "#0692D7";
@@ -111,6 +111,32 @@ export default function Contact() {
                   Learn more about our home care services at{" "}
                   <a href="https://www.scvisitingangels.com" target="_blank" rel="noopener noreferrer" className="hover:underline font-semibold" style={{ color: VA_BLUE }}>scvisitingangels.com</a>.
                 </p>
+              </div>
+
+              {/* Meeting Scheduler */}
+              <div className="p-4 rounded border" style={{ background: 'rgba(52,177,196,0.07)', borderColor: 'rgba(52,177,196,0.25)', borderLeft: `3px solid ${VA_TEAL}` }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="w-5 h-5" style={{ color: VA_TEAL }} />
+                  <h3 className="font-bold text-sm" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>Schedule a Consultation</h3>
+                </div>
+                <p className="text-xs leading-relaxed mb-3" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_BODY }}>
+                  Book a free 30-minute consultation to discuss your LTC insurance questions with our team.
+                </p>
+                <a
+                  href="https://calendar.google.com/calendar/appointments/schedules"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded text-sm font-bold transition-all duration-200 no-underline hover:shadow-md"
+                  style={{
+                    background: VA_TEAL,
+                    color: "#ffffff",
+                    fontFamily: "'Roboto', sans-serif",
+                  }}
+                >
+                  <Calendar className="w-4 h-4" />
+                  Book a Meeting
+                  <ExternalLink className="w-3 h-3 opacity-70" />
+                </a>
               </div>
             </div>
 
