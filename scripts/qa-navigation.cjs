@@ -1,3 +1,4 @@
+const { clickControl } = require('./qa-browser-helpers.cjs');
 // Checks every rendered route and every unique internal link transition at each viewport.
 // All private data and chat requests are fixtures. No live messages are sent.
 const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -82,19 +83,19 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
           await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
           let link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
           if (!await link.count() && width < 1024) {
-            await page.getByRole('button', { name: 'Help', exact: true }).click();
-            await page.getByRole('dialog', { name: 'Page help' }).getByRole('button', { name: 'Files', exact: true }).click();
+            await clickControl(page.getByRole('button', { name: 'Help', exact: true }));
+            await clickControl(page.getByRole('dialog', { name: 'Page help' }).getByRole('button', { name: 'Files', exact: true }));
             link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
           }
           if (!await link.count() && width < 1024) {
             const drawer = page.getByRole('dialog', { name: 'Page help' });
-            if (await drawer.count()) await drawer.getByRole('button', { name: 'Close help' }).click();
-            await page.getByRole('button', { name: 'Open menu', exact: true }).click();
+            if (await drawer.count()) await clickControl(drawer.getByRole('button', { name: 'Close help' }));
+            await clickControl(page.getByRole('button', { name: 'Open menu', exact: true }));
             await page.waitForFunction(() => { const menu = document.getElementById("mobile-navigation"); return menu && menu.clientHeight >= menu.scrollHeight - 1; });
             link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
           }
           assert(await link.count(), `No reachable link: ${source} -> ${target.raw} at ${width}`);
-          await link.click(); await page.waitForURL(url => url.pathname === destination.pathname && url.hash === destination.hash, { waitUntil: "domcontentloaded" });
+          await clickControl(link); await page.waitForURL(url => url.pathname === destination.pathname && url.hash === destination.hash, { waitUntil: "domcontentloaded" });
           await page.locator('h1').first().waitFor(); await pause(70);
           if (!destination.hash && destination.pathname !== '/ltc-insurance-guide.html') assert(await page.evaluate(() => scrollY < 2), `Scroll reset failed: ${source} -> ${target.raw} at ${width}`);
           assert(!await page.getByText('This guide was not found.', { exact: false }).count(), `Missing guide: ${target.raw}`);
@@ -103,14 +104,14 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
         await page.goto(origin + source, { waitUntil: "domcontentloaded" }); await page.locator('h1').first().waitFor();
         await page.evaluate(() => window.scrollTo({ top: 350, behavior: "instant" }));
         const y = await page.evaluate(() => scrollY);
-        await page.getByRole('button', { name: 'Open LTC support chat' }).click();
+        await clickControl(page.getByRole('button', { name: 'Open LTC support chat' }));
         const chat = page.getByRole('dialog', { name: 'LTC support chat' });
         const message = `QA route ${source} width ${width}`;
         await chat.getByLabel('Your LTC question').fill(message);
-        await chat.getByRole('button', { name: 'Send question', exact: true }).click();
+        await clickControl(chat.getByRole('button', { name: 'Send question', exact: true }));
         await chat.getByText('QA response: ' + message, { exact: true }).waitFor();
         assert(Math.abs((await page.evaluate(() => scrollY)) - y) < 2, `Chat scrolled the page on ${source} at ${width}: before ${y}, after ${await page.evaluate(() => scrollY)}`);
-        await chat.getByRole('button', { name: 'Close chat' }).click();
+        await clickControl(chat.getByRole('button', { name: 'Close chat' }));
         result.routes.push({ route: source, width, chat: 'mock response passed', title: await page.title() });
         console.log(`Checked ${source} at ${width}px`);
       }
@@ -145,7 +146,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       // Verify the separate helper widget can be typed into without being remounted.
       await page.goto(origin + '/', { waitUntil: "domcontentloaded" }); await page.locator('h1').first().waitFor();
       let helper;
-      if (width < 1024) { await page.getByRole('button', { name: 'Help', exact: true }).click(); helper = page.getByRole('dialog', { name: 'Page help' }); }
+      if (width < 1024) { await clickControl(page.getByRole('button', { name: 'Help', exact: true })); helper = page.getByRole('dialog', { name: 'Page help' }); }
       else helper = page.getByRole('complementary', { name: 'Page helper' });
       const input = helper.getByLabel('Helper question', { exact: true });
       await input.pressSequentially('QA typed helper question'); assert.equal(await input.inputValue(), 'QA typed helper question');

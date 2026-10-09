@@ -1,3 +1,4 @@
+const { clickControl } = require('./qa-browser-helpers.cjs');
 // Focused regressions for existing chat, sharing, menu and video controls.
 // Private data, model responses and browser media APIs are fixtures; no messages leave this process.
 const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
@@ -55,10 +56,10 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     });
     const prompts = ['What is an elimination period?', 'How do I file an LTC claim?', 'What ADLs qualify for benefits?', 'What documents do I need?', 'What is Assignment of Benefits?', 'How long does approval take?'];
     for (const prompt of prompts) {
-      await page.goto(origin, { waitUntil: "domcontentloaded" }); await page.getByRole('button', { name: 'Open LTC support chat' }).click();
+      await page.goto(origin, { waitUntil: "domcontentloaded" }); await clickControl(page.getByRole('button', { name: 'Open LTC support chat' }));
       const chat = page.getByRole('dialog', { name: 'LTC support chat' });
       const before = messages.length;
-      await chat.getByRole('button', { name: prompt, exact: true }).click();
+      await clickControl(chat.getByRole('button', { name: prompt, exact: true }));
       await chat.getByText('QA response: ' + prompt, { exact: true }).waitFor();
       assert.equal(messages.length, before + 1); assert.equal(messages.at(-1).message, prompt);
       checks.push('Suggested prompt: ' + prompt);
@@ -76,17 +77,17 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
     for (const [route, label, expected] of [['/', 'Share This Free Resource', origin + '/'], ['/academy', 'Share Academy', origin + '/academy'], ['/education', 'Share This Resource', origin + '/']]) {
       await page.goto(origin + route, { waitUntil: "domcontentloaded" });
-      await page.getByRole('button', { name: label, exact: true }).click();
+      await clickControl(page.getByRole('button', { name: label, exact: true }));
       await page.waitForFunction(() => window.__copies.length === 1);
       assert.deepEqual((await page.evaluate(() => window.__copies)).map(value => new URL(value).href), [expected]);
       await page.evaluate(() => { window.__shareMode = 'blocked'; });
-      await page.getByRole('button', { name: label, exact: true }).click();
+      await clickControl(page.getByRole('button', { name: label, exact: true }));
       await page.getByText('Unable to share automatically. Copy the page address from your browser to share it.', { exact: true }).waitFor();
       checks.push('Clipboard success and denial: ' + label);
     }
     await page.goto(origin, { waitUntil: "domcontentloaded" });
     await page.evaluate(() => { Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.__shares.push(data); throw new DOMException('Cancelled', 'AbortError'); } }); });
-    await page.getByRole('button', { name: 'Share This Free Resource', exact: true }).click();
+    await clickControl(page.getByRole('button', { name: 'Share This Free Resource', exact: true }));
     await page.waitForFunction(() => window.__shares.length === 1);
     assert.equal(await page.locator('[data-sonner-toast]').count(), 0);
     assert.equal((await page.evaluate(() => window.__shares)).length, 1);
@@ -94,22 +95,22 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
     const video = page.locator('main video').first();
     const title = await video.getAttribute('aria-label'); assert(title);
-    await page.getByRole('button', { name: 'Play ' + title, exact: true }).click();
+    await clickControl(page.getByRole('button', { name: 'Play ' + title, exact: true }));
     await page.getByText('Video could not be played. Please try again later.', { exact: true }).waitFor();
     assert.equal(await page.getByRole('button', { name: 'Pause ' + title, exact: true }).count(), 0);
     await page.evaluate(() => { window.__videoMode = 'success'; });
     await video.evaluate(element => { Object.defineProperty(element, 'duration', { configurable: true, value: 100 }); });
-    await page.getByRole('button', { name: 'Play ' + title, exact: true }).click();
+    await clickControl(page.getByRole('button', { name: 'Play ' + title, exact: true }));
     await page.getByRole('button', { name: 'Pause ' + title, exact: true }).waitFor();
     const seek = page.getByRole('slider', { name: 'Seek ' + title });
     await seek.press('ArrowRight'); assert.equal(await video.evaluate(element => element.currentTime), 5);
     await seek.press('End'); assert.equal(await video.evaluate(element => element.currentTime), 100);
     await seek.press('Home'); assert.equal(await video.evaluate(element => element.currentTime), 0);
-    await page.getByRole('button', { name: 'Mute ' + title, exact: true }).click();
+    await clickControl(page.getByRole('button', { name: 'Mute ' + title, exact: true }));
     await page.getByRole('button', { name: 'Unmute ' + title, exact: true }).waitFor();
     await page.waitForFunction(() => document.querySelector('main video')?.muted === true);
     assert.equal(await video.evaluate(element => element.muted), true);
-    await page.getByRole('button', { name: 'Pause ' + title, exact: true }).click();
+    await clickControl(page.getByRole('button', { name: 'Pause ' + title, exact: true }));
     await page.getByRole('button', { name: 'Play ' + title, exact: true }).waitFor();
     await video.dispatchEvent('error'); await page.getByText('Video is unavailable. Please try again later.', { exact: true }).waitFor();
     checks.push('Video rejection, play/pause, keyboard seeking, mute and media-error controls (media mocked)');
@@ -120,13 +121,13 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert.equal(await menu.getAttribute('inert'), '');
     const menuLinks = await menu.locator('a[href^="/"]').evaluateAll(elements => elements.map(element => element.getAttribute('href')));
     for (const href of menuLinks) {
-      await page.getByRole('button', { name: 'Open menu', exact: true }).click();
-      await menu.locator(`a[href=${JSON.stringify(href)}]`).click();
+      await clickControl(page.getByRole('button', { name: 'Open menu', exact: true }));
+      await clickControl(menu.locator(`a[href=${JSON.stringify(href)}]`));
       await page.waitForURL(url => url.pathname === href, { waitUntil: "domcontentloaded" });
       assert.equal(await page.getByRole('button', { name: 'Open menu', exact: true }).getAttribute('aria-expanded'), 'false');
     }
     checks.push('All ' + menuLinks.length + ' mobile menu destinations and close-on-navigation');
-    await page.getByRole('button', { name: 'Help', exact: true }).click();
+    await clickControl(page.getByRole('button', { name: 'Help', exact: true }));
     const helper = page.getByRole('dialog', { name: 'Page help' });
     await helper.getByLabel('Helper question', { exact: true }).press('Escape'); assert.equal(await helper.count(), 0);
     checks.push('Mobile helper Escape');

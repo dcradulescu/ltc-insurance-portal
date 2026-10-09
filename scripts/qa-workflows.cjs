@@ -1,3 +1,4 @@
+const { clickControl } = require('./qa-browser-helpers.cjs');
 // Production frontend regression checks. All private data and delivery calls are mocked.
 // Only pdfDelivery.generatePdf reaches the local server. No live messages are sent.
 // Build first; provide Playwright via PLAYWRIGHT_MODULE or a local playwright installation.
@@ -90,9 +91,9 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
     }
     {
       const { page, state } = await setup('/profile');
-      await page.getByRole('button', { name: 'Edit', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Edit', exact: true }));
       await page.getByLabel('Display Name').fill('   ');
-      await page.getByRole('button', { name: 'Save Changes' }).click();
+      await clickControl(page.getByRole('button', { name: 'Save Changes' }));
       await page.getByText('Name is required.', { exact: true }).waitFor();
       assert.equal(state.calls.filter(call => call.name === 'auth.updateProfile').length, 0);
       await page.getByLabel('Display Name').fill('New McDonald');
@@ -103,24 +104,24 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       assert(state.calls.filter(call => call.name === 'auth.getProfile').length > queries, 'Profile refetch occurred during editing');
       assert.equal(await page.getByLabel('Display Name').inputValue(), 'New McDonald');
       await page.getByLabel('Email Address', { exact: true }).fill(' new@example.com ');
-      await page.getByRole('button', { name: 'Save Changes' }).click();
+      await clickControl(page.getByRole('button', { name: 'Save Changes' }));
       await page.getByText('Profile updated successfully', { exact: true }).waitFor();
       assert.equal(state.profile.email, 'new@example.com');
       await page.reload({ waitUntil: "domcontentloaded" }); await page.getByText('New McDonald', { exact: true }).waitFor();
-      await page.getByRole('button', { name: 'Add Contact', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Add Contact', exact: true }));
       await page.locator('#new-name').fill('Care Partner'); await page.locator('#new-email').fill('partner@example.com'); await page.locator('#new-relationship').fill('Sibling');
-      await page.getByRole('button', { name: 'Add Contact', exact: true }).click();
-      await page.getByRole('button', { name: 'Edit Care Partner' }).click();
+      await clickControl(page.getByRole('button', { name: 'Add Contact', exact: true }));
+      await clickControl(page.getByRole('button', { name: 'Edit Care Partner' }));
       await page.getByLabel('Relationship (optional)', { exact: true }).fill('');
-      await page.getByRole('button', { name: 'Save', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Save', exact: true }));
       await page.getByText('Contact updated', { exact: true }).waitFor(); assert.equal(state.contacts[0].relationship, '');
-      await page.getByRole('switch', { name: 'CC preference for Care Partner' }).click();
+      await clickControl(page.getByRole('switch', { name: 'CC preference for Care Partner' }));
       await page.waitForFunction(() => document.querySelector('[aria-label="CC preference for Care Partner"]').getAttribute('aria-checked') === 'false');
       state.fail = 'auth.updateProfile';
-      await page.getByRole('switch', { name: 'New policy notification preference' }).click();
+      await clickControl(page.getByRole('switch', { name: 'New policy notification preference' }));
       await page.getByText('Failed to save notification preference', { exact: true }).waitFor();
       assert.equal(await page.getByRole('switch', { name: 'New policy notification preference' }).getAttribute('aria-checked'), 'true');
-      await page.getByRole('button', { name: 'Remove Care Partner' }).click();
+      await clickControl(page.getByRole('button', { name: 'Remove Care Partner' }));
       await page.getByText('Contact removed', { exact: true }).waitFor(); assert.equal(state.contacts.length, 0);
       await finish(page, state, 'Profile edits survive refetch; save/reload, contact add/edit/clear/CC/delete and preference rollback');
     }
@@ -133,14 +134,14 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
     {
       const { page, state } = await setup('/contact', { fail: 'email.sendContactForm' });
       await page.getByLabel('Full Name *').fill(' Person '); await page.getByLabel('Email Address *').fill('person@example.com'); await page.getByLabel('Message *').fill('   ');
-      await page.getByRole('button', { name: 'Send Message', exact: true }).click(); await page.getByText('Message is required.', { exact: true }).waitFor();
+      await clickControl(page.getByRole('button', { name: 'Send Message', exact: true })); await page.getByText('Message is required.', { exact: true }).waitFor();
       assert.equal(state.calls.filter(call => call.name === 'email.sendContactForm').length, 0);
       await page.getByLabel('Message *').fill(' Please help with my policy. ');
-      await page.getByRole('button', { name: 'Send Message', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Send Message', exact: true }));
       assert(await page.getByLabel('Message *').isDisabled());
       await page.getByText('Failed to send message. Please try again.', { exact: true }).waitFor();
       assert.equal(await page.getByLabel('Message *').inputValue(), ' Please help with my policy. ');
-      state.fail = ''; await page.getByRole('button', { name: 'Send Message', exact: true }).click();
+      state.fail = ''; await clickControl(page.getByRole('button', { name: 'Send Message', exact: true }));
       await page.getByText("Your message was accepted for delivery. We'll get back to you soon!", { exact: true }).waitFor();
       assert.equal(await page.getByLabel('Message *').inputValue(), '');
       assert.equal(state.calls.filter(call => call.name === 'email.sendContactForm').at(-1).input.message, 'Please help with my policy.');
@@ -155,43 +156,43 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
     }
     {
       const { page, state } = await setup('/strategy', { noStrategy: true, blocked: true, width: 1440 });
-      await page.getByRole('button', { name: 'Generate My Strategy', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Generate My Strategy', exact: true }));
       await page.getByRole('heading', { name: 'Your Personalized Strategy', exact: true }).waitFor();
       assert.equal(state.calls.find(call => call.name === 'strategy.generate').input.policyId, 7);
       assert(state.calls.filter(call => call.name === 'strategy.getByPolicy').every(call => call.input.policyId === 7));
-      await page.getByRole('button', { name: 'Checklist', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Checklist', exact: true }));
       const task = page.locator('label').filter({ hasText: 'Call test carrier' }).getByRole('checkbox');
       assert.equal(await task.getAttribute('aria-checked'), 'true');
-      await task.click(); await page.waitForFunction(() => [...document.querySelectorAll('label')].find(node => node.textContent.includes('Call test carrier'))?.querySelector('[role="checkbox"]')?.getAttribute('aria-checked') === 'false');
-      await page.reload({ waitUntil: "domcontentloaded" }); await page.getByRole('button', { name: 'Checklist', exact: true }).click();
+      await clickControl(task); await page.waitForFunction(() => [...document.querySelectorAll('label')].find(node => node.textContent.includes('Call test carrier'))?.querySelector('[role="checkbox"]')?.getAttribute('aria-checked') === 'false');
+      await page.reload({ waitUntil: "domcontentloaded" }); await clickControl(page.getByRole('button', { name: 'Checklist', exact: true }));
       assert.equal(await task.getAttribute('aria-checked'), 'false');
-      state.fail = 'strategy.saveTaskCompletion'; await task.click(); await page.getByText('Failed to update task.', { exact: true }).waitFor(); assert.equal(await task.getAttribute('aria-checked'), 'false');
+      state.fail = 'strategy.saveTaskCompletion'; await clickControl(task); await page.getByText('Failed to update task.', { exact: true }).waitFor(); assert.equal(await task.getAttribute('aria-checked'), 'false');
       state.fail = '';
       await finish(page, state, 'Saved-policy generation with blocked storage; task unchecking persists after reload and failed updates stay unchanged');
     }
     {
       const { page, state } = await setup('/strategy');
-      await page.getByRole('button', { name: 'Downloads', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Downloads', exact: true }));
       for (const [label, filename] of [['Download as PDF', 'strategy-primary.pdf'], ['Download Your Strategy PDF', 'strategy-panel.pdf']]) {
         const downloadPromise = page.waitForEvent('download');
-        await page.getByRole('button', { name: label, exact: label !== 'Download as PDF' }).click();
+        await clickControl(page.getByRole('button', { name: label, exact: label !== 'Download as PDF' }));
         const download = await downloadPromise;
         const destination = path.join(output, filename);
         await download.saveAs(destination);
         const bytes = await readFile(destination);
         assert.equal(bytes.subarray(0, 5).toString(), '%PDF-'); assert(bytes.length > 10000);
       }
-      await page.getByRole('button', { name: 'Email to Someone', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Email to Someone', exact: true }));
       await page.getByLabel("Recipient's Email Address *").fill('bad'); await page.getByLabel("Recipient's Name *").fill('Recipient');
-      await page.getByRole('button', { name: 'Send Strategy PDF by Email', exact: true }).click(); await page.getByText('Please enter a valid recipient email and name', { exact: true }).waitFor();
+      await clickControl(page.getByRole('button', { name: 'Send Strategy PDF by Email', exact: true })); await page.getByText('Please enter a valid recipient email and name', { exact: true }).waitFor();
       assert.equal(state.calls.filter(call => call.name === 'pdfDelivery.sendPdfByEmail').length, 0);
       await page.getByLabel("Recipient's Email Address *").fill('recipient@example.com');
-      await page.getByRole('button', { name: 'Send Strategy PDF by Email', exact: true }).click(); await page.getByText('Accepted for email delivery. Inbox arrival is not yet confirmed.', { exact: true }).waitFor();
-      await page.getByRole('button', { name: 'Send My Plan', exact: true }).click(); await page.getByRole('button', { name: /Email Strategy/ }).click();
-      await page.locator('#email-0').fill('person@example.com'); await page.getByRole('button', { name: 'Add Another Recipient' }).click(); await page.locator('#email-1').fill('bad');
-      await page.getByRole('button', { name: 'Send Strategy', exact: true }).click(); await page.getByText('Enter a valid address for every recipient (maximum 10).', { exact: true }).waitFor();
+      await clickControl(page.getByRole('button', { name: 'Send Strategy PDF by Email', exact: true })); await page.getByText('Accepted for email delivery. Inbox arrival is not yet confirmed.', { exact: true }).waitFor();
+      await clickControl(page.getByRole('button', { name: 'Send My Plan', exact: true })); await clickControl(page.getByRole('button', { name: /Email Strategy/ }));
+      await page.locator('#email-0').fill('person@example.com'); await clickControl(page.getByRole('button', { name: 'Add Another Recipient' })); await page.locator('#email-1').fill('bad');
+      await clickControl(page.getByRole('button', { name: 'Send Strategy', exact: true })); await page.getByText('Enter a valid address for every recipient (maximum 10).', { exact: true }).waitFor();
       assert.equal(state.calls.filter(call => call.name === 'email.sendStrategy').length, 0);
-      await page.locator('#email-1').fill(' PERSON@example.com '); await page.getByRole('button', { name: 'Send Strategy', exact: true }).click();
+      await page.locator('#email-1').fill(' PERSON@example.com '); await clickControl(page.getByRole('button', { name: 'Send Strategy', exact: true }));
       await page.getByRole('dialog').waitFor({ state: 'hidden' }); assert.deepEqual(state.calls.find(call => call.name === 'email.sendStrategy').input.recipients, ['person@example.com']);
       await finish(page, state, 'Both Strategy download controls return actual local-server PDFs; email validation, acceptance and recipient deduplication');
     }
@@ -208,9 +209,9 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       const invalid = async id => { await page.locator(`#${id}[aria-invalid="true"]`).waitFor(); };
       const reenter = async number => {
         const saved = await page.evaluate(() => localStorage.getItem('ltc_policy_form'));
-        await page.getByRole('navigation', { name: 'Your LTC journey' }).getByRole('link', { name: 'Get support' }).click();
+        await clickControl(page.getByRole('navigation', { name: 'Your LTC journey' }).getByRole('link', { name: 'Get support' }));
         await page.waitForURL('**/contact', { waitUntil: "domcontentloaded" });
-        await page.getByRole('navigation', { name: 'Your LTC journey' }).getByRole('link', { name: 'Your policy' }).click();
+        await clickControl(page.getByRole('navigation', { name: 'Your LTC journey' }).getByRole('link', { name: 'Your policy' }));
         await checkStep(number); await page.reload({ waitUntil: "domcontentloaded" }); await checkStep(number);
         assert.equal(await page.evaluate(() => localStorage.getItem('ltc_policy_form')), saved);
       };
@@ -230,7 +231,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       await page.locator('#eliminationPeriod').fill('0');
       assert.equal(await page.locator('#dailyMaximum').inputValue(), '$250.50');
       for (const id of ['waiverOfPremium','assignmentOfBenefits','cognitiveImpairmentTrigger']) {
-        await page.locator('#'+id).click(); await page.getByRole('option', { name: 'No', exact: true }).click();
+        await clickControl(page.locator('#'+id)); await clickControl(page.getByRole('option', { name: 'No', exact: true }));
       }
       await reenter(4); await next(); await checkStep(5); await next();
       await invalid('careNeeds'); await invalid('diagnosisCheckboxes');
@@ -239,7 +240,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       await reenter(5); await next(); await checkStep(6); await reenter(6);
       await page.locator('#policy-step-heading').scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(output, `wizard-review-${width}.png`) });
-      await page.getByRole('button', { name: 'Generate Strategy', exact: true }).click();
+      await clickControl(page.getByRole('button', { name: 'Generate Strategy', exact: true }));
       await page.waitForURL('**/strategy', { waitUntil: "domcontentloaded" });
       const saves=state.calls.filter(call=>call.name==='policy.save');
       assert(saves[0].input.id==null); assert(saves.slice(1).every(call=>call.input.id===7));
