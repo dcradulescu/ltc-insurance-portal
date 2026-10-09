@@ -1,3 +1,4 @@
+import { enterVideoFullscreen } from "@/lib/videoFullscreen";
 import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
 
@@ -66,12 +67,10 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
     }
   }, []);
 
-  const handleFullscreen = useCallback(() => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        void videoRef.current.requestFullscreen().catch(() => setPlaybackError("Fullscreen is unavailable in this browser."));
-      }
-    }
+  const handleFullscreen = useCallback(async () => {
+    if (!videoRef.current) return;
+    try { await enterVideoFullscreen(videoRef.current); }
+    catch { setPlaybackError("Fullscreen is unavailable in this browser."); }
   }, []);
 
   const handleEnded = useCallback(() => {

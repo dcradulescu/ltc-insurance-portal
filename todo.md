@@ -971,3 +971,6 @@
 
 ## Current development requests — UI/UX retained
 - [x] Create a complete inventory of mocked integrations that require real production connections, including configuration, implementation gaps and acceptance checks — see docs/PRODUCTION_INTEGRATIONS.md and docs/PRODUCTION_INTEGRATIONS.csv (37 registered procedures; 39 records including 14 removed/dormant exceptions).
+
+- [x] Verify and repair required-field validation, sequential timeline progress and saved-step re-entry in the active policy wizard while retaining the existing design — see docs/DEVELOPMENT_REVIEW.md (32 local/fixture scenarios; live database and inbox acceptance remain open).
+- [ ] Complete cross-browser compatibility certification and identify applicable browser modules across standard mobile/tablet/PC sizes — Chromium passes eight emulated sizes; Firefox/WebKit runtime blockers and the GitHub runner matrix are documented in docs/DEVELOPMENT_REVIEW.md. Physical-device acceptance remains open.

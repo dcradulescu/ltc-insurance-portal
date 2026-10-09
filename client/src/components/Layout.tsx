@@ -111,7 +111,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </a>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-0">
+          <nav className="hidden lg:flex items-center gap-0">
             {navLinks.map((link) => {
               const isActive = location === link.href;
               return (
@@ -156,7 +156,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded transition-all duration-200"
+            className="lg:hidden p-2 rounded transition-all duration-200"
             style={{ color: "#454545" }}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileMenuOpen}
@@ -173,7 +173,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div
           id="mobile-navigation"
           inert={!mobileMenuOpen}
-          className={`md:hidden bg-white overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`lg:hidden bg-white overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           }`}
           style={{ borderTop: "1px solid #e0dede" }}

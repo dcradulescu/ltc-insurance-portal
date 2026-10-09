@@ -219,6 +219,7 @@ describe("strategy.generate", () => {
     // First create a policy
     const policy = await caller.policy.save({
       insuredFullName: "Alice Johnson",
+      minAdlsRequired: "2", waiverOfPremium: "no", assignmentOfBenefits: "no", cognitiveImpairmentTrigger: "yes",
       carrierName: "John Hancock",
       policyNumber: "JH-99999",
       dailyMaximum: "$200",

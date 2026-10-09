@@ -1,7 +1,9 @@
 // Production frontend regression checks. All private data and delivery calls are mocked.
 // Only pdfDelivery.generatePdf reaches the local server. No live messages are sent.
 // Build first; provide Playwright via PLAYWRIGHT_MODULE or a local playwright installation.
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const browserName = process.env.QA_BROWSER || 'chromium';
+if (!['chromium', 'firefox', 'webkit'].includes(browserName)) throw new Error('Unsupported QA_BROWSER: ' + browserName);
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { readFile, mkdir } = require('node:fs/promises');
@@ -11,7 +13,7 @@ const output = process.env.QA_OUTPUT_DIR || path.join(root, '.qa-workflows');
 const port = process.env.QA_PORT || '3012';
 const origin = `http://localhost:${port}`;
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
-const policy = { id: 7, userId: 11, insuredFullName: 'Saved Person', insuredEmail: 'saved@example.com', insuredPhone: '8642446300', carrierName: 'QA Carrier', policyNumber: 'QA-ONLY-7', eliminationPeriod: '0', dailyMaximum: '$250', lifetimeMaximum: '$100,000', careNeeds: ['NoneADL'], diagnosisCheckboxes: ['Other'], minAdlsRequired: '2', cognitiveImpairmentTrigger: 'yes' };
+const policy = { id: 7, userId: 11, insuredFullName: 'Saved Person', insuredEmail: 'saved@example.com', insuredPhone: '8642446300', carrierName: 'QA Carrier', policyNumber: 'QA-ONLY-7', eliminationPeriod: '0', dailyMaximum: '$250', lifetimeMaximum: '$100,000', careNeeds: ['NoneADL'], diagnosisCheckboxes: ['Other'], minAdlsRequired: '2', cognitiveImpairmentTrigger: 'yes', waiverOfPremium: 'no', assignmentOfBenefits: 'no' };
 const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2>QA strategy</h2>', strategyHtml: '<h2>QA strategy</h2>', currentStage: 1, stage1Tasks: [{ id: 's1-1', label: 'Call test carrier', category: 'carrier-contact', completed: true }, { id: 's1-2', label: 'Collect test record', category: 'documents', completed: false }], stage2Tasks: [], stage3Tasks: [] };
 
 (async () => {
@@ -27,7 +29,8 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       await pause(100);
     }
     assert(ready, 'Local production server failed to start');
-    browser = await chromium.launch({ args: ['--no-sandbox'] });
+    browser = await playwright[browserName].launch(browserName === 'chromium' ? { args: ['--no-sandbox'] } : {});
+    console.log(JSON.stringify({ browser: browserName, version: browser.version() }));
     async function setup(routeName, options = {}) {
       const page = await browser.newPage({ viewport: { width: options.width || 390, height: 900 } });
       page.setDefaultTimeout(8000);

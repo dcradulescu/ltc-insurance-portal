@@ -166,3 +166,70 @@ Backend repairs made during the audit:
 Verification: **165 tests pass across 19 files, no skips**; TypeScript and production client/server build pass. Added 24 focused regression cases across OAuth, SMS and knowledge retrieval. The RAG dry-run script executes and accurately states that it makes no database writes. The existing bundle-size warning remains. Frontend/browser suites were not rerun because no client files changed; their prior evidence and limitations remain in the preceding section.
 
 Accounting: the original 61 open requirements remain **29 completed / 32 open**. The new inventory request is a separate completed item, bringing the ledger to **732 entries**. The 670 inherited checks are still not broadly certified; two intentional upload-removal entries were specifically reverified. Inventory completion does not mean production integration completion. No live messages, database migrations, merge or deployment were performed.
+
+
+## Continuation — wizard validation, recovery and browser/device compatibility
+
+Canonical GitHub head `7a76fa9` was verified before editing. The user requested a step-by-step UI walkthrough, required-field validation, synchronized progress, reliable re-entry, and then cross-browser and mobile/tablet/PC compatibility checks. Existing page structure, artwork references, colors and typography are retained. Functional changes use the existing controls and feedback. At tablet widths, the existing collapsed navigation now remains active below 1024px: screenshot review found that the previous 768px breakpoint crowded the brand and links even though the document had no horizontal overflow.
+
+### Six-step walkthrough
+
+| Step | Required input and validation | Transition/re-entry result |
+|---|---|---|
+| 1 — Insured Person | Full name; valid email; 10-digit US phone (optional leading 1). Optional DOB must be a real nonfuture date; supplied state and ZIP must match the displayed US formats. POA details remain optional. | Blank/invalid entries stop Next, focus the error and remain editable. Name casing and typed values persist. |
+| 2 — LTC Ins Company | Carrier name. Supplied phone/fax, state and ZIP are validated; blank optional contacts/addresses remain allowed. | Blank carrier and malformed optional contact fields block progression. |
+| 3 — Policy Info | Policy number. Claim number, case-manager and packet instructions remain optional. | Missing policy number blocks Next; conditional case-manager edits survive re-entry. |
+| 4 — Coverage Details | Positive daily/lifetime limits; whole elimination days 0–999; ADL count 0–6; explicit waiver, AOB and cognitive-trigger Yes/No. Care Notes Required is mandatory only while Home Care Covered is Yes. Optional monthly limits and visible day overrides are checked; days-per-week is 1–7. | Previously unanswered selects no longer display an unsaved No/Yes. Currency formats on blur without losing typed digits. Negative/fractional day inputs are retained for correction rather than stripped into different values. |
+| 5 — Care Needs | At least one nonblank diagnosis/condition and an ADL selection or explicit None. None cannot coexist with a selected ADL. | Required checkbox collections have focusable, labelled error targets. The existing informational ADL advisory supports both exiting and continuing. This is input validation, not coverage determination. |
+| 6 — Review & Submit | Rechecks steps 1–5 before the final save. Review includes the actual address parts, email and phone entered. | Valid save goes to Strategy. Failed save stays on Review, preserves answers and does not claim office delivery. |
+
+There are **14 always-required controls/groups and one conditionally required choice** in the active wizard. Optional POA, case-manager and notes fields were not made mandatory. Dormant inflation metadata has no editable control in this wizard and no longer creates an invisible navigation blocker; this does not certify legacy metadata or actuarial calculations.
+
+The step label, bar width, accessible progress value and current-step marker now use the same six-step position. The percentage is labelled “through steps”; it does not imply submission or delivery. The unrelated “Step 2 of 3” label was removed. Future steps remain disabled; earlier steps can be revisited. Navigation clears old-step errors, focuses the new step and keeps the form in view. Repeated validation uses inline errors; the duplicate toast that could cover mobile Next was removed.
+
+Local and emailed recovery data now reopen no later than the first invalid prerequisite. Orphaned step keys cannot open an empty Review page. Incomplete current steps still reopen at that current step. Expired links preserve the local draft, late server/recovery responses preserve current edits, and recovery data cannot restore another record's IDs. Blocked local storage is reported accurately, including in exit/email dialogs. Email wording describes a saved-step link and provider acceptance without claiming inbox arrival.
+
+### Browser identification and module mapping
+
+Browser plugin not available; regular Playwright 1.56.1 was used against the production client/server build. Browser identity and capabilities were measured in the page; a spoofed browser name was not used to claim another engine passed.
+
+| Browser/engine | Observed result | Remaining gate |
+|---|---|---|
+| Chromium 141.0.7390.37, Linux headless | Complete local wizard, interaction and device matrix passed. Runtime UA/brands identify HeadlessChrome/Chromium 141. | This is not a branded Chrome/Edge, Windows or Android installation test. |
+| Firefox 142.0.1 | Binary installed and engine handshake completed; content-page creation failed. Runtime reported `Sandbox: writing /proc/self/uid_map: EPERM` and child-process exits. | Execute the GitHub runner matrix; no Firefox UI pass is claimed here. |
+| WebKit 26.0, build 2215 | Downloaded; launch blocked by missing GTK/GStreamer and other system libraries. System dependency installation failed on setgroups/setuid permissions. | Execute the GitHub runner matrix; no Safari/WebKit UI pass is claimed here. |
+| Physical iPhone/iPad, Android and Windows/macOS devices | No physical devices attached. | Real OS keyboards, touch, native sharing, native video fullscreen and downloads remain acceptance work. |
+
+| Module / browser capability | Behavior and verification |
+|---|---|
+| `PolicyForm.tsx`, `policyFormState.ts` / browser storage | Real localStorage save/read, corrupted data, blocked storage, route exit, reload and closed-tab re-entry tested. Private online persistence and recovery APIs used fixtures. |
+| `Layout.tsx`, `JourneyNavigation.tsx`, `RouteScroll.tsx` / layout, inert and history | Current route/step states, existing mobile menu and header bounding boxes checked. Tablet header collision repaired with the existing menu breakpoint. |
+| `shareResource.ts` / Web Share and Clipboard | Chooses APIs by capability; copy success, denied clipboard and cancelled sharing are fixture-tested. Real OS share sheets remain unverified. |
+| `VideoPlaceholder.tsx`, `videoFullscreen.ts` / standard or native fullscreen | Prefers `requestFullscreen`; falls back to `webkitEnterFullscreen` when available. Unsupported and rejected calls reach existing feedback. Five unit regressions cover capability selection and failures; actual WebKit native fullscreen remains unverified. |
+| `downloadResource.ts`, `PdfDeliveryPanel.tsx`, `Strategy.tsx` / Blob downloads | Both strategy buttons downloaded real PDFs from the local server. Cross-engine native download handling awaits runner/device evidence. |
+| `useMobile.tsx`, styles / matchMedia, modern CSS | Chromium reports media-query events, inert, OKLCH and dynamic viewport units. Eight width/height combinations exercise existing responsive layouts. |
+| `formPersistence.ts` / device identification | Existing user-agent-derived `isMobile` is submission metadata only. Behavior uses viewport/capability checks; it is not reliable proof of a physical device model, particularly desktop-mode tablets. |
+| `TermsGate.tsx`, `ThemeContext.tsx`, legacy components | Terms storage failure is guarded. Theme switching is disabled in the mounted app; dormant legacy forms/exporters are outside this active-wizard certification. |
+
+### Standard-size matrix and evidence
+
+| Device class (emulated) | CSS viewport | Touch / scale | Result |
+|---|---|---|---|
+| Small mobile | 360 × 800 | Touch, DPR 3 | 24 routes + 6 wizard steps pass |
+| Mobile | 390 × 844 | Touch, DPR 3 | 24 routes + 6 wizard steps pass |
+| Large mobile | 414 × 896 | Touch, DPR 3 | 24 routes + 6 wizard steps pass |
+| Tablet portrait | 768 × 1024 | Touch, DPR 2 | 24 routes + 6 wizard steps pass |
+| Large tablet portrait | 820 × 1180 | Touch, DPR 2 | 24 routes + 6 wizard steps pass |
+| Tablet landscape | 1024 × 768 | Touch, DPR 2 | 24 routes + 6 wizard steps pass |
+| Laptop | 1366 × 768 | Mouse, DPR 1 | 24 routes + 6 wizard steps pass |
+| Desktop | 1920 × 1080 | Mouse, DPR 1 | 24 routes + 6 wizard steps pass |
+
+The matrix checks page title/heading, no blank/framework error screen, no uncaught page errors, no horizontal overflow, header collision and step state. This totals **192 route states and 48 wizard states**. Touch contexts report coarse pointer/no hover; desktop contexts report mouse/hover. Screenshot inspection found and verified the tablet-header correction. Emoji glyphs are missing from this runner's font environment, and external media/fonts were blocked in fixture runs: screenshot evidence does not certify those assets or original video playback.
+
+The detailed walkthrough independently passed **32 scenarios**, including all six steps at 1440×900, 768×1024 and 390×844. Each of the 18 step/viewport combinations preserved the draft through route exit, reload and closing/reopening a tab (54 re-entry actions). It also covered malformed values, conditional fields, typed currency, tooltip interaction, step backtracking, save failure, emailed resume data, stale/corrupt/expired recovery, late responses, blocked storage and both ADL-advisory choices. API fixtures never send live messages. One expected mutation-error console entry from deliberate save failure was distinguished from application errors.
+
+**204 unit/integration tests pass across 20 files, no skips.** TypeScript and the production build pass. The six existing workflow scenarios and 14 existing interaction checks also pass; the existing large client-chunk warning remains. Browser scripts now accept `QA_BROWSER=chromium|firefox|webkit` and report the engine version. The new `Browser compatibility` GitHub Actions workflow installs isolated pinned Playwright tooling and runs navigation at 1440/768/390, workflows and interactions for each engine. Hosted-run results are pending publication/runner execution; configuring a workflow is not a passing cross-browser result.
+
+Key local commands: `tsc --noEmit`, `vitest run`, `vite build`, `esbuild server/_core/index.ts`, `node scripts/qa-workflows.cjs`, `node scripts/qa-interactions.cjs`, and temporary wizard/device Playwright scripts outside the checkout. Temporary logs/screenshots are kept outside committed source. No production dependency, theme or artwork change was made.
+
+The original 61-item ledger remains **29 complete / 32 open**. Original items 864, 871 and 899 retain the live-video/recovery, broader device/asset and real-database gates. The new browser-wizard request is complete within the stated local/fixture scope; the separate cross-browser certification request remains open pending usable Firefox/WebKit evidence. Including the earlier integration-inventory request, the ledger now has **734 entries**. No live messages, migration, main merge or deployment was performed.

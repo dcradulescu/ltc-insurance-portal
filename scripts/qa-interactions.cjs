@@ -1,6 +1,8 @@
 // Focused regressions for existing chat, sharing, menu and video controls.
 // Private data, model responses and browser media APIs are fixtures; no messages leave this process.
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const browserName = process.env.QA_BROWSER || 'chromium';
+if (!['chromium', 'firefox', 'webkit'].includes(browserName)) throw new Error('Unsupported QA_BROWSER: ' + browserName);
 const { spawn } = require('node:child_process');
 const fs = require('node:fs/promises');
 const path = require('node:path');
@@ -18,7 +20,8 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     let ready = false;
     for (let i = 0; i < 50; i++) { try { ready = (await fetch(origin + '/healthz')).ok; } catch {} if (ready) break; await pause(100); }
     assert(ready, 'Server unavailable');
-    browser = await chromium.launch({ args: ['--no-sandbox'] });
+    browser = await playwright[browserName].launch(browserName === 'chromium' ? { args: ['--no-sandbox'] } : {});
+    console.log(JSON.stringify({ browser: browserName, version: browser.version() }));
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     page.setDefaultTimeout(8000);
     page.on('pageerror', error => errors.push(error.message));

@@ -18,7 +18,7 @@ const policy = {
   id: 7, userId: 11, insuredFullName: 'Saved person', insuredEmail: 'person@example.com',
   insuredPhone: '8642446300', carrierName: 'Test carrier', policyNumber: 'TEST-7',
   eliminationPeriod: '0', dailyMaximum: '$250', lifetimeMaximum: '$100,000',
-  minAdlsRequired: '2', cognitiveImpairmentTrigger: 'yes',
+  minAdlsRequired: '2', cognitiveImpairmentTrigger: 'yes', waiverOfPremium: 'no', assignmentOfBenefits: 'no',
   equipmentAllowance: JSON.stringify({ careNeeds: ['NoneADL'], diagnosisCheckboxes: ['Other'] }),
 };
 const caller = (id = 11) => appRouter.createCaller({ user: { id }, req: { headers: {} }, res: {} } as TrpcContext);
@@ -81,6 +81,11 @@ describe('strategy saved state', () => {
   it('rejects incomplete saved policies before invoking a model', async () => {
     vi.mocked(db.getPolicyById).mockResolvedValue({ ...policy, dailyMaximum: '-10' } as any);
     await expect(caller().strategy.generate({ policyId: 7 })).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    expect(invokeLLM).not.toHaveBeenCalled();
+  });
+  it.each(['waiverOfPremium','assignmentOfBenefits','cognitiveImpairmentTrigger','minAdlsRequired'])('rejects an unanswered required policy choice before invoking a model: %s',async field=>{
+    vi.mocked(db.getPolicyById).mockResolvedValue({...policy,[field]:''} as any);
+    await expect(caller().strategy.generate({policyId:7})).rejects.toMatchObject({code:'BAD_REQUEST'});
     expect(invokeLLM).not.toHaveBeenCalled();
   });
   it('does not generate or modify another visitor strategy', async () => {

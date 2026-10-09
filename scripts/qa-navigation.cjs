@@ -1,6 +1,8 @@
 // Checks every rendered route and every unique internal link transition at each viewport.
 // All private data and chat requests are fixtures. No live messages are sent.
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const browserName = process.env.QA_BROWSER || 'chromium';
+if (!['chromium', 'firefox', 'webkit'].includes(browserName)) throw new Error('Unsupported QA_BROWSER: ' + browserName);
 const { spawn } = require('node:child_process');
 const fs = require('node:fs/promises');
 const path = require('node:path');
@@ -21,7 +23,8 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
     let ready = false;
     for (let i = 0; i < 50; i++) { try { ready = (await fetch(origin + '/healthz')).ok; } catch {} if (ready) break; await pause(100); }
     assert(ready, 'Server unavailable');
-    browser = await chromium.launch({ args: ['--no-sandbox'] });
+    browser = await playwright[browserName].launch(browserName === 'chromium' ? { args: ['--no-sandbox'] } : {});
+    console.log(JSON.stringify({ browser: browserName, version: browser.version() }));
     for (const width of (process.env.QA_WIDTHS || '1440,768,390').split(',').map(Number)) {
       const page = await browser.newPage({ viewport: { width, height: 900 } });
       page.setDefaultTimeout(8000);
@@ -55,6 +58,13 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
         await page.goto(origin + source); await page.locator('h1').first().waitFor();
         assert(await page.title(), `Missing title: ${source}`);
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Document overflow ${source} at ${width}`);
+        assert(await page.evaluate(() => {
+          const row = document.querySelector('header > div');
+          const logo = row?.querySelector('a'), nav = row?.querySelector('nav');
+          if (!row || !logo || !nav) return false;
+          const bounds = row.getBoundingClientRect(), brand = logo.getBoundingClientRect(), links = nav.getBoundingClientRect();
+          return brand.top >= bounds.top - 1 && brand.bottom <= bounds.bottom + 1 && (!links.width || brand.right <= links.left + 1);
+        }), `Header overlap ${source} at ${width}`);
         const links = await page.locator('a[href]').evaluateAll(elements => elements.map(element => ({ raw: element.getAttribute('href'), url: element.href, label: element.textContent.trim() })));
         for (const link of links) {
           assert(link.raw !== '#', `Placeholder link on ${source}: ${link.label}`);
