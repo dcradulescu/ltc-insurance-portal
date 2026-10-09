@@ -33,7 +33,8 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       const calls = [];
       page.on('pageerror', error => result.errors.push({ width, route: new URL(page.url()).pathname, message: error.message }));
       await page.addInitScript(() => { localStorage.setItem('ltc_terms_accepted_v1', 'true'); window.__copiedLinks = []; Object.defineProperty(navigator, 'share', { configurable: true, value: undefined }); Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__copiedLinks.push(text); } } }); });
-      await page.route('https://**/*', route => route.abort());
+      // A completed HTTP failure keeps external assets unavailable without inspector-aborted media requests hanging WebKit navigation.
+      await page.route('https://**/*', route => route.fulfill({ status: 404, contentType: 'text/plain', body: 'External resource unavailable in isolated QA.' }));
       await page.route('**/api/trpc/**', async route => {
         const req = route.request(), url = new URL(req.url());
         const procedures = url.pathname.split('/api/trpc/')[1].split(',');
@@ -165,7 +166,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
   } catch (error) {
     if (activePage && !activePage.isClosed()) {
       await activePage.screenshot({path:path.join(output,'failure.png'),fullPage:true}).catch(()=>{});
-      await fs.writeFile(path.join(output,'failure-state.json'),JSON.stringify(await activePage.evaluate(()=>({url:location.href,title:document.title,scrollY,anchors:Array.from(document.querySelectorAll('[id]')).map(el=>({id:el.id,top:el.getBoundingClientRect().top})).filter(el=>['adl','aob','appeals','elimination-period'].includes(el.id))})).catch(()=>({})),null,2));
+      await fs.writeFile(path.join(output,'failure-state.json'),JSON.stringify(await Promise.race([activePage.evaluate(()=>({url:location.href,title:document.title,scrollY,anchors:Array.from(document.querySelectorAll('[id]')).map(el=>({id:el.id,top:el.getBoundingClientRect().top})).filter(el=>['adl','aob','appeals','elimination-period'].includes(el.id))})).catch(()=>({})),new Promise(resolve=>setTimeout(()=>resolve({diagnostic:'Page evaluation unavailable'}),2000))]),null,2));
     }
     await fs.writeFile(path.join(output, 'partial-results.json'), JSON.stringify(result, null, 2)); console.error(error); process.exitCode = 1; }
   finally { if (browser) await browser.close(); server.kill(); }

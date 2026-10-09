@@ -33,6 +33,7 @@ jobs:
     env:
       QA_BROWSER: ${{ matrix.browser }}
       QA_WIDTHS: '1440,768,390'
+      DEBUG: pw:browser
       DATABASE_URL: ''
       ZAPIER_WEBHOOK_URL: ''
       VITE_ZAPIER_WEBHOOK_URL: ''
@@ -62,6 +63,15 @@ jobs:
       - name: Check workflows and real local PDF downloads
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm test:workflows
+      - name: Retain workflow failure trace immediately
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-failure-${{ matrix.browser }}
+          path: .qa-workflows
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Check sharing, menus, chat, and media fallback behavior
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm test:interactions

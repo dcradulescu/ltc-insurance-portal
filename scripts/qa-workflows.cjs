@@ -44,7 +44,8 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
         if (!wizard) localStorage.setItem('ltc_policy_form', JSON.stringify({ insuredFullName: 'Stale local draft', id: 999 }));
         if (blocked) { Storage.prototype.getItem = function (key) { if (key === 'ltc_terms_accepted_v1') return 'true'; throw new Error('Storage blocked'); }; Storage.prototype.setItem = function () { throw new Error('Storage blocked'); }; }
       }, options);
-      await page.route('https://**/*', route => route.abort());
+      // A completed HTTP failure keeps external assets unavailable without inspector-aborted media requests hanging WebKit navigation.
+      await page.route('https://**/*', route => route.fulfill({ status: 404, contentType: 'text/plain', body: 'External resource unavailable in isolated QA.' }));
       await page.route('**/api/trpc/**', async route => {
         const request = route.request(), url = new URL(request.url());
         const paths = url.pathname.split('/api/trpc/')[1].split(',');
@@ -248,7 +249,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
   } catch (error) {
     if (activePage && !activePage.isClosed()) {
       await activePage.screenshot({ path: path.join(output, 'failure.png'), fullPage: true }).catch(() => {});
-      await writeFile(path.join(output, 'failure-state.json'), JSON.stringify(await activePage.evaluate(() => ({ url: location.href, readyState: document.readyState, heading: document.querySelector('#policy-step-heading')?.textContent, step: localStorage.getItem('ltc_policy_step') })).catch(() => ({})), null, 2));
+      await writeFile(path.join(output, 'failure-state.json'), JSON.stringify(await Promise.race([activePage.evaluate(() => ({ url: location.href, readyState: document.readyState, heading: document.querySelector('#policy-step-heading')?.textContent, step: localStorage.getItem('ltc_policy_step') })).catch(() => ({})), new Promise(resolve => setTimeout(() => resolve({ diagnostic: 'Page evaluation unavailable' }), 2000))]), null, 2));
       await activePage.context().tracing.stop({ path: path.join(output, 'failure-trace.zip') }).catch(() => {});
     }
     console.error(error); console.log(JSON.stringify({ completed: passed }, null, 2)); process.exitCode = 1;

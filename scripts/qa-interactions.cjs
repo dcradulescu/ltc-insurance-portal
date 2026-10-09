@@ -34,7 +34,8 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       HTMLMediaElement.prototype.play = async function () { if (window.__videoMode !== 'success') throw new DOMException('Unsupported media', 'NotSupportedError'); this.dispatchEvent(new Event('play')); };
       HTMLMediaElement.prototype.pause = function () { this.dispatchEvent(new Event('pause')); };
     });
-    await page.route('https://**/*', route => route.abort());
+    // A completed HTTP failure keeps external assets unavailable without inspector-aborted media requests hanging WebKit navigation.
+      await page.route('https://**/*', route => route.fulfill({ status: 404, contentType: 'text/plain', body: 'External resource unavailable in isolated QA.' }));
     await page.route('**/api/trpc/**', async route => {
       const req = route.request(), url = new URL(req.url());
       const procedures = url.pathname.split('/api/trpc/')[1].split(',');
@@ -104,7 +105,10 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await seek.press('ArrowRight'); assert.equal(await video.evaluate(element => element.currentTime), 5);
     await seek.press('End'); assert.equal(await video.evaluate(element => element.currentTime), 100);
     await seek.press('Home'); assert.equal(await video.evaluate(element => element.currentTime), 0);
-    await page.getByRole('button', { name: 'Mute ' + title, exact: true }).click(); assert.equal(await video.evaluate(element => element.muted), true);
+    await page.getByRole('button', { name: 'Mute ' + title, exact: true }).click();
+    await page.getByRole('button', { name: 'Unmute ' + title, exact: true }).waitFor();
+    await page.waitForFunction(() => document.querySelector('main video')?.muted === true);
+    assert.equal(await video.evaluate(element => element.muted), true);
     await page.getByRole('button', { name: 'Pause ' + title, exact: true }).click();
     await page.getByRole('button', { name: 'Play ' + title, exact: true }).waitFor();
     await video.dispatchEvent('error'); await page.getByText('Video is unavailable. Please try again later.', { exact: true }).waitFor();
