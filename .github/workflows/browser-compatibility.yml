@@ -51,7 +51,7 @@ jobs:
           pnpm install --frozen-lockfile
       - name: Install isolated browser tooling
         run: |
-          npm install --prefix "$RUNNER_TEMP/ltc-browser-qa" --no-save playwright@1.56.1
+          npm install --prefix "$RUNNER_TEMP/ltc-browser-qa" --no-save playwright@1.64.0
           node "$RUNNER_TEMP/ltc-browser-qa/node_modules/playwright/cli.js" install --with-deps "$QA_BROWSER"
           echo "PLAYWRIGHT_MODULE=$RUNNER_TEMP/ltc-browser-qa/node_modules/playwright" >> "$GITHUB_ENV"
       - name: Check, test, and build
