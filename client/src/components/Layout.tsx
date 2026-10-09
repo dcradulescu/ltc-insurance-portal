@@ -1,3 +1,4 @@
+import { JourneyNavigation } from "./JourneyNavigation";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Phone, Globe, Share2, ExternalLink } from "lucide-react";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -31,7 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  useEffect(() => { setMobileMenuOpen(false); }, [location]);
+  useEffect(() => { setMobileMenuOpen(false); window.scrollTo({top:0,behavior:"instant"}); }, [location]);
 
   const shareResource = async () => {
     const shareData = {
@@ -221,7 +222,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* ── Main content ── */}
-      <main className="flex-1 lg:mr-[280px]">{children}</main>
+      <main className="flex-1 min-w-0 lg:mr-[280px]"><JourneyNavigation />{children}</main>
 
       {/* ── Right Helper Panel (Video + Downloads + Chat) ── */}
       <RightHelperPanel />
@@ -401,13 +402,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p style={{ fontFamily: "'Open Sans', sans-serif" }}>
               &copy; {new Date().getFullYear()} SC Visiting Angels. All rights reserved.
               &nbsp;·&nbsp;
-              <Link href="/privacy" className="hover:text-[#34B1C4] transition-colors duration-200">Privacy Policy</Link>
+              <Link href="/privacy" className="break-all hover:text-[#34B1C4] transition-colors duration-200">Privacy Policy</Link>
               &nbsp;·&nbsp;
               <a
                 href="https://www.visitingangels.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-[#34B1C4] transition-colors duration-200"
+                className="break-all hover:text-[#34B1C4] transition-colors duration-200"
               >
                 www.visitingangels.com
               </a>
@@ -416,7 +417,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 href="https://www.scvisitingangels.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-[#34B1C4] transition-colors duration-200"
+                className="break-all hover:text-[#34B1C4] transition-colors duration-200"
               >
                 www.scvisitingangels.com
               </a>

@@ -429,13 +429,16 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
 
   const generatePdfMutation = trpc.pdfDelivery.generatePdf.useMutation({
     onSuccess: (data) => {
-      if (data.url) {
+      if (data.base64) {
         const link = document.createElement('a');
-        link.href = data.url;
+        const bytes = Uint8Array.from(atob(data.base64), char => char.charCodeAt(0));
+        const url = URL.createObjectURL(new Blob([bytes], {type: 'application/pdf'}));
+        link.href = url;
         link.download = `LTC-Strategy-${policyData.insuredName.replace(/\s+/g, '-')}.pdf`;
-        link.target = '_blank';
+        link.rel = 'noopener';
         link.click();
-        setStatus({ type: 'success', message: 'PDF downloaded successfully!' });
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        setStatus({ type: 'success', message: 'PDF ready. Your browser download has started.' });
       }
     },
     onError: (error) => {

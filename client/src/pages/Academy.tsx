@@ -21,28 +21,7 @@ const TIMELINE_STEPS = [
 export default function Academy() {
   const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const updateTimeline = () => {
-      const stored = localStorage.getItem('ltc-academy-completed');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          setCompletedVideos(new Set(parsed));
-        } catch (e) {
-          console.error('Failed to parse completion data:', e);
-        }
-      }
-    };
-
-    updateTimeline();
-    window.addEventListener('storage', updateTimeline);
-    const interval = setInterval(updateTimeline, 500);
-
-    return () => {
-      window.removeEventListener('storage', updateTimeline);
-      clearInterval(interval);
-    };
-  }, []);
+  const [activeLesson, setActiveLesson] = useState(0);
 
   return (
     <Layout>
@@ -77,7 +56,7 @@ export default function Academy() {
               <div className="animate-float-up animate-delay-300 flex flex-row gap-3 sm:gap-4 justify-center">
                 <button
                   onClick={() => {
-                    window.open('/ltc-insurance-guide.html', '_blank');
+                    window.open('/ltc-insurance-guide.html', '_blank', 'noopener,noreferrer');
                   }}
                   className="va-btn text-base px-8 py-4 text-center shadow-lg flex items-center justify-center gap-2"
                 >
@@ -120,7 +99,7 @@ export default function Academy() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-4">
             {TIMELINE_STEPS.map((step, idx) => {
               const isCompleted = completedVideos.has('video-' + step.number);
-              const isCurrent = idx === completedVideos.size && completedVideos.size < TOTAL_VIDEOS;
+              const isCurrent = idx === activeLesson;
               
               return (
                 <div key={step.number} className="flex flex-col items-center">
@@ -165,7 +144,7 @@ export default function Academy() {
       </section>
 
       <div id="academy-content">
-        <LTCAcademyPlayer />
+        <LTCAcademyPlayer onLessonChange={setActiveLesson} onProgress={setCompletedVideos} />
       </div>
       {/* Page Navigation */}
       <div className="container max-w-6xl pb-8">

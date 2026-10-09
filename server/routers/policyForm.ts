@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, visitorProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 import {
   getPolicyByUserId, getStrategyByUserId,
@@ -21,7 +21,7 @@ export const policyFormRouter = router({
    * Send the COMPREHENSIVE JSON to Zapier webhook.
    * Called once when user completes strategy, exits, or times out.
    */
-  sendComprehensiveToZapier: publicProcedure
+  sendComprehensiveToZapier: visitorProcedure
     .input(
       z.object({
         trigger: z.enum(["form_completed", "strategy_completed", "exit", "timeout"]),
@@ -42,7 +42,7 @@ export const policyFormRouter = router({
         }
 
         // Default userId for public access
-        const userId = 1;
+        const userId = ctx.user.id;
 
         // ── 1. User Profile ──
         const userProfile = ctx.user
@@ -175,15 +175,12 @@ export const policyFormRouter = router({
           contacts: contactsData,
         };
 
-        console.log(
-          `[Zapier] Sending COMPREHENSIVE payload (trigger: ${input.trigger}) — ` +
-            `user: ${userProfile.name}, policy: ${policyData?.id ?? "none"}, ` +
-            `strategy: ${strategyData?.id ?? "none"}, docs: ${documentsData.length}, contacts: ${contactsData.length}`
-        );
+
 
         const response = await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: AbortSignal.timeout(15_000),
           body: JSON.stringify(payload),
         });
 
@@ -191,7 +188,7 @@ export const policyFormRouter = router({
 
         if (!response.ok) {
           const responseText = await response.text();
-          console.error("[Zapier] Webhook error:", responseText);
+          console.error("[Zapier] Webhook rejected delivery:", response.status);
           return { success: false, message: "Webhook delivery failed" };
         }
 
@@ -209,7 +206,7 @@ export const policyFormRouter = router({
    * Legacy endpoint kept for backward compatibility.
    * Redirects to the comprehensive sender.
    */
-  sendToZapier: publicProcedure
+  sendToZapier: visitorProcedure
     .input(
       z.object({
         formData: z.record(z.string(), z.any()).optional(),
@@ -235,7 +232,7 @@ export const policyFormRouter = router({
           return { success: false, message: "Webhook URL not configured" };
         }
 
-        const userId = 1;
+        const userId = ctx.user.id;
         const policy = await getPolicyByUserId(userId);
         const strategy = await getStrategyByUserId(userId);
         const documents = await getDocumentsByUserId(userId);
@@ -291,12 +288,13 @@ export const policyFormRouter = router({
         const response = await fetch(webhookUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: AbortSignal.timeout(15_000),
           body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
           const responseText = await response.text();
-          console.error("[Zapier] Webhook error:", responseText);
+          console.error("[Zapier] Webhook rejected delivery:", response.status);
           return { success: false, message: "Webhook delivery failed" };
         }
 

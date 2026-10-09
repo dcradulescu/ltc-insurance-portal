@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { calculateCare, projectCare } from "@shared/careCalculator";
+import { useState } from "react";
 import { Calculator, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,129 +22,9 @@ export function CareCalculator({ defaultDailyMax = 250, lifetimeMaximum = 500000
   const [hasInflationRider, setHasInflationRider] = useState(false);
   const [inflationPercentage, setInflationPercentage] = useState<string>("");
 
-  const parseCurrencyValue = (value: string | number): number => {
-    if (typeof value === "number") return value;
-    const cleaned = String(value).replace(/[$,\s]/g, "");
-    const parsed = parseFloat(cleaned);
-    return isNaN(parsed) ? 0 : parsed;
-  };
-
-  const calculations = useMemo(() => {
-    try {
-      const daily = parseCurrencyValue(dailyMax);
-      const hourly = parseCurrencyValue(hourlyRate);
-      const hours = parseFloat(hoursPerDay);
-      const days = parseFloat(daysPerWeek);
-      const lifetime = parseCurrencyValue(lifetimeMax);
-
-      if (!daily || !hourly || !hours || !days || !lifetime) {
-        return null;
-      }
-
-      const maxHoursPerDay = daily / hourly;
-      const requestedHours = hours;
-      const isWithinMax = requestedHours <= maxHoursPerDay;
-
-      const dailyCost = hourly * hours;
-      const weeklyCost = dailyCost * days;
-      const monthlyCost = weeklyCost * 4.33;
-
-      const insurancePaysDaily = isWithinMax ? dailyCost : daily;
-      const youPayDaily = isWithinMax ? 0 : dailyCost - daily;
-
-      const insurancePaysWeekly = insurancePaysDaily * days;
-      const youPayWeekly = youPayDaily * days;
-
-      const insurancePaysMontly = insurancePaysWeekly * 4.33;
-      const youPayMontly = youPayWeekly * 4.33;
-
-      const weeksOfCare = Math.floor(lifetime / insurancePaysWeekly);
-      const yearsOfCare = (weeksOfCare / 52).toFixed(1);
-      const monthsOfCare = Math.floor(weeksOfCare / 4.33);
-
-      // Premium waiver calculations
-      const premiumAmount = parseCurrencyValue(monthlyPremium);
-      // Daily: divide monthly premium by actual care days per month (daysPerWeek * 4.33)
-      const careDaysPerMonth = days * 4.33;
-      const premiumSavingsDaily = hasWaiverOfPremium ? (premiumAmount / careDaysPerMonth) : 0;
-      // Weekly: daily offset × days per week (100% realization of premium waiver)
-      const premiumSavingsWeekly = hasWaiverOfPremium ? (premiumSavingsDaily * days) : 0;
-      // Monthly: use full premium amount
-      const premiumSavingsMonthly = hasWaiverOfPremium ? premiumAmount : 0;
-
-      const netDailyCost = (insurancePaysDaily - premiumSavingsDaily).toFixed(2);
-      const netWeeklyCost = (insurancePaysWeekly - premiumSavingsWeekly).toFixed(2);
-      const netMonthlyCost = (insurancePaysMontly - premiumSavingsMonthly).toFixed(2);
-
-      const weeksOfCareWithWaiver = hasWaiverOfPremium 
-        ? Math.floor(lifetime / (insurancePaysWeekly - premiumSavingsWeekly))
-        : weeksOfCare;
-      const yearsOfCareWithWaiver = (weeksOfCareWithWaiver / 52).toFixed(1);
-      const monthsOfCareWithWaiver = Math.floor(weeksOfCareWithWaiver / 4.33);
-
-      return {
-        maxHoursPerDay: maxHoursPerDay.toFixed(2),
-        requestedHours: requestedHours.toFixed(2),
-        isWithinMax,
-        costPerHour: hourly.toFixed(2),
-        totalDailyCost: dailyCost.toFixed(2),
-        insurancePaysDaily: insurancePaysDaily.toFixed(2),
-        youPayDaily: youPayDaily.toFixed(2),
-        insurancePaysWeekly: insurancePaysWeekly.toFixed(2),
-        youPayWeekly: youPayWeekly.toFixed(2),
-        insurancePaysMontly: insurancePaysMontly.toFixed(2),
-        youPayMontly: youPayMontly.toFixed(2),
-        weeksOfCare,
-        yearsOfCare,
-        monthsOfCare,
-        premiumSavingsDaily: premiumSavingsDaily.toFixed(2),
-        premiumSavingsWeekly: premiumSavingsWeekly.toFixed(2),
-        premiumSavingsMonthly: premiumSavingsMonthly.toFixed(2),
-        netDailyCost,
-        netWeeklyCost,
-        netMonthlyCost,
-        weeksOfCareWithWaiver,
-        yearsOfCareWithWaiver,
-        monthsOfCareWithWaiver,
-      };
-    } catch (_e) {
-      return null;
-    }
-  }, [dailyMax, hourlyRate, hoursPerDay, daysPerWeek, lifetimeMax, hasWaiverOfPremium, monthlyPremium, hasInflationRider, inflationPercentage]);
-
-  // Calculate 5-year projection data for chart
-  const projectionData = useMemo(() => {
-    if (!calculations) return null;
-    
-    const data = [];
-    const monthlyCareCost = parseFloat(calculations.insurancePaysMontly);
-    const lifetimeMaximumVal = parseCurrencyValue(lifetimeMax);
-    const inflation = hasInflationRider && inflationPercentage ? parseFloat(inflationPercentage) : 0;
-    
-    let remainingBenefit = lifetimeMaximumVal;
-    // Care costs grow at a realistic 3% annual rate regardless of rider
-    // Benefit pool grows at the user-entered inflation rider rate (if enabled)
-    const careGrowthRate = 0.03; // 3% annual care cost inflation
-
-    for (let month = 1; month <= 60; month++) {
-      const year = Math.ceil(month / 12);
-      // Care cost escalates at 3% per year (industry standard)
-      const currentMonthCareCost = monthlyCareCost * Math.pow(1 + careGrowthRate, year - 1);
-      // Benefit pool grows at the user-entered inflation rider rate once per year
-      if (inflation > 0 && month > 1 && (month - 1) % 12 === 0) {
-        remainingBenefit = remainingBenefit * (1 + inflation / 100);
-      }
-      remainingBenefit = Math.max(0, remainingBenefit - currentMonthCareCost);
-
-      data.push({
-        month: `M${month}`,
-        benefitRemaining: Math.round(remainingBenefit),
-        monthlyCost: Math.round(currentMonthCareCost),
-      });
-    }
-    
-    return data;
-  }, [calculations, lifetimeMax, hasInflationRider, inflationPercentage]);
+  const input = {dailyMax,hourlyRate,hoursPerDay,daysPerWeek,lifetimeMax,hasWaiverOfPremium,monthlyPremium,hasInflationRider,inflationPercentage};
+  const calculations = calculateCare(input);
+  const projectionData = projectCare(input);
 
   return (
     <div className="mb-8 p-6 rounded-lg border border-slate-200 bg-slate-50">
@@ -338,7 +219,7 @@ export function CareCalculator({ defaultDailyMax = 250, lifetimeMaximum = 500000
                   <div>
                     <p className="text-sm text-slate-600">Maximum Hours Per Day (based on daily max)</p>
                     <p className="text-2xl font-bold text-teal mt-1">{calculations.maxHoursPerDay} hrs</p>
-                    <p className="text-xs text-slate-500 mt-2">${calculations.costPerHour}/hr ÷ {calculations.maxHoursPerDay} hours</p>
+                    <p className="text-xs text-slate-500 mt-2">Daily maximum divided by hourly care rate</p>
                   </div>
                   <div>
                     <p className="text-sm text-slate-600">Requested Hours Per Day</p>
@@ -434,27 +315,27 @@ export function CareCalculator({ defaultDailyMax = 250, lifetimeMaximum = 500000
               {/* Net Cost of Care (with Premium Waiver) */}
               {hasWaiverOfPremium && monthlyPremium && (
                 <div className="bg-gradient-to-r from-purple/5 to-pink/5 p-4 rounded border border-purple-200">
-                  <h4 className="text-sm font-semibold text-slate-900 mb-4">Net Cost of Care (After Premium Waiver)</h4>
+                  <h4 className="text-sm font-semibold text-slate-900 mb-4">Your Care Cost While Premium Is Waived</h4>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div>
                       <p className="text-sm text-slate-600">Net Daily Cost</p>
                       <p className="text-2xl font-bold text-purple-600 mt-1">${calculations.netDailyCost}</p>
                       <p className="text-xs text-slate-500 mt-2">
-                        ${calculations.insurancePaysDaily} - ${calculations.premiumSavingsDaily}
+                        ${calculations.youPayDaily} uncovered care
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-600">Net Weekly Cost</p>
                       <p className="text-2xl font-bold text-purple-600 mt-1">${calculations.netWeeklyCost}</p>
                       <p className="text-xs text-slate-500 mt-2">
-                        ${calculations.insurancePaysWeekly} - ${calculations.premiumSavingsWeekly}
+                        ${calculations.youPayWeekly} uncovered care
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-600">Net Monthly Cost</p>
                       <p className="text-2xl font-bold text-purple-600 mt-1">${calculations.netMonthlyCost}</p>
                       <p className="text-xs text-slate-500 mt-2">
-                        ${calculations.insurancePaysMontly} - ${calculations.premiumSavingsMonthly}
+                        ${calculations.youPayMontly} uncovered care
                       </p>
                     </div>
                   </div>
@@ -483,31 +364,7 @@ export function CareCalculator({ defaultDailyMax = 250, lifetimeMaximum = 500000
                 </p>
               </div>
 
-              {/* Benefit Duration with Premium Waiver */}
-              {hasWaiverOfPremium && monthlyPremium && (
-                <div className="bg-gradient-to-r from-green/5 to-emerald/5 p-4 rounded border border-green-200">
-                  <h4 className="text-sm font-semibold text-slate-900 mb-4">Benefit Duration (With Premium Waiver)</h4>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-sm text-slate-600">Weeks of Care Available</p>
-                      <p className="text-2xl font-bold text-green-600 mt-1">{calculations.weeksOfCareWithWaiver} weeks</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600">Years of Care Available</p>
-                      <p className="text-2xl font-bold text-green-600 mt-1">{calculations.yearsOfCareWithWaiver} years</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-600">Extended Duration</p>
-                      <p className="text-2xl font-bold text-emerald-600 mt-1">
-                        +{(calculations.weeksOfCareWithWaiver - calculations.weeksOfCare)} weeks
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-4">
-                    With premium waiver savings of ${calculations.premiumSavingsMonthly}/month, your benefits extend to approximately {calculations.monthsOfCareWithWaiver} months ({calculations.yearsOfCareWithWaiver} years) of care.
-                  </p>
-                </div>
-              )}
+              <p className="text-sm text-slate-600">A premium waiver saves premiums when the policy conditions are met. It does not reduce benefit withdrawals or extend the benefit pool.</p>
 
               {/* 5-Year Projection Chart */}
               {projectionData && (
@@ -531,7 +388,7 @@ export function CareCalculator({ defaultDailyMax = 250, lifetimeMaximum = 500000
                       </ComposedChart>
                     </ResponsiveContainer>
                     <p className="text-xs text-slate-600 mt-4">
-                      This chart shows your remaining benefit (green bars) decreasing each month as care costs are paid, and your monthly care cost (red line) increasing 10% annually. The intersection point shows when benefits may be exhausted.
+                      Illustration only: assumes eligible reimbursable care after the elimination period, 4.33 weeks per month, 3% annual care-cost growth, and annual compound rider increases to both the remaining pool and daily limit. Payments are capped by cost, the daily limit, and remaining benefits. Actual rider terms may differ; exhaustion occurs when the green bars reach zero.
                     </p>
                   </div>
                 </div>
@@ -540,7 +397,7 @@ export function CareCalculator({ defaultDailyMax = 250, lifetimeMaximum = 500000
           ) : (
             <div className="bg-white p-6 rounded-lg border border-slate-200 text-center">
               <p className="text-sm text-slate-500">
-                Enter all values above to see your care cost calculations
+                Enter positive costs and benefits, 1–24 hours per day, and 1–7 days per week. Premiums must be nonnegative and inflation must be between 0% and 100%.
               </p>
             </div>
           )}

@@ -1,3 +1,5 @@
+import { YouTubeLesson } from "./YouTubeLesson";
+import { RESOURCE_GUIDES } from "@shared/resourceGuides";
 'use client';
 
 import { ChevronLeft, ChevronRight, Download, FileText, BookOpen, Play, Pause, Volume2, Settings, Maximize2, Lightbulb, CheckCircle2, Clock, Zap, Clipboard, Droplet, Badge, Star, Award, ChevronDown } from "lucide-react";
@@ -163,10 +165,10 @@ const ACADEMY_VIDEOS: Video[] = [
   {
     id: "video-1",
     title: "What is Long-Term Care Insurance?",
-    youtubeId: "jNQXAC9IVRw",
+    youtubeId: "ytsdfesv_uk",
     description: "Discover the fundamentals of long-term care insurance and how it protects your family's financial future.",
-    duration: "12:45",
-    instructor: "The Professor",
+    duration: "External sample lesson",
+    instructor: "External educational publisher",
     keyPoints: [
       "LTC insurance covers costs of extended care services (in-home, assisted living, nursing homes)",
       "Benefits protect your family's savings from catastrophic care expenses",
@@ -183,10 +185,10 @@ const ACADEMY_VIDEOS: Video[] = [
   {
     id: "video-2",
     title: "Understanding Your Policy Documents",
-    youtubeId: "jNQXAC9IVRw",
+    youtubeId: "0LGv1Z9CLbc",
     description: "Navigate your insurance policy with confidence. Learn policy language, coverage limits, and benefit amounts.",
-    duration: "15:20",
-    instructor: "The Professor",
+    duration: "External sample lesson",
+    instructor: "External educational publisher",
     keyPoints: [
       "Schedule of Benefits page shows your daily/monthly maximum and lifetime limit",
       "Elimination period is the waiting period before benefits begin",
@@ -203,10 +205,10 @@ const ACADEMY_VIDEOS: Video[] = [
   {
     id: "video-3",
     title: "Filing Your LTC Insurance Claim",
-    youtubeId: "jNQXAC9IVRw",
+    youtubeId: "dSqQ8Ahb1VY",
     description: "Master the claim filing process step-by-step. Learn what your insurance company needs and common pitfalls.",
-    duration: "18:30",
-    instructor: "The Professor",
+    duration: "External sample lesson",
+    instructor: "External educational publisher",
     keyPoints: [
       "Notify your insurance company within 30 days of needing care services",
       "Gather medical documentation proving you meet benefit triggers (ADL assessments)",
@@ -223,10 +225,10 @@ const ACADEMY_VIDEOS: Video[] = [
   {
     id: "video-4",
     title: "Managing Benefits After Approval",
-    youtubeId: "jNQXAC9IVRw",
+    youtubeId: "4c5rqyrLVJ8",
     description: "Learn how to manage ongoing benefits, maintain documentation, and keep your claim in good standing.",
-    duration: "14:15",
-    instructor: "The Professor",
+    duration: "External sample lesson",
+    instructor: "External educational publisher",
     keyPoints: [
       "Submit monthly care logs documenting services received and costs incurred",
       "Report any changes in care needs, providers, or living situation immediately",
@@ -242,39 +244,21 @@ const ACADEMY_VIDEOS: Video[] = [
   },
 ];
 
-export function LTCAcademyPlayer() {
+export function LTCAcademyPlayer({ onLessonChange, onProgress }: { onLessonChange?: (index: number) => void; onProgress?: (ids: Set<string>) => void }) {
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
+  const [expandedStep, setExpandedStep] = useState<number | null>(1);
+  const [completedVideos, setCompletedVideos] = useState<Set<string>>(() => {
+    try { const parsed = JSON.parse(localStorage.getItem('ltc-academy-completed') || '[]'); return new Set(Array.isArray(parsed) ? parsed.filter((id: unknown) => ACADEMY_VIDEOS.some(v => v.id === id)) : []); } catch { return new Set(); }
+  });
   const selectedVideo = ACADEMY_VIDEOS[selectedVideoIndex];
-
-  // Load completed videos from local storage on mount
+  useEffect(() => { onLessonChange?.(selectedVideoIndex); setExpandedStep(selectedVideoIndex + 1); }, [selectedVideoIndex, onLessonChange]);
   useEffect(() => {
-    const stored = localStorage.getItem('ltc-academy-completed');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setCompletedVideos(new Set(parsed));
-      } catch (e) {
-        console.error('Failed to parse stored completion data:', e);
-      }
-    }
-  }, []);
-
-  // Save completed videos to local storage whenever they change
-  useEffect(() => {
-    localStorage.setItem('ltc-academy-completed', JSON.stringify(Array.from(completedVideos)));
-  }, [completedVideos]);
-
-  // Mark video as completed when user navigates away or completes it
-  const markVideoCompleted = (videoId: string) => {
-    setCompletedVideos(prev => {
-      const newSet = new Set(prev);
-      newSet.add(videoId);
-      return newSet;
-    });
-  };
-
+    try { localStorage.setItem('ltc-academy-completed', JSON.stringify(Array.from(completedVideos))); } catch { /* Storage can be unavailable in private browsing. */ }
+    onProgress?.(completedVideos);
+  }, [completedVideos, onProgress]);
+  const markVideoCompleted = (videoId: string) => setCompletedVideos(previous => {
+    const next = new Set(previous); next.has(videoId) ? next.delete(videoId) : next.add(videoId); return next;
+  });
   const getDownloadIcon = (type: "pdf" | "doc" | "guide") => {
     switch (type) {
       case "pdf":
@@ -288,24 +272,22 @@ export function LTCAcademyPlayer() {
 
   const goToNext = () => {
     if (selectedVideoIndex < ACADEMY_VIDEOS.length - 1) {
-      markVideoCompleted(selectedVideo.id);
       setSelectedVideoIndex(selectedVideoIndex + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('academy-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   const goToPrevious = () => {
-    markVideoCompleted(selectedVideo.id);
     if (selectedVideoIndex > 0) {
       setSelectedVideoIndex(selectedVideoIndex - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('academy-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   const progressPercentage = Math.round(((completedVideos.size) / ACADEMY_VIDEOS.length) * 100);
 
   return (
-    <div className="w-full" style={{ backgroundColor: "#F8F9FA" }}>
+    <div className="w-full academy-flow-background" style={{ backgroundColor: "#F8F9FA" }}>
       {/* Video Section */}
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Video Title and Info */}
@@ -324,56 +306,19 @@ export function LTCAcademyPlayer() {
           </div>
         </div>
 
-        {/* Main Video Player */}
-        <div
-          className="relative w-full rounded-3xl overflow-hidden mb-6"
-          style={{
-            backgroundColor: "#000000",
-            border: "4px solid #4A9FB5",
-            boxShadow: "0 12px 40px rgba(74, 159, 181, 0.25)",
-            aspectRatio: "16 / 9",
-          }}
-        >
-          {/* Play Button Overlay */}
-          <div
-            className="absolute inset-0 flex items-center justify-center z-10 group cursor-pointer"
-            onClick={() => setIsPlaying(!isPlaying)}
-          >
-            <div
-              className="w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-2xl"
-              style={{
-                backgroundColor: "rgba(74, 159, 181, 0.95)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              {isPlaying ? (
-                <Pause className="w-12 h-12 text-white ml-1" />
-              ) : (
-                <Play className="w-12 h-12 text-white ml-1" />
-              )}
-            </div>
-          </div>
-
-          {/* YouTube Embed */}
-          <iframe
-            width="100%"
-            height="100%"
-            src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=0&rel=0`}
-            title={selectedVideo.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full"
-          />
+        <YouTubeLesson key={selectedVideo.id} videoId={selectedVideo.youtubeId} title={selectedVideo.title} />
+        <div className="my-6 rounded-xl border bg-white p-4">
+          <label className="flex items-center gap-3 font-semibold"><input type="checkbox" checked={completedVideos.has(selectedVideo.id)} onChange={() => markVideoCompleted(selectedVideo.id)} className="h-5 w-5" />I have completed this lesson</label>
+          <div role="progressbar" aria-label="Academy completion" aria-valuenow={progressPercentage} aria-valuemin={0} aria-valuemax={100} className="h-3 bg-slate-100 rounded-full mt-4 overflow-hidden"><div className="h-full bg-teal transition-all" style={{width: `${progressPercentage}%`}} /></div>
+          <p className="text-sm text-slate-600 mt-2">{completedVideos.size} of 4 lessons completed ({progressPercentage}%). Navigation does not mark a lesson complete.</p>
         </div>
-
         {/* Video Description */}
         <p className="text-base leading-relaxed mb-8" style={{ color: "#333333", fontFamily: "Aptos, sans-serif" }}>
           {selectedVideo.description}
         </p>
 
         {/* Navigation Buttons */}
-        <div className="flex items-center justify-between py-8 border-t-2 border-b-2" style={{ borderColor: "#E8E8E8" }}>
+        <div className="flex flex-wrap gap-3 items-center justify-between py-6 border-t-2 border-b-2" style={{ borderColor: "#E8E8E8" }}>
           <button
             onClick={goToPrevious}
             disabled={selectedVideoIndex === 0}
@@ -421,14 +366,14 @@ export function LTCAcademyPlayer() {
               {STEP_EDUCATION.map((step) => (
                 <div key={step.stepNumber} className="rounded-lg overflow-hidden border" style={{ borderColor: "#E0E0E0", backgroundColor: "#FFFFFF", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
                   {/* Step Header */}
-                  <div className="p-5" style={{ backgroundColor: step.stepColor }}>
+                  <button type="button" className="p-5 w-full text-left" aria-expanded={expandedStep === step.stepNumber} aria-controls={`lesson-step-${step.stepNumber}`} onClick={() => setExpandedStep(expandedStep === step.stepNumber ? null : step.stepNumber)} style={{ backgroundColor: step.stepColor }}>
                     <h4 className="text-lg font-bold text-white" style={{ fontFamily: "Aptos, sans-serif" }}>
                       Step {step.stepNumber}: {step.stepTitle}
                     </h4>
-                  </div>
+                  </button>
 
                   {/* Accordion Terms */}
-                  <div className="p-0">
+                  <div id={`lesson-step-${step.stepNumber}`} hidden={expandedStep !== step.stepNumber} className="p-0">
                     <Accordion type="single" collapsible className="w-full">
                       {step.terms.map((item, idx) => (
                         <AccordionItem key={idx} value={`step-${step.stepNumber}-term-${idx}`} className="border-b border-gray-100 last:border-b-0">
@@ -500,13 +445,14 @@ export function LTCAcademyPlayer() {
                     Resources
                   </h4>
                   <p className="text-xs text-gray-300 mt-1" style={{ fontFamily: "Aptos, sans-serif" }}>
-                    For this video
+                    All guides, in learning order
                   </p>
                 </div>
 
+                <img src="/manus-storage/policy-form-hero_314c2717.jpg" alt="Family preparing policy paperwork" className="h-32 w-full object-cover" />
                 {/* Download Buttons */}
                 <div className="p-4 space-y-3">
-                  {selectedVideo.downloads.map((download, idx) => (
+                  {RESOURCE_GUIDES.map((guide, idx) => { const download = { name: guide.title, url: `/resources/${guide.slug}`, icon: guide.format === "docx" ? "doc" as const : "pdf" as const }; return (
                     <a
                       key={idx}
                       href={download.url}
@@ -516,7 +462,6 @@ export function LTCAcademyPlayer() {
                           toast.info("Coming Soon", { description: `${download.name} will be available soon.` });
                         }
                       }}
-                      download
                       className="flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 hover:shadow-md hover:border-gray-400"
                       style={{
                         borderColor: "#E0E0E0",
@@ -534,16 +479,16 @@ export function LTCAcademyPlayer() {
                         {getDownloadIcon(download.icon)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: "Aptos, sans-serif" }}>
+                        <p className="text-sm font-semibold text-gray-800 break-words" style={{ fontFamily: "Aptos, sans-serif" }}>
                           {download.name}
                         </p>
                         <p className="text-xs text-gray-500" style={{ fontFamily: "Aptos, sans-serif" }}>
-                          Download
+                          Open guide and download
                         </p>
                       </div>
                       <Download className="w-4 h-4 flex-shrink-0" style={{ color: "#4A9FB5" }} />
                     </a>
-                  ))}
+                  ); })}
                 </div>
               </div>
             </div>

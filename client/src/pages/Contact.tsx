@@ -30,7 +30,7 @@ export default function Contact() {
     setSending(true);
     try {
       await contactMutation.mutateAsync(form);
-      toast.success("Your message has been sent. We'll get back to you soon!");
+      toast.success("Your message was accepted for delivery. We'll get back to you soon!");
       setForm({ name: "", email: "", phone: "", subject: "general", message: "" });
     } catch (_e) {
       toast.error("Failed to send message. Please try again.");
@@ -123,7 +123,7 @@ export default function Contact() {
                   Book a free 30-minute consultation to discuss your LTC insurance questions with our team.
                 </p>
                 <a
-                  href="https://calendar.google.com/calendar/appointments/schedules"
+                  href={import.meta.env.VITE_BOOKING_URL || "tel:+18642446300"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded text-sm font-bold transition-all duration-200 no-underline hover:shadow-md"
@@ -134,7 +134,7 @@ export default function Contact() {
                   }}
                 >
                   <Calendar className="w-4 h-4" />
-                  Book a Meeting
+                  {import.meta.env.VITE_BOOKING_URL ? "Book a Meeting" : "Call to Schedule"}
                   <ExternalLink className="w-3 h-3 opacity-70" />
                 </a>
               </div>

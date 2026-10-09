@@ -50,14 +50,8 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 // Allowed origins for CORS
-const ALLOWED_ORIGINS = [
-  "https://ltcportal.manus.space",
-  "https://ltcportal-7pnqfuuw.manus.space",
-  /^https?:\/\/localhost(:\d+)?$/,
-  /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
-  // Manus sandbox preview URLs
-  /^https:\/\/\d+-[a-z0-9]+-[a-z0-9]+\.us\d+\.manus\.computer$/,
-];
+const ALLOWED_ORIGINS = (process.env.APP_URL ?? "").split(",").filter(Boolean);
+if (process.env.NODE_ENV !== "production") ALLOWED_ORIGINS.push("http://localhost:3000", "http://127.0.0.1:3000");
 
 async function startServer() {
   const app = express();
@@ -68,6 +62,7 @@ async function startServer() {
     app.use(
       pinoHttp({
         logger,
+        serializers: { req: req => ({ method: req.method, path: (req.url ?? "").split("?")[0] }), res: res => ({ statusCode: res.statusCode }) },
         // Skip logging for static assets and health checks
         autoLogging: {
           ignore: req =>
@@ -91,16 +86,12 @@ async function startServer() {
   );
 
   // ── CORS ─────────────────────────────────────────────────────────────────
-  app.use(
+  app.use("/api",
     cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (curl, mobile apps, same-origin)
         if (!origin) return callback(null, true);
-        const allowed = ALLOWED_ORIGINS.some(pattern =>
-          typeof pattern === "string"
-            ? pattern === origin
-            : pattern.test(origin)
-        );
+        const allowed = ALLOWED_ORIGINS.includes(origin);
         if (allowed) return callback(null, true);
         callback(new Error(`CORS: origin ${origin} not allowed`));
       },
@@ -145,21 +136,16 @@ async function startServer() {
   });
 
   app.use("/api/oauth", authLimiter);
-  app.use(
-    "/api/trpc/strategy.generate",
-    heavyLimiter
-  );
-  app.use("/api/trpc/email", heavyLimiter);
-  app.use("/api/trpc", generalLimiter);
-
-  // ── Body parsers ──────────────────────────────────────────────────────────
-  // Default: 1 MB limit for most routes
+  // Inspect each batched procedure; Express mount prefixes do not match dots.
+  app.use("/api/trpc", (req, res, next) => {
+    const paths = req.path.slice(1).split(",");
+    if (paths.length > 10) return res.status(400).json({error: "Batch limit exceeded"});
+    if (paths.some(path => /^(email\.|pdfDelivery\.|policyForm\.|chat\.|sms\.|strategy\.(generate|generatePhysicianLetter))/.test(path))) return heavyLimiter(req, res, next);
+    next();
+  }, generalLimiter);
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
-
-  // Override with larger limit only for PDF/email delivery routes
-  app.use("/api/trpc/email", express.json({ limit: "10mb" }));
-  app.use("/api/trpc/pdfDelivery", express.json({ limit: "10mb" }));
+  app.get("/healthz", (_req, res) => res.json({status: "ok"}));
 
   // ── Application routes ────────────────────────────────────────────────────
   // Storage proxy for /manus-storage/* paths

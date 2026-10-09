@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
@@ -319,13 +320,15 @@ export default function Strategy() {
 
   const downloadPdfMutation = trpc.pdfDelivery.generatePdf.useMutation({
     onSuccess: (data) => {
-      if (data.url) {
+      if (data.base64) {
         const link = document.createElement("a");
-        link.href = data.url;
+        const url = URL.createObjectURL(new Blob([Uint8Array.from(atob(data.base64), c => c.charCodeAt(0))], {type:"application/pdf"}));
+        link.href = url;
         link.download = `LTC-Strategy-${(policy?.insuredFullName || "Report").replace(/\s+/g, "-")}.pdf`;
         link.target = "_blank";
         link.click();
-        toast.success("PDF downloaded successfully!");
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        toast.success("Your browser download has started.");
       }
     },
     onError: () => toast.error("Failed to generate PDF. Please try again."),
@@ -816,7 +819,7 @@ export default function Strategy() {
                       <div
                         ref={strategyContentRef}
                         className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-h2:text-2xl prose-h2:border-b-2 prose-h2:border-teal prose-h2:pb-2 prose-h2:mt-10 prose-h3:text-xl prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-teal"
-                        dangerouslySetInnerHTML={{ __html: strategy?.strategyHtml || "" }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(strategy?.strategyHtml || "", { USE_PROFILES: { html: true } }) }}
                       />
                     </div>
                   </div>

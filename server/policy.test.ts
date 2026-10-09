@@ -159,13 +159,12 @@ describe("policy.save", () => {
     expect(updated.id).toBe(created.id);
   });
 
-  it("allows unauthenticated users (public procedure)", async () => {
+  it("fails closed when private visitor storage is unavailable", async () => {
     const { ctx } = createUnauthContext();
     const caller = appRouter.createCaller(ctx);
 
     // All procedures are now public — should succeed
-    const result = await caller.policy.save({ insuredFullName: "Test" });
-    expect(result).toHaveProperty("id");
+    await expect(caller.policy.save({ insuredFullName: "Test" })).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE"});
   });
 });
 
@@ -181,13 +180,12 @@ describe("policy.get", () => {
     expect(result).toHaveProperty("id");
   });
 
-  it("allows unauthenticated users (public procedure)", async () => {
+  it("fails closed when private visitor storage is unavailable", async () => {
     const { ctx } = createUnauthContext();
     const caller = appRouter.createCaller(ctx);
 
     // Should not throw — it's a public procedure
-    const result = await caller.policy.get();
-    expect(result).toBeDefined();
+    await expect(caller.policy.get()).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE"});
   });
 });
 
@@ -213,14 +211,13 @@ describe("strategy.generate", () => {
     expect(strategy.content.length).toBeGreaterThan(0);
   });
 
-  it("allows unauthenticated users (public procedure)", async () => {
+  it("fails closed when private visitor storage is unavailable", async () => {
     const { ctx } = createUnauthContext();
     const caller = appRouter.createCaller(ctx);
 
     // strategy.generate is public, but will throw if policy not found
     // Since we're using mock data, policy ID 1 should exist from previous tests
-    const result = await caller.strategy.generate({ policyId: 1 });
-    expect(result).toHaveProperty("id");
+    await expect(caller.strategy.generate({ policyId: 1 })).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE"});
   });
 });
 
@@ -270,18 +267,24 @@ describe.skip("chat.send (disabled - chat router not enabled)", () => {
 });
 
 describe("email.sendStrategy", () => {
-  it("allows unauthenticated users (public procedure) but may fail without strategy", async () => {
+  it("fails closed when private visitor storage is unavailable but may fail without strategy", async () => {
     const { ctx } = createUnauthContext();
     const caller = appRouter.createCaller(ctx);
 
     // email.sendStrategy is public, but will check strategy.userId === 1
     // It should either succeed or throw "Strategy not found" — not an auth error
-    const result = await caller.email.sendStrategy({
-      strategyId: 1,
-      recipients: ["test@example.com"],
-    });
-
-    // If strategy exists in mock, it should return success
-    expect(result).toHaveProperty("success");
+    await expect(caller.email.sendStrategy({strategyId:1,recipients:["test@example.com"]})).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE"});
   });
+});
+
+describe("policy ownership",()=>{
+ it("does not reveal or overwrite another visitor policy", async()=>{
+  const owner=appRouter.createCaller(createAuthContext(501).ctx);
+  const other=appRouter.createCaller(createAuthContext(502).ctx);
+  const policy=await owner.policy.save({insuredFullName:"Private owner"});
+  expect(await other.policy.get()).not.toMatchObject({id:policy.id});
+  await expect(other.policy.save({id:policy.id,insuredFullName:"Overwrite"})).rejects.toMatchObject({code:"NOT_FOUND"});
+  await expect(other.strategy.generate({policyId:policy.id})).rejects.toMatchObject({code:"NOT_FOUND"});
+  expect(await owner.policy.get()).toMatchObject({insuredFullName:"Private owner"});
+ });
 });

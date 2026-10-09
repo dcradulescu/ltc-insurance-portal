@@ -1,3 +1,4 @@
+import Resources from "./pages/Resources";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -41,6 +42,8 @@ function Router() {
         <Route path={"/privacy"} component={PrivacyPolicy} />
         <Route path={"/profile"} component={Profile} />
         <Route path={"/academy"} component={Academy} />
+        <Route path="/resources/:slug" component={Resources} />
+        <Route path="/resources" component={Resources} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

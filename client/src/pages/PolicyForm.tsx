@@ -1,3 +1,4 @@
+import { YouTubeLesson } from "@/components/YouTubeLesson";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { PageNavigation } from "@/components/PageNavigation";
@@ -893,37 +894,11 @@ export default function PolicyForm() {
         <div className="container relative py-12 md:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              {/* Step progress badges */}
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                <div className="inline-flex items-center gap-2 text-primary-foreground/70 text-sm">
-                  <ClipboardList className="w-4 h-4" /> POLICY INTAKE FORM
-                </div>
-                <div className="inline-flex items-center gap-2 bg-teal rounded-full px-4 py-1.5 border border-teal/60 shadow-lg">
-                  <span className="text-sm font-bold text-white">Step 2 of 3 — Complete the Form</span>
-                </div>
-              </div>
-              {/* Step flow indicator */}
-              <div className="flex items-center gap-2 mb-5">
-                <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
-                  <span className="w-5 h-5 rounded-full bg-white/30 text-white text-xs font-bold flex items-center justify-center">1</span>
-                  <span className="text-xs font-semibold text-white/85">Learn</span>
-                </div>
-                <div className="w-6 h-px bg-white/40" />
-                <div className="flex items-center gap-1.5 bg-teal rounded-lg px-3 py-1.5">
-                  <span className="w-5 h-5 rounded-full bg-white text-teal text-xs font-bold flex items-center justify-center">2</span>
-                  <span className="text-xs font-semibold text-white">Form</span>
-                </div>
-                <div className="w-6 h-px bg-white/40" />
-                <div className="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-1.5 border border-white/20">
-                  <span className="w-5 h-5 rounded-full bg-white/30 text-white text-xs font-bold flex items-center justify-center">3</span>
-                  <span className="text-xs font-semibold text-white/85">Strategy</span>
-                </div>
-              </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif mb-4 leading-tight">Tell Us About Your <span className="text-teal">Policy</span></h1>
-              <p className="text-white/90 max-w-lg text-base leading-relaxed">Complete this form to receive a personalized strategy for filing your long-term care insurance claim. All information is securely stored and can be edited at any time.</p>
+              <p className="text-white/90 max-w-lg text-base leading-relaxed">Complete this form to receive a personalized strategy for filing your long-term care insurance claim. Have your policy and carrier contact details nearby. Work through each section, confirm uncertain answers with your carrier, then review your details before generating a plan.</p>
             </div>
             <div className="hidden lg:block">
-              <VideoPlaceholder title="How to Complete the Policy Form" description="Watch this guide to understand what information you'll need and how to find it in your policy documents" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/prngCKWDVnvVgXBI.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/UZLuXdBXwBOgyGSg.mp4" />
+              <YouTubeLesson videoId="0LGv1Z9CLbc" title="Understanding LTC policy coverage — external sample lesson" />
             </div>
           </div>
         </div>
@@ -932,7 +907,7 @@ export default function PolicyForm() {
       {/* Mobile video */}
       <section className="lg:hidden py-section bg-secondary">
         <div className="container">
-          <VideoPlaceholder title="How to Complete the Policy Form" description="Watch this guide to understand what information you'll need and how to find it in your policy documents" thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/prngCKWDVnvVgXBI.jpg" videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/UZLuXdBXwBOgyGSg.mp4" />
+          <YouTubeLesson videoId="0LGv1Z9CLbc" title="Understanding LTC policy coverage — external sample lesson" />
         </div>
       </section>
 
@@ -982,7 +957,7 @@ export default function PolicyForm() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="flex gap-5 p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-lg"
+                className="flex gap-5 p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:ring-2 hover:ring-teal/30"
                 style={{
                   borderColor: item.highlight ? '#0692D7' : '#e8e8e8',
                   background: item.highlight ? 'rgba(6,146,215,0.05)' : '#ffffff',
@@ -1019,11 +994,11 @@ export default function PolicyForm() {
               Tell Us About Your <span style={{ color: '#34B1C4' }}>Policy</span>
             </h2>
             <p className="text-lg leading-relaxed max-w-3xl" style={{ fontFamily: "'Open Sans', sans-serif", color: '#555555' }}>
-              We'll ask you a few simple questions about your insurance policy and care situation. Your answers help us create a personalized strategy tailored specifically to your needs. You can save and come back anytime — your information is securely stored.
+              We'll ask you a few simple questions about your insurance policy and care situation. Your answers help us create a personalized strategy. Drafts stay in this browser. Save-and-return email requires the portal’s delivery service; an error means the email was not sent.
             </p>
           </div>
           {/* Form Container */}
-          <div className="bg-white rounded-lg border-2" style={{ borderColor: '#A8D9D9', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white rounded-2xl border-2 overflow-hidden shadow-lg" style={{ borderColor: '#A8D9D9', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             {/* Form Header */}
             <div className="px-6 md:px-8 py-6 border-b" style={{ borderColor: '#E0F5F5' }}>
               <h3 className="text-xl font-bold" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Complete Your Policy Information</h3>

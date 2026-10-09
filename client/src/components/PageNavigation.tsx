@@ -1,18 +1,12 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, Download, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { journey } from "./JourneyNavigation";
 
 const VA_TEAL = "#34B1C4";
 
 // Ordered page flow for Next/Previous navigation
-const pageFlow = [
-  { href: "/", label: "Home" },
-  { href: "/academy", label: "Academy" },
-  { href: "/education", label: "Education" },
-  { href: "/policy-form", label: "Policy Form" },
-  { href: "/strategy", label: "Strategy" },
-  { href: "/contact", label: "Contact" },
-];
+const pageFlow = journey;
 
 interface PageNavigationProps {
   showDownload?: boolean;
@@ -26,7 +20,7 @@ export function PageNavigation({ showDownload = true, showEmail = true, onDownlo
 
   const currentIndex = pageFlow.findIndex((p) => p.href === location);
   const prevPage = currentIndex > 0 ? pageFlow[currentIndex - 1] : null;
-  const nextPage = currentIndex < pageFlow.length - 1 ? pageFlow[currentIndex + 1] : null;
+  const nextPage = currentIndex >= 0 && currentIndex < pageFlow.length - 1 ? pageFlow[currentIndex + 1] : null;
 
   const handleDownload = () => {
     if (onDownload) {
@@ -34,7 +28,7 @@ export function PageNavigation({ showDownload = true, showEmail = true, onDownlo
     } else {
       // Default: print the page
       window.print();
-      toast.success("Download started", { description: "Use your browser's print dialog to save as PDF." });
+      toast.info("Print or save as PDF", { description: "Use your browser's print dialog to save as PDF." });
     }
   };
 
@@ -42,7 +36,9 @@ export function PageNavigation({ showDownload = true, showEmail = true, onDownlo
     if (onEmail) {
       onEmail();
     } else {
-      toast.info("Email feature", { description: "Complete the Policy Form first to enable email delivery of your personalized content." });
+      const subject = encodeURIComponent(document.title);
+      const body = encodeURIComponent(`Here is the LTC resource: ${window.location.origin}${location}`);
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
     }
   };
 
@@ -53,7 +49,7 @@ export function PageNavigation({ showDownload = true, showEmail = true, onDownlo
 
   return (
     <div
-      className="flex items-center justify-between py-4 px-4 mt-6 rounded border"
+      className="flex flex-wrap gap-4 items-center justify-between py-4 px-4 mt-6 rounded border"
       style={{ background: "#F8FBFC", borderColor: "#e8edf1" }}
     >
       {/* Previous */}

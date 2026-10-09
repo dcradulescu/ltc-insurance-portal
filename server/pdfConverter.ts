@@ -158,7 +158,7 @@ export function generatePdfBuffer(data: PdfData): Buffer {
     doc.setFontSize(10.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...textColor);
-    doc.text(`${icon}  ${title}`, M + 8, y + 7.5);
+    doc.text(title, M + 8, y + 7.5);
     doc.setTextColor(...DARK);
     y += 15;
   }
@@ -223,27 +223,20 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   const COL2R = M + COL2W + 6;
 
   function twoColRow(leftLabel: string, leftVal: string, rightLabel: string, rightVal: string, bg?: [number,number,number]) {
-    checkBreak(8);
-    if (bg) {
-      doc.setFillColor(...bg);
-      doc.roundedRect(M, y - 1, CW, 7.5, 1, 1, "F");
-    }
     doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...VA_NAVY);
-    doc.text(leftLabel + ":", M + 2, y + 4);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...DARK);
-    const lv = doc.splitTextToSize(leftVal || "—", COL2W - 38);
-    doc.text(lv[0], M + 38, y + 4);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...VA_NAVY);
-    doc.text(rightLabel + ":", COL2R + 2, y + 4);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...DARK);
-    const rv = doc.splitTextToSize(rightVal || "—", COL2W - 38);
-    doc.text(rv[0], COL2R + 38, y + 4);
-    y += 7.5;
+    const leftLines = doc.splitTextToSize(leftVal || "Not provided", COL2W - 8);
+    const rightLines = doc.splitTextToSize(rightVal || "Not provided", COL2W - 8);
+    const height = 10 + Math.max(leftLines.length, rightLines.length) * 3.8;
+    checkBreak(height);
+    if (bg) { doc.setFillColor(...bg); doc.roundedRect(M, y, CW, height, 1, 1, "F"); }
+    doc.setFont("helvetica", "bold"); doc.setTextColor(...VA_NAVY);
+    doc.text(leftLabel, M + 3, y + 4);
+    doc.text(rightLabel, COL2R + 3, y + 4);
+    doc.setFont("helvetica", "normal"); doc.setTextColor(...DARK);
+    doc.text(leftLines, M + 3, y + 8, {lineHeightFactor: 1.3});
+    doc.text(rightLines, COL2R + 3, y + 8, {lineHeightFactor: 1.3});
+    y += height + 1;
   }
 
   // ── Literal checkbox row ─────────────────────────────────────────────────────
@@ -889,7 +882,7 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   const glossary = [
     { term: "Activities of Daily Living (ADLs)", def: "Six fundamental self-care tasks: Bathing, Dressing, Toileting, Feeding, Continence, and Transferring. Most LTC policies require 2–3 ADLs to be in deficit before benefits begin." },
     { term: "Instrumental Activities of Daily Living (IADLs)", def: "Household and management tasks: Meal Preparation, Medication Management, Housekeeping, Laundry, Shopping, Transportation, Money Management, and Telephone Use. Important for care planning but generally not counted as ADL benefit triggers." },
-    { term: "Elimination Period", def: "The number of service days you must pay out of pocket before your LTC policy begins to pay. This counts days of actual care received, not calendar days since illness onset." },
+    { term: "Elimination Period", def: "The policy waiting period before benefits begin. It may count service days or calendar days; confirm the applicable rules and exceptions with the carrier." },
     { term: "Daily Maximum Benefit", def: "The maximum dollar amount the insurance company will pay per day of qualifying care. Care costs above this limit are the client's responsibility." },
     { term: "Monthly Maximum Benefit", def: "The maximum dollar amount the insurance company will pay per calendar month of qualifying care." },
     { term: "Lifetime Maximum Benefit", def: "The total cumulative amount the policy will pay over its lifetime. Once exhausted, no further benefits are available." },
@@ -984,7 +977,7 @@ export function generatePdfBuffer(data: PdfData): Buffer {
 
   eduBlock(
     "The Elimination Period — What You Need to Know",
-    `Your policy has an elimination period of ${elimDays} days. This means you must personally pay for ${elimDays} days of qualifying care before your insurance begins to pay. The elimination period counts days of actual care received, not calendar days. For example, if you receive care 5 days per week, a 90-day elimination period takes approximately 18 weeks to satisfy. Keep detailed records of every day of care during this period — your carrier will require proof. Some policies allow a 'lookback period' where care received before the claim was filed may count toward the elimination period.`,
+    `Your policy has an elimination period of ${elimDays} days. This means you must personally pay for ${elimDays} days of qualifying care before your insurance begins to pay. Some policies count service days; others count calendar days. Confirm which rule applies. For a service-day policy, 5 care days per week would take approximately 18 weeks to satisfy 90 service days. Keep detailed records of every day of care during this period — your carrier will require proof. Some policies allow a 'lookback period' where care received before the claim was filed may count toward the elimination period.`,
     VA_CREAM, [180,130,30] as [number,number,number]
   );
 
@@ -1078,6 +1071,31 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   // ─────────────────────────────────────────────────────────────────────────────
   // PAGE — LEGAL DISCLAIMERS
   // ─────────────────────────────────────────────────────────────────────────────
+  newPage("Your Claim Journey");
+  sectionHeading("Your claim journey", "", VA_LTBLUE);
+  const journey = [
+    {title:"1. Understand your policy", text:"Confirm benefit triggers, covered providers, elimination-period rules and notice deadlines with the carrier."},
+    {title:"2. Prepare documentation", text:"Gather the plan of care, relevant clinical evidence, carrier forms and any required authorizations."},
+    {title:"3. Submit and track", text:"Keep dated copies, confirm receipt and respond to requests. Follow the carrier's stated review and appeal deadlines."},
+    {title:"4. Manage ongoing care", text:"Maintain service records and invoices. Reconcile payments and track remaining benefits against the policy."},
+  ];
+  const center = PW / 2;
+  const top = y + 3;
+  doc.setDrawColor(...VA_TEAL); doc.setLineWidth(1);
+  doc.line(center, top + 8, center, top + 110);
+  journey.forEach((step, index) => {
+    const sy = top + index * 34;
+    const width = CW / 2 - 12;
+    const sx = index % 2 === 0 ? M : center + 12;
+    doc.setFillColor(...(index % 2 === 0 ? VA_LTBLUE : VA_LTGREEN));
+    doc.roundedRect(sx, sy, width, 29, 3, 3, "F");
+    doc.setFillColor(...VA_TEAL); doc.circle(center, sy + 8, 3, "F");
+    doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(...VA_NAVY);
+    doc.text(step.title, sx + 4, sy + 6);
+    doc.setFontSize(8); doc.setFont("helvetica", "normal");
+    doc.text(doc.splitTextToSize(step.text, width - 8), sx + 4, sy + 12);
+  });
+
   newPage("Legal Disclaimers");
   sectionHeading("IMPORTANT LEGAL DISCLAIMERS", "⚠", VA_ROSE, VA_NAVY);
 
