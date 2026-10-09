@@ -968,3 +968,6 @@
 - [x] Enhanced micro-interactions and hover animations
 - [x] Global horizontal timeline navigation element (Academy timeline serves this purpose)
 - [ ] Magazine layout improvements for Education definitions (already implemented with 4-stage accordion layout)
+
+## Current development requests — UI/UX retained
+- [x] Create a complete inventory of mocked integrations that require real production connections, including configuration, implementation gaps and acceptance checks — see docs/PRODUCTION_INTEGRATIONS.md and docs/PRODUCTION_INTEGRATIONS.csv (37 registered procedures; 39 records including 14 removed/dormant exceptions).

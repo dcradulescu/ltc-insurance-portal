@@ -155,8 +155,9 @@ class SDKServer {
   }
 
   private getSessionSecret() {
-    const secret = ENV.cookieSecret;
-    return new TextEncoder().encode(secret);
+    const secret = new TextEncoder().encode(ENV.cookieSecret);
+    if (secret.byteLength < 32) throw new Error("Session signing is not configured securely.");
+    return secret;
   }
 
   /**
@@ -182,6 +183,7 @@ class SDKServer {
     payload: SessionPayload,
     options: { expiresInMs?: number } = {}
   ): Promise<string> {
+    if (!ENV.appId || payload.appId !== ENV.appId) throw new Error("Session application is not configured correctly.");
     const issuedAt = Date.now();
     const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
     const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1000);
@@ -214,7 +216,7 @@ class SDKServer {
 
       if (
         !isNonEmptyString(openId) ||
-        !isNonEmptyString(appId) ||
+        !isNonEmptyString(appId) || !ENV.appId || appId !== ENV.appId ||
         !isNonEmptyString(name)
       ) {
         console.warn("[Auth] Session payload missing required fields");

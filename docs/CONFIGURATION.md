@@ -38,3 +38,13 @@ After a production build, `pnpm test:navigation` covers the 10 main routes and a
 The comprehensive policy handoff contains `_meta`, the current `user`, `policyForm`, optional `unsavedFormData`, the saved policy's `strategy`, document metadata and contacts with `receiveCcEmails`. It is distinct from the email events with a `type` field. Strategy tasks reflect saved completion records, including explicit unchecking. Both comprehensive and legacy trigger endpoints use the same HTTPS transport. The receiving automation must recognize this contract and decide which notifications, if any, to send. An accepted handoff does not establish inbox delivery.
 
 Extended form fields remain in the existing `equipmentAllowance` JSON column for compatibility. The allowlist now includes the separate insured/carrier address parts, care-log requirement, claim-packet source/submission method and reimbursement-delay answers. No schema migration is needed for these fields. Do not replace the JSON with a standalone allowance string.
+
+## Complete production integration inventory
+
+See [PRODUCTION_INTEGRATIONS.md](PRODUCTION_INTEGRATIONS.md) and [PRODUCTION_INTEGRATIONS.csv](PRODUCTION_INTEGRATIONS.csv) for all 37 registered procedures, required connections, browser capabilities, removed/dormant exceptions and per-feature acceptance checks. Merely filling environment variables does not complete the missing scheduler, notification routing or provider-migration work.
+
+Legacy OAuth signing requires a configured `VITE_APP_ID` and a signing secret of at least 32 bytes. Production visitor sessions also require the existing 32-character minimum. Use a strong random ASCII secret satisfying both requirements. Tokens for a different app ID are rejected, and post-login navigation is limited to local paths.
+
+Chat retrieval only includes active knowledge documents owned by the current visitor. The current schema does not designate shared public knowledge. Do not seed another user's documents and expect them to become globally readable. The old seed script is not compatible with the current owner/ID schema; `seed-rag-all.mjs` only reports a dry-run summary.
+
+SMS service responses mean provider acceptance, not handset receipt. Reminder schedule/cancel helpers report unavailable until durable scheduling is implemented. Current SMS endpoints also need recipient authorization/consent and delivery-receipt acceptance before exposure as a paid production sending service.

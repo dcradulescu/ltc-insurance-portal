@@ -3,7 +3,7 @@ import { z } from "zod";
 import { invokeLLM } from "../_core/llm";
 import { getPolicyById, getDb } from "../db";
 import { chatMessages, ragDocuments } from "../../drizzle/schema";
-import { eq, desc, like, or } from "drizzle-orm";
+import { and, eq, desc, like, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 // ── Built-in LTC knowledge base ──────────────────────────────────────────────
@@ -70,7 +70,7 @@ SC Visiting Angels (scvisitingangels.com) is a home care agency in South Carolin
 `;
 
 // ── Keyword-based RAG retrieval from ragDocuments table ───────────────────────
-async function retrieveRelevantDocs(query: string, limit = 3): Promise<string[]> {
+async function retrieveRelevantDocs(query: string, userId: number, limit = 3): Promise<string[]> {
   try {
     const db = await getDb();
     if (!db) return [];
@@ -88,7 +88,9 @@ async function retrieveRelevantDocs(query: string, limit = 3): Promise<string[]>
     const docs = await db
       .select({ title: ragDocuments.title, content: ragDocuments.content })
       .from(ragDocuments)
-      .where(or(...conditions.filter(Boolean) as any[]))
+      // The schema has no public/shared visibility flag. Do not treat another
+      // owner's or an inactive document as shared knowledge.
+      .where(and(eq(ragDocuments.userId, userId), eq(ragDocuments.isActive, true), or(...conditions)))
       .limit(limit);
 
     return docs.map((d: { title: string; content: string }) => `[${d.title}]\n${d.content.slice(0, 600)}`);
@@ -140,7 +142,7 @@ export const chatRouter = router({
       // Read history before saving this turn, so the prompt contains it once.
 
       // 2. Retrieve relevant docs from knowledge base
-      const relevantDocs = await retrieveRelevantDocs(input.message);
+      const relevantDocs = await retrieveRelevantDocs(input.message, ctx.user.id);
       const ragContext = relevantDocs.length > 0
         ? `\nRELEVANT KNOWLEDGE BASE DOCUMENTS:\n${relevantDocs.join("\n\n")}\n`
         : "";

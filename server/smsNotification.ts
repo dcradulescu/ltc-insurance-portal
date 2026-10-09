@@ -1,6 +1,6 @@
 // SMS Notification Service for LTC Insurance Portal
 // Uses Twilio when TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_PHONE_NUMBER are set.
-// Falls back to a logged-only mode when credentials are absent (dev/staging).
+// Missing credentials fail closed; provider acceptance is not handset delivery.
 import twilio from "twilio";
 
 interface SMSNotificationConfig {
@@ -14,6 +14,7 @@ interface SMSNotificationConfig {
 
 interface SMSResponse {
   success: boolean;
+  status: "accepted" | "failed" | "unavailable";
   messageId?: string;
   error?: string;
   message: string;
@@ -37,7 +38,7 @@ export function generateSMSMessage(config: SMSNotificationConfig): string {
 /** Validate US phone number (10 digits, optional +1 prefix) */
 function isValidPhoneNumber(phoneNumber: string): boolean {
   const cleaned = phoneNumber.replace(/[\s\-\(\)\.]/g, "");
-  return /^(\+1)?[0-9]{10}$/.test(cleaned);
+  return /^(\+?1)?[0-9]{10}$/.test(cleaned);
 }
 
 /** Normalise to E.164 format (+1XXXXXXXXXX) */
@@ -51,7 +52,7 @@ export function formatPhoneNumber(phoneNumber: string): string {
 
 /**
  * Send a single SMS via Twilio.
- * If Twilio credentials are not configured the message is logged and the
+ * If Twilio credentials are not configured no message is sent and the
  * function returns { success: false } so callers can surface a clear error.
  */
 export async function sendSMSNotification(
@@ -69,6 +70,7 @@ export async function sendSMSNotification(
       );
       return {
         success: false,
+        status: "unavailable",
         error: "SMS service not configured",
         message: "SMS notifications require Twilio credentials. Please contact your administrator.",
       };
@@ -77,6 +79,7 @@ export async function sendSMSNotification(
     if (!isValidPhoneNumber(config.phoneNumber)) {
       return {
         success: false,
+        status: "failed",
         error: "Invalid phone number format",
         message: "Please provide a valid 10-digit US phone number.",
       };
@@ -93,17 +96,20 @@ export async function sendSMSNotification(
       to: toNumber,
     });
 
-    console.log(`[SMS] Sent to ${toNumber} — SID: ${result.sid}`);
+    if (!result.sid || ["failed", "undelivered", "canceled"].includes(result.status)) {
+      return { success: false, status: "failed", error: "SMS was not accepted", message: "SMS was not accepted. Please try again or contact the office." };
+    }
     return {
       success: true,
+      status: "accepted",
       messageId: result.sid,
-      message: `SMS sent successfully to ${toNumber}`,
+      message: "Accepted for SMS delivery. Arrival on the recipient's phone is not yet confirmed.",
     };
   } catch (error) {
-    console.error("[SMS] Error sending notification:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      status: "failed",
+      error: "SMS provider request failed",
       message: "Failed to send SMS notification. Please try again.",
     };
   }
@@ -135,10 +141,10 @@ export interface ReminderSchedule {
 export async function scheduleTaskReminders(
   schedule: ReminderSchedule
 ): Promise<SMSResponse> {
-  // Actual scheduling is handled by taskReminderScheduler.ts
-  return { success: true, message: `Reminders scheduled for ${schedule.taskName}` };
+  // The in-memory scheduler is not wired to persistent schedules or startup.
+  return { success: false, status: "unavailable", error: "Reminder scheduling is not connected", message: "Automatic reminders are not enabled. No reminders were scheduled." };
 }
 
 export async function cancelTaskReminders(taskId: number): Promise<SMSResponse> {
-  return { success: true, message: `Reminders cancelled for task ${taskId}` };
+  return { success: false, status: "unavailable", error: "Reminder scheduling is not connected", message: "Reminder cancellation is unavailable. No saved schedule was changed." };
 }

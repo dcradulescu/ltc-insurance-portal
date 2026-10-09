@@ -22,7 +22,7 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 21,25,True,"Rebuild Policy Form with all cheat sheet fields, tooltips, and document upload sections",inherited checked; re-verification pending,
 22,26,True,"Build 3-stage strategy system with dynamic checklists (Stage 1: Prior to Claim, Stage 2: The Claim, Stage 3: Post Approval)",inherited checked; re-verification pending,
 23,27,True,Implement checklist task completion tracking with progress percentage,inherited checked; re-verification pending,
-24,28,True,Document upload per checklist task — REMOVED: storing sensitive medical/insurance documents creates unnecessary liability; feature deleted by user request,inherited checked; re-verification pending,
+24,28,True,Document upload per checklist task — REMOVED: storing sensitive medical/insurance documents creates unnecessary liability; feature deleted by user request,reverified intentional exclusion; retained,Canonical user-requested document-upload removal honored: documentsRouter is not mounted and CareProviderForms is not rendered. See production inventory D01/D03; do not reconnect automatically.
 25,29,True,Add branch logic for Assignment of Benefits (AOB yes/no affects Stage 3),inherited checked; re-verification pending,
 26,30,True,Add Contact Us page with web form,inherited checked; re-verification pending,
 27,31,True,"Add Profile page with name/email editing, CC contacts, notification preferences",inherited checked; re-verification pending,
@@ -227,7 +227,7 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 226,288,True,Remove SSN from database schema — drizzle/schema.ts has no SSN column; never was in DB,inherited checked; re-verification pending,
 227,289,True,"Update server procedures to exclude SSN — server/routers.ts has one task label mentioning SSN in a checklist task description (informational only, not a data field); no SSN is stored or transmitted",inherited checked; re-verification pending,
 228,290,True,"Test and verify removal — confirmed: no SSN data field in PolicyForm.tsx, schema.ts, or any router input/output schema; orphan components (PolicyFormComprehensive.tsx, CareProviderForms.tsx) retain SSN UI but are not rendered anywhere in the app",inherited checked; re-verification pending,
-229,293,True,Document upload per checklist task — REMOVED: storing sensitive documents creates unnecessary liability; deleted by user request,inherited checked; re-verification pending,
+229,293,True,Document upload per checklist task — REMOVED: storing sensitive documents creates unnecessary liability; deleted by user request,reverified intentional exclusion; retained,Canonical user-requested document-upload removal honored: documentsRouter is not mounted and CareProviderForms is not rendered. See production inventory D01/D03; do not reconnect automatically.
 230,294,True,Re-implement RAG/chat functionality with proper schema (completed June 2026),inherited checked; re-verification pending,
 231,295,True,"Add Profile page with name/email editing, CC contacts, notification preferences — COMPLETED",inherited checked; re-verification pending,
 232,299,True,"Break apart Insured Person address into Address, City, State, Zip fields — already done in PolicyForm.tsx",inherited checked; re-verification pending,
@@ -730,3 +730,4 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 729,968,True,Enhanced micro-interactions and hover animations,inherited checked; re-verification pending,
 730,969,False,Global horizontal timeline navigation element (Academy timeline serves this purpose),implemented; evidence recorded,Shared journey navigation renders across public pages.
 731,970,False,Magazine layout improvements for Education definitions (already implemented with 4-stage accordion layout),open — preserve design; see TODO_CONTINUATION.md,Existing four-stage education layout retained; the historical magazine-layout request is not newly certified.
+732,,False,Create a complete inventory of mocked integrations requiring real production connections,completed new request; production integrations remain in progress,"User clarified scope. PRODUCTION_INTEGRATIONS.md and CSV cover all 37 registered procedures and 39 records: 22 active, 3 browser/local, 14 removed/dormant. No UI/UX changes. The original 61-item accounting is unchanged."

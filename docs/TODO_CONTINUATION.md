@@ -51,3 +51,7 @@ Line numbers refer to the original canonical `todo.md` baseline, not a new check
 Primary external destinations checked in this pass: https://www.scvisitingangels.com/ and https://www.visitingangels.com/. The resource reference https://content.naic.org/consumer/long-term-care-insurance.htm was also reachable. These checks do not establish third-party video playback or the availability of every linked external asset.
 
 No live messages, production deployment or main-branch merge were performed.
+
+## Subsequent clarified request
+
+The user subsequently requested an inventory of mocked integrations requiring real production connections. That new request is completed in `PRODUCTION_INTEGRATIONS.md` and `PRODUCTION_INTEGRATIONS.csv`: 37 registered procedures and 39 integration/capability records, including 14 removed/dormant exceptions. This adds one separately completed TODO entry; the original 29-complete/32-open accounting above is unchanged. No UI/UX files were changed by the inventory/backend pass.
