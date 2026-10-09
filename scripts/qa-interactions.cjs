@@ -1,3 +1,4 @@
+// Native exit beacons reach the local disabled handoff endpoint; no external delivery.
 const { clickControl } = require('./qa-browser-helpers.cjs');
 // Focused regressions for existing chat, sharing, menu and video controls.
 // Private data, model responses and browser media APIs are fixtures; no messages leave this process.
@@ -41,6 +42,9 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       const req = route.request(), url = new URL(req.url());
       const procedures = url.pathname.split('/api/trpc/')[1].split(',');
       const inputs = req.method() === 'GET' ? JSON.parse(url.searchParams.get('input') || '{}') : req.postDataJSON() || {};
+      // Let native unload beacons complete through the local, unconfigured endpoint.
+      // Delivery/database credentials are blank, so this cannot send a live handoff.
+      if (procedures.length === 1 && procedures[0] === 'policyForm.sendComprehensiveToZapier' && (inputs['0']?.json ?? inputs.json)?.trigger === 'exit') return route.continue();
       const responses = [];
       for (let i = 0; i < procedures.length; i++) {
         const procedure = procedures[i], input = inputs[i]?.json ?? inputs.json ?? {};

@@ -1,6 +1,7 @@
+// Native exit beacons reach the local disabled handoff endpoint; no external delivery.
 const { clickControl } = require('./qa-browser-helpers.cjs');
 // Production frontend regression checks. All private data and delivery calls are mocked.
-// Only pdfDelivery.generatePdf reaches the local server. No live messages are sent.
+// PDF generation and disabled exit handoffs reach the local server. No live messages are sent.
 // Build first; provide Playwright via PLAYWRIGHT_MODULE or a local playwright installation.
 const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const browserName = process.env.QA_BROWSER || 'chromium';
@@ -52,6 +53,9 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
         const paths = url.pathname.split('/api/trpc/')[1].split(',');
         if (paths.length === 1 && paths[0] === 'pdfDelivery.generatePdf') return route.continue();
         const inputs = request.method() === 'GET' ? JSON.parse(url.searchParams.get('input') || '{}') : request.postDataJSON() || {};
+        // Let native unload beacons complete through the local, unconfigured endpoint.
+        // Delivery/database credentials are blank, so this cannot send a live handoff.
+        if (paths.length === 1 && paths[0] === 'policyForm.sendComprehensiveToZapier' && (inputs['0']?.json ?? inputs.json)?.trigger === 'exit') return route.continue();
         const responses = [];
         for (let index = 0; index < paths.length; index++) {
           const name = paths[index], input = inputs[index]?.json ?? inputs.json ?? {};
@@ -248,11 +252,12 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
     }
     console.log(JSON.stringify({ passed: passed.length, results: passed }, null, 2));
   } catch (error) {
+    console.error(error); console.log(JSON.stringify({ completed: passed }, null, 2));
     if (activePage && !activePage.isClosed()) {
       await activePage.screenshot({ path: path.join(output, 'failure.png'), fullPage: true }).catch(() => {});
       await writeFile(path.join(output, 'failure-state.json'), JSON.stringify(await Promise.race([activePage.evaluate(() => ({ url: location.href, readyState: document.readyState, heading: document.querySelector('#policy-step-heading')?.textContent, step: localStorage.getItem('ltc_policy_step') })).catch(() => ({})), new Promise(resolve => setTimeout(() => resolve({ diagnostic: 'Page evaluation unavailable' }), 2000))]), null, 2));
-      await activePage.context().tracing.stop({ path: path.join(output, 'failure-trace.zip') }).catch(() => {});
+      await Promise.race([activePage.context().tracing.stop({ path: path.join(output, 'failure-trace.zip') }).catch(() => {}), new Promise(resolve => setTimeout(resolve, 5000))]);
     }
-    console.error(error); console.log(JSON.stringify({ completed: passed }, null, 2)); process.exitCode = 1;
+    process.exitCode = 1;
   } finally { if (browser) await browser.close(); server.kill(); }
 })();
