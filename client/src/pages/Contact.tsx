@@ -1,3 +1,4 @@
+import { contactMessageSchema } from "@shared/contactValidation";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { trpc } from "@/lib/trpc";
@@ -23,13 +24,14 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.message) {
-      toast.error("Please fill in all required fields.");
+    const parsed = contactMessageSchema.safeParse(form);
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0].message);
       return;
     }
     setSending(true);
     try {
-      await contactMutation.mutateAsync(form);
+      await contactMutation.mutateAsync(parsed.data);
       toast.success("Your message was accepted for delivery. We'll get back to you soon!");
       setForm({ name: "", email: "", phone: "", subject: "general", message: "" });
     } catch (_e) {
@@ -145,25 +147,26 @@ export default function Contact() {
               <div className="p-6 rounded border" style={{ background: VA_GREY_BG, borderColor: '#e0e0e0' }}>
                 <h2 className="text-xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: VA_HEADING }}>Send Us a Message</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <fieldset disabled={sending} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="name" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_HEADING }}>Full Name *</Label>
-                      <Input id="name" value={form.name} onChange={e => update("name", e.target.value)} placeholder="Your full name" required />
+                      <Input id="name" maxLength={200} value={form.name} onChange={e => update("name", e.target.value)} placeholder="Your full name" required />
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="email" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_HEADING }}>Email Address *</Label>
-                      <Input id="email" type="email" value={form.email} onChange={e => update("email", e.target.value)} placeholder="your@email.com" required />
+                      <Input id="email" maxLength={320} type="email" value={form.email} onChange={e => update("email", e.target.value)} placeholder="your@email.com" required />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="phone" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_HEADING }}>Phone Number</Label>
-                      <Input id="phone" value={form.phone} onChange={e => update("phone", e.target.value)} placeholder="(000) 000-0000" />
+                      <Input id="phone" type="tel" maxLength={40} value={form.phone} onChange={e => update("phone", e.target.value)} placeholder="(000) 000-0000" />
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="subject" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_HEADING }}>Subject</Label>
                       <Select value={form.subject} onValueChange={v => update("subject", v)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger id="subject" disabled={sending}><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="general">General Inquiry</SelectItem>
                           <SelectItem value="claim-help">Claim Filing Help</SelectItem>
@@ -177,8 +180,9 @@ export default function Contact() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="message" style={{ fontFamily: "'Open Sans', sans-serif", color: VA_HEADING }}>Message *</Label>
-                    <Textarea id="message" value={form.message} onChange={e => update("message", e.target.value)} placeholder="Tell us how we can help you..." rows={5} required />
+                    <Textarea id="message" maxLength={10000} value={form.message} onChange={e => update("message", e.target.value)} placeholder="Tell us how we can help you..." rows={5} required />
                   </div>
+                  </fieldset>
                   <div className="flex justify-center pt-4">
                     <button type="submit" disabled={sending} className="va-btn inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                       {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}

@@ -1,9 +1,7 @@
+import { emailSchema, nameSchema } from "../../shared/contactValidation";
 import { deliver } from "../_core/delivery";
 import { router, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
-import { generateStrategyPdf } from "../strategyPdfGenerator";
-import { notifyOwner } from "../_core/notification";
-import { ENV } from "../_core/env";
 
 // Full schema matching PdfData interface
 const pdfInputSchema = z.object({
@@ -49,7 +47,7 @@ export const pdfDeliveryRouter = router({
     return {success:true, base64:generatePdfBuffer(input).toString("base64"), message:"PDF generated"};
   }),
   sendPdfByEmail: publicProcedure.input(pdfInputSchema.extend({
-    recipientEmail:z.string().email(),recipientName:z.string().min(1).max(200),message:z.string().max(4000).optional(),
+    recipientEmail:emailSchema,recipientName:nameSchema,message:z.string().max(4000).optional(),
   })).mutation(async ({input}) => {
     const {generatePdfBuffer} = await import("../pdfConverter");
     const attachment = generatePdfBuffer(input).toString("base64");

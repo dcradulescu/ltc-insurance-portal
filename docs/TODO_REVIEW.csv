@@ -655,7 +655,7 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 654,864,False,"Test Policy Form: all 6 steps, validation, tooltips, video icons, save & return",open; see DEVELOPMENT_REVIEW.md,
 655,865,False,"Test Strategy page: form completion, PDF download, email delivery, Zapier webhook",open; see DEVELOPMENT_REVIEW.md,
 656,866,False,"Test Contact page: form submission, email delivery, calendar integration",open; see DEVELOPMENT_REVIEW.md,
-657,867,False,"Test Profile page: name/email editing, contact management",open; see DEVELOPMENT_REVIEW.md,
+657,867,False,"Test Profile page: name/email editing, contact management",implemented; evidence recorded,scripts/qa-workflows.cjs: mobile profile name/email validation and save/reload; edits survive refetch; contact add/edit/clear relationship/CC/delete; failed preference rollback. Transport mocked; real database verification remains under entry 899.
 658,868,False,"Test footer links: Privacy Policy, Terms of Use, all external links",open; see DEVELOPMENT_REVIEW.md,
 659,869,False,"Test navigation: all page transitions, scroll to top behavior",open; see DEVELOPMENT_REVIEW.md,
 660,870,False,"Test chat widget: on all pages, message sending, response generation",open; see DEVELOPMENT_REVIEW.md,
@@ -667,8 +667,8 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 666,878,False,Fix scroll-to-top on page transitions,open; see DEVELOPMENT_REVIEW.md,
 667,879,False,Fix mobile layout issues,open; see DEVELOPMENT_REVIEW.md,
 668,880,False,Verify all CTAs work correctly,open; see DEVELOPMENT_REVIEW.md,
-669,883,False,Test PDF generation on Strategy page,open; see DEVELOPMENT_REVIEW.md,
-670,884,False,Test PDF download functionality,open; see DEVELOPMENT_REVIEW.md,
+669,883,False,Test PDF generation on Strategy page,implemented; evidence recorded,"Both Strategy download controls exercised against the real local-server pdfDelivery.generatePdf endpoint; each generated a 19-page landscape PDF containing the saved policy, verified with PyMuPDF."
+670,884,False,Test PDF download functionality,implemented; evidence recorded,"Playwright captured and saved both Strategy PDFs, verified PDF magic bytes, size and saved-policy text. Cover rendered and inspected. Resource downloads were checked in earlier passes; full visual stress acceptance remains separate."
 671,885,False,Test email delivery of PDF,open; see DEVELOPMENT_REVIEW.md,
 672,886,False,Test email delivery of policy form data,open; see DEVELOPMENT_REVIEW.md,
 673,887,False,Test email delivery of strategy checklist,open; see DEVELOPMENT_REVIEW.md,

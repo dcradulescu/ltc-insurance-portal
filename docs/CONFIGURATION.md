@@ -18,3 +18,11 @@ Email attachment payloads use `attachmentBase64`, `attachmentFilename`, and `att
 Visitors can browse public education without an account. Private saving requires the signed visitor session and database. Keep the browser cookie to return to the same private records; clearing it creates a new visitor. A resume link restores form contents but does not transfer ownership of existing records. Old shared user-ID records are intentionally not exposed.
 
 No database migration deleting the legacy SSN column or reassigning shared records has been run. Review those data changes separately against the real schema, retention requirements and backups.
+
+## Browser workflow regression checks
+
+After `pnpm build`, run `pnpm test:workflows` with Playwright and its Chromium browser installed. If Playwright is installed outside this checkout, set `PLAYWRIGHT_MODULE` to that installation's module path. `QA_PORT` defaults to 3012, and `QA_OUTPUT_DIR` defaults to the ignored `.qa-workflows` directory.
+
+The script starts and stops its own local production server. It mocks all private-data and messaging transport, blocks external browser requests, and disables outbound service configuration in the server process. Only the local `pdfDelivery.generatePdf` endpoint is exercised without mocks. Tests cover profile/contact editing, error handling, strategy selection and task persistence, recipient validation, and both actual PDF downloads. These checks do not replace a real MySQL round-trip, inbox verification, model-provider generation or calendar booking test.
+
+Profile CC preferences are included in the comprehensive office-handoff payload. Strategy email recipients must currently be chosen explicitly. Notification preferences are stored but are not wired to automatic delivery. The Profile screen states these limits.

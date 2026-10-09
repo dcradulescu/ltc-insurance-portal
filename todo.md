@@ -864,7 +864,7 @@
 - [ ] Test Policy Form: all 6 steps, validation, tooltips, video icons, save & return
 - [ ] Test Strategy page: form completion, PDF download, email delivery, Zapier webhook
 - [ ] Test Contact page: form submission, email delivery, calendar integration
-- [ ] Test Profile page: name/email editing, contact management
+- [x] Test Profile page: name/email editing, contact management
 - [ ] Test footer links: Privacy Policy, Terms of Use, all external links
 - [ ] Test navigation: all page transitions, scroll to top behavior
 - [ ] Test chat widget: on all pages, message sending, response generation
@@ -880,8 +880,8 @@
 - [ ] Verify all CTAs work correctly
 
 ### Phase 3: Email & PDF Integration
-- [ ] Test PDF generation on Strategy page
-- [ ] Test PDF download functionality
+- [x] Test PDF generation on Strategy page
+- [x] Test PDF download functionality
 - [ ] Test email delivery of PDF
 - [ ] Test email delivery of policy form data
 - [ ] Test email delivery of strategy checklist

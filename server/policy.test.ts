@@ -163,17 +163,15 @@ describe("policy.save", () => {
     const { ctx } = createUnauthContext();
     const caller = appRouter.createCaller(ctx);
 
-    // All procedures are now public — should succeed
     await expect(caller.policy.save({ insuredFullName: "Test" })).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE"});
   });
 });
 
 describe("policy.get", () => {
-  it("returns a policy object (public procedure uses default userId=1)", async () => {
+  it("returns the visitor policy or an empty policy marker", async () => {
     const { ctx } = createAuthContext(999);
     const caller = appRouter.createCaller(ctx);
 
-    // policy.get uses getPolicyById(1) as a default — returns whatever is in mock
     const result = await caller.policy.get();
     // It may return a policy or { id: 0 } fallback
     expect(result).toBeDefined();
@@ -184,7 +182,6 @@ describe("policy.get", () => {
     const { ctx } = createUnauthContext();
     const caller = appRouter.createCaller(ctx);
 
-    // Should not throw — it's a public procedure
     await expect(caller.policy.get()).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE"});
   });
 });
@@ -199,8 +196,13 @@ describe("strategy.generate", () => {
       insuredFullName: "Alice Johnson",
       carrierName: "John Hancock",
       policyNumber: "JH-99999",
-      dailyMaximum: "$200/day",
+      dailyMaximum: "$200",
       eliminationPeriod: "90 days",
+      lifetimeMaximum: "$100,000",
+      insuredEmail: "alice@example.com",
+      insuredPhone: "8642446300",
+      careNeeds: ["Bathing"],
+      diagnosisCheckboxes: ["Other"],
     });
 
     const strategy = await caller.strategy.generate({ policyId: policy.id });

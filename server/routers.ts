@@ -1,3 +1,5 @@
+import { contactDetailsSchema, contactMessageSchema, nameSchema, emailSchema, strategyRecipientsSchema } from "../shared/contactValidation";
+import { isStrategyPolicyComplete } from "../shared/strategyState";
 import { hydratePolicyMetadata, readPolicyMetadata } from "../shared/policyMetadata";
 import { TRPCError } from "@trpc/server";
 import { deliver, resumeOrigin } from "./_core/delivery";
@@ -74,7 +76,7 @@ export const appRouter = router({
       return { id: ctx.user.id, name: ctx.user.name ?? "", email: ctx.user.email ?? "", notificationPreferences: { ...defaults, ...(ctx.user.notificationPreferences as Record<string, boolean> ?? {}) } };
     }),
     updateProfile: visitorProcedure
-      .input(z.object({ name: z.string().trim().min(1).max(200).optional(), email: z.string().email().optional(), notificationPreferences: z.object({ notifyOnNewPolicy: z.boolean().optional(), notifyOnStrategyGenerated: z.boolean().optional(), notifyOnContactForm: z.boolean().optional() }).optional() }))
+      .input(z.object({ name: nameSchema.optional(), email: emailSchema.optional(), notificationPreferences: z.object({ notifyOnNewPolicy: z.boolean().optional(), notifyOnStrategyGenerated: z.boolean().optional(), notifyOnContactForm: z.boolean().optional() }).optional() }))
       .mutation(async ({ ctx, input }) => {
         const db = await (await import('./db')).getDb();
         if (!db) throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Profile storage is unavailable." });
@@ -257,20 +259,23 @@ export const appRouter = router({
 
     saveTaskCompletion: visitorProcedure
       .input(z.object({
-        strategyId: z.number(),
-        taskId: z.string(),
-        taskTitle: z.string(),
-        stage: z.number(),
+        strategyId: z.number().int().positive(),
+        taskId: z.string().min(1).max(100),
+        taskTitle: z.string().max(1000),
+        stage: z.number().int().min(1).max(3),
         completed: z.boolean(),
       }))
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
         if (!strategy || strategy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Strategy not found" });
+        const tasks = strategy[`stage${input.stage}Tasks` as "stage1Tasks" | "stage2Tasks" | "stage3Tasks"];
+        const task = Array.isArray(tasks) ? tasks.find(task => task.id === input.taskId) : undefined;
+        if (!task) throw new TRPCError({ code: "BAD_REQUEST", message: "Task is not in this strategy stage." });
         await saveTaskCompletion(
           ctx.user.id,
           input.strategyId,
           input.taskId,
-          input.taskTitle,
+          task.label,
           input.stage,
           input.completed
         );
@@ -281,9 +286,9 @@ export const appRouter = router({
       .input(z.object({
         strategyId: z.number(),
         stage: z.enum(["stage1Tasks", "stage2Tasks", "stage3Tasks"]),
-        tasks: z.any(),
-        currentStage: z.number().optional(),
-        claimStatus: z.string().optional(),
+        tasks: z.array(z.object({ id: z.string().min(1).max(100), label: z.string().min(1).max(1000), completed: z.boolean(), category: z.string().max(100), critical: z.boolean().optional(), uploadRequired: z.boolean().optional() })).max(200),
+        currentStage: z.number().int().min(1).max(3).optional(),
+        claimStatus: z.enum(["not_started", "in_progress", "approved"]).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
@@ -298,8 +303,11 @@ export const appRouter = router({
     generate: visitorProcedure
       .input(z.object({ policyId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const policy = await getPolicyById(input.policyId);
-        if (!policy || policy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Policy not found" });
+        const storedPolicy = await getPolicyById(input.policyId);
+        if (!storedPolicy || storedPolicy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Policy not found" });
+
+        const policy = hydratePolicyMetadata(storedPolicy);
+        if (!isStrategyPolicyComplete(policy)) throw new TRPCError({ code: "BAD_REQUEST", message: "Complete and save the policy form before generating a strategy." });
 
         const adlList = Array.isArray(policy.adlLimitations) ? (policy.adlLimitations as string[]).join(", ") : "Not specified";
 
@@ -450,39 +458,28 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
 
   contacts: router({
     list: visitorProcedure.query(async ({ ctx }) => {
-      return getUserContacts(ctx.user.id); // Default public user
+      return getUserContacts(ctx.user.id);
     }),
 
     add: visitorProcedure
-      .input(z.object({
-        name: z.string(),
-        email: z.string().email(),
-        relationship: z.string().optional(),
-        receiveCcEmails: z.number().optional(),
-      }))
+      .input(contactDetailsSchema)
       .mutation(async ({ ctx, input }) => {
-        const id = await createUserContact({ ...input, userId: ctx.user.id }); // Default public user
+        const id = await createUserContact({ ...input, userId: ctx.user.id });
         return { id };
       }),
 
     update: visitorProcedure
-      .input(z.object({
-        id: z.number(),
-        name: z.string().optional(),
-        email: z.string().email().optional(),
-        relationship: z.string().optional(),
-        receiveCcEmails: z.number().optional(),
-      }))
+      .input(contactDetailsSchema.partial().extend({ id: z.number().int().positive() }).refine(value => Object.keys(value).some(key => key !== "id"), "No changes supplied."))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
-        await updateUserContact(id, ctx.user.id, data); // Default public user
+        if (!await updateUserContact(id, ctx.user.id, data)) throw new TRPCError({ code: "NOT_FOUND", message: "Contact not found." });
         return { success: true };
       }),
 
     delete: visitorProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await deleteUserContact(input.id, ctx.user.id); // Default public user
+        if (!await deleteUserContact(input.id, ctx.user.id)) throw new TRPCError({ code: "NOT_FOUND", message: "Contact not found." });
         return { success: true };
       }),
   }),
@@ -548,7 +545,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
     sendStrategy: visitorProcedure
       .input(z.object({
         strategyId: z.number(),
-        recipients: z.array(z.string().email()).min(1).max(10),
+        recipients: strategyRecipientsSchema,
         policyData: z.object({
           // Insured
           insuredName: z.string(),
@@ -600,18 +597,12 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       .input(z.object({
         pageName: z.string(),
         content: z.string(),
-        recipients: z.array(z.string().email()).min(1).max(10),
+        recipients: strategyRecipientsSchema,
       }))
       .mutation(async ({ input }) => deliver({ type: "page_content", pageName: input.pageName, content: input.content, recipients: input.recipients })),
 
     sendContactForm: publicProcedure
-      .input(z.object({
-        name: z.string(),
-        email: z.string().email(),
-        phone: z.string().optional(),
-        subject: z.string(),
-        message: z.string(),
-      }))
+      .input(contactMessageSchema)
       .mutation(async ({ input }) => deliver({ type: "contact_form", ...input, notifyEmail: process.env.CONTACT_EMAIL || "daniel@scvisitingangels.com" })),
 
     // Send a "Save & Return" magic link — stores form data server-side
