@@ -1,5 +1,6 @@
+import { enterVideoFullscreen } from "@/lib/videoFullscreen";
 import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 type VideoPlaceholderProps = {
   title: string;
@@ -14,16 +15,16 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
   const [showControls, setShowControls] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [playbackError, setPlaybackError] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handlePlay = useCallback(() => {
-    if (videoRef.current) {
-      videoRef.current.play();
-      setIsPlaying(true);
-      // Auto-hide controls after 3 seconds
-      controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
-    }
+  useEffect(() => () => { if (controlsTimeout.current) clearTimeout(controlsTimeout.current); }, []);
+  const handlePlay = useCallback(async () => {
+    if (!videoRef.current) return;
+    setPlaybackError("");
+    try { await videoRef.current.play(); }
+    catch { setIsPlaying(false); setShowControls(true); setPlaybackError("Video could not be played. Please try again later."); }
   }, []);
 
   const handlePause = useCallback(() => {
@@ -53,34 +54,35 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
 
   const handleTimeUpdate = useCallback(() => {
     if (videoRef.current) {
-      const pct = (videoRef.current.currentTime / videoRef.current.duration) * 100;
-      setProgress(pct);
+      const duration = videoRef.current.duration;
+      setProgress(Number.isFinite(duration) && duration > 0 ? videoRef.current.currentTime / duration * 100 : 0);
     }
   }, []);
 
   const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (videoRef.current) {
+    if (videoRef.current && Number.isFinite(videoRef.current.duration) && videoRef.current.duration > 0) {
       const rect = e.currentTarget.getBoundingClientRect();
-      const pct = (e.clientX - rect.left) / rect.width;
+      const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
       videoRef.current.currentTime = pct * videoRef.current.duration;
     }
   }, []);
 
-  const handleFullscreen = useCallback(() => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      }
-    }
+  const handleFullscreen = useCallback(async () => {
+    if (!videoRef.current) return;
+    try { await enterVideoFullscreen(videoRef.current); }
+    catch { setPlaybackError("Fullscreen is unavailable in this browser."); }
   }, []);
 
   const handleEnded = useCallback(() => {
+    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
     setIsPlaying(false);
     setShowControls(true);
     setProgress(0);
   }, []);
 
   const handleError = useCallback(() => {
+    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+    setPlaybackError("Video is unavailable. Please try again later.");
     setIsPlaying(false);
     setShowControls(true);
   }, []);
@@ -100,6 +102,9 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
         <div className="relative aspect-video">
           <video
             ref={videoRef}
+            aria-label={title}
+            onPlay={() => { setIsPlaying(true); setPlaybackError(""); if (controlsTimeout.current) clearTimeout(controlsTimeout.current); controlsTimeout.current = setTimeout(() => setShowControls(false), 3000); }}
+            onPause={() => { setIsPlaying(false); setShowControls(true); }}
             src={videoUrl}
             className="w-full h-full object-cover"
             poster={thumbnailUrl}
@@ -127,7 +132,7 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
                   <Play className="w-8 h-8 text-white ml-1 group-hover:scale-110 transition-transform" />
                 </div>
                 <p className="text-white text-sm mt-4 text-center px-4 max-w-lg font-medium drop-shadow-lg">
-                  {description || title}
+                  {playbackError || description || title}
                 </p>
               </div>
             )}
@@ -139,6 +144,7 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
             >
               {/* Play/Pause button */}
               <button
+                aria-label={`${isPlaying ? "Pause" : "Play"} ${title}`}
                 onClick={handleTogglePlay}
                 className="text-white hover:text-primary transition-colors"
               >
@@ -148,6 +154,13 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
               {/* Progress bar */}
               <div
                 className="flex-1 h-1.5 bg-white/30 rounded-full cursor-pointer group"
+                role="slider" tabIndex={0} aria-label={`Seek ${title}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}
+                onKeyDown={event => {
+                  const video = videoRef.current;
+                  if (!video || !Number.isFinite(video.duration) || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+                  event.preventDefault();
+                  video.currentTime = event.key === "Home" ? 0 : event.key === "End" ? video.duration : Math.max(0, Math.min(video.duration, video.currentTime + (event.key === "ArrowRight" ? 5 : -5)));
+                }}
                 onClick={handleSeek}
               >
                 <div
@@ -160,6 +173,7 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
 
               {/* Mute button */}
               <button
+                aria-label={`${isMuted ? "Unmute" : "Mute"} ${title}`}
                 onClick={() => setIsMuted(!isMuted)}
                 className="text-white hover:text-primary transition-colors"
               >
@@ -168,6 +182,7 @@ export function VideoPlaceholder({ title, description, className = "", thumbnail
 
               {/* Fullscreen button */}
               <button
+                aria-label={`Fullscreen ${title}`}
                 onClick={handleFullscreen}
                 className="text-white hover:text-primary transition-colors"
               >

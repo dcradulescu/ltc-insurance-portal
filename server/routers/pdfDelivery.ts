@@ -1,8 +1,7 @@
+import { emailSchema, nameSchema } from "../../shared/contactValidation";
+import { deliver } from "../_core/delivery";
 import { router, publicProcedure } from "../_core/trpc";
 import { z } from "zod";
-import { generateStrategyPdf } from "../strategyPdfGenerator";
-import { notifyOwner } from "../_core/notification";
-import { ENV } from "../_core/env";
 
 // Full schema matching PdfData interface
 const pdfInputSchema = z.object({
@@ -42,82 +41,18 @@ const pdfInputSchema = z.object({
 });
 
 export const pdfDeliveryRouter = router({
-  // Generate PDF and upload to S3
-  generatePdf: publicProcedure
-    .input(pdfInputSchema)
-    .mutation(async ({ input }) => {
-      try {
-        const result = await generateStrategyPdf(input);
-        return {
-          success: true,
-          url: result.url,
-          key: result.key,
-          message: "PDF generated successfully",
-        };
-      } catch (error) {
-        console.error("PDF generation error:", error);
-        throw new Error(`Failed to generate PDF: ${error}`);
-      }
-    }),
-
-  // Send PDF via email using Zapier webhook
-  sendPdfByEmail: publicProcedure
-    .input(
-      pdfInputSchema.extend({
-        recipientEmail: z.string().email("Invalid email address"),
-        recipientName: z.string().min(1, "Recipient name is required"),
-        message: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      try {
-        const pdfResult = await generateStrategyPdf(input);
-        console.log(`[Email] PDF generated and uploaded to S3: ${pdfResult.url}`);
-
-        const zapierUrl = ENV.zapierWebhookUrl;
-        if (zapierUrl) {
-          try {
-            const response = await fetch(zapierUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                type: "strategy_email",
-                recipientEmail: input.recipientEmail,
-                recipientName: input.recipientName,
-                insuredName: input.insuredName,
-                policyNumber: input.policyNumber,
-                carrierName: input.carrierName,
-                pdfUrl: pdfResult.url,
-                personalMessage: input.message || "",
-                subject: `Your LTC Insurance Strategy for ${input.insuredName}`,
-                timestamp: new Date().toISOString(),
-              }),
-            });
-            if (!response.ok) {
-              console.error(`[Email] Zapier webhook error: ${response.status} ${response.statusText}`);
-            } else {
-              console.log("[Email] Strategy email request sent to Zapier successfully");
-            }
-          } catch (zapierError) {
-            console.error("[Email] Zapier webhook error:", zapierError);
-          }
-        }
-
-        await notifyOwner({
-          title: `Strategy PDF Emailed: ${input.insuredName}`,
-          content: `Strategy PDF for ${input.insuredName} (Policy: ${input.policyNumber}) was sent to ${input.recipientName} (${input.recipientEmail}).\n\nPDF URL: ${pdfResult.url}${input.message ? `\n\nPersonal message: ${input.message}` : ""}`,
-        }).catch(() => {});
-
-        return {
-          success: true,
-          message: `Strategy PDF has been sent to ${input.recipientEmail}. The PDF is also available for download.`,
-          pdfUrl: pdfResult.url,
-        };
-      } catch (error) {
-        console.error("[Email] Delivery error:", error);
-        throw new Error(`Failed to send PDF: ${error}`);
-      }
-    }),
+  // Return directly to the requesting browser; do not publish policy data to object storage.
+  generatePdf: publicProcedure.input(pdfInputSchema).mutation(async ({input}) => {
+    const {generatePdfBuffer} = await import("../pdfConverter");
+    return {success:true, base64:generatePdfBuffer(input).toString("base64"), message:"PDF generated"};
+  }),
+  sendPdfByEmail: publicProcedure.input(pdfInputSchema.extend({
+    recipientEmail:emailSchema,recipientName:nameSchema,message:z.string().max(4000).optional(),
+  })).mutation(async ({input}) => {
+    const {generatePdfBuffer} = await import("../pdfConverter");
+    const attachment = generatePdfBuffer(input).toString("base64");
+    return deliver({type:"strategy_email",recipientEmail:input.recipientEmail,recipientName:input.recipientName,subject:`LTC strategy for ${input.insuredName}`,personalMessage:input.message ?? "",attachmentBase64:attachment,attachmentFilename:"LTC-Strategy.pdf",attachmentContentType:"application/pdf"});
+  }),
 
   // Validate email before sending
   validateEmail: publicProcedure

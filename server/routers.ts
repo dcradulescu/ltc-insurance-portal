@@ -1,7 +1,13 @@
+import { contactDetailsSchema, contactMessageSchema, nameSchema, emailSchema, strategyRecipientsSchema } from "../shared/contactValidation";
+import { isStrategyPolicyComplete } from "../shared/strategyState";
+import { hydratePolicyMetadata, readPolicyMetadata } from "../shared/policyMetadata";
+import { TRPCError } from "@trpc/server";
+import { deliver, resumeOrigin } from "./_core/delivery";
+import { VISITOR_COOKIE } from "./_core/visitorSession";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, visitorProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import {
   createPolicy, updatePolicy, getPolicyByUserId, getPolicyById,
@@ -61,82 +67,52 @@ export const appRouter = router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(VISITOR_COOKIE, { path: "/" });
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
-    getProfile: publicProcedure.query(async () => {
-      const db = await (await import('./db')).getDb();
-      const defaultPrefs = { notifyOnNewPolicy: true, notifyOnStrategyGenerated: true, notifyOnContactForm: true };
-      if (!db) return { id: 1, name: 'Portal Operator', email: '', notificationPreferences: defaultPrefs };
-      const { users } = await import('../drizzle/schema');
-      const { eq } = await import('drizzle-orm');
-      const result = await db.select().from(users).where(eq(users.id, 1)).limit(1);
-      const user = result[0];
-      const prefs = (user?.notificationPreferences as typeof defaultPrefs | null) ?? defaultPrefs;
-      return {
-        id: user?.id ?? 1,
-        name: user?.name ?? 'Portal Operator',
-        email: user?.email ?? '',
-        notificationPreferences: { ...defaultPrefs, ...prefs },
-      };
+    getProfile: visitorProcedure.query(async ({ ctx }) => {
+      const defaults = { notifyOnNewPolicy: true, notifyOnStrategyGenerated: true, notifyOnContactForm: true };
+      return { id: ctx.user.id, name: ctx.user.name ?? "", email: ctx.user.email ?? "", notificationPreferences: { ...defaults, ...(ctx.user.notificationPreferences as Record<string, boolean> ?? {}) } };
     }),
-    updateProfile: publicProcedure
-      .input(z.object({
-        name: z.string().min(1).optional(),
-        email: z.string().email().optional(),
-        notificationPreferences: z.object({
-          notifyOnNewPolicy: z.boolean().optional(),
-          notifyOnStrategyGenerated: z.boolean().optional(),
-          notifyOnContactForm: z.boolean().optional(),
-        }).optional(),
-      }))
-      .mutation(async ({ input }) => {
+    updateProfile: visitorProcedure
+      .input(z.object({ name: nameSchema.optional(), email: emailSchema.optional(), notificationPreferences: z.object({ notifyOnNewPolicy: z.boolean().optional(), notifyOnStrategyGenerated: z.boolean().optional(), notifyOnContactForm: z.boolean().optional() }).optional() }))
+      .mutation(async ({ ctx, input }) => {
         const db = await (await import('./db')).getDb();
-        if (!db) return { success: false };
+        if (!db) throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Profile storage is unavailable." });
         const { users } = await import('../drizzle/schema');
-        const { eq, sql } = await import('drizzle-orm');
-        // Upsert: try update first, insert if no row exists
-        const existing = await db.select({ id: users.id }).from(users).where(eq(users.id, 1)).limit(1);
-        if (existing.length === 0) {
-          // Create the operator profile row with a synthetic openId
-          await db.insert(users).values({
-            id: 1,
-            openId: 'portal-operator',
-            name: input.name ?? 'Portal Operator',
-            email: input.email ?? null,
-            lastSignedIn: new Date(),
-            notificationPreferences: input.notificationPreferences ?? null,
-          } as any);
-        } else {
-          const updateData: Record<string, unknown> = {};
-          if (input.name !== undefined) updateData.name = input.name;
-          if (input.email !== undefined) updateData.email = input.email;
-          if (input.notificationPreferences !== undefined) {
-            // Merge with existing prefs
-            const currentResult = await db.select({ prefs: users.notificationPreferences }).from(users).where(eq(users.id, 1)).limit(1);
-            const currentPrefs = (currentResult[0]?.prefs as Record<string, boolean> | null) ?? {};
-            updateData.notificationPreferences = { ...currentPrefs, ...input.notificationPreferences };
-          }
-          if (Object.keys(updateData).length > 0) {
-            await db.update(users).set(updateData as any).where(eq(users.id, 1));
-          }
-        }
+        const { eq } = await import('drizzle-orm');
+        const values = { ...input, ...(input.notificationPreferences ? { notificationPreferences: { ...(ctx.user.notificationPreferences as object ?? {}), ...input.notificationPreferences } } : {}) };
+        await db.update(users).set(values).where(eq(users.id, ctx.user.id));
         return { success: true };
       }),
   }),
 
   policy: router({
-    get: publicProcedure.query(async ({ ctx }) => {
-      // Allow public access - return first policy for public user
-      const policy = await getPolicyById(1);
-      if (policy) return policy;
+    get: visitorProcedure.query(async ({ ctx }) => {
+      // Return only the current visitor's saved policy.
+      const policy = await getPolicyByUserId(ctx.user.id);
+      if (policy) return hydratePolicyMetadata(policy);
       // Return empty policy object if none exists
       return { id: 0 } as any;
     }),
 
-    save: publicProcedure
+    save: visitorProcedure
       .input(z.object({
         id: z.number().optional(),
+        insuredAddress: z.string().optional(),
+        insuredCity: z.string().optional(),
+        insuredState: z.string().optional(),
+        insuredZip: z.string().optional(),
+        carrierAddress: z.string().optional(),
+        carrierCity: z.string().optional(),
+        carrierState: z.string().optional(),
+        carrierZip: z.string().optional(),
+        careLogsheetsRequired: z.string().optional(),
+        whereToGetClaimsPacket: z.string().optional(),
+        howToSubmitClaimsPacket: z.string().optional(),
+        invoiceReimbursementDelay: z.string().optional(),
+
         // Insured Person
         insuredFullName: z.string().optional(),
         insuredDob: z.string().optional(),
@@ -219,49 +195,19 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
-        // Use a default userId for public access
-        const userId = 1; // Default public user
+        // Ownership comes from the signed visitor session.
+        const userId = ctx.user.id;
         
-        // Strip form-only fields that don't exist in the database
-        const {
-          poa_name, poa_relationship,
-          lookBackPeriodEnabled, lookBackPeriodDays,
-          careCoordinatorReductionEnabled, careCoordinatorReducedToDays,
-          reductionInCareProvidedEnabled, reductionInCareDaysCountedAs7,
-          qualifyingAdls,
-          approvedAgencyRequired, numberOfDaysUntilPayment,
-          equipmentAllowanceEnabled, equipmentAllowanceAmount, equipmentAllowanceCoverage,
-          equipmentAllowanceDeductedFromLifetime, equipmentAllowanceRelatedAdls,
-          equipmentNeeds, equipmentAllowanceNotes,
-          inflationAdjustmentEnabled, inflationType, inflationPercentagePerYear,
-          inflationContinuesAfterBenefits,
-          caseManagerAssigned,
-          careNeeds, careNotes,
-          diagnosisCheckboxes, diagnosisNotes,
-          ...dbData
-        } = data as any;
-        
-        // Store form-only fields as JSON in equipmentAllowance for strategy generator
-        const metadata = JSON.stringify({
-          poa_name, poa_relationship,
-          lookBackPeriodEnabled, lookBackPeriodDays,
-          careCoordinatorReductionEnabled, careCoordinatorReducedToDays,
-          reductionInCareProvidedEnabled, reductionInCareDaysCountedAs7,
-          qualifyingAdls,
-          approvedAgencyRequired, numberOfDaysUntilPayment,
-          equipmentAllowanceEnabled, equipmentAllowanceAmount, equipmentAllowanceCoverage,
-          equipmentAllowanceDeductedFromLifetime, equipmentAllowanceRelatedAdls,
-          equipmentNeeds, equipmentAllowanceNotes,
-          inflationAdjustmentEnabled, inflationType, inflationPercentagePerYear,
-          inflationContinuesAfterBenefits,
-          caseManagerAssigned,
-          careNeeds, careNotes,
-          diagnosisCheckboxes, diagnosisNotes,
-        });
-        
+        const metadataValues = readPolicyMetadata(JSON.stringify(data));
+        const dbData = Object.fromEntries(Object.entries(data).filter(([key]) => !(key in metadataValues)));
+        const metadata = JSON.stringify(metadataValues);
+
         const saveData = { ...dbData, equipmentAllowance: metadata };
         
         if (id) {
+          const existing = await getPolicyById(id);
+          if (!existing || existing.userId !== userId) throw new TRPCError({ code: "NOT_FOUND", message: "Policy not found" });
+          saveData.equipmentAllowance = JSON.stringify({...readPolicyMetadata(existing.equipmentAllowance),...readPolicyMetadata(metadata)});
           await updatePolicy(id, userId, saveData);
           return { id };
         } else {
@@ -272,57 +218,61 @@ export const appRouter = router({
   }),
 
   strategy: router({
-    getByPolicy: publicProcedure
+    getByPolicy: visitorProcedure
       .input(z.object({ policyId: z.number() }))
       .query(async ({ ctx, input }) => {
         // Allow public access
-        return getStrategyByPolicyId(input.policyId, 1);
+        return getStrategyByPolicyId(input.policyId, ctx.user.id);
       }),
 
-    getMine: publicProcedure.query(async ({ ctx }) => {
+    getMine: visitorProcedure.query(async ({ ctx }) => {
       // Allow public access
-      return getStrategyByUserId(1);
+      return getStrategyByUserId(ctx.user.id);
     }),
 
-    getTaskCompletions: publicProcedure
+    getTaskCompletions: visitorProcedure
       .input(z.object({ strategyId: z.number() }))
       .query(async ({ ctx, input }) => {
         // Allow public access
-        return getTaskCompletions(1, input.strategyId);
+        return getTaskCompletions(ctx.user.id, input.strategyId);
       }),
 
-    saveTaskCompletion: publicProcedure
+    saveTaskCompletion: visitorProcedure
       .input(z.object({
-        strategyId: z.number(),
-        taskId: z.string(),
-        taskTitle: z.string(),
-        stage: z.number(),
+        strategyId: z.number().int().positive(),
+        taskId: z.string().min(1).max(100),
+        taskTitle: z.string().max(1000),
+        stage: z.number().int().min(1).max(3),
         completed: z.boolean(),
       }))
       .mutation(async ({ ctx, input }) => {
-        // Allow public access
+        const strategy = await getStrategyById(input.strategyId);
+        if (!strategy || strategy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Strategy not found" });
+        const tasks = strategy[`stage${input.stage}Tasks` as "stage1Tasks" | "stage2Tasks" | "stage3Tasks"];
+        const task = Array.isArray(tasks) ? tasks.find(task => task.id === input.taskId) : undefined;
+        if (!task) throw new TRPCError({ code: "BAD_REQUEST", message: "Task is not in this strategy stage." });
         await saveTaskCompletion(
-          1,
+          ctx.user.id,
           input.strategyId,
           input.taskId,
-          input.taskTitle,
+          task.label,
           input.stage,
           input.completed
         );
         return { success: true };
       }),
 
-    updateTasks: publicProcedure
+    updateTasks: visitorProcedure
       .input(z.object({
         strategyId: z.number(),
         stage: z.enum(["stage1Tasks", "stage2Tasks", "stage3Tasks"]),
-        tasks: z.any(),
-        currentStage: z.number().optional(),
-        claimStatus: z.string().optional(),
+        tasks: z.array(z.object({ id: z.string().min(1).max(100), label: z.string().min(1).max(1000), completed: z.boolean(), category: z.string().max(100), critical: z.boolean().optional(), uploadRequired: z.boolean().optional() })).max(200),
+        currentStage: z.number().int().min(1).max(3).optional(),
+        claimStatus: z.enum(["not_started", "in_progress", "approved"]).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
-        if (!strategy) throw new Error("Strategy not found");
+        if (!strategy || strategy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Strategy not found" });
         const updateData: Record<string, any> = { [input.stage]: input.tasks };
         if (input.currentStage) updateData.currentStage = input.currentStage;
         if (input.claimStatus) updateData.claimStatus = input.claimStatus;
@@ -330,11 +280,14 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    generate: publicProcedure
+    generate: visitorProcedure
       .input(z.object({ policyId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const policy = await getPolicyById(input.policyId);
-        if (!policy) throw new Error("Policy not found");
+        const storedPolicy = await getPolicyById(input.policyId);
+        if (!storedPolicy || storedPolicy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Policy not found" });
+
+        const policy = hydratePolicyMetadata(storedPolicy);
+        if (!isStrategyPolicyComplete(policy)) throw new TRPCError({ code: "BAD_REQUEST", message: "Complete and save the policy form before generating a strategy." });
 
         const adlList = Array.isArray(policy.adlLimitations) ? (policy.adlLimitations as string[]).join(", ") : "Not specified";
 
@@ -443,19 +396,19 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         return { id: strategyId, content, stage1Tasks, stage2Tasks, stage3Tasks };
       }),
 
-    get: publicProcedure
+    get: visitorProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.id);
-        if (!strategy) throw new Error("Strategy not found");
+        if (!strategy || strategy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Strategy not found" });
         return strategy;
       }),
 
-    generatePhysicianLetter: publicProcedure
+    generatePhysicianLetter: visitorProcedure
       .input(z.object({ policyId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const policy = await getPolicyById(input.policyId);
-        if (!policy) throw new Error("Policy not found");
+        if (!policy || policy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Policy not found" });
 
         const adlLimitations = Array.isArray(policy.adlLimitations) ? policy.adlLimitations as string[] : [];
         const isCognitiveImpaired = String(policy.cognitiveImpairmentTrigger || "").toLowerCase() === "yes" || (policy.cognitiveImpairmentTrigger as any) === true;
@@ -484,46 +437,35 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
 
 
   contacts: router({
-    list: publicProcedure.query(async ({ ctx }) => {
-      return getUserContacts(1); // Default public user
+    list: visitorProcedure.query(async ({ ctx }) => {
+      return getUserContacts(ctx.user.id);
     }),
 
-    add: publicProcedure
-      .input(z.object({
-        name: z.string(),
-        email: z.string().email(),
-        relationship: z.string().optional(),
-        receiveCcEmails: z.number().optional(),
-      }))
+    add: visitorProcedure
+      .input(contactDetailsSchema)
       .mutation(async ({ ctx, input }) => {
-        const id = await createUserContact({ ...input, userId: 1 }); // Default public user
+        const id = await createUserContact({ ...input, userId: ctx.user.id });
         return { id };
       }),
 
-    update: publicProcedure
-      .input(z.object({
-        id: z.number(),
-        name: z.string().optional(),
-        email: z.string().email().optional(),
-        relationship: z.string().optional(),
-        receiveCcEmails: z.number().optional(),
-      }))
+    update: visitorProcedure
+      .input(contactDetailsSchema.partial().extend({ id: z.number().int().positive() }).refine(value => Object.keys(value).some(key => key !== "id"), "No changes supplied."))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
-        await updateUserContact(id, 1, data); // Default public user
+        if (!await updateUserContact(id, ctx.user.id, data)) throw new TRPCError({ code: "NOT_FOUND", message: "Contact not found." });
         return { success: true };
       }),
 
-    delete: publicProcedure
+    delete: visitorProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await deleteUserContact(input.id, 1); // Default public user
+        if (!await deleteUserContact(input.id, ctx.user.id)) throw new TRPCError({ code: "NOT_FOUND", message: "Contact not found." });
         return { success: true };
       }),
   }),
 
   sms: router({
-    sendNotification: publicProcedure
+    sendNotification: visitorProcedure
       .input(z.object({
         phoneNumber: z.string(),
         taskName: z.string(),
@@ -539,7 +481,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         return result;
       }),
 
-    sendBulk: publicProcedure
+    sendBulk: visitorProcedure
       .input(z.object({
         recipients: z.array(z.object({
           phoneNumber: z.string(),
@@ -558,10 +500,10 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
           reminderType: input.reminderType,
           priority: input.priority,
         });
-        return { success: true, results };
+        return { success: results.every(result => result.success), results };
       }),
 
-    savePreferences: publicProcedure
+    savePreferences: visitorProcedure
       .input(z.object({
         phoneNumber: z.string(),
         taskReminders: z.boolean(),
@@ -570,17 +512,20 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         reminderDaysBefore: z.array(z.number()),
       }))
       .mutation(async ({ ctx, input }) => {
-        // In production, save to database
-        console.log("SMS preferences saved:", input);
+        const db = await (await import('./db')).getDb();
+        if (!db) throw new TRPCError({code:"SERVICE_UNAVAILABLE",message:"Preference storage is unavailable."});
+        const {users} = await import('../drizzle/schema');
+        const {eq} = await import('drizzle-orm');
+        await db.update(users).set({notificationPreferences:{...(ctx.user.notificationPreferences as object ?? {}),sms:input}}).where(eq(users.id,ctx.user.id));
         return { success: true, message: "SMS preferences saved successfully" };
       }),
   }),
 
   email: router({
-    sendStrategy: publicProcedure
+    sendStrategy: visitorProcedure
       .input(z.object({
         strategyId: z.number(),
-        recipients: z.array(z.string().email()),
+        recipients: strategyRecipientsSchema,
         policyData: z.object({
           // Insured
           insuredName: z.string(),
@@ -619,88 +564,26 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
       }))
       .mutation(async ({ ctx, input }) => {
         const strategy = await getStrategyById(input.strategyId);
-        if (!strategy) throw new Error("Strategy not found");
-
-        // Generate PDF if policy data is provided
-        let pdfUrl = "";
+        if (!strategy || strategy.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Strategy not found" });
+        let attachmentBase64 = "";
         if (input.policyData) {
-          try {
-            const { generateStrategyPdf } = await import("./strategyPdfGenerator");
-            const pdfResult = await generateStrategyPdf(input.policyData);
-            pdfUrl = pdfResult.url;
-            console.log(`[Email] PDF generated: ${pdfUrl}`);
-          } catch (pdfError) {
-            console.error("[Email] PDF generation failed:", pdfError);
-          }
+          const { generatePdfBuffer } = await import("./pdfConverter");
+          attachmentBase64 = generatePdfBuffer(input.policyData).toString("base64");
         }
-
-        // Send to Zapier webhook
-        const zapierUrl = ENV.zapierWebhookUrl;
-        if (zapierUrl) {
-          try {
-            const response = await fetch(zapierUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                type: "strategy_email",
-                strategyId: input.strategyId,
-                recipients: input.recipients,
-                pdfUrl,
-                insuredName: input.policyData?.insuredName || "",
-                policyNumber: input.policyData?.policyNumber || "",
-                strategyContent: strategy.strategyContent,
-                timestamp: new Date().toISOString(),
-              }),
-            });
-            if (!response.ok) {
-              console.error(`[Email] Zapier webhook error: ${response.status}`);
-            } else {
-              console.log("[Email] Strategy sent to Zapier successfully");
-            }
-          } catch (error) {
-            console.error("[Email] Zapier submission error:", error);
-          }
-        }
-
-        // Notify owner
-        await notifyOwner({
-          title: `Strategy Emailed: ${input.policyData?.insuredName || "Unknown"}`,
-          content: `Strategy PDF sent to: ${input.recipients.join(", ")}${pdfUrl ? `\nPDF: ${pdfUrl}` : ""}`,
-        }).catch(() => {});
-
-        return { success: true, message: `Strategy has been sent to ${input.recipients.length} recipient(s).${pdfUrl ? " PDF is attached." : ""}` };
+        return deliver({ type: "strategy_email", strategyId: input.strategyId, recipients: input.recipients, attachmentBase64, attachmentFilename: "LTC-Strategy.pdf", attachmentContentType: "application/pdf", insuredName: input.policyData?.insuredName ?? "", policyNumber: input.policyData?.policyNumber ?? "", strategyContent: strategy.strategyContent });
       }),
 
     sendPageContent: publicProcedure
       .input(z.object({
         pageName: z.string(),
         content: z.string(),
-        recipients: z.array(z.string().email()),
+        recipients: strategyRecipientsSchema,
       }))
-      .mutation(async ({ ctx, input }) => {
-        const recipientList = input.recipients.join(", ");
-        await notifyOwner({
-          title: `Page Content Email: ${input.pageName}`,
-          content: `User requested ${input.pageName} content to be emailed to: ${recipientList}`,
-        }).catch(() => {});
-        return { success: true, message: `Content has been queued for delivery.` };
-      }),
+      .mutation(async ({ input }) => deliver({ type: "page_content", pageName: input.pageName, content: input.content, recipients: input.recipients })),
 
     sendContactForm: publicProcedure
-      .input(z.object({
-        name: z.string(),
-        email: z.string().email(),
-        phone: z.string().optional(),
-        subject: z.string(),
-        message: z.string(),
-      }))
-      .mutation(async ({ input }) => {
-        await notifyOwner({
-          title: `Contact Form: ${input.subject}`,
-          content: `From: ${input.name} (${input.email}${input.phone ? ", " + input.phone : ""})\n\n${input.message}`,
-        }).catch(() => {});
-        return { success: true };
-      }),
+      .input(contactMessageSchema)
+      .mutation(async ({ input }) => deliver({ type: "contact_form", ...input, notifyEmail: process.env.CONTACT_EMAIL || "daniel@scvisitingangels.com" })),
 
     // Send a "Save & Return" magic link — stores form data server-side
     sendSaveLink: publicProcedure
@@ -710,63 +593,28 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         stepTitle: z.string().optional(),
         origin: z.string().optional(),
         formData: z.record(z.string(), z.any()).optional(),
-        currentStep: z.number().optional(),
+        currentStep: z.number().int().min(0).max(5).optional(),
       }))
       .mutation(async ({ input }) => {
+        const origin = resumeOrigin(); // Never trust a caller-supplied email-link origin.
         const token = nanoid(32);
-        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
-        // Save form data server-side
-        try {
-          await createSaveLink({
-            token,
-            email: input.email,
-            insuredName: input.insuredName || null,
-            formData: input.formData || {},
-            currentStep: input.currentStep || 0,
-            expiresAt,
-          });
-        } catch (err) {
-          console.error("[SaveLink] DB error:", err);
-        }
-        const returnUrl = `${input.origin || "https://ltcinsurance.scvisitingangels.com"}/policy-form?resume=${token}`;
-        const zapierUrl = ENV.zapierWebhookUrl;
-        if (zapierUrl) {
-          try {
-            await fetch(zapierUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                type: "save_link",
-                to: input.email,
-                insuredName: input.insuredName || "there",
-                stepTitle: input.stepTitle || "your current step",
-                returnUrl,
-                subject: "Your LTC Insurance Navigator — Saved Progress",
-                body: `Hi ${input.insuredName || "there"},\n\nYour LTC Insurance Navigator progress has been saved. Click the link below to pick up right where you left off:\n\n${returnUrl}\n\nThis link will restore your exact progress and take you directly to Step ${(input.currentStep || 0) + 1}. It expires in 30 days.\n\nIf you have any questions, please call us at (864) 244-6300 or reply to this email.\n\nWarm regards,\nSC Visiting Angels\n(864) 244-6300 | scvisitingangels.com`,
-                timestamp: new Date().toISOString(),
-              }),
-            });
-          } catch (err) {
-            console.error("[SaveLink] Zapier error:", err);
-          }
-        }
-        await notifyOwner({
-          title: `Save Link Sent: ${input.insuredName || input.email}`,
-          content: `User ${input.email} saved progress at step: ${input.stepTitle || "unknown"}. Token: ${token}`,
-        }).catch(() => {});
-        return { success: true, token };
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        const { id: _oldId, userId: _oldOwner, ...formData } = input.formData ?? {};
+        await createSaveLink({ token, email: input.email, insuredName: input.insuredName || null, formData, currentStep: input.currentStep || 0, expiresAt });
+        const returnUrl = `${origin}/policy-form?resume=${token}`;
+        return deliver({ type: "save_link", to: input.email, insuredName: input.insuredName || "there", returnUrl, subject: "Your saved LTC Insurance Navigator progress", body: `Resume your form: ${returnUrl}\nThis private link expires in 30 days. Do not forward it.` });
       }),
 
     // Retrieve saved form data by resume token
     getResumeData: publicProcedure
-      .input(z.object({ token: z.string() }))
+      .input(z.object({ token: z.string().length(32) }))
       .query(async ({ input }) => {
         const link = await getSaveLinkByToken(input.token);
         if (!link) return { found: false } as const;
         if (link.expiresAt < new Date()) return { found: false, expired: true } as const;
         return {
           found: true,
-          formData: link.formData as Record<string, any>,
+          formData: Object.fromEntries(Object.entries(link.formData as Record<string, any>).filter(([key]) => key !== "id" && key !== "userId")),
           currentStep: link.currentStep,
           insuredName: link.insuredName,
           email: link.email,
@@ -780,37 +628,8 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         stepTitle: z.string(),
         formData: z.record(z.string(), z.any()),
       }))
-      .mutation(async ({ input }) => {
-        const zapierUrl = ENV.zapierWebhookUrl;
-        if (zapierUrl) {
-          try {
-            await fetch(zapierUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                type: "step_progress",
-                stepNumber: input.stepNumber,
-                stepTitle: input.stepTitle,
-                insuredName: input.formData.insuredFullName || "Unknown",
-                insuredEmail: input.formData.insuredEmail || "",
-                insuredPhone: input.formData.insuredPhone || "",
-                notifyEmail: "daniel@scvisitingangels.com",
-                formData: input.formData,
-                timestamp: new Date().toISOString(),
-              }),
-            });
-          } catch (err) {
-            console.error("[StepProgress] Zapier error:", err);
-          }
-        }
-        // Email owner notification
-        const insuredName = (input.formData.insuredFullName as string) || "Unknown";
-        await notifyOwner({
-          title: `Form Progress: ${insuredName} completed Step ${input.stepNumber} — ${input.stepTitle}`,
-          content: `Insured: ${insuredName}\nEmail: ${input.formData.insuredEmail || "N/A"}\nPhone: ${input.formData.insuredPhone || "N/A"}\nStep: ${input.stepNumber} — ${input.stepTitle}\n\nFull JSON:\n${JSON.stringify(input.formData, null, 2)}`,
-        }).catch(() => {});
-        return { success: true };
-      }),
+      .mutation(async ({ input }) => deliver({ type: "step_progress", ...input, notifyEmail: process.env.CONTACT_EMAIL || "daniel@scvisitingangels.com" })),
+
   }),
 });
 
@@ -823,7 +642,7 @@ type StrategyTask = { id: string; label: string; completed: boolean; category: s
 function buildStage1Tasks(policy: any): StrategyTask[] {
   const tasks: StrategyTask[] = [
     { id: "s1-1", label: "Contact insurance company and request claims packet by mail", completed: false, category: "carrier-contact" },
-    { id: "s1-2", label: "DO NOT initiate the claim yet — only request information", completed: false, category: "carrier-contact", critical: true },
+    { id: "s1-2", label: "Confirm notice and filing deadlines promptly; gather documentation without delaying required notice", completed: false, category: "carrier-contact", critical: true },
     { id: "s1-3", label: "Request Assignment of Benefits (AOB) form from carrier", completed: false, category: "carrier-contact" },
     { id: "s1-4", label: "Evaluate long-term care need and identify physical/cognitive decline", completed: false, category: "medical-evaluation" },
     { id: "s1-5", label: "Identify ADL deficits (minimum " + (policy.minAdlsRequired || "2") + " ADLs required)", completed: false, category: "medical-evaluation" },
@@ -880,7 +699,7 @@ function buildStage2Tasks(policy: any): StrategyTask[] {
 
   tasks.push(
     { id: "s2-17", label: "Note: Expect 30-day review period after submission", completed: false, category: "post-submission" },
-    { id: "s2-18", label: "Understand: Appeals have low success probability — get it right the first time", completed: false, category: "post-submission", critical: true },
+    { id: "s2-18", label: "If denied, request the written reason and review appeal rights and deadlines", completed: false, category: "post-submission", critical: true },
   );
 
   return tasks;

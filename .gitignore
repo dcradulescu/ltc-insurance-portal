@@ -109,3 +109,10 @@ temp/
 # Webdev artifacts (checkpoint zips, migrations, etc.)
 .webdev/
 .project-config.json
+
+# Local workflow QA downloads
+.qa-workflows/
+
+# Local navigation and interaction QA output
+.qa-navigation/
+.qa-interactions/

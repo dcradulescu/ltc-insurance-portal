@@ -1,0 +1,50 @@
+# Development and deployment configuration
+
+Use Node and the packageManager version pinned in package.json. Install with `pnpm install --frozen-lockfile`; then `pnpm check`, `pnpm test`, and `pnpm build`. Start with `NODE_ENV=production pnpm start`. `/healthz` reports process availability, not database/provider readiness.
+
+| Variable | Purpose |
+|---|---|
+| APP_URL | Canonical HTTPS portal origin; used for recovery links and allowed API origin. Local development may use http://localhost:3000. |
+| DATABASE_URL | MySQL connection for private visitor profiles, policies, strategies, contacts and recovery data. |
+| JWT_SECRET | Random secret of at least 32 characters for visitor-cookie signatures. Rotating it invalidates visitor sessions. |
+| ZAPIER_WEBHOOK_URL | Server-only HTTPS receiving automation. Prefer this to the legacy VITE-prefixed alias; never expose webhook credentials in browser code. |
+| CONTACT_EMAIL | Intended office notification recipient. |
+| VITE_BOOKING_URL | Actual booking URL; absent configuration falls back to calling the office. |
+| BUILT_IN_FORGE_API_URL / BUILT_IN_FORGE_API_KEY | Existing model-provider integration. Provider portability remains pending. |
+| TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_PHONE_NUMBER | SMS transport. |
+
+Email attachment payloads use `attachmentBase64`, `attachmentFilename`, and `attachmentContentType`. The receiving workflow must decode and attach bytes, validate the expected event type, and route recipients. Ordinary contact/page/recovery events do not have PDF attachments. Do not enable production delivery until this contract is verified.
+
+Visitors can browse public education without an account. Private saving requires the signed visitor session and database. Keep the browser cookie to return to the same private records; clearing it creates a new visitor. A resume link restores form contents but does not transfer ownership of existing records. Old shared user-ID records are intentionally not exposed.
+
+No database migration deleting the legacy SSN column or reassigning shared records has been run. Review those data changes separately against the real schema, retention requirements and backups.
+
+## Browser workflow regression checks
+
+After `pnpm build`, run `pnpm test:workflows` with Playwright and its Chromium browser installed. If Playwright is installed outside this checkout, set `PLAYWRIGHT_MODULE` to that installation's module path. `QA_PORT` defaults to 3012, and `QA_OUTPUT_DIR` defaults to the ignored `.qa-workflows` directory.
+
+The script starts and stops its own local production server. It mocks all private-data and messaging transport, blocks external browser requests, and disables outbound service configuration in the server process. Only the local `pdfDelivery.generatePdf` endpoint is exercised without mocks. Tests cover profile/contact editing, error handling, strategy selection and task persistence, recipient validation, and both actual PDF downloads. These checks do not replace a real MySQL round-trip, inbox verification, model-provider generation or calendar booking test.
+
+Profile CC preferences are included in the comprehensive office-handoff payload. Strategy email recipients must currently be chosen explicitly. Notification preferences are stored but are not wired to automatic delivery. The Profile screen states these limits.
+
+## Navigation and interaction regression checks
+
+After a production build, `pnpm test:navigation` covers the 10 main routes and all resource guides at 1440, 768 and 390 pixels. It clicks every distinct rendered internal destination from each source page, verifies scroll reset and education fragments, and exercises both chat widgets with fixture responses. `QA_WIDTHS` can restrict the comma-separated viewport list; `QA_PORT` defaults to 3014 and `QA_OUTPUT_DIR` to `.qa-navigation`.
+
+`pnpm test:interactions` covers all six suggested chat prompts, failure/retry, duplicate sends, mobile menu links, sharing success/denial/cancellation, and video-control state and errors. Media APIs are mocked: this verifies control behavior, not third-party playback. Its default port is 3015 and output directory is `.qa-interactions`. Both scripts accept `PLAYWRIGHT_MODULE`, start/stop their own server, block external browser requests and disable outbound server integrations.
+
+## Office handoff contract
+
+The comprehensive policy handoff contains `_meta`, the current `user`, `policyForm`, optional `unsavedFormData`, the saved policy's `strategy`, document metadata and contacts with `receiveCcEmails`. It is distinct from the email events with a `type` field. Strategy tasks reflect saved completion records, including explicit unchecking. Both comprehensive and legacy trigger endpoints use the same HTTPS transport. The receiving automation must recognize this contract and decide which notifications, if any, to send. An accepted handoff does not establish inbox delivery.
+
+Extended form fields remain in the existing `equipmentAllowance` JSON column for compatibility. The allowlist now includes the separate insured/carrier address parts, care-log requirement, claim-packet source/submission method and reimbursement-delay answers. No schema migration is needed for these fields. Do not replace the JSON with a standalone allowance string.
+
+## Complete production integration inventory
+
+See [PRODUCTION_INTEGRATIONS.md](PRODUCTION_INTEGRATIONS.md) and [PRODUCTION_INTEGRATIONS.csv](PRODUCTION_INTEGRATIONS.csv) for all 37 registered procedures, required connections, browser capabilities, removed/dormant exceptions and per-feature acceptance checks. Merely filling environment variables does not complete the missing scheduler, notification routing or provider-migration work.
+
+Legacy OAuth signing requires a configured `VITE_APP_ID` and a signing secret of at least 32 bytes. Production visitor sessions also require the existing 32-character minimum. Use a strong random ASCII secret satisfying both requirements. Tokens for a different app ID are rejected, and post-login navigation is limited to local paths.
+
+Chat retrieval only includes active knowledge documents owned by the current visitor. The current schema does not designate shared public knowledge. Do not seed another user's documents and expect them to become globally readable. The old seed script is not compatible with the current owner/ID schema; `seed-rag-all.mjs` only reports a dry-run summary.
+
+SMS service responses mean provider acceptance, not handset receipt. Reminder schedule/cancel helpers report unavailable until durable scheduling is implemented. Current SMS endpoints also need recipient authorization/consent and delivery-receipt acceptance before exposure as a paid production sending service.

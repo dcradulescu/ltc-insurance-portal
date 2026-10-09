@@ -846,13 +846,13 @@
 ## Professional PDF Sales Brochure Redesign - Visually Rich Edition (July 2026)
 - [ ] Create visually rich multi-layout PDF with distinct colored sections (teal, blue, green, yellow, pink)
 - [ ] Design hero banner sections with background graphics and text overlays
-- [ ] Implement varied layouts: cards, timelines, forms, Gantt charts, checklists
+- [x] Implement varied layouts: cards, timelines, forms, Gantt charts, checklists
 - [ ] Create custom graphics, icons, and data visualizations for each section
-- [ ] Add landscape orientation for Gantt chart section
-- [ ] Implement vertical timeline with alternating left/right cards for process flow
-- [ ] Create form-style layout for policy information section
+- [x] Add landscape orientation for Gantt chart section
+- [x] Implement vertical timeline with alternating left/right cards for process flow
+- [x] Create form-style layout for policy information section
 - [ ] Generate final professional brochure PDF with heavy graphical content
-- [ ] Add legal disclaimer about educational purposes only
+- [x] Add legal disclaimer about educational purposes only
 
 
 ## Comprehensive Analysis & Bug Fixes (July 2026)
@@ -864,24 +864,24 @@
 - [ ] Test Policy Form: all 6 steps, validation, tooltips, video icons, save & return
 - [ ] Test Strategy page: form completion, PDF download, email delivery, Zapier webhook
 - [ ] Test Contact page: form submission, email delivery, calendar integration
-- [ ] Test Profile page: name/email editing, contact management
-- [ ] Test footer links: Privacy Policy, Terms of Use, all external links
-- [ ] Test navigation: all page transitions, scroll to top behavior
+- [x] Test Profile page: name/email editing, contact management
+- [x] Test footer links: Privacy Policy, Terms of Use, all external links
+- [x] Test navigation: all page transitions, scroll to top behavior
 - [ ] Test chat widget: on all pages, message sending, response generation
 - [ ] Test mobile responsiveness: all pages on mobile/tablet
-- [ ] Document all issues found in prioritized list
+- [x] Document all issues found in prioritized list
 
 ### Phase 2: Critical Fixes (Dead Links, Form Issues, Flow Problems)
-- [ ] Fix any broken navigation links
-- [ ] Fix form validation errors
-- [ ] Fix page flow/navigation issues
-- [ ] Fix scroll-to-top on page transitions
+- [x] Fix any broken navigation links
+- [x] Fix form validation errors
+- [x] Fix page flow/navigation issues
+- [x] Fix scroll-to-top on page transitions
 - [ ] Fix mobile layout issues
 - [ ] Verify all CTAs work correctly
 
 ### Phase 3: Email & PDF Integration
-- [ ] Test PDF generation on Strategy page
-- [ ] Test PDF download functionality
+- [x] Test PDF generation on Strategy page
+- [x] Test PDF download functionality
 - [ ] Test email delivery of PDF
 - [ ] Test email delivery of policy form data
 - [ ] Test email delivery of strategy checklist
@@ -891,15 +891,15 @@
 - [ ] Test Zapier webhook on Policy Form submission
 - [ ] Test Zapier webhook on Strategy page email delivery
 - [ ] Test Zapier webhook on Contact form submission
-- [ ] Verify webhook payloads are correct
-- [ ] Test error handling for failed webhooks
+- [x] Verify webhook payloads are correct
+- [x] Test error handling for failed webhooks
 
 ### Phase 5: Final Testing & Delivery
 - [ ] Run full end-to-end test: Home → Education → Policy Form → Strategy → Contact
 - [ ] Verify all data persistence (localStorage, database)
-- [ ] Test all calculations (Care Calculator, financial projections)
+- [x] Test all calculations (Care Calculator, financial projections)
 - [ ] Verify all animations and micro-interactions work
-- [ ] Create comprehensive bug report with all findings
+- [x] Create comprehensive bug report with all findings
 - [ ] Deliver final analysis and status report
 
 
@@ -915,16 +915,16 @@
 - [x] Replace "Start Learning" button with "Print Guide" button
 - [x] Create Print Guide PDF (LTC Insurance education guide - pops over page, doesn't navigate away)
 - [ ] Add sample LTC Insurance videos for each section (until user creates custom videos)
-- [ ] Create decorative flowchart background (faint, barely contrasting with light pastel gray)
+- [x] Create decorative flowchart background (faint, barely contrasting with light pastel gray)
 - [ ] Make Academy look more professional overall
 
 ### Academy Layout Improvements
-- [ ] Implement collapsible steps: Step 1 contracts when Step 2 clicked, shows Step 2 info
+- [x] Implement collapsible steps: Step 1 contracts when Step 2 clicked, shows Step 2 info
 - [x] Keep Resources sidebar sticky at top right
 - [x] Include ALL resources in logical order
-- [ ] Update timeline when user clicks Next/Previous video buttons
-- [ ] Create resources in same format/UX as website (clean headers, footers, pastels, cards, bullets)
-- [ ] Add blue sections with background bubbles for resources
+- [x] Update timeline when user clicks Next/Previous video buttons
+- [x] Create resources in same format/UX as website (clean headers, footers, pastels, cards, bullets)
+- [x] Add blue sections with background bubbles for resources
 - [ ] Include pictures in resource sections for relatability
 - [ ] Add charts to show process and progress
 - [ ] Vary layout per section to keep visually interesting
@@ -932,13 +932,13 @@
 ### Policy Page Redesign
 - [x] Change section under hero banner to white background
 - [x] Change policy form section to very light pastel green background
-- [ ] Remove text and buttons above "Tell Us About Your Policy" title (looks messy)
-- [ ] Add explanation of what page does and what to do
+- [x] Remove text and buttons above "Tell Us About Your Policy" title (looks messy)
+- [x] Add explanation of what page does and what to do
 - [ ] Replace hero banner video with YouTube video explaining LTC policy
-- [ ] Add rollover effects to "Here's What You'll Receive" cards (consistent across all)
+- [x] Add rollover effects to "Here's What You'll Receive" cards (consistent across all)
 - [x] Replace "This is where the magic happens" text with elegant graphic (award with ribbon, "Magic Made Here")
 - [x] Remove "Sample: Your Custom Strategy Preview" section
-- [ ] Use same format as removed preview section to enclose the form (draws attention)
+- [x] Use same format as removed preview section to enclose the form (draws attention)
 
 ### Testing & Verification
 - [x] Test all changes on desktop
@@ -966,5 +966,11 @@
 ### Priority 3: Polish
 - [x] Ambient background motion on alert/info boxes
 - [x] Enhanced micro-interactions and hover animations
-- [ ] Global horizontal timeline navigation element (Academy timeline serves this purpose)
+- [x] Global horizontal timeline navigation element (Academy timeline serves this purpose)
 - [ ] Magazine layout improvements for Education definitions (already implemented with 4-stage accordion layout)
+
+## Current development requests — UI/UX retained
+- [x] Create a complete inventory of mocked integrations that require real production connections, including configuration, implementation gaps and acceptance checks — see docs/PRODUCTION_INTEGRATIONS.md and docs/PRODUCTION_INTEGRATIONS.csv (37 registered procedures; 39 records including 14 removed/dormant exceptions).
+
+- [x] Verify and repair required-field validation, sequential timeline progress and saved-step re-entry in the active policy wizard while retaining the existing design — see docs/DEVELOPMENT_REVIEW.md (32 local/fixture scenarios; live database and inbox acceptance remain open).
+- [ ] Complete cross-browser compatibility certification and identify applicable browser modules across standard mobile/tablet/PC sizes — Chromium and Firefox pass hosted suites; eight emulated sizes pass in Chromium. WebKit reload/navigation and media-state failures remain under verification. See docs/BROWSER_COMPATIBILITY.md for versions, module mapping, evidence and physical-device limits.

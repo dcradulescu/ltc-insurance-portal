@@ -13,7 +13,8 @@ export const capitalizeWords = (value: string): string => {
 
 // Format phone number to (###)###-####
 export const formatPhoneNumber = (value: string): string => {
-  const cleaned = value.replace(/\D/g, '');
+  const digits = value.replace(/\D/g, '');
+  const cleaned = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
   if (cleaned.length <= 3) return cleaned;
   if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)})${cleaned.slice(3)}`;
   return `(${cleaned.slice(0, 3)})${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
@@ -61,6 +62,8 @@ export const isValidEmail = (value: string): boolean => {
 
 // Format currency to $###,###.##
 export const formatCurrency = (value: string): string => {
+  if (!value.trim()) return '';
+  if (value.includes('-')) return value;
   let cleaned = value.replace(/[^0-9.]/g, '');
   
   // Handle multiple decimal points

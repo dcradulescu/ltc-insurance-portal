@@ -45,6 +45,7 @@ function MarkdownText({ text }: { text: string }) {
 
 function formatInline(text: string): string {
   return text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(/`(.*?)`/g, "<code class='bg-slate-100 px-1 rounded text-xs'>$1</code>");
@@ -55,10 +56,12 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sessionId] = useState(() => nanoid());
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const pendingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const chatMutation = trpc.chat.send.useMutation({
+    onSettled: () => { pendingRef.current = false; },
     onSuccess: (response) => {
       setMessages((prev) => [
         ...prev,
@@ -76,17 +79,17 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
     },
   });
 
-  const handleSend = useCallback(() => {
-    const text = input.trim();
-    if (!text || chatMutation.isPending) return;
+  const handleSend = useCallback((message = input) => {
+    const text = message.trim();
+    if (!text || pendingRef.current || chatMutation.isPending) return;
+    pendingRef.current = true;
     setInput("");
-    const newMessages: Message[] = [...messages, { role: "user", content: text }];
-    setMessages(newMessages);
+    setMessages(previous => [...previous, { role: "user", content: text }]);
     chatMutation.mutate({ message: text, sessionId, policyId });
   }, [input, messages, chatMutation, sessionId, policyId]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSend();
     }
@@ -94,13 +97,14 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
   }, [messages, chatMutation.isPending]);
 
   // Focus textarea when chat opens
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => textareaRef.current?.focus(), 100);
+      const timer = setTimeout(() => textareaRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
@@ -125,6 +129,8 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
       {/* Chat panel */}
       {isOpen && (
         <div
+          role="dialog" aria-label="LTC support chat"
+          onKeyDown={event => { if (event.key === "Escape") setIsOpen(false); }}
           className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-1.5rem)] rounded-2xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col"
           style={{ height: "520px", maxHeight: "calc(100vh - 5rem)" }}
         >
@@ -152,7 +158,7 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
           </div>
 
           {/* Messages area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+          <div ref={messagesRef} aria-live="polite" className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
             {/* Welcome message */}
             <div className="flex gap-2.5">
               <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center mt-0.5"
@@ -172,10 +178,7 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
                 {SUGGESTED_PROMPTS.map((prompt) => (
                   <button
                     key={prompt}
-                    onClick={() => {
-                      setInput(prompt);
-                      setTimeout(() => handleSend(), 50);
-                    }}
+                    onClick={() => handleSend(prompt)}
                     className="block w-full text-left text-xs px-3 py-1.5 rounded-lg border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors"
                   >
                     {prompt}
@@ -231,7 +234,7 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
               </div>
             )}
 
-            <div ref={messagesEndRef} />
+
           </div>
 
           {/* Input area */}
@@ -239,6 +242,8 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
             <div className="flex gap-2 items-end">
               <Textarea
                 ref={textareaRef}
+                aria-label="Your LTC question"
+                maxLength={2000}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -247,7 +252,8 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
                 rows={1}
               />
               <Button
-                onClick={handleSend}
+                onClick={() => handleSend()}
+                aria-label="Send question"
                 disabled={!input.trim() || chatMutation.isPending}
                 size="sm"
                 className="h-10 w-10 p-0 rounded-xl shrink-0"

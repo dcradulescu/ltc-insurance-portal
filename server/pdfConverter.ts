@@ -3,6 +3,7 @@
 // Landscape letter, full VA brand aesthetic, embedded logo, pastel section
 // boxes, literal checkboxes, notes lines, educational section, zero wasted space
 // ─────────────────────────────────────────────────────────────────────────────
+import { registerPdfFonts } from "../shared/pdfFonts";
 import { jsPDF } from "jspdf";
 import { VA_LOGO_BASE64 } from "./vaLogoBase64";
 
@@ -76,6 +77,7 @@ export interface PdfData {
 // ─────────────────────────────────────────────────────────────────────────────
 export function generatePdfBuffer(data: PdfData): Buffer {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "letter" });
+  registerPdfFonts(doc);
   let y = CONTENT_TOP;
   let pageNum = 0;
 
@@ -106,7 +108,10 @@ export function generatePdfBuffer(data: PdfData): Buffer {
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(220, 245, 245);
-    doc.text(`${data.insuredName}  ·  Policy ${data.policyNumber}`, PW - M, 7, { align: "right" });
+    const identity = `${data.insuredName} | Policy ${data.policyNumber}`;
+    const identityLines = doc.splitTextToSize(identity, 77);
+    doc.setFontSize(7);
+    doc.text(identityLines.slice(0, 2), PW - M, 5, { align: "right", lineHeightFactor: 1.1 });
     doc.text(`Page ${pageNum}`, PW - M, 13, { align: "right" });
     doc.setTextColor(...DARK);
   }
@@ -158,7 +163,7 @@ export function generatePdfBuffer(data: PdfData): Buffer {
     doc.setFontSize(10.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...textColor);
-    doc.text(`${icon}  ${title}`, M + 8, y + 7.5);
+    doc.text(title, M + 8, y + 7.5);
     doc.setTextColor(...DARK);
     y += 15;
   }
@@ -193,57 +198,41 @@ export function generatePdfBuffer(data: PdfData): Buffer {
 
   // ── Pastel info card ─────────────────────────────────────────────────────────
   function infoCard(lines: string[], bg: [number,number,number], accent: [number,number,number], icon = "") {
-    const lineH = 5;
-    const boxH = lines.length * lineH + 9;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    const wrapped = lines.flatMap(line => doc.splitTextToSize(line, CW - 20) as string[]);
+    const lineH = 4.5;
+    const boxH = wrapped.length * lineH + 9;
     checkBreak(boxH);
     doc.setFillColor(...bg);
     doc.roundedRect(M, y, CW, boxH, 2.5, 2.5, "F");
     doc.setFillColor(...accent);
     doc.rect(M, y, 4, boxH, "F");
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
     doc.setTextColor(...DARK);
-    if (icon) {
-      doc.setFontSize(10);
-      doc.text(icon, M + 7, y + 6);
-      for (let i = 0; i < lines.length; i++) {
-        doc.setFontSize(9);
-        doc.text(lines[i], M + 16, y + 5.5 + i * lineH);
-      }
-    } else {
-      for (let i = 0; i < lines.length; i++) {
-        doc.text(lines[i], M + 7, y + 5.5 + i * lineH);
-      }
-    }
+    wrapped.forEach((line, i) => doc.text(line, M + 8, y + 6 + i * lineH));
     y += boxH + 4;
   }
+
 
   // ── Two-column layout helpers ────────────────────────────────────────────────
   const COL2W = (CW - 6) / 2;
   const COL2R = M + COL2W + 6;
 
   function twoColRow(leftLabel: string, leftVal: string, rightLabel: string, rightVal: string, bg?: [number,number,number]) {
-    checkBreak(8);
-    if (bg) {
-      doc.setFillColor(...bg);
-      doc.roundedRect(M, y - 1, CW, 7.5, 1, 1, "F");
-    }
     doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...VA_NAVY);
-    doc.text(leftLabel + ":", M + 2, y + 4);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...DARK);
-    const lv = doc.splitTextToSize(leftVal || "—", COL2W - 38);
-    doc.text(lv[0], M + 38, y + 4);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...VA_NAVY);
-    doc.text(rightLabel + ":", COL2R + 2, y + 4);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...DARK);
-    const rv = doc.splitTextToSize(rightVal || "—", COL2W - 38);
-    doc.text(rv[0], COL2R + 38, y + 4);
-    y += 7.5;
+    const leftLines = doc.splitTextToSize(leftVal || "Not provided", COL2W - 8);
+    const rightLines = doc.splitTextToSize(rightVal || "Not provided", COL2W - 8);
+    const height = 7 + Math.max(leftLines.length, rightLines.length) * 3.4;
+    checkBreak(height);
+    if (bg) { doc.setFillColor(...bg); doc.roundedRect(M, y, CW, height, 1, 1, "F"); }
+    doc.setFont("helvetica", "bold"); doc.setTextColor(...VA_NAVY);
+    doc.text(leftLabel, M + 3, y + 4);
+    doc.text(rightLabel, COL2R + 3, y + 4);
+    doc.setFont("helvetica", "normal"); doc.setTextColor(...DARK);
+    doc.text(leftLines, M + 3, y + 7, {lineHeightFactor: 1.2});
+    doc.text(rightLines, COL2R + 3, y + 7, {lineHeightFactor: 1.2});
+    y += height + 0.8;
   }
 
   // ── Literal checkbox row ─────────────────────────────────────────────────────
@@ -284,7 +273,9 @@ export function generatePdfBuffer(data: PdfData): Buffer {
 
   // ── Notes lines ──────────────────────────────────────────────────────────────
   function notesLines(count = 3, label = "Notes:") {
-    checkBreak(count * 7 + 8);
+    // Optional writing space must not create an almost-empty continuation page.
+    count = Math.min(count, Math.floor((CONTENT_BOT - y - 10) / 7));
+    if (count < 1) return;
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...VA_NAVY);
@@ -361,8 +352,11 @@ export function generatePdfBuffer(data: PdfData): Buffer {
     doc.setTextColor(...VA_NAVY);
     doc.text("Task / Action Item", M + 3, y + gRulerH / 2 + 2);
     doc.setTextColor(60, 80, 120);
+    let lastLabelX = -Infinity;
     for (const md of markers) {
       const mx = gBarX + (md / totalDays) * gBarAreaW;
+      if (mx - lastLabelX < 16) continue;
+      lastLabelX = mx;
       doc.text(`Day ${md}`, mx, y + gRulerH / 2 + 2, { align: "center" });
       doc.setDrawColor(160, 190, 210);
       doc.setLineWidth(0.15);
@@ -373,41 +367,44 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   }
 
   function drawGanttRow(label: string, startDay: number, durDays: number, totalDays: number, color: [number,number,number], rowIdx: number, markers: number[]) {
-    checkBreak(gRowH + 1);
+    doc.setFontSize(7.5); doc.setFont("helvetica", "normal");
+    const labelLines = doc.splitTextToSize(label, gLabelW - 5);
+    const rowHeight = Math.max(gRowH, labelLines.length * 3.5 + 4);
+    if (y + rowHeight + 1 > CONTENT_BOT) { newPage(); drawGanttRuler(totalDays, markers); }
+
     if (rowIdx % 2 === 0) {
       doc.setFillColor(248, 253, 255);
-      doc.rect(M, y, CW, gRowH, "F");
+      doc.rect(M, y, CW, rowHeight, "F");
     }
     doc.setDrawColor(210, 225, 235);
     doc.setLineWidth(0.1);
     for (const md of markers) {
       const mx = gBarX + (md / totalDays) * gBarAreaW;
-      doc.line(mx, y, mx, y + gRowH);
+      doc.line(mx, y, mx, y + rowHeight);
     }
     doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...DARK);
-    const truncated = doc.splitTextToSize(label, gLabelW - 5)[0];
-    doc.text(truncated, M + 3, y + gRowH / 2 + 1.5);
+    doc.text(labelLines, M + 3, y + 4, {lineHeightFactor:1.3});
     // Bar track
     doc.setFillColor(215, 228, 238);
-    doc.roundedRect(gBarX, y + 2, gBarAreaW, gRowH - 4, 1.2, 1.2, "F");
+    doc.roundedRect(gBarX, y + 2, gBarAreaW, rowHeight - 4, 1.2, 1.2, "F");
     // Colored bar
     const barStartX = gBarX + (startDay / totalDays) * gBarAreaW;
     const barW = Math.max((durDays / totalDays) * gBarAreaW, 4);
     doc.setFillColor(...color);
-    doc.roundedRect(barStartX, y + 2, barW, gRowH - 4, 1.2, 1.2, "F");
+    doc.roundedRect(barStartX, y + 2, barW, rowHeight - 4, 1.2, 1.2, "F");
     if (barW > 18) {
       doc.setFontSize(6.5);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...WHITE);
-      doc.text(`${startDay}–${startDay + durDays}d`, barStartX + barW / 2, y + gRowH / 2 + 1.5, { align: "center" });
+      doc.text(`${startDay}–${startDay + durDays}d`, barStartX + barW / 2, y + rowHeight / 2 + 1.5, { align: "center" });
     }
     doc.setDrawColor(200, 215, 225);
     doc.setLineWidth(0.1);
-    doc.line(M, y + gRowH, M + CW, y + gRowH);
+    doc.line(M, y + rowHeight, M + CW, y + rowHeight);
     doc.setTextColor(...DARK);
-    y += gRowH + 1;
+    y += rowHeight + 1;
   }
 
   // ── Education block ──────────────────────────────────────────────────────────
@@ -444,7 +441,7 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   const diagPoints = [[0, PH * 0.42], [PW, PH * 0.35], [PW, PH * 0.45], [0, PH * 0.52]];
   // Simulate diagonal with a polygon using lines
   doc.setFillColor(255, 255, 255);
-  doc.rect(0, PH * 0.42, PW, PH * 0.1, "F");
+  doc.rect(0, PH * 0.42, PW, PH * 0.19, "F");
 
   // VA Logo (top left)
   try {
@@ -473,17 +470,17 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...VA_NAVY);
   doc.text("Prepared exclusively for:", PW / 2, infoY + 4, { align: "center" });
-  doc.setFontSize(20);
+  doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...VA_TEAL);
-  doc.text(data.insuredName, PW / 2, infoY + 14, { align: "center" });
+  doc.text(doc.splitTextToSize(data.insuredName, CW).slice(0,2), PW / 2, infoY + 13, { align: "center", lineHeightFactor:1.1 });
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...MID);
-  doc.text(`Policy #: ${data.policyNumber}  ·  Carrier: ${data.carrierName}  ·  Generated: ${fmtDate(new Date())}`, PW / 2, infoY + 21, { align: "center" });
+  doc.text(`Policy #: ${data.policyNumber}  ·  Carrier: ${data.carrierName}  ·  Generated: ${fmtDate(new Date())}`, PW / 2, infoY + 27, { align: "center", maxWidth:CW });
 
   // Bottom navy section — what's inside
-  const botY = PH * 0.62;
+  const botY = PH * 0.66;
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(180, 220, 220);
@@ -776,7 +773,7 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   for (const gs of ganttStages) {
     newPage("Claim Timeline");
     sectionHeading(`CLAIM TIMELINE — ${gs.title.toUpperCase()}`, "📅", VA_LTBLUE, VA_NAVY);
-    bodyText(gs.desc, 0, 9, MID);
+    bodyText("Illustrative planning windows only; confirm dates and deadlines with your carrier. " + gs.desc, 0, 9, MID);
     y += 2;
     drawGanttRuler(totalDays, gMarkers);
     gs.tasks.forEach((t, idx) => drawGanttRow(t.label, t.start, t.dur, totalDays, gs.color, idx, gMarkers));
@@ -889,7 +886,7 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   const glossary = [
     { term: "Activities of Daily Living (ADLs)", def: "Six fundamental self-care tasks: Bathing, Dressing, Toileting, Feeding, Continence, and Transferring. Most LTC policies require 2–3 ADLs to be in deficit before benefits begin." },
     { term: "Instrumental Activities of Daily Living (IADLs)", def: "Household and management tasks: Meal Preparation, Medication Management, Housekeeping, Laundry, Shopping, Transportation, Money Management, and Telephone Use. Important for care planning but generally not counted as ADL benefit triggers." },
-    { term: "Elimination Period", def: "The number of service days you must pay out of pocket before your LTC policy begins to pay. This counts days of actual care received, not calendar days since illness onset." },
+    { term: "Elimination Period", def: "The policy waiting period before benefits begin. It may count service days or calendar days; confirm the applicable rules and exceptions with the carrier." },
     { term: "Daily Maximum Benefit", def: "The maximum dollar amount the insurance company will pay per day of qualifying care. Care costs above this limit are the client's responsibility." },
     { term: "Monthly Maximum Benefit", def: "The maximum dollar amount the insurance company will pay per calendar month of qualifying care." },
     { term: "Lifetime Maximum Benefit", def: "The total cumulative amount the policy will pay over its lifetime. Once exhausted, no further benefits are available." },
@@ -984,7 +981,7 @@ export function generatePdfBuffer(data: PdfData): Buffer {
 
   eduBlock(
     "The Elimination Period — What You Need to Know",
-    `Your policy has an elimination period of ${elimDays} days. This means you must personally pay for ${elimDays} days of qualifying care before your insurance begins to pay. The elimination period counts days of actual care received, not calendar days. For example, if you receive care 5 days per week, a 90-day elimination period takes approximately 18 weeks to satisfy. Keep detailed records of every day of care during this period — your carrier will require proof. Some policies allow a 'lookback period' where care received before the claim was filed may count toward the elimination period.`,
+    `Your policy has an elimination period of ${elimDays} days. This means you must personally pay for ${elimDays} days of qualifying care before your insurance begins to pay. Some policies count service days; others count calendar days. Confirm which rule applies. For a service-day policy, 5 care days per week would take approximately 18 weeks to satisfy 90 service days. Keep detailed records of every day of care during this period — your carrier will require proof. Some policies allow a 'lookback period' where care received before the claim was filed may count toward the elimination period.`,
     VA_CREAM, [180,130,30] as [number,number,number]
   );
 
@@ -1078,6 +1075,31 @@ export function generatePdfBuffer(data: PdfData): Buffer {
   // ─────────────────────────────────────────────────────────────────────────────
   // PAGE — LEGAL DISCLAIMERS
   // ─────────────────────────────────────────────────────────────────────────────
+  newPage("Your Claim Journey");
+  sectionHeading("Your claim journey", "", VA_LTBLUE);
+  const journey = [
+    {title:"1. Understand your policy", text:"Confirm benefit triggers, covered providers, elimination-period rules and notice deadlines with the carrier."},
+    {title:"2. Prepare documentation", text:"Gather the plan of care, relevant clinical evidence, carrier forms and any required authorizations."},
+    {title:"3. Submit and track", text:"Keep dated copies, confirm receipt and respond to requests. Follow the carrier's stated review and appeal deadlines."},
+    {title:"4. Manage ongoing care", text:"Maintain service records and invoices. Reconcile payments and track remaining benefits against the policy."},
+  ];
+  const center = PW / 2;
+  const top = y + 3;
+  doc.setDrawColor(...VA_TEAL); doc.setLineWidth(1);
+  doc.line(center, top + 8, center, top + 110);
+  journey.forEach((step, index) => {
+    const sy = top + index * 34;
+    const width = CW / 2 - 12;
+    const sx = index % 2 === 0 ? M : center + 12;
+    doc.setFillColor(...(index % 2 === 0 ? VA_LTBLUE : VA_LTGREEN));
+    doc.roundedRect(sx, sy, width, 29, 3, 3, "F");
+    doc.setFillColor(...VA_TEAL); doc.circle(center, sy + 8, 3, "F");
+    doc.setFontSize(9); doc.setFont("helvetica", "bold"); doc.setTextColor(...VA_NAVY);
+    doc.text(step.title, sx + 4, sy + 6);
+    doc.setFontSize(8); doc.setFont("helvetica", "normal");
+    doc.text(doc.splitTextToSize(step.text, width - 8), sx + 4, sy + 12);
+  });
+
   newPage("Legal Disclaimers");
   sectionHeading("IMPORTANT LEGAL DISCLAIMERS", "⚠", VA_ROSE, VA_NAVY);
 

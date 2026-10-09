@@ -1,8 +1,9 @@
+import Resources from "./pages/Resources";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch, useLocation } from "wouter";
-import { useEffect } from "react";
+import { Route, Switch } from "wouter";
+import { RouteScroll } from "./components/RouteScroll";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -19,18 +20,10 @@ import { ChatWidget } from "./components/ChatWidget";
 import { TermsGate } from "./components/TermsGate";
 import { usePolicyContext } from "./contexts/PolicyContext";
 
-function ScrollToTop() {
-  const [location] = useLocation();
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location]);
-  return null;
-}
-
 function Router() {
   return (
     <>
-      <ScrollToTop />
+      <RouteScroll />
       <Switch>
         <Route path={"/"} component={Home} />
         <Route path={"/education"} component={Education} />
@@ -41,6 +34,8 @@ function Router() {
         <Route path={"/privacy"} component={PrivacyPolicy} />
         <Route path={"/profile"} component={Profile} />
         <Route path={"/academy"} component={Academy} />
+        <Route path="/resources/:slug" component={Resources} />
+        <Route path="/resources" component={Resources} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

@@ -43,3 +43,10 @@ export const adminProcedure = t.procedure.use(
     });
   }),
 );
+
+// Public browsing stays available; private records belong to a signed visitor session.
+export const visitorProcedure = t.procedure.use(async ({ ctx, next }) => {
+  const { getVisitor } = await import("./visitorSession");
+  const user = await getVisitor(ctx);
+  return next({ ctx: { ...ctx, user } });
+});

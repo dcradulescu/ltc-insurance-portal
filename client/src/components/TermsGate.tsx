@@ -16,12 +16,12 @@ export function TermsGate({ children }: { children: React.ReactNode }) {
   const [screen, setScreen] = useState<Screen>("terms");
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    setAccepted(stored === "true");
+    try { setAccepted(localStorage.getItem(STORAGE_KEY) === "true"); }
+    catch { setAccepted(false); }
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem(STORAGE_KEY, "true");
+    try { localStorage.setItem(STORAGE_KEY, "true"); } catch { /* Acceptance applies to this visit when storage is blocked. */ }
     setAccepted(true);
   };
 

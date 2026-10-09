@@ -1,15 +1,18 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   generateSMSMessage,
   sendSMSNotification,
   formatPhoneNumber,
   sendBulkSMSNotifications,
+  scheduleTaskReminders,
+  cancelTaskReminders,
 } from "./smsNotification";
+
+const { mockCreate } = vi.hoisted(() => ({ mockCreate: vi.fn() }));
 
 // Mock the twilio module so tests never make real API calls.
 // The mock returns a fake client whose messages.create resolves with a fake SID.
 vi.mock("twilio", () => {
-  const mockCreate = vi.fn().mockResolvedValue({ sid: "SM_MOCK_SID_12345" });
   const mockClient = { messages: { create: mockCreate } };
   const twilioFactory = vi.fn(() => mockClient);
   return { default: twilioFactory };
@@ -17,11 +20,13 @@ vi.mock("twilio", () => {
 
 describe("SMS Notification Service", () => {
   beforeEach(() => {
-    // Clear environment variables before each test
-    delete process.env.TWILIO_ACCOUNT_SID;
-    delete process.env.TWILIO_AUTH_TOKEN;
-    delete process.env.TWILIO_PHONE_NUMBER;
+    mockCreate.mockReset().mockResolvedValue({ sid: "SM_MOCK_SID_12345", status: "queued" });
+    vi.stubEnv('TWILIO_ACCOUNT_SID', '');
+    vi.stubEnv('TWILIO_AUTH_TOKEN', '');
+    vi.stubEnv('TWILIO_PHONE_NUMBER', '');
   });
+
+  afterEach(() => vi.unstubAllEnvs());
 
   describe("generateSMSMessage", () => {
     it("should generate task reminder message", () => {
@@ -131,6 +136,8 @@ describe("SMS Notification Service", () => {
 
       expect(result.success).toBe(true);
       expect(result.messageId).toBeDefined();
+      expect(result.status).toBe('accepted');
+      expect(result.message).toContain('not yet confirmed');
     });
   });
 
@@ -176,5 +183,38 @@ describe("SMS Notification Service", () => {
       expect(results[0].success).toBe(true);
       expect(results[1].success).toBe(false);
     });
+  });
+});
+
+
+describe('SMS provider failure and scheduling boundaries', () => {
+  const config = { phoneNumber: '1 (555) 123-4567', taskName: 'QA task', taskDueDate: '2026-10-10', reminderType: 'task_reminder' as const, priority: 'medium' as const };
+  beforeEach(() => {
+    mockCreate.mockReset().mockResolvedValue({ sid: 'SM_TEST', status: 'queued' });
+    vi.stubEnv('TWILIO_ACCOUNT_SID', 'ACtest'); vi.stubEnv('TWILIO_AUTH_TOKEN', 'qa-secret'); vi.stubEnv('TWILIO_PHONE_NUMBER', '+15550001111');
+  });
+  afterEach(() => vi.unstubAllEnvs());
+  it('accepts a domestic 1 prefix and sends normalized E.164', async () => {
+    expect(await sendSMSNotification(config)).toMatchObject({ success: true, status: 'accepted' });
+    expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ to: '+15551234567' }));
+  });
+  it.each(['failed', 'undelivered', 'canceled'])('does not report success for provider status %s', async status => {
+    mockCreate.mockResolvedValue({ sid: 'SM_TEST', status });
+    expect(await sendSMSNotification(config)).toMatchObject({ success: false, status: 'failed' });
+  });
+  it('rejects an incomplete provider receipt', async () => {
+    mockCreate.mockResolvedValue({ status: 'queued' });
+    expect(await sendSMSNotification(config)).toMatchObject({ success: false, status: 'failed' });
+  });
+  it('does not expose provider errors or recipient details', async () => {
+    mockCreate.mockRejectedValue(new Error('PRIVATE_TOKEN and +15551234567'));
+    const result = await sendSMSNotification(config);
+    expect(result).toMatchObject({ success: false, status: 'failed' });
+    expect(JSON.stringify(result)).not.toMatch(/PRIVATE_TOKEN|15551234567/);
+  });
+  it('reports that scheduling and cancellation are not connected', async () => {
+    expect(await scheduleTaskReminders({ taskId: 3, phoneNumber: config.phoneNumber, taskName: config.taskName, dueDate: config.taskDueDate, reminderDaysBefore: [1], enabled: true })).toMatchObject({ success: false, status: 'unavailable' });
+    expect(await cancelTaskReminders(3)).toMatchObject({ success: false, status: 'unavailable' });
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 });

@@ -65,6 +65,16 @@ const FAQS: { q: string; a: string }[] = [
   { q: "Can I use LTC insurance benefits for a family member who provides care?", a: "Generally, no. Most policies require care to be provided by a licensed professional caregiver or home care agency, not a family member. Some policies have 'informal care' provisions — check your specific policy language." },
 ];
 
+const TERM_ANCHORS: Record<string, string> = {
+  adl: "Activities of Daily Living (ADLs)",
+  "elimination-period": "Elimination Period", aob: "Assignment of Benefits (AOB)",
+  "care-logs": "Care Logs", appeals: "Appeals Process", assessment: "Third-Party Assessment",
+  waiver: "Waiver of Premium", inflation: "Inflation Rider", "claim-form": "Claims Packet",
+};
+const SECTION_ANCHORS: Record<string, string[]> = {
+  "stage-3": ["plan-of-care", "poa", "hipaa"], "stage-4": ["invoicing"],
+};
+
 // ─── Shared sub-components ────────────────────────────────────────────────────
 
 function ExpandableTerm({ term, children }: { term: string; children: React.ReactNode }) {
@@ -139,6 +149,7 @@ function Stage({
 }) {
   return (
     <section id={id} className="py-section scroll-mt-28" style={{ background: bg }}>
+      {(SECTION_ANCHORS[id] ?? []).map(alias => <span id={alias} key={alias} aria-hidden="true" />)}
       <div className="container max-w-3xl">
         <div className="flex items-start gap-4 mb-6">
           <div
@@ -223,6 +234,18 @@ export default function Education() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [questionForm, setQuestionForm] = useState({ name: "", email: "", question: "" });
   const [questionSubmitted, setQuestionSubmitted] = useState(false);
+  useEffect(() => {
+    const openLinkedTerm = () => {
+      const term = TERM_ANCHORS[window.location.hash.slice(1)];
+      if (!term) return;
+      const stage = TERM_STAGES.findIndex(group => group.terms.some(item => item.term === term));
+      if (stage >= 0) { setActiveTermStage(stage); setActiveTerm(term); }
+    };
+    openLinkedTerm();
+    const events = ["hashchange", "popstate", "pushState", "replaceState"];
+    events.forEach(event => window.addEventListener(event, openLinkedTerm));
+    return () => events.forEach(event => window.removeEventListener(event, openLinkedTerm));
+  }, []);
   const sendQuestion = trpc.email.sendContactForm.useMutation({
     onSuccess: () => { setQuestionSubmitted(true); setQuestionForm({ name: "", email: "", question: "" }); },
     onError: () => toast.error("Could not send your question. Please try again."),
@@ -690,6 +713,7 @@ export default function Education() {
 
       {/* ── Terms & Definitions ── */}
       <section id="terms" className="py-section" style={{ background: "#ffffff" }}>
+        <span id="glossary" aria-hidden="true" />
         <div className="container max-w-5xl">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "#e8f7f9", color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
@@ -723,7 +747,7 @@ export default function Education() {
             <div className="flex-1 rounded-xl border overflow-hidden" style={{ borderColor: "#e0dcdc" }}>
               <div className="divide-y divide-gray-100">
                 {TERM_STAGES[activeTermStage].terms.map((t) => (
-                  <div key={t.term}>
+                  <div key={t.term} id={Object.keys(TERM_ANCHORS).find(key => TERM_ANCHORS[key] === t.term)}>
                     <button
                       onClick={() => setActiveTerm(activeTerm === t.term ? null : t.term)}
                       className="w-full flex items-center justify-between px-5 py-3.5 text-left text-sm font-semibold transition-colors duration-150 hover:bg-blue-50"

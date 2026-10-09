@@ -162,16 +162,21 @@ export async function getUserContacts(userId: number): Promise<UserContact[]> {
   return db.select().from(userContacts).where(eq(userContacts.userId, userId));
 }
 
-export async function updateUserContact(id: number, userId: number, data: Partial<InsertUserContact>): Promise<void> {
+export async function updateUserContact(id: number, userId: number, data: Partial<InsertUserContact>): Promise<boolean> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(userContacts).set(data).where(and(eq(userContacts.id, id), eq(userContacts.userId, userId)));
+  const owned = and(eq(userContacts.id, id), eq(userContacts.userId, userId));
+  const existing = await db.select({ id: userContacts.id }).from(userContacts).where(owned).limit(1);
+  if (!existing.length) return false;
+  await db.update(userContacts).set(data).where(owned);
+  return true;
 }
 
-export async function deleteUserContact(id: number, userId: number): Promise<void> {
+export async function deleteUserContact(id: number, userId: number): Promise<boolean> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.delete(userContacts).where(and(eq(userContacts.id, id), eq(userContacts.userId, userId)));
+  const result = await db.delete(userContacts).where(and(eq(userContacts.id, id), eq(userContacts.userId, userId)));
+  return result[0].affectedRows > 0;
 }
 
 // ---- Chat helpers ----
