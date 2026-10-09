@@ -24,6 +24,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     console.log(JSON.stringify({ browser: browserName, version: browser.version() }));
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     page.setDefaultTimeout(8000);
+      page.setDefaultNavigationTimeout(30000);
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => {
       localStorage.setItem('ltc_terms_accepted_v1', 'true');
@@ -75,6 +76,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     for (const [route, label, expected] of [['/', 'Share This Free Resource', origin + '/'], ['/academy', 'Share Academy', origin + '/academy'], ['/education', 'Share This Resource', origin + '/']]) {
       await page.goto(origin + route, { waitUntil: "domcontentloaded" });
       await page.getByRole('button', { name: label, exact: true }).click();
+      await page.waitForFunction(() => window.__copies.length === 1);
       assert.deepEqual((await page.evaluate(() => window.__copies)).map(value => new URL(value).href), [expected]);
       await page.evaluate(() => { window.__shareMode = 'blocked'; });
       await page.getByRole('button', { name: label, exact: true }).click();
@@ -83,7 +85,8 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     }
     await page.goto(origin, { waitUntil: "domcontentloaded" });
     await page.evaluate(() => { Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.__shares.push(data); throw new DOMException('Cancelled', 'AbortError'); } }); });
-    await page.getByRole('button', { name: 'Share This Free Resource', exact: true }).click(); await pause(100);
+    await page.getByRole('button', { name: 'Share This Free Resource', exact: true }).click();
+    await page.waitForFunction(() => window.__shares.length === 1);
     assert.equal(await page.locator('[data-sonner-toast]').count(), 0);
     assert.equal((await page.evaluate(() => window.__shares)).length, 1);
     checks.push('Native share cancellation is quiet');

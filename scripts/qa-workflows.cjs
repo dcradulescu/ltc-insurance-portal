@@ -6,7 +6,7 @@ const browserName = process.env.QA_BROWSER || 'chromium';
 if (!['chromium', 'firefox', 'webkit'].includes(browserName)) throw new Error('Unsupported QA_BROWSER: ' + browserName);
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
-const { readFile, mkdir } = require('node:fs/promises');
+const { readFile, writeFile, mkdir } = require('node:fs/promises');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const output = process.env.QA_OUTPUT_DIR || path.join(root, '.qa-workflows');
@@ -19,7 +19,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
 (async () => {
   await mkdir(output, { recursive: true });
   const server = spawn(process.execPath, ['dist/index.js'], { cwd: root, stdio: 'ignore', env: { ...process.env, NODE_ENV: 'production', PORT: port, APP_URL: origin, DATABASE_URL: '', ZAPIER_WEBHOOK_URL: '', VITE_ZAPIER_WEBHOOK_URL: '', BUILT_IN_FORGE_API_KEY: '', TWILIO_ACCOUNT_SID: '', TWILIO_AUTH_TOKEN: '' } });
-  let browser;
+  let browser, activePage;
   const passed = [];
   try {
     let ready = false;
@@ -33,7 +33,10 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
     console.log(JSON.stringify({ browser: browserName, version: browser.version() }));
     async function setup(routeName, options = {}) {
       const page = await browser.newPage({ viewport: { width: options.width || 390, height: 900 } });
+      activePage = page;
+      await page.context().tracing.start({ screenshots: true, snapshots: true, sources: false });
       page.setDefaultTimeout(8000);
+      page.setDefaultNavigationTimeout(30000);
       const state = { profile: { name: 'Saved Profile', email: 'profile@example.com', notificationPreferences: {} }, contacts: [], policy: options.noPolicy ? { id: 0 } : policy, strategy: options.noStrategy ? null : structuredClone(initialStrategy), completions: [], fail: options.fail || '', calls: [], errors: [] };
       page.on('pageerror', error => state.errors.push(error.message));
       await page.addInitScript(({ blocked, wizard }) => {
@@ -243,6 +246,11 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
     }
     console.log(JSON.stringify({ passed: passed.length, results: passed }, null, 2));
   } catch (error) {
+    if (activePage && !activePage.isClosed()) {
+      await activePage.screenshot({ path: path.join(output, 'failure.png'), fullPage: true }).catch(() => {});
+      await writeFile(path.join(output, 'failure-state.json'), JSON.stringify(await activePage.evaluate(() => ({ url: location.href, readyState: document.readyState, heading: document.querySelector('#policy-step-heading')?.textContent, step: localStorage.getItem('ltc_policy_step') })).catch(() => ({})), null, 2));
+      await activePage.context().tracing.stop({ path: path.join(output, 'failure-trace.zip') }).catch(() => {});
+    }
     console.error(error); console.log(JSON.stringify({ completed: passed }, null, 2)); process.exitCode = 1;
   } finally { if (browser) await browser.close(); server.kill(); }
 })();

@@ -29,6 +29,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       const page = await browser.newPage({ viewport: { width, height: 900 } });
       activePage = page;
       page.setDefaultTimeout(8000);
+      page.setDefaultNavigationTimeout(30000);
       const calls = [];
       page.on('pageerror', error => result.errors.push({ width, route: new URL(page.url()).pathname, message: error.message }));
       await page.addInitScript(() => { localStorage.setItem('ltc_terms_accepted_v1', 'true'); window.__copiedLinks = []; Object.defineProperty(navigator, 'share', { configurable: true, value: undefined }); Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__copiedLinks.push(text); } } }); });
@@ -77,6 +78,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
           const destination = new URL(target.url);
           if (destination.pathname === source && !destination.hash) continue; // No page transition.
           await page.goto(origin + source, { waitUntil: "domcontentloaded" }); await page.locator('h1').first().waitFor();
+          await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
           let link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
           if (!await link.count() && width < 1024) {
             await page.getByRole('button', { name: 'Help', exact: true }).click();
@@ -87,10 +89,10 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
             const drawer = page.getByRole('dialog', { name: 'Page help' });
             if (await drawer.count()) await drawer.getByRole('button', { name: 'Close help' }).click();
             await page.getByRole('button', { name: 'Open menu', exact: true }).click();
+            await page.waitForFunction(() => { const menu = document.getElementById("mobile-navigation"); return menu && menu.clientHeight >= menu.scrollHeight - 1; });
             link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
           }
           assert(await link.count(), `No reachable link: ${source} -> ${target.raw} at ${width}`);
-          await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
           await link.click(); await page.waitForURL(url => url.pathname === destination.pathname && url.hash === destination.hash, { waitUntil: "domcontentloaded" });
           await page.locator('h1').first().waitFor(); await pause(70);
           if (!destination.hash && destination.pathname !== '/ltc-insurance-guide.html') assert(await page.evaluate(() => scrollY < 2), `Scroll reset failed: ${source} -> ${target.raw} at ${width}`);

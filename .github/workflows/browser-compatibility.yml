@@ -59,14 +59,15 @@ jobs:
           pnpm check
           pnpm test
           pnpm build
-      - name: Check every route at PC, tablet, and mobile widths
-        run: pnpm test:navigation
       - name: Check workflows and real local PDF downloads
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm test:workflows
       - name: Check sharing, menus, chat, and media fallback behavior
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm test:interactions
+      - name: Check every route at PC, tablet, and mobile widths
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm test:navigation
       - name: Retain browser evidence
         if: always()
         uses: actions/upload-artifact@v4
