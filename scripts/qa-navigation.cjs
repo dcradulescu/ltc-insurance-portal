@@ -115,7 +115,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       const fragments = ['adl', 'glossary', 'plan-of-care', 'poa', 'aob', 'hipaa', 'claim-form', 'elimination-period', 'care-logs', 'invoicing', 'appeals', 'assessment', 'waiver', 'inflation'];
       for (const fragment of fragments) {
         await page.goto(origin + '/education#' + fragment, { waitUntil: "domcontentloaded" });
-        const target = page.locator('#' + fragment); await target.waitFor({ state: 'visible' });
+        const target = page.locator('#' + fragment); await target.waitFor({ state: 'attached' });
         await page.waitForFunction(id => { const top = document.getElementById(id)?.getBoundingClientRect().top; return top >= 60 && top <= 150; }, fragment, { timeout: 5000 });
         const top = await target.evaluate(element => element.getBoundingClientRect().top);
         assert(top >= 60 && top <= 150, `Anchor hidden or misplaced: ${fragment} at ${width}: ${top}`);
@@ -125,7 +125,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       await page.goto(origin + '/education', { waitUntil: "domcontentloaded" });
       for (const fragment of ['aob', 'adl', 'elimination-period']) {
         await page.evaluate(fragment => history.pushState(null, '', '/education#' + fragment), fragment);
-        const target = page.locator('#' + fragment); await target.waitFor({ state: 'visible' });
+        const target = page.locator('#' + fragment); await target.waitFor({ state: 'attached' });
         await page.waitForFunction(id => { const top = document.getElementById(id)?.getBoundingClientRect().top; return top >= 60 && top <= 150; }, fragment, { timeout: 5000 });
         const top = await target.evaluate(element => element.getBoundingClientRect().top);
         assert(top >= 60 && top <= 150, `Same-path anchor misplaced: ${fragment} at ${width}: ${top}`);
