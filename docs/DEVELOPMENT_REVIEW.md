@@ -67,3 +67,23 @@ The same GitHub branch was checked before continuing; its head was 147b5d7 and m
 - Reused the repository's existing logo as a self-contained SVG wrapper and switched the favicon to the existing local file. Other legacy images still depend on external storage and have not been replaced.
 
 TypeScript and production build pass. Live-service configuration blockers and the no-deployment status remain unchanged. No new live messages were sent.
+
+## Continuation — policy form restoration, validation and saving
+
+GitHub head b0ad44d was checked before this pass. **19 of the original 61 open TODO entries now have completion evidence; 42 remain open.** Historical checkmarks remain unverified unless their ledger entry says otherwise.
+
+Newly identified and fixed:
+
+- The initial local-storage effect always marked loading complete, preventing database policy hydration. Draft restoration now fills missing defaults, accepts only correctly typed known fields, clamps step numbers, preserves legal-name casing and ignores injected record IDs. Late database or recovery responses preserve edits already made by the user. Invalid/expired recovery links retain the local draft and report the problem.
+- Concurrent step saves could create duplicate records before the first response supplied an ID. Saves now execute in order and reuse the returned ID; the ID is restored from the visitor-owned policy after reload.
+- Policy JSON metadata was saved but not exposed when reloading a form, losing visible POA/care/inflation answers. The API now hydrates an allowlist of extended fields; partial updates retain prior extended answers. The metadata allowlist cannot replace IDs or ownership.
+- Local-storage failures could crash navigation or the terms gate. Writes now report failure without blocking editing, and clearing a draft resets all local form snapshots without claiming that online records were deleted. Clear is disabled during an active save.
+- Validation previously accepted zero/negative benefits and invalid dates, and restored data could reach final submission without checking prior steps. Shared validation now checks all relevant steps, dates, required selections, benefit amounts, waiting-day integers, ADL counts and inflation rates. Final submission checks all prior steps. Error summaries link to invalid fields; fields expose their invalid state to assistive technology.
+- A failed manual save could be followed by a false "link sent" message. Recovery drafts are stored independently and report provider acceptance accurately. Office delivery failures remain distinct from successful private saving. Background save failures are visible, and unload payloads now use the actual batched tRPC format.
+- ADL guidance no longer presents this form as a coverage determination; cognitive triggers and insurer confirmation are acknowledged. Placeholder field-video buttons now link to a clearly labelled general LTC overview. These are not represented as custom field-specific videos.
+
+Verification: **106 tests pass across 14 files, no skips**; TypeScript and production build pass. Added 24 draft/validation tests, two metadata safety tests and an actual router save/read/partial-update round-trip test with mocked storage. The real database remains unconfigured.
+
+Eight Playwright scenarios passed against the production frontend with mocked tRPC transport: (1) all six steps, required errors, negative-benefit rejection, ordered saves, reload and final navigation; (2) database-response hydration; (3) protection against late-response overwrites; (4) corrupt JSON and invalid step recovery; (5) resume restoration without reusing old ownership; (6) expired-link draft preservation; (7) blocked local storage; (8) failed online saving with independent recovery-link acceptance. These do not prove live email delivery, database persistence or model generation. Repeated the 30 page/viewport smoke checks with no uncaught errors or horizontal overflow.
+
+Remaining gates include a real database round-trip and migration review, configured receiving automation and inbox verification, complete conditional-field/tooltip/accessibility testing, all external assets/links, third-party video playback, full PDF stress and Word rendering acceptance, AI/SMS/booking integration, and reconciliation of the 670 inherited checkmarks. Main is unchanged and no deployment or live messages were performed.

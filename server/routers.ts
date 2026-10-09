@@ -1,3 +1,4 @@
+import { hydratePolicyMetadata, readPolicyMetadata } from "../shared/policyMetadata";
 import { TRPCError } from "@trpc/server";
 import { deliver, resumeOrigin } from "./_core/delivery";
 import { VISITOR_COOKIE } from "./_core/visitorSession";
@@ -89,7 +90,7 @@ export const appRouter = router({
     get: visitorProcedure.query(async ({ ctx }) => {
       // Allow public access - return first policy for public user
       const policy = await getPolicyByUserId(ctx.user.id);
-      if (policy) return policy;
+      if (policy) return hydratePolicyMetadata(policy);
       // Return empty policy object if none exists
       return { id: 0 } as any;
     }),
@@ -224,6 +225,7 @@ export const appRouter = router({
         if (id) {
           const existing = await getPolicyById(id);
           if (!existing || existing.userId !== userId) throw new TRPCError({ code: "NOT_FOUND", message: "Policy not found" });
+          saveData.equipmentAllowance = JSON.stringify({...readPolicyMetadata(existing.equipmentAllowance),...readPolicyMetadata(metadata)});
           await updatePolicy(id, userId, saveData);
           return { id };
         } else {

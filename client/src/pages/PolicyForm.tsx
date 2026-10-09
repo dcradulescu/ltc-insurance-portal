@@ -1,3 +1,4 @@
+import { readPolicyDraft, restorePolicyFields, validPolicyStep, validatePolicyStep, writeDraftValue } from "@shared/policyFormState";
 import { YouTubeLesson } from "@/components/YouTubeLesson";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
@@ -252,17 +253,17 @@ const defaultForm: FormData = {
 
 const sampleForm: FormData = {
   insuredFullName: "John Smith", insuredEmail: "john@example.com", insuredPhone: "(555) 123-4567", insuredDob: "1950-06-15", insuredMailingAddress: "123 Main St, Charleston, SC 29401", insuredAddress: "123 Main St", insuredCity: "Charleston", insuredState: "SC", insuredZip: "29401",
-  powerOfAttorneyPresent: "Yes", poa_name: "Jane Smith", poa_relationship: "Daughter",
+  powerOfAttorneyPresent: "yes", poa_name: "Jane Smith", poa_relationship: "Daughter",
   carrierName: "Genworth", carrierAddress1: "123 Insurance Blvd", carrierAddress2: "Suite 100", carrierCityStateZip: "Richmond, VA 23219", carrierAddress: "123 Insurance Blvd Suite 100", carrierCity: "Richmond", carrierState: "VA", carrierZip: "23219",
   carrierPhone: "(800) 555-1234", carrierFax: "(804) 555-5678",
   policyNumber: "POL123456", claimPreClaimNumber: "PRE789",
   eliminationPeriod: "90", lookBackPeriodEnabled: true, lookBackPeriodDays: "30", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "$250.00", monthlyMaximum: "$7500.00", lifetimeMaximum: "$500000.00",
-  minAdlsRequired: "2", qualifyingAdls: ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"], waiverOfPremium: "Yes", cnaRequired: "No", approvedAgencyRequired: "No", careNotesRequired: "Yes", careLogsheetsRequired: "No", whereToGetClaimsPacket: "Contact carrier", howToSubmitClaimsPacket: "Mail or fax", invoiceReimbursementDelay: "30 days",
-  assignmentOfBenefits: "Yes",
-  equipmentAllowanceEnabled: true, equipmentAllowanceAmount: "$100.00", equipmentAllowanceCoverage: "Annually", equipmentAllowanceDeductedFromLifetime: "No", equipmentAllowanceRelatedAdls: ["Bathing"], equipmentNeeds: ["Shower chair", "Walker"], equipmentAllowanceNotes: "Covers mobility aids",
+  minAdlsRequired: "2", qualifyingAdls: ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"], waiverOfPremium: "yes", cnaRequired: "no", approvedAgencyRequired: "no", careNotesRequired: "yes", careLogsheetsRequired: "no", whereToGetClaimsPacket: "Contact carrier", howToSubmitClaimsPacket: "Mail or fax", invoiceReimbursementDelay: "30 days",
+  assignmentOfBenefits: "yes",
+  equipmentAllowanceEnabled: true, equipmentAllowanceAmount: "$100.00", equipmentAllowanceCoverage: "Annually", equipmentAllowanceDeductedFromLifetime: "no", equipmentAllowanceRelatedAdls: ["Bathing"], equipmentNeeds: ["Shower chair", "Walker"], equipmentAllowanceNotes: "Covers mobility aids",
   inflationAdjustmentEnabled: true, inflationType: "compound", inflationPercentagePerYear: "3", inflationContinuesAfterBenefits: true,
-  caseManagerAssigned: "Yes", caseManagerName: "Sarah Johnson", thirdPartyAssessmentRequired: "Yes",
-  cognitiveImpairmentTrigger: "Yes",
+  caseManagerAssigned: "yes", caseManagerName: "Sarah Johnson", thirdPartyAssessmentRequired: "yes",
+  cognitiveImpairmentTrigger: "yes",
   careNeeds: ["Bathing", "Dressing", "Toileting"], careNotes: "Needs 24/7 supervision due to fall risk",
   diagnosisCheckboxes: ["Alzheimer's Disease", "Osteoarthritis"], diagnosisNotes: "Diagnosed 2 years ago, progressive decline",
   preferredCareType: "Home Care", additionalNotes: "Prefers female caregivers",
@@ -280,7 +281,7 @@ function TooltipField({ label, name, children, isRequired = false, videoUrl }: {
         {tip && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+              <button type="button" aria-label={`Help with ${label}`} className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
                 <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
               </button>
             </TooltipTrigger>
@@ -299,14 +300,15 @@ function TooltipField({ label, name, children, isRequired = false, videoUrl }: {
               <PlayCircle className="w-3.5 h-3.5 text-teal-400 cursor-pointer hover:text-teal-600" />
             </a>
           ) : (
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 hover:text-teal-600 transition-colors"
-              title="Video explanation coming soon"
-              onClick={() => toast.info('Video explanation coming soon for this field.')}
+            <a
+              href="https://www.youtube.com/watch?v=0LGv1Z9CLbc"
+              target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 hover:text-teal-600"
+              title="General LTC policy overview (external video)"
+              aria-label="Watch a general LTC policy overview on YouTube"
             >
-              <PlayCircle className="w-3.5 h-3.5 text-slate-300 cursor-pointer hover:text-teal-400" />
-            </button>
+              <PlayCircle className="w-3.5 h-3.5 text-teal-500" />
+            </a>
           )
         )}
       </div>
@@ -320,9 +322,23 @@ const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
 
 export default function PolicyForm() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormData>(defaultForm);
+  const [draft] = useState(() => {
+    try { return readPolicyDraft(localStorage, defaultForm); }
+    catch { return {form:defaultForm,step:0,hasDraft:false,unavailable:true}; }
+  });
+  const [step, setStep] = useState(draft.step);
+  const [form, setForm] = useState<FormData>(draft.form);
+  const [draftReady, setDraftReady] = useState(draft.hasDraft);
+  const [localStorageError, setLocalStorageError] = useState(draft.unavailable);
+  const edited = useRef(false);
+  const persistLocal = useCallback((key:string,value:string) => {
+    try { if (!writeDraftValue(localStorage,key,value)) setLocalStorageError(true); }
+    catch {setLocalStorageError(true);}
+  }, []);
   const [policyId, setPolicyId] = useState<number | null>(null);
+  const currentPolicyId = useRef<number | null>(null);
+  const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const [onlineSaveError, setOnlineSaveError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [zapierSent, setZapierSent] = useState(false);
@@ -338,14 +354,21 @@ export default function PolicyForm() {
   const zapierSentRef = useRef(false);
 
   const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
-  const saveMutation = trpc.policy.save.useMutation({
-    onError: (error) => {
-      console.error("tRPC mutation error:", error);
-      if ((error.data as any)?.zodError) {
-        console.error("Zod validation error:", (error.data as any).zodError);
-      }
-    }
-  });
+  const saveMutation = trpc.policy.save.useMutation();
+  const saveFormSnapshot = (snapshot: Partial<FormData>) => {
+    edited.current = true; setDraftReady(true);
+    const operation = saveQueue.current.then(async () => {
+      try {
+        const result = await saveMutation.mutateAsync({...snapshot,id:currentPolicyId.current ?? undefined});
+        currentPolicyId.current = result.id;
+        setPolicyId(result.id);
+        setOnlineSaveError(false);
+        return result;
+      } catch (error) {setOnlineSaveError(true);throw error;}
+    });
+    saveQueue.current = operation.catch(() => undefined);
+    return operation;
+  };
   const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
   const sendSaveLinkMutation = trpc.email.sendSaveLink.useMutation();
   const notifyStepProgressMutation = trpc.email.notifyStepProgress.useMutation();
@@ -362,179 +385,63 @@ export default function PolicyForm() {
     return Math.round((filled.length / fields.length) * 100);
   }, [form]);
 
-  // Track whether initial load has happened
-  const initialLoadDone = useRef(false);
   const resumeApplied = useRef(false);
-
-  // Restore from server-side resume token (takes priority over localStorage)
+  const databaseApplied = useRef(false);
   useEffect(() => {
-    if (resumeQuery.data?.found && !resumeApplied.current) {
-      resumeApplied.current = true;
-      initialLoadDone.current = true; // prevent localStorage from overwriting
-      const data = resumeQuery.data;
-      if (data.formData && typeof data.formData === 'object') {
-        setForm(prev => ({ ...prev, ...(data.formData as any) }));
+    if (!resumeToken || resumeApplied.current || resumeQuery.isLoading) return;
+    resumeApplied.current = true;
+    if (resumeQuery.data?.found) {
+      if (edited.current) {
+        toast.info("Your saved link is ready. Reload the link to restore it; your current edits have been kept.");
+      } else {
+        setForm(restorePolicyFields(defaultForm, resumeQuery.data.formData));
+        setStep(validPolicyStep(resumeQuery.data.currentStep));
+        setSaveLinkEmail(resumeQuery.data.email || "");
+        setPolicyId(null); currentPolicyId.current = null;
+        toast.success("Saved form restored.");
+        window.history.replaceState({}, "", window.location.pathname);
       }
-      if (typeof data.currentStep === 'number') {
-        setStep(data.currentStep);
-      }
-      if (data.email) setSaveLinkEmail(data.email);
-      toast.success('Progress restored!', { description: `Resuming from Step ${(data.currentStep || 0) + 1}` });
-      window.history.replaceState({}, '', window.location.pathname);
+    } else {
+      toast.error(resumeQuery.isError ? "Unable to load the saved link. Your local draft is still available." : "This saved link is invalid or expired. Your local draft is still available.");
     }
-  }, [resumeQuery.data]);
+    setDraftReady(true);
+  }, [resumeToken, resumeQuery.data, resumeQuery.isLoading, resumeQuery.isError]);
 
-  // Load form data from localStorage on component mount
   useEffect(() => {
-    if (!initialLoadDone.current) {
-      initialLoadDone.current = true;
-      try {
-        const savedForm = localStorage.getItem('ltc_policy_form');
-        const savedStep = localStorage.getItem('ltc_policy_step');
-        if (savedForm) {
-          const parsed = JSON.parse(savedForm);
-          // Migrate old free-text careNeeds to exact ADL checkbox values
-          const validCareNeedsValues = [
-            "Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence",
-            "Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry",
-            "Shopping/Errands", "Transportation", "Money Management", "Telephone Use",
-            "NoneADL", "NoneIADL"
-          ];
-          if (Array.isArray(parsed.careNeeds)) {
-            // Migrate old "None" sentinel to "NoneADL"
-            parsed.careNeeds = parsed.careNeeds
-              .map((v: string) => v === "None" ? "NoneADL" : v)
-              .filter((v: string) => validCareNeedsValues.includes(v));
-          }
-          setForm(parsed);
-        }
-        if (savedStep) {
-          setStep(parseInt(savedStep, 10));
-        }
-      } catch (err) {
-        console.error('[Form] Failed to restore from localStorage:', err);
-      }
+    if (databaseApplied.current || policyQuery.isLoading || (resumeToken && !resumeApplied.current)) return;
+    databaseApplied.current = true;
+    const policy = policyQuery.data;
+    if ((!resumeToken || !resumeQuery.data?.found) && policy?.id) {
+      if (currentPolicyId.current === null) { setPolicyId(policy.id); currentPolicyId.current = policy.id; }
+      if (!draft.hasDraft && !edited.current) setForm(restorePolicyFields(defaultForm,policy));
     }
-  }, []);
+    setDraftReady(true);
+  }, [policyQuery.data,policyQuery.isLoading,resumeToken,draft.hasDraft,resumeQuery.isLoading,resumeQuery.data]);
 
-  // Save form data to localStorage whenever it changes
   useEffect(() => {
-    try {
-      localStorage.setItem('ltc_policy_form', JSON.stringify(form));
-    } catch (err) {
-      console.error('[Form] Failed to save to localStorage:', err);
-    }
-  }, [form]);
+    if (!draftReady || (!draft.hasDraft && !edited.current && !policyQuery.data?.id && !resumeQuery.data?.found)) return;
+    persistLocal("ltc_policy_form",JSON.stringify(form));
+    persistLocal("ltc_policy_step",String(step));
+  }, [form,step,draftReady,persistLocal,draft.hasDraft,policyQuery.data?.id,resumeQuery.data?.found]);
 
-  // Save current step to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('ltc_policy_step', step.toString());
-    } catch (err) {
-      console.error('[Form] Failed to save step to localStorage:', err);
-    }
-  }, [step]);
-
-  // Load existing policy data (only on initial load, not on refetch after save)
-  useEffect(() => {
-    if (policyQuery.data && policyQuery.data !== null && !initialLoadDone.current) {
-      initialLoadDone.current = true;
-      const p = policyQuery.data;
-      setPolicyId(p.id);
-      setForm({
-        insuredFullName: p.insuredFullName || "",
-        insuredEmail: p.insuredEmail || "",
-        insuredPhone: p.insuredPhone || "",
-        insuredDob: p.insuredDob || "",
-        insuredMailingAddress: p.insuredMailingAddress || "",
-        insuredAddress: p.insuredAddress || "",
-        insuredCity: p.insuredCity || "",
-        insuredState: p.insuredState || "",
-        insuredZip: p.insuredZip || "",
-
-        powerOfAttorneyPresent: p.powerOfAttorneyPresent || "",
-        poa_name: p.poa_name || "",
-        poa_relationship: p.poa_relationship || "",
-        carrierName: p.carrierName || "",
-        carrierAddress1: p.carrierAddress1 || "",
-        carrierAddress2: p.carrierAddress2 || "",
-        carrierCityStateZip: p.carrierCityStateZip || "",
-        carrierAddress: p.carrierAddress || "",
-        carrierCity: p.carrierCity || "",
-        carrierState: p.carrierState || "",
-        carrierZip: p.carrierZip || "",
-        carrierPhone: p.carrierPhone || "",
-        carrierFax: p.carrierFax || "",
-        policyNumber: p.policyNumber || "",
-        claimPreClaimNumber: p.claimPreClaimNumber || "",
-        eliminationPeriod: p.eliminationPeriod || "",
-        lookBackPeriodEnabled: p.lookBackPeriodEnabled || false,
-        lookBackPeriodDays: p.lookBackPeriodDays || "",
-        careCoordinatorReductionEnabled: p.careCoordinatorReductionEnabled || false,
-        careCoordinatorReducedToDays: p.careCoordinatorReducedToDays || "",
-        reductionInCareProvidedEnabled: p.reductionInCareProvidedEnabled || false,
-        reductionInCareDaysCountedAs7: p.reductionInCareDaysCountedAs7 || "",
-        dailyMaximum: p.dailyMaximum || "",
-        monthlyMaximum: p.monthlyMaximum || "",
-        lifetimeMaximum: p.lifetimeMaximum || "",
-        minAdlsRequired: p.minAdlsRequired || "",
-        qualifyingAdls: Array.isArray(p.qualifyingAdls) ? (p.qualifyingAdls as string[]) : [],
-        waiverOfPremium: p.waiverOfPremium || "",
-        cnaRequired: p.cnaRequired || "",
-        approvedAgencyRequired: p.approvedAgencyRequired || "",
-        careNotesRequired: p.careNotesRequired || "",
-        careLogsheetsRequired: p.careLogsheetsRequired || "",
-        whereToGetClaimsPacket: p.whereToGetClaimsPacket || "",
-        howToSubmitClaimsPacket: p.howToSubmitClaimsPacket || "",
-        invoiceReimbursementDelay: p.invoiceReimbursementDelay || "",
-
-        assignmentOfBenefits: p.assignmentOfBenefits || "",
-        equipmentAllowanceEnabled: p.equipmentAllowanceEnabled || false,
-        equipmentAllowanceAmount: p.equipmentAllowanceAmount || "",
-        equipmentAllowanceCoverage: p.equipmentAllowanceCoverage || "",
-        equipmentAllowanceDeductedFromLifetime: p.equipmentAllowanceDeductedFromLifetime || "",
-        equipmentAllowanceRelatedAdls: Array.isArray(p.equipmentAllowanceRelatedAdls) ? (p.equipmentAllowanceRelatedAdls as string[]) : [],
-        equipmentNeeds: Array.isArray(p.equipmentNeeds) ? (p.equipmentNeeds as string[]) : [],
-        equipmentAllowanceNotes: p.equipmentAllowanceNotes || "",
-        inflationAdjustmentEnabled: p.inflationAdjustmentEnabled || false,
-        inflationType: p.inflationType || "none",
-        inflationPercentagePerYear: p.inflationPercentagePerYear || "",
-        inflationContinuesAfterBenefits: p.inflationContinuesAfterBenefits || false,
-        caseManagerAssigned: p.caseManagerAssigned || "",
-        caseManagerName: p.caseManagerName || "",
-        thirdPartyAssessmentRequired: p.thirdPartyAssessmentRequired || "",
-        cognitiveImpairmentTrigger: p.cognitiveImpairmentTrigger || "",
-        careNeeds: Array.isArray(p.careNeeds) ? (p.careNeeds as string[]) : [],
-        careNotes: p.careNotes || "",
-        diagnosisCheckboxes: Array.isArray(p.diagnosisCheckboxes) ? (p.diagnosisCheckboxes as string[]) : [],
-        diagnosisNotes: p.diagnosisNotes || "",
-        preferredCareType: p.preferredCareType || "",
-        additionalNotes: p.additionalNotes || "",
-      });
-    }
-  }, [policyQuery.data]);
-
-  // Send comprehensive data to Zapier (called once on completion, exit, or timeout)
+  const deliveryInFlight = useRef(false);
   const sendToZapier = useCallback(async (trigger: "form_completed" | "exit" | "timeout") => {
-    if (zapierSentRef.current) return; // Prevent duplicate sends
-    zapierSentRef.current = true;
-    setZapierSent(true);
-
-    const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
-
+    if (deliveryInFlight.current || (zapierSentRef.current && trigger !== "form_completed")) return false;
+    deliveryInFlight.current = true;
     try {
-      await sendComprehensiveZapier.mutateAsync({
-        trigger,
-        currentPage: "policy-form",
-        formStep: step,
-        sessionDurationSeconds: sessionDuration,
-        unsavedFormData: form as unknown as Record<string, any>,
+      const receipt = await sendComprehensiveZapier.mutateAsync({
+        trigger, currentPage:"policy-form", formStep:step,
+        sessionDurationSeconds:Math.round((Date.now()-sessionStartRef.current)/1000),
+        unsavedFormData:form as unknown as Record<string,any>,
       });
-      console.log(`[Form] Comprehensive Zapier webhook sent (trigger: ${trigger})`);
-    } catch (err) {
-      console.error("[Form] Zapier send failed (non-blocking):", err);
-    }
-  }, [form, step, sendComprehensiveZapier]);
+      if (!receipt.success) throw new Error(receipt.message);
+      zapierSentRef.current = true; setZapierSent(true);
+      return true;
+    } catch {
+      if (trigger === "form_completed") toast.warning("Your form is saved, but office delivery was not accepted. You can retry from your strategy.");
+      return false;
+    } finally {deliveryInFlight.current=false;}
+  }, [form,step,sendComprehensiveZapier]);
 
   // Track user activity for timeout
   useEffect(() => {
@@ -565,13 +472,12 @@ export default function PolicyForm() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (!zapierSentRef.current) {
-        zapierSentRef.current = true;
         const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
         // Use sendBeacon for reliable delivery on page close (tRPC batch format)
         navigator.sendBeacon?.(
-          "/api/trpc/policyForm.sendComprehensiveToZapier",
+          "/api/trpc/policyForm.sendComprehensiveToZapier?batch=1",
           new Blob(
-            [JSON.stringify({ "0": { json: { trigger: "exit", currentPage: "policy-form", formStep: step, sessionDurationSeconds: sessionDuration } } })],
+            [JSON.stringify({ "0": { json: { trigger: "exit", currentPage: "policy-form", formStep: step, sessionDurationSeconds: sessionDuration, unsavedFormData: form } } })],
             { type: "application/json" }
           )
         );
@@ -580,7 +486,7 @@ export default function PolicyForm() {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [step]);
+  }, [step, form]);
 
   // Scroll to top whenever the user navigates to a new step
   useEffect(() => {
@@ -588,6 +494,7 @@ export default function PolicyForm() {
   }, [step]);
 
   const update = (field: keyof FormData, value: any) => {
+    edited.current = true; setDraftReady(true);
     lastActivityRef.current = Date.now();
     
     // Apply formatting based on field type
@@ -597,10 +504,7 @@ export default function PolicyForm() {
       value = formatPhoneNumber(value);
     }
     
-    // Name fields: capitalize first letter of each word
-    if (field === 'insuredFullName' || field === 'carrierName' || field === 'caseManagerName' || field === 'poa_name' || field === 'poa_relationship') {
-      value = capitalizeFirstLetter(value);
-    }
+    // Preserve the spelling and casing of legal names.
     
     // Address fields: capitalize first letter of each word
     if (field === 'carrierAddress1' || field === 'carrierAddress2') {
@@ -627,6 +531,7 @@ export default function PolicyForm() {
 
   // Handle date input with MM/DD/YYYY display format
   const handleDateChange = (displayValue: string) => {
+    edited.current = true; setDraftReady(true); clearError("insuredDob");
     lastActivityRef.current = Date.now();
     const formatted = formatDateInput(displayValue);
     const dateValue = convertToDateFormat(formatted);
@@ -635,46 +540,7 @@ export default function PolicyForm() {
 
   // Per-step validation — returns true if the step is valid, false otherwise
   const validateStep = (currentStep: number): boolean => {
-    const errors: Record<string, string> = {};
-
-    if (currentStep === 0) {
-      if (!form.insuredFullName.trim()) errors.insuredFullName = "Full name is required.";
-      if (!form.insuredEmail.trim()) {
-        errors.insuredEmail = "Email address is required.";
-      } else if (!isValidEmail(form.insuredEmail)) {
-        errors.insuredEmail = "Please enter a valid email address.";
-      }
-      if (!form.insuredPhone.trim()) {
-        errors.insuredPhone = "Phone number is required.";
-      } else if (!isValidPhoneNumber(form.insuredPhone)) {
-        errors.insuredPhone = "Please enter a valid phone number: (000) 000-0000.";
-      }
-    }
-
-    if (currentStep === 1) {
-      if (!form.carrierName.trim()) errors.carrierName = "Insurance company name is required.";
-    }
-
-    if (currentStep === 2) {
-      if (!form.policyNumber.trim()) errors.policyNumber = "Policy number is required.";
-    }
-
-    if (currentStep === 3) {
-      if (!form.dailyMaximum.trim()) errors.dailyMaximum = "Daily maximum benefit is required.";
-      if (!form.lifetimeMaximum.trim()) errors.lifetimeMaximum = "Lifetime maximum benefit is required.";
-      if (!form.eliminationPeriod.trim()) errors.eliminationPeriod = "Elimination period is required.";
-    }
-
-    if (currentStep === 4) {
-      const cn = form.careNeeds || [];
-      const hasAdlSelection = cn.some(v => ["Bathing","Dressing","Eating/Feeding","Toileting","Transferring","Continence"].includes(v)) || cn.includes("NoneADL");
-      if (!hasAdlSelection) {
-        errors.careNeeds = "Please select at least one ADL or choose \"None of these ADLs apply\".";
-      }
-      if (!form.diagnosisCheckboxes || form.diagnosisCheckboxes.length === 0) {
-        errors.diagnosisCheckboxes = "Please select at least one diagnosis or condition.";
-      }
-    }
+    const errors = validatePolicyStep(form, currentStep);
 
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
@@ -682,7 +548,7 @@ export default function PolicyForm() {
       // Scroll to first error
       const firstErrorKey = Object.keys(errors)[0];
       const el = document.getElementById(firstErrorKey);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (el) { el.focus(); el.scrollIntoView({ behavior: "smooth", block: "center" }); }
       return false;
     }
     return true;
@@ -697,19 +563,18 @@ export default function PolicyForm() {
 
   // Save to database only (no validation required, no Zapier)
   const handleSendSaveLink = async () => {
-    if (!saveLinkEmail) return;
+    if (!isValidEmail(saveLinkEmail.trim())) { toast.error("Enter a valid email address."); return; }
     setSaveLinkSending(true);
     try {
-      await handleSave();
-      await sendSaveLinkMutation.mutateAsync({
-        email: saveLinkEmail,
+      const receipt = await sendSaveLinkMutation.mutateAsync({
+        email: saveLinkEmail.trim(),
         insuredName: form.insuredFullName || undefined,
         stepTitle: steps[step]?.title || `Step ${step + 1}`,
         origin: window.location.origin,
         formData: form as Record<string, any>,
         currentStep: step,
       });
-      toast.success(`Resume link sent to ${saveLinkEmail}`);
+      toast.success(receipt.message);
       setShowSaveLinkDialog(false);
     } catch {
       toast.error("Failed to send link. Please try again.");
@@ -729,27 +594,18 @@ export default function PolicyForm() {
         SESSION_ID,
         FORM_START_TIME
       );
-      localStorage.setItem("ltc_form_current", JSON.stringify(submission));
-      localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
+      persistLocal("ltc_form_current", JSON.stringify(submission));
+      persistLocal(`ltc_form_step_${step}`, JSON.stringify(submission));
 
       // Filter out fields that don't exist in the database schema
-      const { poa_name, poa_relationship, ...validFormData } = form;
+      const validFormData = form;
       
       // Also save to database
-      const result = await saveMutation.mutateAsync({ ...validFormData, id: policyId || undefined });
+      const result = await saveFormSnapshot(validFormData);
       if (!policyId) setPolicyId(result.id);
       
       toast.success("Form saved successfully!");
       
-      // Send to Zapier asynchronously (don't block on this)
-      try {
-        const blob = new Blob([JSON.stringify(submission, null, 2)], { type: "application/json" });
-        const formData = new FormData();
-        formData.append("file", blob, `ltc_form_${submission.submissionId}.json`);
-        // You can send this to Zapier webhook here
-      } catch (err) {
-        console.error("Error preparing Zapier data:", err);
-      }
     } catch (e) {
       toast.error("Failed to save. Please try again.");
     } finally {
@@ -781,23 +637,20 @@ export default function PolicyForm() {
       // Check 2: Are all selected ADLs in the qualifying list?
       const allAdlsQualify = actualAdls.every(adl => qualifyingAdls.includes(adl));
       
-            if (minAdlsRequired > 0 && (actualAdlCount < minAdlsRequired || !allAdlsQualify || noneSelected)) {
+            if (form.cognitiveImpairmentTrigger !== "yes" && minAdlsRequired > 0 && (actualAdlCount < minAdlsRequired || (qualifyingAdls.length > 0 && !allAdlsQualify) || noneSelected)) {
         // Save all data first before showing modal
-        const { poa_name, poa_relationship, ...validFormData } = form;
+        const validFormData = form;
         const submission = createFormSubmission(validFormData, step, "page_transition", SESSION_ID, FORM_START_TIME);
-        localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
-        localStorage.setItem("ltc_form_current", JSON.stringify(submission));
-        saveMutation.mutate({ ...form, id: policyId || undefined } as any, {
-          onSuccess: (result) => { if (!policyId) setPolicyId(result.id); },
-          onError: (e) => { console.error("Background save failed:", e); },
-        });
+        persistLocal(`ltc_form_step_${step}`, JSON.stringify(submission));
+        persistLocal("ltc_form_current", JSON.stringify(submission));
+        void saveFormSnapshot(form).catch(() => undefined);
         // Show modal — do NOT advance step yet
         setShowAdlModal(true);
         return;
       }
     }
     // Create and save form submission for page transition
-    const { poa_name, poa_relationship, ...validFormData } = form;
+    const validFormData = form;
     const submission = createFormSubmission(
       validFormData,
       step,
@@ -805,8 +658,8 @@ export default function PolicyForm() {
       SESSION_ID,
       FORM_START_TIME
     );
-    localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
-    localStorage.setItem("ltc_form_current", JSON.stringify(submission));
+    persistLocal(`ltc_form_step_${step}`, JSON.stringify(submission));
+    persistLocal("ltc_form_current", JSON.stringify(submission));
 
     // Notify owner of step progress (fire-and-forget)
     notifyStepProgressMutation.mutate({
@@ -816,16 +669,9 @@ export default function PolicyForm() {
     });
 
     // Advance step immediately (non-blocking)
-    setStep(prev => prev + 1);
+    setStep(prev => Math.min(5,prev + 1));
     // Save to DB in background (fire-and-forget)
-      saveMutation.mutate({ ...form, id: policyId || undefined } as any, {
-      onSuccess: (result) => {
-        if (!policyId) setPolicyId(result.id);
-      },
-      onError: (e) => {
-        console.error("Background save failed:", e);
-      },
-    });
+      void saveFormSnapshot(form).catch(() => undefined);
   };
 
   // Navigate to previous step
@@ -839,8 +685,8 @@ export default function PolicyForm() {
         SESSION_ID,
         FORM_START_TIME
       );
-      localStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
-      localStorage.setItem("ltc_form_current", JSON.stringify(submission));
+      persistLocal(`ltc_form_step_${step}`, JSON.stringify(submission));
+      persistLocal("ltc_form_current", JSON.stringify(submission));
       setStep(prev => prev - 1);
     } else {
       // Send to Zapier when navigating away from form
@@ -851,16 +697,19 @@ export default function PolicyForm() {
 
   // Final submission — save, send to Zapier, then navigate
   const handleComplete = async () => {
+    for (let index = 0; index < 5; index++) {
+      if (!validateStep(index)) { setStep(index); return; }
+    }
     setSaving(true);
     try {
       // Save to DB - send form data as-is (strings)
-      const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
+      const result = await saveFormSnapshot(form);
       if (!policyId) setPolicyId(result.id);
 
       // Send comprehensive data to Zapier
       await sendToZapier("form_completed");
 
-      toast.success("Form submitted successfully!");
+      toast.success("Form saved. Continue with your strategy.");
       navigate("/strategy");
     } catch (e) {
       console.error("Save error:", e);
@@ -1048,6 +897,9 @@ export default function PolicyForm() {
           {/* Step Content */}
           <div className="px-6 md:px-8 py-8">
           {/* Step 0: Insured Person */}
+          {localStorageError && <p role="alert" className="mb-4 rounded border border-amber-300 bg-amber-50 p-3">This browser cannot save your draft locally. Keep this page open and use Save or Email Link when available.</p>}
+          {(policyQuery.isError || onlineSaveError) && <p role="status" className="mb-4 rounded border bg-slate-50 p-3">Private online saving is currently unavailable. You can continue editing on this device.</p>}
+          {Object.keys(fieldErrors).length > 0 && <div role="alert" className="mb-4 rounded border border-red-300 bg-red-50 p-3"><p className="font-semibold">Please review these fields:</p><ul className="list-disc pl-5">{Object.entries(fieldErrors).map(([key,message])=><li key={key} id={`form-error-${key}`}><button type="button" className="text-left underline" onClick={()=>document.getElementById(key)?.focus()}>{message}</button></li>)}</ul></div>}
           {step === 0 && (
             <div className="space-y-6">
               <div>
@@ -1056,35 +908,35 @@ export default function PolicyForm() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Full Name of Insured" name="insuredFullName" isRequired>
-                  <Input id="insuredFullName" value={form.insuredFullName} onChange={e => { update("insuredFullName", e.target.value); clearError("insuredFullName"); }} placeholder="Enter full legal name" className={fieldErrors.insuredFullName ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Input id="insuredFullName" aria-invalid={!!fieldErrors.insuredFullName} aria-describedby={fieldErrors.insuredFullName ? "form-error-insuredFullName" : undefined} value={form.insuredFullName} onChange={e => { update("insuredFullName", e.target.value); clearError("insuredFullName"); }} placeholder="Enter full legal name" className={fieldErrors.insuredFullName ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {fieldErrors.insuredFullName && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredFullName}</p>}
                 </TooltipField>
                 <TooltipField label="Date of Birth" name="insuredDob">
-                  <Input id="insuredDob" type="text" value={getDisplayDate(form.insuredDob)} onChange={e => handleDateChange(e.target.value)} placeholder="MM/DD/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in format MM/DD/YYYY" maxLength={10} />
+                  <Input id="insuredDob" aria-invalid={!!fieldErrors.insuredDob} aria-describedby={fieldErrors.insuredDob ? "form-error-insuredDob" : undefined} type="text" value={getDisplayDate(form.insuredDob)} onChange={e => handleDateChange(e.target.value)} placeholder="MM/DD/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in format MM/DD/YYYY" maxLength={10} />
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Email Address" name="insuredEmail" isRequired>
-                  <Input id="insuredEmail" type="email" value={form.insuredEmail} onChange={e => { update("insuredEmail", e.target.value); clearError("insuredEmail"); }} placeholder="your.email@example.com" className={fieldErrors.insuredEmail ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Input id="insuredEmail" aria-invalid={!!fieldErrors.insuredEmail} aria-describedby={fieldErrors.insuredEmail ? "form-error-insuredEmail" : undefined} type="email" value={form.insuredEmail} onChange={e => { update("insuredEmail", e.target.value); clearError("insuredEmail"); }} placeholder="your.email@example.com" className={fieldErrors.insuredEmail ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {fieldErrors.insuredEmail && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredEmail}</p>}
                 </TooltipField>
                 <TooltipField label="Phone Number" name="insuredPhone" isRequired>
-                  <Input id="insuredPhone" type="tel" value={form.insuredPhone} onChange={e => { update("insuredPhone", e.target.value); clearError("insuredPhone"); }} placeholder="(000) 000-0000" className={fieldErrors.insuredPhone ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Input id="insuredPhone" aria-invalid={!!fieldErrors.insuredPhone} aria-describedby={fieldErrors.insuredPhone ? "form-error-insuredPhone" : undefined} type="tel" value={form.insuredPhone} onChange={e => { update("insuredPhone", e.target.value); clearError("insuredPhone"); }} placeholder="(000) 000-0000" className={fieldErrors.insuredPhone ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {fieldErrors.insuredPhone && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredPhone}</p>}
                 </TooltipField>
               </div>
               <TooltipField label="Mailing Address" name="insuredMailingAddress">
-                <Input id="insuredAddress" value={form.insuredAddress} onChange={e => update("insuredAddress", e.target.value)} placeholder="Street address" />
+                <Input id="insuredAddress" aria-invalid={!!fieldErrors.insuredAddress} aria-describedby={fieldErrors.insuredAddress ? "form-error-insuredAddress" : undefined} value={form.insuredAddress} onChange={e => update("insuredAddress", e.target.value)} placeholder="Street address" />
               </TooltipField>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <TooltipField label="City" name="insuredCity">
-                  <Input id="insuredCity" value={form.insuredCity} onChange={e => update("insuredCity", e.target.value)} placeholder="City" />
+                  <Input id="insuredCity" aria-invalid={!!fieldErrors.insuredCity} aria-describedby={fieldErrors.insuredCity ? "form-error-insuredCity" : undefined} value={form.insuredCity} onChange={e => update("insuredCity", e.target.value)} placeholder="City" />
                 </TooltipField>
                 <TooltipField label="State" name="insuredState">
-                  <Input id="insuredState" value={form.insuredState} onChange={e => update("insuredState", e.target.value.toUpperCase())} placeholder="ST" maxLength={2} />
+                  <Input id="insuredState" aria-invalid={!!fieldErrors.insuredState} aria-describedby={fieldErrors.insuredState ? "form-error-insuredState" : undefined} value={form.insuredState} onChange={e => update("insuredState", e.target.value.toUpperCase())} placeholder="ST" maxLength={2} />
                 </TooltipField>
                 <TooltipField label="Zip Code" name="insuredZip">
-                  <Input id="insuredZip" value={form.insuredZip} onChange={e => update("insuredZip", e.target.value)} placeholder="00000" />
+                  <Input id="insuredZip" aria-invalid={!!fieldErrors.insuredZip} aria-describedby={fieldErrors.insuredZip ? "form-error-insuredZip" : undefined} value={form.insuredZip} onChange={e => update("insuredZip", e.target.value)} placeholder="00000" />
                 </TooltipField>
               </div>
 
@@ -1098,10 +950,10 @@ export default function PolicyForm() {
                 {form.powerOfAttorneyPresent === "yes" && (
                   <>
                     <TooltipField label="POA Name" name="poa_name">
-                      <Input id="poa_name" value={form.poa_name} onChange={e => update("poa_name", e.target.value)} placeholder="Full name" />
+                      <Input id="poa_name" aria-invalid={!!fieldErrors.poa_name} aria-describedby={fieldErrors.poa_name ? "form-error-poa_name" : undefined} value={form.poa_name} onChange={e => update("poa_name", e.target.value)} placeholder="Full name" />
                     </TooltipField>
                     <TooltipField label="POA Relationship" name="poa_relationship">
-                      <Input id="poa_relationship" value={form.poa_relationship} onChange={e => update("poa_relationship", e.target.value)} placeholder="e.g., Spouse, Child" />
+                      <Input id="poa_relationship" aria-invalid={!!fieldErrors.poa_relationship} aria-describedby={fieldErrors.poa_relationship ? "form-error-poa_relationship" : undefined} value={form.poa_relationship} onChange={e => update("poa_relationship", e.target.value)} placeholder="e.g., Spouse, Child" />
                     </TooltipField>
                   </>
                 )}
@@ -1118,29 +970,29 @@ export default function PolicyForm() {
                 <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Next, we need to know about your insurance company. You can find this information on your policy declaration page or any billing statement from your carrier.</p>
               </div>
               <TooltipField label="LTC Insurance Company Name" name="carrierName" isRequired>
-                <Input id="carrierName" value={form.carrierName} onChange={e => { update("carrierName", e.target.value); clearError("carrierName"); }} placeholder="e.g., Genworth, John Hancock, Mutual of Omaha" className={fieldErrors.carrierName ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                <Input id="carrierName" aria-invalid={!!fieldErrors.carrierName} aria-describedby={fieldErrors.carrierName ? "form-error-carrierName" : undefined} value={form.carrierName} onChange={e => { update("carrierName", e.target.value); clearError("carrierName"); }} placeholder="e.g., Genworth, John Hancock, Mutual of Omaha" className={fieldErrors.carrierName ? "border-red-500 focus-visible:ring-red-500" : ""} />
                 {fieldErrors.carrierName && <p className="text-xs text-red-600 mt-1">{fieldErrors.carrierName}</p>}
               </TooltipField>
               <TooltipField label="Address" name="carrierAddress">
-                <Input id="carrierAddress" value={form.carrierAddress} onChange={e => update("carrierAddress", e.target.value)} placeholder="Street address" />
+                <Input id="carrierAddress" aria-invalid={!!fieldErrors.carrierAddress} aria-describedby={fieldErrors.carrierAddress ? "form-error-carrierAddress" : undefined} value={form.carrierAddress} onChange={e => update("carrierAddress", e.target.value)} placeholder="Street address" />
               </TooltipField>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <TooltipField label="City" name="carrierCity">
-                  <Input id="carrierCity" value={form.carrierCity} onChange={e => update("carrierCity", e.target.value)} placeholder="City" />
+                  <Input id="carrierCity" aria-invalid={!!fieldErrors.carrierCity} aria-describedby={fieldErrors.carrierCity ? "form-error-carrierCity" : undefined} value={form.carrierCity} onChange={e => update("carrierCity", e.target.value)} placeholder="City" />
                 </TooltipField>
                 <TooltipField label="State" name="carrierState">
-                  <Input id="carrierState" value={form.carrierState} onChange={e => update("carrierState", e.target.value.toUpperCase())} placeholder="ST" maxLength={2} />
+                  <Input id="carrierState" aria-invalid={!!fieldErrors.carrierState} aria-describedby={fieldErrors.carrierState ? "form-error-carrierState" : undefined} value={form.carrierState} onChange={e => update("carrierState", e.target.value.toUpperCase())} placeholder="ST" maxLength={2} />
                 </TooltipField>
                 <TooltipField label="Zip Code" name="carrierZip">
-                  <Input id="carrierZip" value={form.carrierZip} onChange={e => update("carrierZip", e.target.value)} placeholder="00000" />
+                  <Input id="carrierZip" aria-invalid={!!fieldErrors.carrierZip} aria-describedby={fieldErrors.carrierZip ? "form-error-carrierZip" : undefined} value={form.carrierZip} onChange={e => update("carrierZip", e.target.value)} placeholder="00000" />
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="LTC Claims Dept. Phone Number" name="carrierPhone">
-                  <Input id="carrierPhone" value={form.carrierPhone} onChange={e => update("carrierPhone", e.target.value)} placeholder="(000) 000-0000" />
+                  <Input id="carrierPhone" aria-invalid={!!fieldErrors.carrierPhone} aria-describedby={fieldErrors.carrierPhone ? "form-error-carrierPhone" : undefined} value={form.carrierPhone} onChange={e => update("carrierPhone", e.target.value)} placeholder="(000) 000-0000" />
                 </TooltipField>
                 <TooltipField label="LTC Claims Dept Fax Number" name="carrierFax">
-                  <Input id="carrierFax" value={form.carrierFax} onChange={e => update("carrierFax", e.target.value)} placeholder="(000) 000-0000" />
+                  <Input id="carrierFax" aria-invalid={!!fieldErrors.carrierFax} aria-describedby={fieldErrors.carrierFax ? "form-error-carrierFax" : undefined} value={form.carrierFax} onChange={e => update("carrierFax", e.target.value)} placeholder="(000) 000-0000" />
                 </TooltipField>
               </div>
             </div>
@@ -1155,11 +1007,11 @@ export default function PolicyForm() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TooltipField label="Policy Number" name="policyNumber" isRequired>
-                  <Input id="policyNumber" value={form.policyNumber} onChange={e => { update("policyNumber", e.target.value); clearError("policyNumber"); }} placeholder="Your policy number" className={fieldErrors.policyNumber ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Input id="policyNumber" aria-invalid={!!fieldErrors.policyNumber} aria-describedby={fieldErrors.policyNumber ? "form-error-policyNumber" : undefined} value={form.policyNumber} onChange={e => { update("policyNumber", e.target.value); clearError("policyNumber"); }} placeholder="Your policy number" className={fieldErrors.policyNumber ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {fieldErrors.policyNumber && <p className="text-xs text-red-600 mt-1">{fieldErrors.policyNumber}</p>}
                 </TooltipField>
                 <TooltipField label="Claim / Pre-Claim Number" name="claimPreClaimNumber">
-                  <Input id="claimPreClaimNumber" value={form.claimPreClaimNumber} onChange={e => update("claimPreClaimNumber", e.target.value)} placeholder="If already assigned" />
+                  <Input id="claimPreClaimNumber" aria-invalid={!!fieldErrors.claimPreClaimNumber} aria-describedby={fieldErrors.claimPreClaimNumber ? "form-error-claimPreClaimNumber" : undefined} value={form.claimPreClaimNumber} onChange={e => update("claimPreClaimNumber", e.target.value)} placeholder="If already assigned" />
                 </TooltipField>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1171,7 +1023,7 @@ export default function PolicyForm() {
                 </TooltipField>
                 {form.caseManagerAssigned === "yes" && (
                   <TooltipField label="Case Manager Name" name="caseManagerName">
-                    <Input id="caseManagerName" value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="Enter case manager name" />
+                    <Input id="caseManagerName" aria-invalid={!!fieldErrors.caseManagerName} aria-describedby={fieldErrors.caseManagerName ? "form-error-caseManagerName" : undefined} value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="Enter case manager name" />
                   </TooltipField>
                 )}
               </div>
@@ -1182,14 +1034,14 @@ export default function PolicyForm() {
                 <p className="text-xs text-slate-500">These details help us tailor your strategy with carrier-specific submission guidance.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <TooltipField label="Where Can I Get the Claims Packet?" name="whereToGetClaimsPacket">
-                    <Input id="whereToGetClaimsPacket" value={form.whereToGetClaimsPacket} onChange={e => update("whereToGetClaimsPacket", e.target.value)} placeholder="e.g., Call carrier, online portal" />
+                    <Input id="whereToGetClaimsPacket" aria-invalid={!!fieldErrors.whereToGetClaimsPacket} aria-describedby={fieldErrors.whereToGetClaimsPacket ? "form-error-whereToGetClaimsPacket" : undefined} value={form.whereToGetClaimsPacket} onChange={e => update("whereToGetClaimsPacket", e.target.value)} placeholder="e.g., Call carrier, online portal" />
                   </TooltipField>
                   <TooltipField label="How Do I Submit the Claims Packet?" name="howToSubmitClaimsPacket">
-                    <Input id="howToSubmitClaimsPacket" value={form.howToSubmitClaimsPacket} onChange={e => update("howToSubmitClaimsPacket", e.target.value)} placeholder="e.g., Mail, fax, online portal" />
+                    <Input id="howToSubmitClaimsPacket" aria-invalid={!!fieldErrors.howToSubmitClaimsPacket} aria-describedby={fieldErrors.howToSubmitClaimsPacket ? "form-error-howToSubmitClaimsPacket" : undefined} value={form.howToSubmitClaimsPacket} onChange={e => update("howToSubmitClaimsPacket", e.target.value)} placeholder="e.g., Mail, fax, online portal" />
                   </TooltipField>
                 </div>
                 <TooltipField label="Invoice Reimbursement Delay" name="invoiceReimbursementDelay">
-                  <Input id="invoiceReimbursementDelay" value={form.invoiceReimbursementDelay} onChange={e => update("invoiceReimbursementDelay", e.target.value)} placeholder="e.g., 30 days, 2-4 weeks" />
+                  <Input id="invoiceReimbursementDelay" aria-invalid={!!fieldErrors.invoiceReimbursementDelay} aria-describedby={fieldErrors.invoiceReimbursementDelay ? "form-error-invoiceReimbursementDelay" : undefined} value={form.invoiceReimbursementDelay} onChange={e => update("invoiceReimbursementDelay", e.target.value)} placeholder="e.g., 30 days, 2-4 weeks" />
                 </TooltipField>
               </div>
 
@@ -1207,14 +1059,14 @@ export default function PolicyForm() {
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Financial Benefits</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                   <TooltipField label="Daily Maximum" name="dailyMaximum" isRequired>
-                    <Input id="dailyMaximum" type="text" value={form.dailyMaximum} onChange={e => { update("dailyMaximum", formatCurrency(e.target.value)); clearError("dailyMaximum"); }} placeholder="$0.00" className={`bg-white${fieldErrors.dailyMaximum ? " border-red-500 focus-visible:ring-red-500" : ""}`} />
+                    <Input id="dailyMaximum" aria-invalid={!!fieldErrors.dailyMaximum} aria-describedby={fieldErrors.dailyMaximum ? "form-error-dailyMaximum" : undefined} type="text" value={form.dailyMaximum} onChange={e => { update("dailyMaximum", formatCurrency(e.target.value)); clearError("dailyMaximum"); }} placeholder="$0.00" className={`bg-white${fieldErrors.dailyMaximum ? " border-red-500 focus-visible:ring-red-500" : ""}`} />
                     {fieldErrors.dailyMaximum && <p className="text-xs text-red-600 mt-1">{fieldErrors.dailyMaximum}</p>}
                   </TooltipField>
                   <TooltipField label="Monthly Maximum" name="monthlyMaximum">
-                    <Input id="monthlyMaximum" type="text" value={form.monthlyMaximum || ''} onChange={e => update("monthlyMaximum", formatCurrency(e.target.value))} placeholder="$0.00" className="bg-white" />
+                    <Input id="monthlyMaximum" aria-invalid={!!fieldErrors.monthlyMaximum} aria-describedby={fieldErrors.monthlyMaximum ? "form-error-monthlyMaximum" : undefined} type="text" value={form.monthlyMaximum || ''} onChange={e => update("monthlyMaximum", formatCurrency(e.target.value))} placeholder="$0.00" className="bg-white" />
                   </TooltipField>
                   <TooltipField label="Lifetime Maximum" name="lifetimeMaximum" isRequired>
-                    <Input id="lifetimeMaximum" type="text" value={form.lifetimeMaximum} onChange={e => { update("lifetimeMaximum", formatCurrency(e.target.value)); clearError("lifetimeMaximum"); }} placeholder="$0.00" className={`bg-white${fieldErrors.lifetimeMaximum ? " border-red-500 focus-visible:ring-red-500" : ""}`} />
+                    <Input id="lifetimeMaximum" aria-invalid={!!fieldErrors.lifetimeMaximum} aria-describedby={fieldErrors.lifetimeMaximum ? "form-error-lifetimeMaximum" : undefined} type="text" value={form.lifetimeMaximum} onChange={e => { update("lifetimeMaximum", formatCurrency(e.target.value)); clearError("lifetimeMaximum"); }} placeholder="$0.00" className={`bg-white${fieldErrors.lifetimeMaximum ? " border-red-500 focus-visible:ring-red-500" : ""}`} />
                     {fieldErrors.lifetimeMaximum && <p className="text-xs text-red-600 mt-1">{fieldErrors.lifetimeMaximum}</p>}
                   </TooltipField>
                 </div>
@@ -1222,7 +1074,7 @@ export default function PolicyForm() {
                   <h3 className="text-lg font-semibold text-slate-800 mb-4">Elimination Period Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <TooltipField label="Elimination Period" name="eliminationPeriod" isRequired>
-                      <Input id="eliminationPeriod" type="number" min="0" max="999" value={form.eliminationPeriod} onChange={e => {
+                      <Input id="eliminationPeriod" aria-invalid={!!fieldErrors.eliminationPeriod} aria-describedby={fieldErrors.eliminationPeriod ? "form-error-eliminationPeriod" : undefined} type="number" min="0" max="999" value={form.eliminationPeriod} onChange={e => {
                         const val = e.target.value;
                         if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
                           update("eliminationPeriod", val);
@@ -1234,13 +1086,13 @@ export default function PolicyForm() {
                     {form.eliminationPeriod && (
                       <>
                         <TooltipField label="Lookback Period" name="lookBackPeriodDays">
-                          <Input id="lookBackPeriodDays" type="text" value={form.lookBackPeriodDays} onChange={e => update("lookBackPeriodDays", e.target.value)} placeholder="### Days" className="bg-white" />
+                          <Input id="lookBackPeriodDays" aria-invalid={!!fieldErrors.lookBackPeriodDays} aria-describedby={fieldErrors.lookBackPeriodDays ? "form-error-lookBackPeriodDays" : undefined} type="text" value={form.lookBackPeriodDays} onChange={e => update("lookBackPeriodDays", e.target.value)} placeholder="### Days" className="bg-white" />
                         </TooltipField>
                         <TooltipField label="Coordinator Reduction" name="careCoordinatorReducedToDays">
-                          <Input id="careCoordinatorReducedToDays" type="text" value={form.careCoordinatorReducedToDays} onChange={e => update("careCoordinatorReducedToDays", e.target.value)} placeholder="### Days" className="bg-white" />
+                          <Input id="careCoordinatorReducedToDays" aria-invalid={!!fieldErrors.careCoordinatorReducedToDays} aria-describedby={fieldErrors.careCoordinatorReducedToDays ? "form-error-careCoordinatorReducedToDays" : undefined} type="text" value={form.careCoordinatorReducedToDays} onChange={e => update("careCoordinatorReducedToDays", e.target.value)} placeholder="### Days" className="bg-white" />
                         </TooltipField>
                         <TooltipField label="Count Days/Wk as 7" name="reductionInCareDaysCountedAs7">
-                          <Input id="reductionInCareDaysCountedAs7" type="text" value={form.reductionInCareDaysCountedAs7} onChange={e => update("reductionInCareDaysCountedAs7", e.target.value)} placeholder="### Days" className="bg-white" />
+                          <Input id="reductionInCareDaysCountedAs7" aria-invalid={!!fieldErrors.reductionInCareDaysCountedAs7} aria-describedby={fieldErrors.reductionInCareDaysCountedAs7 ? "form-error-reductionInCareDaysCountedAs7" : undefined} type="text" value={form.reductionInCareDaysCountedAs7} onChange={e => update("reductionInCareDaysCountedAs7", e.target.value)} placeholder="### Days" className="bg-white" />
                         </TooltipField>
                       </>
                     )}
@@ -1290,7 +1142,7 @@ export default function PolicyForm() {
                       <Label className="text-sm font-medium text-slate-700">Which ADLs qualify as valid triggers for this policy?</Label>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                          <button type="button" aria-label="Explain this section" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
                             <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                           </button>
                         </TooltipTrigger>
@@ -1396,7 +1248,7 @@ export default function PolicyForm() {
                   <h3 className="text-base font-semibold text-slate-800">Primary Diagnosis or Condition</h3>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                      <button type="button" aria-label="Explain this section" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
                         <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                       </button>
                     </TooltipTrigger>
@@ -1431,7 +1283,7 @@ export default function PolicyForm() {
                   <h3 className="text-base font-semibold text-slate-800">Activities of Daily Living (ADLs)</h3>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                      <button type="button" aria-label="Explain this section" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
                         <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                       </button>
                     </TooltipTrigger>
@@ -1523,7 +1375,7 @@ export default function PolicyForm() {
                   <h3 className="text-base font-semibold text-slate-800">Instrumental Activities of Daily Living (IADLs)</h3>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button type="button" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
+                      <button type="button" aria-label="Explain this section" className="inline-flex items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-teal/50">
                         <HelpCircle className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                       </button>
                     </TooltipTrigger>
@@ -1621,8 +1473,9 @@ export default function PolicyForm() {
               <Button 
                 variant="outline" 
                 onClick={() => {
+                  edited.current = true; setDraftReady(true);
                   setForm(sampleForm);
-                  localStorage.setItem('ltc_policy_form', JSON.stringify(sampleForm));
+                  persistLocal('ltc_policy_form', JSON.stringify(sampleForm));
                   toast.success('Sample data loaded. You can now test the form.');
                 }} 
                 className="gap-1 text-blue-600 hover:text-blue-700"
@@ -1632,16 +1485,21 @@ export default function PolicyForm() {
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  if (confirm('Are you sure you want to clear all form data? This cannot be undone.')) {
-                    localStorage.removeItem('ltc_policy_form');
-                    localStorage.removeItem('ltc_calculator_state');
-                    toast.success('All data cleared. Form reset.');
-                    window.location.href = '/policy-form';
+                  if (confirm('Clear the draft on this device? Online records will remain.')) {
+                    edited.current = true; databaseApplied.current = true; resumeApplied.current = true; setDraftReady(true);
+                    setForm(defaultForm); setStep(0); setFieldErrors({});
+                    setPolicyId(null); currentPolicyId.current = null;
+                    persistLocal('ltc_policy_form', JSON.stringify(defaultForm));
+                    persistLocal('ltc_policy_step', '0');
+                    try {
+                      for (const key of ['ltc_form_current','ltc_calculator_state',...Array.from({length:6},(_,i)=>`ltc_form_step_${i}`)]) localStorage.removeItem(key);
+                    } catch {setLocalStorageError(true);}
+                    toast.success('Local draft reset. Online records remain unchanged.');
                   }
                 }} 
-                className="gap-1 text-destructive hover:text-destructive"
+                disabled={saving || saveMutation.isPending} className="gap-1 text-destructive hover:text-destructive"
               >
-                Clear All Data
+                Clear Local Draft
               </Button>
               <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-1">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
@@ -1680,11 +1538,10 @@ export default function PolicyForm() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-              <span className="text-amber-500">⚠</span> ADL Benefit Trigger Not Met
+              <span className="text-amber-500">⚠</span> Review Your Policy’s Benefit Triggers
             </DialogTitle>
             <DialogDescription className="text-sm text-slate-600 mt-2 leading-relaxed">
-              Based on your current care needs, you do not appear to meet the minimum ADL requirement
-              to initiate a claim under this policy at this time.
+              Your answers may not match the ADL requirement entered above. Policies may also have a cognitive impairment trigger. Confirm eligibility and filing deadlines with your insurer; this form cannot determine coverage.
               <br /><br />
               <strong>This does not mean your journey ends here.</strong> Many families use this tool
               to plan ahead — understanding your policy now means you will be fully prepared when
@@ -1698,7 +1555,7 @@ export default function PolicyForm() {
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white"
                 onClick={() => {
                   setShowAdlModal(false);
-                  setStep(prev => prev + 1);
+                  setStep(prev => Math.min(5,prev + 1));
                 }}
               >
                 Yes — continue for informational purposes

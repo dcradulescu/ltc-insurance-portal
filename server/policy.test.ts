@@ -243,3 +243,13 @@ describe("policy ownership",()=>{
   expect(await owner.policy.get()).toMatchObject({insuredFullName:"Private owner"});
  });
 });
+
+describe("policy metadata round-trip",()=>{
+ it("restores all extended answers and retains them during partial updates",async()=>{
+  const caller=appRouter.createCaller(createAuthContext(901).ctx);
+  const created=await caller.policy.save({insuredFullName:"Casey",poa_name:"Alex",careNeeds:["Bathing"],inflationAdjustmentEnabled:true,inflationPercentagePerYear:"3"});
+  expect(await caller.policy.get()).toMatchObject({id:created.id,poa_name:"Alex",careNeeds:["Bathing"],inflationAdjustmentEnabled:true,inflationPercentagePerYear:"3"});
+  await caller.policy.save({id:created.id,insuredFullName:"Casey Updated"});
+  expect(await caller.policy.get()).toMatchObject({insuredFullName:"Casey Updated",poa_name:"Alex",careNeeds:["Bathing"]});
+ });
+});

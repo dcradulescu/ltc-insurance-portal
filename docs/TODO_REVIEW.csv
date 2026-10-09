@@ -662,7 +662,7 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 661,871,False,Test mobile responsiveness: all pages on mobile/tablet,open; see DEVELOPMENT_REVIEW.md,
 662,872,False,Document all issues found in prioritized list,open; see DEVELOPMENT_REVIEW.md,
 663,875,False,Fix any broken navigation links,open; see DEVELOPMENT_REVIEW.md,
-664,876,False,Fix form validation errors,open; see DEVELOPMENT_REVIEW.md,
+664,876,False,Fix form validation errors,implemented; evidence recorded,Shared validation plus 24 draft/validation tests; browser checks for required fields and negative benefit rejection.
 665,877,False,Fix page flow/navigation issues,open; see DEVELOPMENT_REVIEW.md,
 666,878,False,Fix scroll-to-top on page transitions,open; see DEVELOPMENT_REVIEW.md,
 667,879,False,Fix mobile layout issues,open; see DEVELOPMENT_REVIEW.md,
@@ -682,7 +682,7 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 681,899,False,"Verify all data persistence (localStorage, database)",open; see DEVELOPMENT_REVIEW.md,
 682,900,False,"Test all calculations (Care Calculator, financial projections)",implemented; evidence recorded,"Real shared calculation tests: caps, waiver, exhaustion, invalid ranges."
 683,901,False,Verify all animations and micro-interactions work,open; see DEVELOPMENT_REVIEW.md,
-684,902,False,Create comprehensive bug report with all findings,open; see DEVELOPMENT_REVIEW.md,
+684,902,False,Create comprehensive bug report with all findings,implemented; evidence recorded,"docs/DEVELOPMENT_REVIEW.md contains prioritized findings, fixes, test evidence and unresolved risks across all three development passes."
 685,903,False,Deliver final analysis and status report,open; see DEVELOPMENT_REVIEW.md,
 686,909,True,Fix Share button functionality on Welcome page (already working),inherited checked; re-verification pending,
 687,910,True,"Fix ""Start Here"" button - should go to Academy (add Academy to menu if not there)",inherited checked; re-verification pending,
