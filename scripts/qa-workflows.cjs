@@ -102,7 +102,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       await page.getByRole('button', { name: 'Save Changes' }).click();
       await page.getByText('Profile updated successfully', { exact: true }).waitFor();
       assert.equal(state.profile.email, 'new@example.com');
-      await page.reload(); await page.getByText('New McDonald', { exact: true }).waitFor();
+      await page.reload({ waitUntil: "domcontentloaded" }); await page.getByText('New McDonald', { exact: true }).waitFor();
       await page.getByRole('button', { name: 'Add Contact', exact: true }).click();
       await page.locator('#new-name').fill('Care Partner'); await page.locator('#new-email').fill('partner@example.com'); await page.locator('#new-relationship').fill('Sibling');
       await page.getByRole('button', { name: 'Add Contact', exact: true }).click();
@@ -159,7 +159,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       const task = page.locator('label').filter({ hasText: 'Call test carrier' }).getByRole('checkbox');
       assert.equal(await task.getAttribute('aria-checked'), 'true');
       await task.click(); await page.waitForFunction(() => [...document.querySelectorAll('label')].find(node => node.textContent.includes('Call test carrier'))?.querySelector('[role="checkbox"]')?.getAttribute('aria-checked') === 'false');
-      await page.reload(); await page.getByRole('button', { name: 'Checklist', exact: true }).click();
+      await page.reload({ waitUntil: "domcontentloaded" }); await page.getByRole('button', { name: 'Checklist', exact: true }).click();
       assert.equal(await task.getAttribute('aria-checked'), 'false');
       state.fail = 'strategy.saveTaskCompletion'; await task.click(); await page.getByText('Failed to update task.', { exact: true }).waitFor(); assert.equal(await task.getAttribute('aria-checked'), 'false');
       state.fail = '';
@@ -205,9 +205,9 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       const reenter = async number => {
         const saved = await page.evaluate(() => localStorage.getItem('ltc_policy_form'));
         await page.getByRole('navigation', { name: 'Your LTC journey' }).getByRole('link', { name: 'Get support' }).click();
-        await page.waitForURL('**/contact');
+        await page.waitForURL('**/contact', { waitUntil: "domcontentloaded" });
         await page.getByRole('navigation', { name: 'Your LTC journey' }).getByRole('link', { name: 'Your policy' }).click();
-        await checkStep(number); await page.reload(); await checkStep(number);
+        await checkStep(number); await page.reload({ waitUntil: "domcontentloaded" }); await checkStep(number);
         assert.equal(await page.evaluate(() => localStorage.getItem('ltc_policy_form')), saved);
       };
       await checkStep(1); await next();
@@ -236,7 +236,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       await page.locator('#policy-step-heading').scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(output, `wizard-review-${width}.png`) });
       await page.getByRole('button', { name: 'Generate Strategy', exact: true }).click();
-      await page.waitForURL('**/strategy');
+      await page.waitForURL('**/strategy', { waitUntil: "domcontentloaded" });
       const saves=state.calls.filter(call=>call.name==='policy.save');
       assert(saves[0].input.id==null); assert(saves.slice(1).every(call=>call.input.id===7));
       await finish(page, state, `${width}px wizard: required fields, typed currency, sequential progress, six-step route/reload recovery and final save`);

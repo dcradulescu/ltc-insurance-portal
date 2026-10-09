@@ -115,7 +115,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     for (const href of menuLinks) {
       await page.getByRole('button', { name: 'Open menu', exact: true }).click();
       await menu.locator(`a[href=${JSON.stringify(href)}]`).click();
-      await page.waitForURL(url => url.pathname === href);
+      await page.waitForURL(url => url.pathname === href, { waitUntil: "domcontentloaded" });
       assert.equal(await page.getByRole('button', { name: 'Open menu', exact: true }).getAttribute('aria-expanded'), 'false');
     }
     checks.push('All ' + menuLinks.length + ' mobile menu destinations and close-on-navigation');

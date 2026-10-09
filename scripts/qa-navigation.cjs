@@ -17,7 +17,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
   const slugs = [...(await fs.readFile(path.join(root, 'shared/resourceGuides.ts'), 'utf8')).matchAll(/slug: '([^']+)'/g)].map(match => match[1]);
   const routes = [...mainRoutes, ...slugs.map(slug => '/resources/' + slug)];
   const server = spawn(process.execPath, ['dist/index.js'], { cwd: root, stdio: 'ignore', env: { ...process.env, NODE_ENV: 'production', PORT: new URL(origin).port, APP_URL: origin, DATABASE_URL: '', ZAPIER_WEBHOOK_URL: '', VITE_ZAPIER_WEBHOOK_URL: '', BUILT_IN_FORGE_API_KEY: '', TWILIO_ACCOUNT_SID: '', TWILIO_AUTH_TOKEN: '' } });
-  let browser;
+  let browser, activePage;
   const result = { routes: [], transitions: [], anchors: [], helperChats: [], externalLinks: [], errors: [] };
   try {
     let ready = false;
@@ -27,6 +27,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
     console.log(JSON.stringify({ browser: browserName, version: browser.version() }));
     for (const width of (process.env.QA_WIDTHS || '1440,768,390').split(',').map(Number)) {
       const page = await browser.newPage({ viewport: { width, height: 900 } });
+      activePage = page;
       page.setDefaultTimeout(8000);
       const calls = [];
       page.on('pageerror', error => result.errors.push({ width, route: new URL(page.url()).pathname, message: error.message }));
@@ -90,7 +91,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
           }
           assert(await link.count(), `No reachable link: ${source} -> ${target.raw} at ${width}`);
           await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
-          await link.click(); await page.waitForURL(url => url.pathname === destination.pathname && url.hash === destination.hash);
+          await link.click(); await page.waitForURL(url => url.pathname === destination.pathname && url.hash === destination.hash, { waitUntil: "domcontentloaded" });
           await page.locator('h1').first().waitFor(); await pause(70);
           if (!destination.hash && destination.pathname !== '/ltc-insurance-guide.html') assert(await page.evaluate(() => scrollY < 2), `Scroll reset failed: ${source} -> ${target.raw} at ${width}`);
           assert(!await page.getByText('This guide was not found.', { exact: false }).count(), `Missing guide: ${target.raw}`);
@@ -114,7 +115,8 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       const fragments = ['adl', 'glossary', 'plan-of-care', 'poa', 'aob', 'hipaa', 'claim-form', 'elimination-period', 'care-logs', 'invoicing', 'appeals', 'assessment', 'waiver', 'inflation'];
       for (const fragment of fragments) {
         await page.goto(origin + '/education#' + fragment, { waitUntil: "domcontentloaded" });
-        const target = page.locator('#' + fragment); await target.waitFor({ state: 'attached' }); await pause(80);
+        const target = page.locator('#' + fragment); await target.waitFor({ state: 'visible' });
+        await page.waitForFunction(id => { const top = document.getElementById(id)?.getBoundingClientRect().top; return top >= 60 && top <= 150; }, fragment, { timeout: 5000 });
         const top = await target.evaluate(element => element.getBoundingClientRect().top);
         assert(top >= 60 && top <= 150, `Anchor hidden or misplaced: ${fragment} at ${width}: ${top}`);
         result.anchors.push({ fragment, width });
@@ -123,14 +125,17 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       await page.goto(origin + '/education', { waitUntil: "domcontentloaded" });
       for (const fragment of ['aob', 'adl', 'elimination-period']) {
         await page.evaluate(fragment => history.pushState(null, '', '/education#' + fragment), fragment);
-        const target = page.locator('#' + fragment); await target.waitFor({ state: 'attached' }); await pause(80);
+        const target = page.locator('#' + fragment); await target.waitFor({ state: 'visible' });
+        await page.waitForFunction(id => { const top = document.getElementById(id)?.getBoundingClientRect().top; return top >= 60 && top <= 150; }, fragment, { timeout: 5000 });
         const top = await target.evaluate(element => element.getBoundingClientRect().top);
         assert(top >= 60 && top <= 150, `Same-path anchor misplaced: ${fragment} at ${width}: ${top}`);
       }
-      await page.goBack(); await pause(100);
+      await page.goBack({ waitUntil: "domcontentloaded" });
+      await page.waitForFunction(() => { const top = document.getElementById('adl')?.getBoundingClientRect().top; return top >= 60 && top <= 150; }, undefined, { timeout: 5000 });
       assert(new URL(page.url()).hash === '#adl');
       assert(await page.locator('#adl').evaluate(element => element.getBoundingClientRect().top >= 60 && element.getBoundingClientRect().top <= 150));
-      await page.goForward(); await pause(100);
+      await page.goForward({ waitUntil: "domcontentloaded" });
+      await page.waitForFunction(() => { const top = document.getElementById('elimination-period')?.getBoundingClientRect().top; return top >= 60 && top <= 150; }, undefined, { timeout: 5000 });
       assert(new URL(page.url()).hash === '#elimination-period');
       assert(await page.locator('#elimination-period').evaluate(element => element.getBoundingClientRect().top >= 60 && element.getBoundingClientRect().top <= 150));
       result.anchors.push({ width, history: 'Same-path fragment changes and back/forward passed' });
@@ -155,6 +160,11 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
     assert.deepEqual(result.errors, []);
     await fs.writeFile(path.join(output, 'results.json'), JSON.stringify(result, null, 2));
     console.log(JSON.stringify({ routeChecks: result.routes.length, transitions: result.transitions.length, anchors: result.anchors.length, helperChats: result.helperChats.length, errors: result.errors.length }));
-  } catch (error) { await fs.writeFile(path.join(output, 'partial-results.json'), JSON.stringify(result, null, 2)); console.error(error); process.exitCode = 1; }
+  } catch (error) {
+    if (activePage && !activePage.isClosed()) {
+      await activePage.screenshot({path:path.join(output,'failure.png'),fullPage:true}).catch(()=>{});
+      await fs.writeFile(path.join(output,'failure-state.json'),JSON.stringify(await activePage.evaluate(()=>({url:location.href,title:document.title,scrollY,anchors:Array.from(document.querySelectorAll('[id]')).map(el=>({id:el.id,top:el.getBoundingClientRect().top})).filter(el=>['adl','aob','appeals','elimination-period'].includes(el.id))})).catch(()=>({})),null,2));
+    }
+    await fs.writeFile(path.join(output, 'partial-results.json'), JSON.stringify(result, null, 2)); console.error(error); process.exitCode = 1; }
   finally { if (browser) await browser.close(); server.kill(); }
 })();
