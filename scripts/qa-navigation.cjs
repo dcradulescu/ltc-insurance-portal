@@ -32,6 +32,9 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       activePage = page;
       page.setDefaultTimeout(8000);
       page.setDefaultNavigationTimeout(30000);
+      // A desktop-only header link must never be a mobile click candidate.
+      // WebKit can resolve :visible before the responsive header settles.
+      const reachableLink = raw => page.locator(`a[href=${JSON.stringify(raw)}]:visible:not([inert] a)${width < 1024 ? ':not(header nav.hidden a)' : ''}`).first();
       const calls = [];
       page.on('pageerror', error => result.errors.push({ width, route: new URL(page.url()).pathname, message: error.message }));
       await page.addInitScript(() => { localStorage.setItem('ltc_terms_accepted_v1', 'true'); window.__copiedLinks = []; Object.defineProperty(navigator, 'share', { configurable: true, value: undefined }); Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__copiedLinks.push(text); } } }); });
@@ -85,18 +88,18 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
           if (destination.pathname === source && !destination.hash) continue; // No page transition.
           await page.goto(origin + source, { waitUntil: "domcontentloaded" }); await page.locator('h1').first().waitFor();
           await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
-          let link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
+          let link = reachableLink(target.raw);
           if (!await link.count() && width < 1024) {
             await clickControl(page.getByRole('button', { name: 'Help', exact: true }));
             await clickControl(page.getByRole('dialog', { name: 'Page help' }).getByRole('button', { name: 'Files', exact: true }));
-            link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
+            link = reachableLink(target.raw);
           }
           if (!await link.count() && width < 1024) {
             const drawer = page.getByRole('dialog', { name: 'Page help' });
             if (await drawer.count()) await clickControl(drawer.getByRole('button', { name: 'Close help' }));
             await clickControl(page.getByRole('button', { name: 'Open menu', exact: true }));
             await page.waitForFunction(() => { const menu = document.getElementById("mobile-navigation"); return menu && menu.clientHeight >= menu.scrollHeight - 1; });
-            link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
+            link = reachableLink(target.raw);
           }
           assert(await link.count(), `No reachable link: ${source} -> ${target.raw} at ${width}`);
           await clickControl(link); await page.waitForURL(url => url.pathname === destination.pathname && url.hash === destination.hash, { waitUntil: "domcontentloaded" });

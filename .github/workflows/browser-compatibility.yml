@@ -23,16 +23,17 @@ concurrency:
 
 jobs:
   browser:
-    name: ${{ matrix.browser }} — PC, tablet, mobile
+    name: ${{ matrix.browser }} — ${{ matrix.width }}px
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         browser: [chromium, firefox, webkit]
+        width: [390, 768, 1440]
     env:
       QA_BROWSER: ${{ matrix.browser }}
-      QA_WIDTHS: '1440,768,390'
+      QA_WIDTHS: '${{ matrix.width }}'
       DEBUG: pw:browser
       DATABASE_URL: ''
       ZAPIER_WEBHOOK_URL: ''
@@ -54,35 +55,37 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/ltc-browser-qa" --no-save playwright@1.64.0
           node "$RUNNER_TEMP/ltc-browser-qa/node_modules/playwright/cli.js" install --with-deps "$QA_BROWSER"
           echo "PLAYWRIGHT_MODULE=$RUNNER_TEMP/ltc-browser-qa/node_modules/playwright" >> "$GITHUB_ENV"
-      - name: Check, test, and build
-        id: build
+      - name: Check and test once per engine
+        if: ${{ matrix.width == 1440 }}
         run: |
           pnpm check
           pnpm test
-          pnpm build
+      - name: Build production app
+        id: build
+        run: pnpm build
       - name: Check workflows and real local PDF downloads
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.width == 1440 }}
         run: pnpm test:workflows
       - name: Retain workflow failure trace immediately
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: workflow-failure-${{ matrix.browser }}
+          name: workflow-failure-${{ matrix.browser }}-${{ matrix.width }}
           path: .qa-workflows
           include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 7
       - name: Check sharing, menus, chat, and media fallback behavior
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.width == 1440 }}
         run: pnpm test:interactions
-      - name: Check every route at PC, tablet, and mobile widths
+      - name: Check every route at this viewport
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm test:navigation
       - name: Retain browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-evidence-${{ matrix.browser }}
+          name: browser-evidence-${{ matrix.browser }}-${{ matrix.width }}
           path: |
             .qa-navigation
             .qa-workflows
