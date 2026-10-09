@@ -54,6 +54,7 @@ jobs:
           node "$RUNNER_TEMP/ltc-browser-qa/node_modules/playwright/cli.js" install --with-deps "$QA_BROWSER"
           echo "PLAYWRIGHT_MODULE=$RUNNER_TEMP/ltc-browser-qa/node_modules/playwright" >> "$GITHUB_ENV"
       - name: Check, test, and build
+        id: build
         run: |
           pnpm check
           pnpm test
@@ -61,8 +62,10 @@ jobs:
       - name: Check every route at PC, tablet, and mobile widths
         run: pnpm test:navigation
       - name: Check workflows and real local PDF downloads
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm test:workflows
       - name: Check sharing, menus, chat, and media fallback behavior
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: pnpm test:interactions
       - name: Retain browser evidence
         if: always()

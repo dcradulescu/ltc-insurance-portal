@@ -36,9 +36,9 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       page.setDefaultTimeout(8000);
       const state = { profile: { name: 'Saved Profile', email: 'profile@example.com', notificationPreferences: {} }, contacts: [], policy: options.noPolicy ? { id: 0 } : policy, strategy: options.noStrategy ? null : structuredClone(initialStrategy), completions: [], fail: options.fail || '', calls: [], errors: [] };
       page.on('pageerror', error => state.errors.push(error.message));
-      await page.addInitScript(({ blocked }) => {
+      await page.addInitScript(({ blocked, wizard }) => {
         localStorage.setItem('ltc_terms_accepted_v1', 'true');
-        localStorage.setItem('ltc_policy_form', JSON.stringify({ insuredFullName: 'Stale local draft', id: 999 }));
+        if (!wizard) localStorage.setItem('ltc_policy_form', JSON.stringify({ insuredFullName: 'Stale local draft', id: 999 }));
         if (blocked) { Storage.prototype.getItem = function (key) { if (key === 'ltc_terms_accepted_v1') return 'true'; throw new Error('Storage blocked'); }; Storage.prototype.setItem = function () { throw new Error('Storage blocked'); }; }
       }, options);
       await page.route('https://**/*', route => route.abort());
@@ -64,6 +64,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
           if (name === 'contacts.update') { state.contacts = state.contacts.map(contact => contact.id === input.id ? { ...contact, ...input } : contact); data = { success: true }; }
           if (name === 'contacts.delete') { state.contacts = state.contacts.filter(contact => contact.id !== input.id); data = { success: true }; }
           if (name === 'policy.get') data = state.policy;
+          if (name === 'policy.save') { state.policy = { ...state.policy, ...input, id: 7 }; data = { id: 7 }; }
           if (name === 'strategy.getByPolicy') data = state.strategy;
           if (name === 'strategy.getTaskCompletions') data = state.completions;
           if (name === 'strategy.generate') { await pause(100); state.strategy = structuredClone(initialStrategy); data = { id: 31 }; }
@@ -189,6 +190,56 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
       await page.locator('#email-1').fill(' PERSON@example.com '); await page.getByRole('button', { name: 'Send Strategy', exact: true }).click();
       await page.getByRole('dialog').waitFor({ state: 'hidden' }); assert.deepEqual(state.calls.find(call => call.name === 'email.sendStrategy').input.recipients, ['person@example.com']);
       await finish(page, state, 'Both Strategy download controls return actual local-server PDFs; email validation, acceptance and recipient deduplication');
+    }
+    // Exercise the actual wizard controls in each CI browser, including tablet/mobile.
+    for (const width of [1440, 768, 390]) {
+      const { page, state } = await setup('/policy-form', { width, wizard: true, noPolicy: true });
+      const next = () => page.getByRole('button', { name: 'Next', exact: true }).click();
+      const checkStep = async number => {
+        await page.getByText(`Step ${number} of 6`, { exact: true }).waitFor();
+        assert.equal(await page.getByRole('progressbar', { name: 'Policy form steps' }).getAttribute('aria-valuenow'), String(number));
+        assert.equal(await page.getByRole('button', { name: new RegExp(`^Step ${number}:`) }).getAttribute('aria-current'), 'step');
+        for (let later=number+1;later<=6;later++) assert(await page.getByRole('button', { name: new RegExp(`^Step ${later}:`) }).isDisabled());
+      };
+      const invalid = async id => { await page.locator(`#${id}[aria-invalid="true"]`).waitFor(); };
+      const reenter = async number => {
+        const saved = await page.evaluate(() => localStorage.getItem('ltc_policy_form'));
+        await page.getByRole('navigation', { name: 'Your LTC journey' }).getByRole('link', { name: 'Get support' }).click();
+        await page.waitForURL('**/contact');
+        await page.getByRole('navigation', { name: 'Your LTC journey' }).getByRole('link', { name: 'Your policy' }).click();
+        await checkStep(number); await page.reload(); await checkStep(number);
+        assert.equal(await page.evaluate(() => localStorage.getItem('ltc_policy_form')), saved);
+      };
+      await checkStep(1); await next();
+      for (const id of ['insuredFullName','insuredEmail','insuredPhone']) await invalid(id);
+      await page.locator('#insuredFullName').fill('Browser QA');
+      await page.locator('#insuredEmail').fill('browser@example.com');
+      await page.locator('#insuredPhone').fill('5551234567');
+      await reenter(1); await next(); await checkStep(2); await next(); await invalid('carrierName');
+      await page.locator('#carrierName').fill('Example Carrier');
+      await reenter(2); await next(); await checkStep(3); await next(); await invalid('policyNumber');
+      await page.locator('#policyNumber').fill('QA-ONLY-123');
+      await reenter(3); await next(); await checkStep(4); await next();
+      for (const id of ['dailyMaximum','lifetimeMaximum','eliminationPeriod','waiverOfPremium','assignmentOfBenefits','cognitiveImpairmentTrigger']) await invalid(id);
+      await page.locator('#dailyMaximum').pressSequentially('250.50');
+      await page.locator('#lifetimeMaximum').pressSequentially('100000');
+      await page.locator('#eliminationPeriod').fill('0');
+      assert.equal(await page.locator('#dailyMaximum').inputValue(), '$250.50');
+      for (const id of ['waiverOfPremium','assignmentOfBenefits','cognitiveImpairmentTrigger']) {
+        await page.locator('#'+id).click(); await page.getByRole('option', { name: 'No', exact: true }).click();
+      }
+      await reenter(4); await next(); await checkStep(5); await next();
+      await invalid('careNeeds'); await invalid('diagnosisCheckboxes');
+      await page.getByRole('group', { name: 'Primary Diagnosis or Condition (required)' }).getByRole('checkbox', { name: 'Other', exact: true }).check();
+      await page.getByRole('group', { name: 'Activities of Daily Living (required)' }).getByRole('checkbox', { name: 'None of these ADLs apply', exact: true }).check();
+      await reenter(5); await next(); await checkStep(6); await reenter(6);
+      await page.locator('#policy-step-heading').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(output, `wizard-review-${width}.png`) });
+      await page.getByRole('button', { name: 'Generate Strategy', exact: true }).click();
+      await page.waitForURL('**/strategy');
+      const saves=state.calls.filter(call=>call.name==='policy.save');
+      assert(saves[0].input.id==null); assert(saves.slice(1).every(call=>call.input.id===7));
+      await finish(page, state, `${width}px wizard: required fields, typed currency, sequential progress, six-step route/reload recovery and final save`);
     }
     console.log(JSON.stringify({ passed: passed.length, results: passed }, null, 2));
   } catch (error) {

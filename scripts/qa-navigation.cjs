@@ -82,7 +82,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
             await page.getByRole('dialog', { name: 'Page help' }).getByRole('button', { name: 'Files', exact: true }).click();
             link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
           }
-          if (!await link.count() && width < 768) {
+          if (!await link.count() && width < 1024) {
             const drawer = page.getByRole('dialog', { name: 'Page help' });
             if (await drawer.count()) await drawer.getByRole('button', { name: 'Close help' }).click();
             await page.getByRole('button', { name: 'Open menu', exact: true }).click();
