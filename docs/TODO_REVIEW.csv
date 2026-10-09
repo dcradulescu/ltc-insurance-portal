@@ -642,11 +642,11 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 641,843,True,Verify professional appearance and polish,inherited checked; re-verification pending,
 642,847,False,"Create visually rich multi-layout PDF with distinct colored sections (teal, blue, green, yellow, pink)",open; see DEVELOPMENT_REVIEW.md,
 643,848,False,Design hero banner sections with background graphics and text overlays,open; see DEVELOPMENT_REVIEW.md,
-644,849,False,"Implement varied layouts: cards, timelines, forms, Gantt charts, checklists",open; see DEVELOPMENT_REVIEW.md,
+644,849,False,"Implement varied layouts: cards, timelines, forms, Gantt charts, checklists",implemented; evidence recorded,19-page overview and detailed policy/Gantt render review; multiple layouts present.
 645,850,False,"Create custom graphics, icons, and data visualizations for each section",open; see DEVELOPMENT_REVIEW.md,
-646,851,False,Add landscape orientation for Gantt chart section,open; see DEVELOPMENT_REVIEW.md,
-647,852,False,Implement vertical timeline with alternating left/right cards for process flow,open; see DEVELOPMENT_REVIEW.md,
-648,853,False,Create form-style layout for policy information section,open; see DEVELOPMENT_REVIEW.md,
+646,851,False,Add landscape orientation for Gantt chart section,implemented; evidence recorded,Rendered landscape letter Gantt page with readable spaced ruler.
+647,852,False,Implement vertical timeline with alternating left/right cards for process flow,implemented; evidence recorded,Rendered claim journey page with four alternating cards.
+648,853,False,Create form-style layout for policy information section,implemented; evidence recorded,Rendered long-name policy summary fits fields and notes on one page.
 649,854,False,Generate final professional brochure PDF with heavy graphical content,open; see DEVELOPMENT_REVIEW.md,
 650,855,False,Add legal disclaimer about educational purposes only,implemented; evidence recorded,Rendered legal disclaimer page; educational limitation present.
 651,861,False,"Test Home page: all links, CTAs, video player, chat widget",open; see DEVELOPMENT_REVIEW.md,

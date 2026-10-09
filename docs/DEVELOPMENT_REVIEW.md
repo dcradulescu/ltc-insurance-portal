@@ -54,3 +54,16 @@ DATABASE_URL, JWT_SECRET, APP_URL, ZAPIER_WEBHOOK_URL (and legacy alias), BUILT_
 8. Complete live AI, scheduling and SMS configuration and validation. No production deployment or main-branch merge performed.
 
 Primary content reference used for the elimination-period qualification: https://www.tdi.texas.gov/pubs/consumer/cb032.html (service-day and calendar-day policies differ). The calculator is a bounded reimbursement illustration, not a coverage determination.
+
+## Continuation — PDF rendering and chat coverage
+
+The same GitHub branch was checked before continuing; its head was 147b5d7 and main had not changed. This continuation completes four additional originally open PDF layout items: varied layouts, landscape Gantt, alternating vertical timeline and form-style policy summary. **17 of the original 61 open items are now checked; 44 remain open.** The 670 inherited checkmarks still require re-verification.
+
+- Embedded licensed DejaVu Sans subsets (Latin, Greek, Cyrillic and document punctuation) for consistent PDF typography. Font payload loads only when the browser generates a resource PDF. Other writing systems are not yet supported by these subsets.
+- Wrapped policy values and Gantt labels; repeated rulers on continuation pages; spaced date labels to prevent collisions; moved optional notes to available space without creating mostly empty pages; expanded the cover name band. The long-name sample dropped from 22 to 19 pages. Inspected the all-page overview plus detailed policy, cover and Gantt renders. Complete stress-case acceptance remains pending.
+- Replaced the two obsolete skipped chat tests with five active current-router tests. Corrected duplicate user-turn injection into model context. Tests cover two-user session isolation, other-user policy exclusion, provider failure, successful-turn persistence and session input limits. All **79 tests pass with no skips**.
+- Repeated the 30 page/viewport smoke checks: all rendered headings, no uncaught JavaScript errors, and no horizontal document overflow. This supersedes the earlier overflow finding; complete field/CTA/accessibility and animation testing remains open.
+- Repeated all 12 PDF and four Word downloads after the font change. Browser downloads succeeded. Comprehensive Word rendering remains pending.
+- Reused the repository's existing logo as a self-contained SVG wrapper and switched the favicon to the existing local file. Other legacy images still depend on external storage and have not been replaced.
+
+TypeScript and production build pass. Live-service configuration blockers and the no-deployment status remain unchanged. No new live messages were sent.

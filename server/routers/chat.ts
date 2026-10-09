@@ -137,8 +137,7 @@ export const chatRouter = router({
       const publicSessionId = input.sessionId || nanoid();
       const sessionId = `${ctx.user.id}:${publicSessionId}`;
 
-      // 1. Save user message
-      await saveMessage(sessionId, "user", input.message);
+      // Read history before saving this turn, so the prompt contains it once.
 
       // 2. Retrieve relevant docs from knowledge base
       const relevantDocs = await retrieveRelevantDocs(input.message);
@@ -206,7 +205,8 @@ RESPONSE GUIDELINES:
           ? result.choices[0].message.content
           : JSON.stringify(result.choices[0].message.content);
 
-      // 7. Save assistant response
+      // Persist the successful turn together in conversational order.
+      await saveMessage(sessionId, "user", input.message);
       await saveMessage(sessionId, "assistant", assistantContent);
 
       return { content: assistantContent, sessionId: publicSessionId };

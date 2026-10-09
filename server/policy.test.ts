@@ -221,51 +221,6 @@ describe("strategy.generate", () => {
   });
 });
 
-describe.skip("chat.send (disabled - chat router not enabled)", () => {
-  it("returns a response for a chat message", async () => {
-    const { ctx } = createAuthContext(300);
-    const caller = appRouter.createCaller(ctx);
-
-    try {
-      const response = await caller.chat.send({
-        messages: [{ role: "user", content: "What is LTC insurance?" }],
-        sessionId: "test-session-123",
-      });
-
-      expect(typeof response).toBe("string");
-      expect(response.length).toBeGreaterThan(0);
-    } catch (error: any) {
-      // Skip if database not available (expected in test environment)
-      if (error.message?.includes("Database not available")) {
-        expect(true).toBe(true);
-      } else {
-        throw error;
-      }
-    }
-  });
-
-  it("works for unauthenticated users (public procedure)", async () => {
-    const { ctx } = createUnauthContext();
-    const caller = appRouter.createCaller(ctx);
-
-    try {
-      const response = await caller.chat.send({
-        messages: [{ role: "user", content: "Hello" }],
-        sessionId: "anon-session-456",
-      });
-
-      expect(typeof response).toBe("string");
-    } catch (error: any) {
-      // Skip if database not available (expected in test environment)
-      if (error.message?.includes("Database not available")) {
-        expect(true).toBe(true);
-      } else {
-        throw error;
-      }
-    }
-  });
-});
-
 describe("email.sendStrategy", () => {
   it("fails closed when private visitor storage is unavailable but may fail without strategy", async () => {
     const { ctx } = createUnauthContext();

@@ -94,9 +94,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-2.5 no-underline group"
           >
             <img
-              src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
+              src="/brand-logo.svg"
               alt="SC Visiting Angels"
-              className="w-9 h-9 object-contain transition-transform duration-300 group-hover:scale-110"
+              className="w-14 h-10 object-contain transition-transform duration-300 group-hover:scale-110"
             />
             <div className="flex flex-col leading-tight">
               <span
