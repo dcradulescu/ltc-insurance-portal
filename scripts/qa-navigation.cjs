@@ -32,9 +32,10 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       activePage = page;
       page.setDefaultTimeout(8000);
       page.setDefaultNavigationTimeout(30000);
-      // A desktop-only header link must never be a mobile click candidate.
-      // WebKit can resolve :visible before the responsive header settles.
-      const reachableLink = raw => page.locator(`a[href=${JSON.stringify(raw)}]:visible:not([inert] a)${width < 1024 ? ':not(header nav.hidden a)' : ''}`).first();
+      // Desktop-only navigation and helper links are never small-screen candidates.
+      // Select their mobile menu/drawer counterparts even while styles settle.
+      const desktopOnlyLinks = 'header nav.hidden a, aside[aria-label="Page helper"] a';
+      const reachableLink = raw => page.locator(`a[href=${JSON.stringify(raw)}]:visible:not([inert] a)${width < 1024 ? `:not(${desktopOnlyLinks})` : ''}`).first();
       const calls = [];
       page.on('pageerror', error => result.errors.push({ width, route: new URL(page.url()).pathname, message: error.message }));
       await page.addInitScript(() => { localStorage.setItem('ltc_terms_accepted_v1', 'true'); window.__copiedLinks = []; Object.defineProperty(navigator, 'share', { configurable: true, value: undefined }); Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__copiedLinks.push(text); } } }); });
