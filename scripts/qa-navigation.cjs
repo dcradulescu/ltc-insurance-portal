@@ -55,7 +55,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(url.searchParams.get('batch') === '1' ? responses : responses[0]) });
       });
       for (const source of routes) {
-        await page.goto(origin + source); await page.locator('h1').first().waitFor();
+        await page.goto(origin + source, { waitUntil: "domcontentloaded" }); await page.locator('h1').first().waitFor();
         assert(await page.title(), `Missing title: ${source}`);
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Document overflow ${source} at ${width}`);
         assert(await page.evaluate(() => {
@@ -75,7 +75,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
         for (const target of targets) {
           const destination = new URL(target.url);
           if (destination.pathname === source && !destination.hash) continue; // No page transition.
-          await page.goto(origin + source); await page.locator('h1').first().waitFor();
+          await page.goto(origin + source, { waitUntil: "domcontentloaded" }); await page.locator('h1').first().waitFor();
           let link = page.locator(`a[href=${JSON.stringify(target.raw)}]:visible:not([inert] a)`).first();
           if (!await link.count() && width < 1024) {
             await page.getByRole('button', { name: 'Help', exact: true }).click();
@@ -96,7 +96,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
           assert(!await page.getByText('This guide was not found.', { exact: false }).count(), `Missing guide: ${target.raw}`);
           result.transitions.push({ width, source, target: destination.pathname + destination.hash });
         }
-        await page.goto(origin + source); await page.locator('h1').first().waitFor();
+        await page.goto(origin + source, { waitUntil: "domcontentloaded" }); await page.locator('h1').first().waitFor();
         await page.evaluate(() => window.scrollTo({ top: 350, behavior: "instant" }));
         const y = await page.evaluate(() => scrollY);
         await page.getByRole('button', { name: 'Open LTC support chat' }).click();
@@ -113,14 +113,14 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       // Existing glossary links must open the appropriate definition or section.
       const fragments = ['adl', 'glossary', 'plan-of-care', 'poa', 'aob', 'hipaa', 'claim-form', 'elimination-period', 'care-logs', 'invoicing', 'appeals', 'assessment', 'waiver', 'inflation'];
       for (const fragment of fragments) {
-        await page.goto(origin + '/education#' + fragment);
+        await page.goto(origin + '/education#' + fragment, { waitUntil: "domcontentloaded" });
         const target = page.locator('#' + fragment); await target.waitFor({ state: 'attached' }); await pause(80);
         const top = await target.evaluate(element => element.getBoundingClientRect().top);
         assert(top >= 60 && top <= 150, `Anchor hidden or misplaced: ${fragment} at ${width}: ${top}`);
         result.anchors.push({ fragment, width });
       }
       // Same-path fragments and browser history must also reopen definitions.
-      await page.goto(origin + '/education');
+      await page.goto(origin + '/education', { waitUntil: "domcontentloaded" });
       for (const fragment of ['aob', 'adl', 'elimination-period']) {
         await page.evaluate(fragment => history.pushState(null, '', '/education#' + fragment), fragment);
         const target = page.locator('#' + fragment); await target.waitFor({ state: 'attached' }); await pause(80);
@@ -135,7 +135,7 @@ const mainRoutes = ['/', '/education', '/academy', '/policy-form', '/strategy', 
       assert(await page.locator('#elimination-period').evaluate(element => element.getBoundingClientRect().top >= 60 && element.getBoundingClientRect().top <= 150));
       result.anchors.push({ width, history: 'Same-path fragment changes and back/forward passed' });
       // Verify the separate helper widget can be typed into without being remounted.
-      await page.goto(origin + '/'); await page.locator('h1').first().waitFor();
+      await page.goto(origin + '/', { waitUntil: "domcontentloaded" }); await page.locator('h1').first().waitFor();
       let helper;
       if (width < 1024) { await page.getByRole('button', { name: 'Help', exact: true }).click(); helper = page.getByRole('dialog', { name: 'Page help' }); }
       else helper = page.getByRole('complementary', { name: 'Page helper' });

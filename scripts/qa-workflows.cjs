@@ -75,7 +75,7 @@ const initialStrategy = { id: 31, policyId: 7, userId: 11, strategyContent: '<h2
         }
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(url.searchParams.get('batch') === '1' ? responses : responses[0]) });
       });
-      await page.goto(origin + routeName);
+      await page.goto(origin + routeName, { waitUntil: "domcontentloaded" });
       return { page, state };
     }
     async function finish(page, state, description) {

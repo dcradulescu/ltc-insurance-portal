@@ -53,7 +53,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     });
     const prompts = ['What is an elimination period?', 'How do I file an LTC claim?', 'What ADLs qualify for benefits?', 'What documents do I need?', 'What is Assignment of Benefits?', 'How long does approval take?'];
     for (const prompt of prompts) {
-      await page.goto(origin); await page.getByRole('button', { name: 'Open LTC support chat' }).click();
+      await page.goto(origin, { waitUntil: "domcontentloaded" }); await page.getByRole('button', { name: 'Open LTC support chat' }).click();
       const chat = page.getByRole('dialog', { name: 'LTC support chat' });
       const before = messages.length;
       await chat.getByRole('button', { name: prompt, exact: true }).click();
@@ -73,7 +73,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     checks.push('Chat provider failure, retry, duplicate-send guard and Escape');
 
     for (const [route, label, expected] of [['/', 'Share This Free Resource', origin + '/'], ['/academy', 'Share Academy', origin + '/academy'], ['/education', 'Share This Resource', origin + '/']]) {
-      await page.goto(origin + route);
+      await page.goto(origin + route, { waitUntil: "domcontentloaded" });
       await page.getByRole('button', { name: label, exact: true }).click();
       assert.deepEqual((await page.evaluate(() => window.__copies)).map(value => new URL(value).href), [expected]);
       await page.evaluate(() => { window.__shareMode = 'blocked'; });
@@ -81,7 +81,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       await page.getByText('Unable to share automatically. Copy the page address from your browser to share it.', { exact: true }).waitFor();
       checks.push('Clipboard success and denial: ' + label);
     }
-    await page.goto(origin);
+    await page.goto(origin, { waitUntil: "domcontentloaded" });
     await page.evaluate(() => { Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.__shares.push(data); throw new DOMException('Cancelled', 'AbortError'); } }); });
     await page.getByRole('button', { name: 'Share This Free Resource', exact: true }).click(); await pause(100);
     assert.equal(await page.locator('[data-sonner-toast]').count(), 0);
@@ -108,7 +108,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     checks.push('Video rejection, play/pause, keyboard seeking, mute and media-error controls (media mocked)');
 
     await page.setViewportSize({ width: 390, height: 900 });
-    await page.goto(origin);
+    await page.goto(origin, { waitUntil: "domcontentloaded" });
     const menu = page.locator('#mobile-navigation');
     assert.equal(await menu.getAttribute('inert'), '');
     const menuLinks = await menu.locator('a[href^="/"]').evaluateAll(elements => elements.map(element => element.getAttribute('href')));
