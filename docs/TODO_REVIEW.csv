@@ -640,73 +640,73 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 639,841,True,Add sticky positioning to resources sidebar for easy access while scrolling,inherited checked; re-verification pending,
 640,842,True,Test responsive design on mobile and tablet,inherited checked; re-verification pending,
 641,843,True,Verify professional appearance and polish,inherited checked; re-verification pending,
-642,847,False,"Create visually rich multi-layout PDF with distinct colored sections (teal, blue, green, yellow, pink)",open; see DEVELOPMENT_REVIEW.md,
-643,848,False,Design hero banner sections with background graphics and text overlays,open; see DEVELOPMENT_REVIEW.md,
+642,847,False,"Create visually rich multi-layout PDF with distinct colored sections (teal, blue, green, yellow, pink)",open — preserve design; see TODO_CONTINUATION.md,Existing PDF layouts retained. Full multi-color brochure acceptance remains outstanding.
+643,848,False,Design hero banner sections with background graphics and text overlays,open — preserve design; see TODO_CONTINUATION.md,No new hero artwork or overlays introduced under the instruction to retain UI/UX.
 644,849,False,"Implement varied layouts: cards, timelines, forms, Gantt charts, checklists",implemented; evidence recorded,19-page overview and detailed policy/Gantt render review; multiple layouts present.
-645,850,False,"Create custom graphics, icons, and data visualizations for each section",open; see DEVELOPMENT_REVIEW.md,
+645,850,False,"Create custom graphics, icons, and data visualizations for each section",open — preserve design; see TODO_CONTINUATION.md,Custom graphics for every PDF section would require a separate visual change; no substitute assets added.
 646,851,False,Add landscape orientation for Gantt chart section,implemented; evidence recorded,Rendered landscape letter Gantt page with readable spaced ruler.
 647,852,False,Implement vertical timeline with alternating left/right cards for process flow,implemented; evidence recorded,Rendered claim journey page with four alternating cards.
 648,853,False,Create form-style layout for policy information section,implemented; evidence recorded,Rendered long-name policy summary fits fields and notes on one page.
-649,854,False,Generate final professional brochure PDF with heavy graphical content,open; see DEVELOPMENT_REVIEW.md,
+649,854,False,Generate final professional brochure PDF with heavy graphical content,open — pdf acceptance; see TODO_CONTINUATION.md,Generation works; final graphical brochure and full content/stress-case approval remain outstanding.
 650,855,False,Add legal disclaimer about educational purposes only,implemented; evidence recorded,Rendered legal disclaimer page; educational limitation present.
-651,861,False,"Test Home page: all links, CTAs, video player, chat widget",open; see DEVELOPMENT_REVIEW.md,
-652,862,False,"Test Education page: navigation, accordions, glossary, video",open; see DEVELOPMENT_REVIEW.md,
-653,863,False,"Test Academy page: video player, timeline, progress tracking, accordions",open; see DEVELOPMENT_REVIEW.md,
-654,864,False,"Test Policy Form: all 6 steps, validation, tooltips, video icons, save & return",open; see DEVELOPMENT_REVIEW.md,
-655,865,False,"Test Strategy page: form completion, PDF download, email delivery, Zapier webhook",open; see DEVELOPMENT_REVIEW.md,
-656,866,False,"Test Contact page: form submission, email delivery, calendar integration",open; see DEVELOPMENT_REVIEW.md,
+651,861,False,"Test Home page: all links, CTAs, video player, chat widget",open — external playback; see TODO_CONTINUATION.md,"Navigation, share controls and mocked chat verified. Original video playback and every CTA combination remain unverified."
+652,862,False,"Test Education page: navigation, accordions, glossary, video",open — interaction coverage; see TODO_CONTINUATION.md,Deep-linked definitions now open and scroll correctly. Complete accordion/video acceptance remains outstanding.
+653,863,False,"Test Academy page: video player, timeline, progress tracking, accordions",open — external playback; see TODO_CONTINUATION.md,Prior lesson completion/timeline checks pass. Third-party playback and all accordion combinations still need acceptance.
+654,864,False,"Test Policy Form: all 6 steps, validation, tooltips, video icons, save & return",open — conditional coverage; see TODO_CONTINUATION.md,"Eight six-step/restoration scenarios and all 66 saved-field round-trips pass with mocked storage. Full tooltip, conditional-field and live recovery acceptance remain."
+655,865,False,"Test Strategy page: form completion, PDF download, email delivery, Zapier webhook",open — live integrations; see TODO_CONTINUATION.md,Generation and real local PDF downloads pass; receiving automation and inbox delivery are unconfigured.
+656,866,False,"Test Contact page: form submission, email delivery, calendar integration",open — live integrations; see TODO_CONTINUATION.md,"Validation, failure/retry and phone fallback pass; actual inbox receipt and configured booking remain unverified."
 657,867,False,"Test Profile page: name/email editing, contact management",implemented; evidence recorded,scripts/qa-workflows.cjs: mobile profile name/email validation and save/reload; edits survive refetch; contact add/edit/clear relationship/CC/delete; failed preference rollback. Transport mocked; real database verification remains under entry 899.
-658,868,False,"Test footer links: Privacy Policy, Terms of Use, all external links",open; see DEVELOPMENT_REVIEW.md,
-659,869,False,"Test navigation: all page transitions, scroll to top behavior",open; see DEVELOPMENT_REVIEW.md,
-660,870,False,"Test chat widget: on all pages, message sending, response generation",open; see DEVELOPMENT_REVIEW.md,
-661,871,False,Test mobile responsiveness: all pages on mobile/tablet,open; see DEVELOPMENT_REVIEW.md,
-662,872,False,Document all issues found in prioritized list,open; see DEVELOPMENT_REVIEW.md,
-663,875,False,Fix any broken navigation links,open; see DEVELOPMENT_REVIEW.md,
+658,868,False,"Test footer links: Privacy Policy, Terms of Use, all external links",implemented; evidence recorded,Footer Terms/Privacy transitions verified at three widths; SC Visiting Angels and Visiting Angels external destinations opened successfully through primary website retrieval.
+659,869,False,"Test navigation: all page transitions, scroll to top behavior",implemented; evidence recorded,"Production navigation suite clicks distinct rendered internal destinations on 24 routes at three widths, checks top reset, deep fragments and history behavior."
+660,870,False,"Test chat widget: on all pages, message sending, response generation",open — live model; see TODO_CONTINUATION.md,"Both widgets work with fixture responses; six suggested prompts, retry and session continuity verified. Live model-provider generation remains unconfigured."
+661,871,False,Test mobile responsiveness: all pages on mobile/tablet,open — visual acceptance; see TODO_CONTINUATION.md,"All 24 routes checked at 1440/768/390 with no document overflow. Missing original media, full keyboard and conditional states prevent complete visual acceptance."
+662,872,False,Document all issues found in prioritized list,implemented; evidence recorded,Prioritized findings and every remaining item are documented in DEVELOPMENT_REVIEW.md and this pass ledger.
+663,875,False,Fix any broken navigation links,implemented; evidence recorded,Replaced 13 helper placeholder links with matching destinations; supplied missing timeline and sample-form resources. Internal destinations and glossary targets tested.
 664,876,False,Fix form validation errors,implemented; evidence recorded,Shared validation plus 24 draft/validation tests; browser checks for required fields and negative benefit rejection.
-665,877,False,Fix page flow/navigation issues,open; see DEVELOPMENT_REVIEW.md,
-666,878,False,Fix scroll-to-top on page transitions,open; see DEVELOPMENT_REVIEW.md,
-667,879,False,Fix mobile layout issues,open; see DEVELOPMENT_REVIEW.md,
-668,880,False,Verify all CTAs work correctly,open; see DEVELOPMENT_REVIEW.md,
+665,877,False,Fix page flow/navigation issues,implemented; evidence recorded,"Single navigation scroll owner, real helper destinations and mobile-menu close behavior verified without redesign."
+666,878,False,Fix scroll-to-top on page transitions,implemented; evidence recorded,"Removed competing smooth resets; route changes return to the top, education fragments clear the fixed header, same-path/history fragments reopen the correct definitions."
+667,879,False,Fix mobile layout issues,open — visual acceptance; see TODO_CONTINUATION.md,No document overflow found in tested routes. Full media-loaded layouts and all conditional states remain unverified.
+668,880,False,Verify all CTAs work correctly,open — cta acceptance; see TODO_CONTINUATION.md,"Navigation, sharing, chat and core forms tested. Live delivery/booking, third-party playback and remaining conditional CTA combinations are not certified."
 669,883,False,Test PDF generation on Strategy page,implemented; evidence recorded,"Both Strategy download controls exercised against the real local-server pdfDelivery.generatePdf endpoint; each generated a 19-page landscape PDF containing the saved policy, verified with PyMuPDF."
 670,884,False,Test PDF download functionality,implemented; evidence recorded,"Playwright captured and saved both Strategy PDFs, verified PDF magic bytes, size and saved-policy text. Cover rendered and inspected. Resource downloads were checked in earlier passes; full visual stress acceptance remains separate."
-671,885,False,Test email delivery of PDF,open; see DEVELOPMENT_REVIEW.md,
-672,886,False,Test email delivery of policy form data,open; see DEVELOPMENT_REVIEW.md,
-673,887,False,Test email delivery of strategy checklist,open; see DEVELOPMENT_REVIEW.md,
-674,888,False,Verify email templates render correctly,open; see DEVELOPMENT_REVIEW.md,
-675,891,False,Test Zapier webhook on Policy Form submission,open; see DEVELOPMENT_REVIEW.md,
-676,892,False,Test Zapier webhook on Strategy page email delivery,open; see DEVELOPMENT_REVIEW.md,
-677,893,False,Test Zapier webhook on Contact form submission,open; see DEVELOPMENT_REVIEW.md,
-678,894,False,Verify webhook payloads are correct,open; see DEVELOPMENT_REVIEW.md,
+671,885,False,Test email delivery of PDF,open — inbox receipt; see TODO_CONTINUATION.md,Both strategy-email contracts include genuine PDF bytes under mocked fetch. No inbox receipt tested.
+672,886,False,Test email delivery of policy form data,open — inbox receipt; see TODO_CONTINUATION.md,All policy fields appear in owned handoff payloads. Receiver routing/template/inbox acceptance still required.
+673,887,False,Test email delivery of strategy checklist,open — inbox receipt; see TODO_CONTINUATION.md,"Task completion overrides, including false, are included in handoffs. Checklist inbox delivery remains unverified."
+674,888,False,Verify email templates render correctly,open — receiver templates; see TODO_CONTINUATION.md,Templates belong to the receiving automation and are not available in this repository.
+675,891,False,Test Zapier webhook on Policy Form submission,open — receiving automation; see TODO_CONTINUATION.md,All policy trigger payloads and HTTPS failure paths pass with mocked fetch. No configured Zapier acceptance tested.
+676,892,False,Test Zapier webhook on Strategy page email delivery,open — receiving automation; see TODO_CONTINUATION.md,Strategy email and comprehensive strategy handoff contracts pass with mocked fetch. Live receiver remains unconfigured.
+677,893,False,Test Zapier webhook on Contact form submission,open — receiving automation; see TODO_CONTINUATION.md,Contact contract passes with mocked fetch and browser failure/retry checks. Live receiver remains unconfigured.
+678,894,False,Verify webhook payloads are correct,implemented; evidence recorded,"17 comprehensive/legacy handoff tests and six email-contract tests verify ownership, all trigger mappings, metadata, task progress, draft allowlisting, PDF bytes and trusted resume origin. Receiver acceptance is tracked separately."
 679,895,False,Test error handling for failed webhooks,implemented; evidence recorded,"delivery.test.ts rejects configuration, non-2xx and transport failures."
-680,898,False,Run full end-to-end test: Home → Education → Policy Form → Strategy → Contact,open; see DEVELOPMENT_REVIEW.md,
-681,899,False,"Verify all data persistence (localStorage, database)",open; see DEVELOPMENT_REVIEW.md,
+680,898,False,Run full end-to-end test: Home → Education → Policy Form → Strategy → Contact,open — integrated journey; see TODO_CONTINUATION.md,Component journeys pass with fixtures. A complete configured database/model/delivery journey has not run.
+681,899,False,"Verify all data persistence (localStorage, database)",open — real database; see TODO_CONTINUATION.md,"All 66 fields round-trip through the actual router with mocked persistence; local browser persistence tested. MySQL connection, schema/migration and real create/update/reload acceptance remain."
 682,900,False,"Test all calculations (Care Calculator, financial projections)",implemented; evidence recorded,"Real shared calculation tests: caps, waiver, exhaustion, invalid ranges."
-683,901,False,Verify all animations and micro-interactions work,open; see DEVELOPMENT_REVIEW.md,
+683,901,False,Verify all animations and micro-interactions work,open — interaction coverage; see TODO_CONTINUATION.md,"Chat, sharing, mobile menu and video-control errors now have focused browser regressions. All animation/focus/reduced-motion states remain unverified."
 684,902,False,Create comprehensive bug report with all findings,implemented; evidence recorded,"docs/DEVELOPMENT_REVIEW.md contains prioritized findings, fixes, test evidence and unresolved risks across all three development passes."
-685,903,False,Deliver final analysis and status report,open; see DEVELOPMENT_REVIEW.md,
+685,903,False,Deliver final analysis and status report,open — final delivery; see TODO_CONTINUATION.md,This is an interim development report; unfinished requirements prevent a final completion claim.
 686,909,True,Fix Share button functionality on Welcome page (already working),inherited checked; re-verification pending,
 687,910,True,"Fix ""Start Here"" button - should go to Academy (add Academy to menu if not there)",inherited checked; re-verification pending,
 688,911,True,Verify Academy link is in main navigation menu,inherited checked; re-verification pending,
 689,914,True,Add instructions/description under Academy title,inherited checked; re-verification pending,
 690,915,True,"Replace ""Start Learning"" button with ""Print Guide"" button",inherited checked; re-verification pending,
 691,916,True,"Create Print Guide PDF (LTC Insurance education guide - pops over page, doesn't navigate away)",inherited checked; re-verification pending,
-692,917,False,Add sample LTC Insurance videos for each section (until user creates custom videos),open; see DEVELOPMENT_REVIEW.md,
+692,917,False,Add sample LTC Insurance videos for each section (until user creates custom videos),open — video acceptance; see TODO_CONTINUATION.md,Existing Academy sample embeds retained. Actual external playback across all sections remains unverified.
 693,918,False,"Create decorative flowchart background (faint, barely contrasting with light pastel gray)",implemented; evidence recorded,Decorative Academy background CSS implemented.
-694,919,False,Make Academy look more professional overall,open; see DEVELOPMENT_REVIEW.md,
+694,919,False,Make Academy look more professional overall,open — preserve design; see TODO_CONTINUATION.md,Academy visual redesign deferred under the latest instruction to retain UI/UX.
 695,922,False,"Implement collapsible steps: Step 1 contracts when Step 2 clicked, shows Step 2 info",implemented; evidence recorded,Browser verified next lesson expands Step 2.
 696,923,True,Keep Resources sidebar sticky at top right,inherited checked; re-verification pending,
 697,924,True,Include ALL resources in logical order,inherited checked; re-verification pending,
 698,925,False,Update timeline when user clicks Next/Previous video buttons,implemented; evidence recorded,Browser verified next selects Step 2 without completing it.
 699,926,False,"Create resources in same format/UX as website (clean headers, footers, pastels, cards, bullets)",implemented; evidence recorded,12 resource guides with actual PDF downloads and 4 DOCX downloads verified.
 700,927,False,Add blue sections with background bubbles for resources,implemented; evidence recorded,Resource hero blue background and bubble CSS implemented.
-701,928,False,Include pictures in resource sections for relatability,open; see DEVELOPMENT_REVIEW.md,
-702,929,False,Add charts to show process and progress,open; see DEVELOPMENT_REVIEW.md,
-703,930,False,Vary layout per section to keep visually interesting,open; see DEVELOPMENT_REVIEW.md,
+701,928,False,Include pictures in resource sections for relatability,open — original assets; see TODO_CONTINUATION.md,Existing image references retained. Original external image availability/restoration must be established before acceptance.
+702,929,False,Add charts to show process and progress,open — preserve design; see TODO_CONTINUATION.md,No new charts introduced into the existing resource layout under the instruction to retain UI/UX.
+703,930,False,Vary layout per section to keep visually interesting,open — preserve design; see TODO_CONTINUATION.md,Existing resource section layout retained. The requested visual variation is not silently marked complete.
 704,933,True,Change section under hero banner to white background,inherited checked; re-verification pending,
 705,934,True,Change policy form section to very light pastel green background,inherited checked; re-verification pending,
 706,935,False,"Remove text and buttons above ""Tell Us About Your Policy"" title (looks messy)",implemented; evidence recorded,Policy page removed above-title badges and controls.
 707,936,False,Add explanation of what page does and what to do,implemented; evidence recorded,Policy page purpose and instructions added.
-708,937,False,Replace hero banner video with YouTube video explaining LTC policy,open; see DEVELOPMENT_REVIEW.md,
+708,937,False,Replace hero banner video with YouTube video explaining LTC policy,open — preserve design; see TODO_CONTINUATION.md,Original Policy Form hero player retained. Switching its presentation/provider is outside this preservation pass.
 709,938,False,"Add rollover effects to ""Here's What You'll Receive"" cards (consistent across all)",implemented; evidence recorded,Benefit cards share consistent hover behavior.
 710,939,True,"Replace ""This is where the magic happens"" text with elegant graphic (award with ribbon, ""Magic Made Here"")",inherited checked; re-verification pending,
 711,940,True,"Remove ""Sample: Your Custom Strategy Preview"" section",inherited checked; re-verification pending,
@@ -729,4 +729,4 @@ entry,baseline_line,baseline_checked,requirement,review_status,evidence
 728,967,True,Ambient background motion on alert/info boxes,inherited checked; re-verification pending,
 729,968,True,Enhanced micro-interactions and hover animations,inherited checked; re-verification pending,
 730,969,False,Global horizontal timeline navigation element (Academy timeline serves this purpose),implemented; evidence recorded,Shared journey navigation renders across public pages.
-731,970,False,Magazine layout improvements for Education definitions (already implemented with 4-stage accordion layout),open; see DEVELOPMENT_REVIEW.md,
+731,970,False,Magazine layout improvements for Education definitions (already implemented with 4-stage accordion layout),open — preserve design; see TODO_CONTINUATION.md,Existing four-stage education layout retained; the historical magazine-layout request is not newly certified.

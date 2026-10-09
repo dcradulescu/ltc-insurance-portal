@@ -44,7 +44,6 @@ export function PageNavigation({ showDownload = true, showEmail = true, onDownlo
 
   const goTo = (href: string) => {
     navigate(href);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (

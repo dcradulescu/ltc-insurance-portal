@@ -1,6 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
+import { samplePolicyForm } from "../shared/samplePolicyForm";
+import { getTableColumns } from "drizzle-orm";
+import { policies } from "../drizzle/schema";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
@@ -129,6 +132,28 @@ vi.mock("./storage", () => ({
 }));
 
 describe("policy.save", () => {
+  it("round-trips all 66 form fields and preserves them during partial updates", async () => {
+    const caller = appRouter.createCaller(createAuthContext(902).ctx);
+    expect(Object.keys(samplePolicyForm)).toHaveLength(66);
+    const created = await caller.policy.save(samplePolicyForm);
+    expect(await caller.policy.get()).toMatchObject({ id: created.id, ...samplePolicyForm });
+
+    const { createPolicy, updatePolicy } = await import("./db");
+    const columns = Object.keys(getTableColumns(policies));
+    const inserted = vi.mocked(createPolicy).mock.calls.at(-1)![0];
+    expect(Object.keys(inserted).filter(key => !columns.includes(key))).toEqual([]);
+    expect(JSON.parse(inserted.equipmentAllowance!)).toMatchObject({
+      insuredCity: samplePolicyForm.insuredCity,
+      howToSubmitClaimsPacket: samplePolicyForm.howToSubmitClaimsPacket,
+      careLogsheetsRequired: samplePolicyForm.careLogsheetsRequired,
+    });
+
+    await caller.policy.save({ id: created.id, insuredCity: "Greenville", lookBackPeriodEnabled: false, careNeeds: [] });
+    expect(await caller.policy.get()).toMatchObject({ ...samplePolicyForm, insuredCity: "Greenville", lookBackPeriodEnabled: false, careNeeds: [] });
+    const updated = vi.mocked(updatePolicy).mock.calls.at(-1)![2];
+    expect(Object.keys(updated).filter(key => !columns.includes(key))).toEqual([]);
+  });
+
   it("creates a new policy for authenticated user", async () => {
     const { ctx } = createAuthContext(100);
     const caller = appRouter.createCaller(ctx);

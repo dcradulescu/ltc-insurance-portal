@@ -112,3 +112,7 @@ temp/
 
 # Local workflow QA downloads
 .qa-workflows/
+
+# Local navigation and interaction QA output
+.qa-navigation/
+.qa-interactions/

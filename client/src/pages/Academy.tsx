@@ -1,3 +1,4 @@
+import { shareResource } from "@/lib/shareResource";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { LTCAcademyPlayer } from "@/components/LTCAcademyPlayer";
@@ -67,12 +68,7 @@ export default function Academy() {
                   style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
                   onClick={async () => {
                     const shareData = { title: "LTC Academy — Free Video Learning", text: "Learn how to navigate long-term care insurance with our comprehensive video academy.", url: window.location.origin + '/academy' };
-                    if (navigator.share && navigator.canShare?.(shareData)) {
-                      try { await navigator.share(shareData); } catch {}
-                    } else {
-                      await navigator.clipboard.writeText(window.location.origin + '/academy');
-                      toast.success("Link copied to clipboard!", { description: "Share it with family members." });
-                    }
+                    await shareResource(shareData, "Link copied to clipboard!");
                   }}
                 >
                   <Share2 className="w-4 h-4" />

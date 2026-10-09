@@ -1,310 +1,67 @@
 import { z } from "zod";
-import { publicProcedure, visitorProcedure, router } from "../_core/trpc";
-import { ENV } from "../_core/env";
-import {
-  getPolicyByUserId, getStrategyByUserId,
-  getDocumentsByUserId, getUserContacts,
-} from "../db";
+import { getTableColumns } from "drizzle-orm";
+import { visitorProcedure, router } from "../_core/trpc";
+import { postWebhook } from "../_core/delivery";
+import { policies } from "../../drizzle/schema";
+import { readPolicyMetadata } from "../../shared/policyMetadata";
+import { applyTaskCompletions } from "../../shared/strategyState";
+import { getPolicyByUserId, getStrategyByPolicyId, getDocumentsByUserId, getUserContacts, getTaskCompletions } from "../db";
+import type { TrpcContext } from "../_core/context";
 
-/**
- * Gathers ALL user data (profile, policy form, strategy, documents, contacts)
- * into one comprehensive JSON payload and sends it to the Zapier webhook.
- *
- * Triggers:
- *  - "form_completed"    → user finishes the policy form
- *  - "strategy_completed"→ user finishes / generates their strategy (last step)
- *  - "exit"              → user navigates away or closes the tab
- *  - "timeout"           → user is inactive for 15 minutes
- */
+const policyKeys = Object.keys(getTableColumns(policies)).filter(key => !["userId", "equipmentAllowance"].includes(key));
+function policyPayload(value: Record<string, unknown>, draft = false) {
+  const fields = Object.fromEntries(policyKeys.filter(key => value[key] !== undefined && (!draft || !["id", "createdAt", "updatedAt"].includes(key))).map(key => [key, value[key]]));
+  return { ...fields, ...readPolicyMetadata(value.equipmentAllowance), ...readPolicyMetadata(JSON.stringify(value)) };
+}
+
+type Handoff = { trigger: string; currentPage?: string; formStep?: number; sessionDurationSeconds?: number; unsavedFormData?: Record<string, unknown> };
+async function sendHandoff(user: NonNullable<TrpcContext["user"]>, input: Handoff) {
+  try {
+    const policy = await getPolicyByUserId(user.id);
+    const strategy = policy ? await getStrategyByPolicyId(policy.id, user.id) : undefined;
+    const documents = await getDocumentsByUserId(user.id);
+    const contacts = await getUserContacts(user.id);
+    const completions = strategy ? await getTaskCompletions(user.id, strategy.id) : [];
+    const payload = {
+      _meta: { timestamp: new Date().toISOString(), trigger: input.trigger, currentPage: input.currentPage ?? null, formStep: input.formStep ?? null, sessionDurationSeconds: input.sessionDurationSeconds ?? null, portalVersion: "1.0" },
+      user: { id: user.id, name: user.name, email: user.email, openId: user.openId, role: user.role, createdAt: user.createdAt, lastSignedIn: user.lastSignedIn },
+      policyForm: policy ? policyPayload(policy) : null,
+      unsavedFormData: input.unsavedFormData ? policyPayload(input.unsavedFormData, true) : null,
+      strategy: strategy ? {
+        id: strategy.id, policyId: strategy.policyId, currentStage: strategy.currentStage, claimStatus: strategy.claimStatus,
+        strategyContent: strategy.strategyContent,
+        stage1Tasks: applyTaskCompletions(Array.isArray(strategy.stage1Tasks) ? strategy.stage1Tasks : [], completions),
+        stage2Tasks: applyTaskCompletions(Array.isArray(strategy.stage2Tasks) ? strategy.stage2Tasks : [], completions),
+        stage3Tasks: applyTaskCompletions(Array.isArray(strategy.stage3Tasks) ? strategy.stage3Tasks : [], completions),
+        generatedAt: strategy.generatedAt, createdAt: strategy.createdAt, updatedAt: strategy.updatedAt,
+      } : null,
+      documents: documents.map(document => ({ id: document.id, category: document.category, fileName: document.fileName, fileUrl: document.fileUrl, mimeType: document.mimeType, fileSize: document.fileSize, taskId: document.taskId, createdAt: document.createdAt })),
+      contacts: contacts.map(contact => ({ id: contact.id, name: contact.name, email: contact.email, relationship: contact.relationship, receiveCcEmails: contact.receiveCcEmails })),
+    };
+    await postWebhook(payload);
+    return { success: true, status: "accepted" as const, message: "Office handoff accepted by the receiving service. Email delivery is not confirmed." };
+  } catch {
+    return { success: false, status: "failed" as const, message: "Office handoff was not accepted. Please try again or contact the office." };
+  }
+}
+
 export const policyFormRouter = router({
-  /**
-   * Send the COMPREHENSIVE JSON to Zapier webhook.
-   * Called once when user completes strategy, exits, or times out.
-   */
-  sendComprehensiveToZapier: visitorProcedure
-    .input(
-      z.object({
-        trigger: z.enum(["form_completed", "strategy_completed", "exit", "timeout"]),
-        currentPage: z.string().optional(),
-        formStep: z.number().optional(),
-        sessionDurationSeconds: z.number().optional(),
-        // Allow passing current unsaved form data so we capture the latest state
-        unsavedFormData: z.record(z.string(), z.any()).optional(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      try {
-        const webhookUrl = ENV.zapierWebhookUrl;
-
-        if (!webhookUrl) {
-          console.warn("[Zapier] Webhook URL not configured — skipping send");
-          return { success: false, message: "Webhook URL not configured" };
-        }
-
-        // Default userId for public access
-        const userId = ctx.user.id;
-
-        // ── 1. User Profile ──
-        const userProfile = ctx.user
-          ? {
-              id: ctx.user.id,
-              name: ctx.user.name,
-              email: ctx.user.email,
-              openId: ctx.user.openId,
-              role: ctx.user.role,
-              createdAt: ctx.user.createdAt,
-              lastSignedIn: ctx.user.lastSignedIn,
-            }
-          : { id: null, name: "Guest", email: null, openId: null, role: null, createdAt: null, lastSignedIn: null };
-
-        // ── 2. Policy Form Data ──
-        const policy = await getPolicyByUserId(userId);
-        const policyData = policy
-          ? {
-              id: policy.id,
-              // Insured Person
-              insuredFullName: policy.insuredFullName,
-              insuredDob: policy.insuredDob,
-              insuredMailingAddress: policy.insuredMailingAddress,
-
-              insuredMedicareNumber: policy.insuredMedicareNumber,
-              insuredMedicaidNumber: policy.insuredMedicaidNumber,
-              powerOfAttorneyPresent: policy.powerOfAttorneyPresent,
-              // Carrier Info
-              carrierName: policy.carrierName,
-              carrierAddress1: policy.carrierAddress1,
-              carrierAddress2: policy.carrierAddress2,
-              carrierCityStateZip: policy.carrierCityStateZip,
-              carrierPhone: policy.carrierPhone,
-              carrierFax: policy.carrierFax,
-              // Policy Identifiers
-              policyNumber: policy.policyNumber,
-              claimPreClaimNumber: policy.claimPreClaimNumber,
-              // Coverage Details
-              eliminationPeriod: policy.eliminationPeriod,
-              dailyMaximum: policy.dailyMaximum,
-              monthlyMaximum: policy.monthlyMaximum,
-              lifetimeMaximum: policy.lifetimeMaximum,
-              minAdlsRequired: policy.minAdlsRequired,
-              waiverOfPremium: policy.waiverOfPremium,
-              cnaRequired: policy.cnaRequired,
-              careNotesRequired: policy.careNotesRequired,
-              paymentCycle: policy.paymentCycle,
-              assignmentOfBenefits: policy.assignmentOfBenefits,
-              // Medical / Administrative
-              caseManagerName: policy.caseManagerName,
-              thirdPartyAssessmentRequired: policy.thirdPartyAssessmentRequired,
-              thirdPartyAssessmentWho: policy.thirdPartyAssessmentWho,
-              cognitiveImpairmentTrigger: policy.cognitiveImpairmentTrigger,
-              planOfCareStatus: policy.planOfCareStatus,
-              ltcCoordinatorAssigned: policy.ltcCoordinatorAssigned,
-              // Medical Providers
-              primaryCarePhysician: policy.primaryCarePhysician,
-              otherProviders: policy.otherProviders,
-              facilitiesUsed: policy.facilitiesUsed,
-              dischargeDocumentation: policy.dischargeDocumentation,
-              // Care Needs
-              currentCareNeeds: policy.currentCareNeeds,
-              diagnosisOrCondition: policy.diagnosisOrCondition,
-              adlLimitations: policy.adlLimitations,
-              preferredCareType: policy.preferredCareType,
-              additionalNotes: policy.additionalNotes,
-              fillerRelationship: policy.fillerRelationship,
-              // Timestamps
-              createdAt: policy.createdAt,
-              updatedAt: policy.updatedAt,
-            }
-          : null;
-
-        // ── 3. Strategy Data ──
-        const strategy = await getStrategyByUserId(userId);
-        const strategyData = strategy
-          ? {
-              id: strategy.id,
-              policyId: strategy.policyId,
-              currentStage: strategy.currentStage,
-              claimStatus: strategy.claimStatus,
-              strategyContent: strategy.strategyContent,
-              stage1Tasks: strategy.stage1Tasks,
-              stage2Tasks: strategy.stage2Tasks,
-              stage3Tasks: strategy.stage3Tasks,
-              generatedAt: strategy.generatedAt,
-              createdAt: strategy.createdAt,
-              updatedAt: strategy.updatedAt,
-            }
-          : null;
-
-        // ── 4. Documents ──
-        const documents = await getDocumentsByUserId(userId);
-        const documentsData = documents.map((doc) => ({
-          id: doc.id,
-          category: doc.category,
-          fileName: doc.fileName,
-          fileUrl: doc.fileUrl,
-          mimeType: doc.mimeType,
-          fileSize: doc.fileSize,
-          taskId: doc.taskId,
-          createdAt: doc.createdAt,
-        }));
-
-        // ── 5. Contacts ──
-        const contacts = await getUserContacts(userId);
-        const contactsData = contacts.map((c) => ({
-          id: c.id,
-          name: c.name,
-          email: c.email,
-          relationship: c.relationship,
-          receiveCcEmails: c.receiveCcEmails,
-        }));
-
-        // ── Build the comprehensive payload ──
-        const payload = {
-          _meta: {
-            timestamp: new Date().toISOString(),
-            trigger: input.trigger,
-            currentPage: input.currentPage || null,
-            formStep: input.formStep || null,
-            sessionDurationSeconds: input.sessionDurationSeconds || null,
-            portalVersion: "1.0",
-          },
-          user: userProfile,
-          policyForm: policyData,
-          unsavedFormData: input.unsavedFormData || null,
-          strategy: strategyData,
-          documents: documentsData,
-          contacts: contactsData,
-        };
-
-
-
-        const response = await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: AbortSignal.timeout(15_000),
-          body: JSON.stringify(payload),
-        });
-
-        console.log(`[Zapier] Response: ${response.status} ${response.statusText}`);
-
-        if (!response.ok) {
-          const responseText = await response.text();
-          console.error("[Zapier] Webhook rejected delivery:", response.status);
-          return { success: false, message: "Webhook delivery failed" };
-        }
-
-        return { success: true, message: "Comprehensive data sent to Zapier" };
-      } catch (error) {
-        console.error("[Zapier] Send error:", error);
-        return {
-          success: false,
-          message: error instanceof Error ? error.message : "Unknown error",
-        };
-      }
-    }),
-
-  /**
-   * Legacy endpoint kept for backward compatibility.
-   * Redirects to the comprehensive sender.
-   */
-  sendToZapier: visitorProcedure
-    .input(
-      z.object({
-        formData: z.record(z.string(), z.any()).optional(),
-        trigger: z.enum(["completed", "exit", "timeout", "save"]),
-        currentStep: z.number().optional(),
-        completionPercentage: z.number().optional(),
-        sessionDurationSeconds: z.number().optional(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      // Map old triggers to new triggers
-      const triggerMap: Record<string, string> = {
-        completed: "form_completed",
-        exit: "exit",
-        timeout: "timeout",
-        save: "exit",
-      };
-
-      try {
-        const webhookUrl = ENV.zapierWebhookUrl;
-        if (!webhookUrl) {
-          console.warn("[Zapier] Webhook URL not configured — skipping send");
-          return { success: false, message: "Webhook URL not configured" };
-        }
-
-        const userId = ctx.user.id;
-        const policy = await getPolicyByUserId(userId);
-        const strategy = await getStrategyByUserId(userId);
-        const documents = await getDocumentsByUserId(userId);
-        const contacts = await getUserContacts(userId);
-
-        const payload = {
-          _meta: {
-            timestamp: new Date().toISOString(),
-            trigger: triggerMap[input.trigger] || input.trigger,
-            formStep: input.currentStep || null,
-            sessionDurationSeconds: input.sessionDurationSeconds || null,
-            portalVersion: "1.0",
-          },
-          user: ctx.user
-            ? {
-                id: ctx.user.id,
-                name: ctx.user.name,
-                email: ctx.user.email,
-                openId: ctx.user.openId,
-                role: ctx.user.role,
-              }
-            : { id: null, name: "Guest", email: null },
-          policyForm: policy || null,
-          unsavedFormData: input.formData || null,
-          strategy: strategy
-            ? {
-                id: strategy.id,
-                currentStage: strategy.currentStage,
-                claimStatus: strategy.claimStatus,
-                strategyContent: strategy.strategyContent,
-                stage1Tasks: strategy.stage1Tasks,
-                stage2Tasks: strategy.stage2Tasks,
-                stage3Tasks: strategy.stage3Tasks,
-                generatedAt: strategy.generatedAt,
-              }
-            : null,
-          documents: documents.map((d) => ({
-            id: d.id,
-            category: d.category,
-            fileName: d.fileName,
-            fileUrl: d.fileUrl,
-            mimeType: d.mimeType,
-          })),
-          contacts: contacts.map((c) => ({
-            id: c.id,
-            name: c.name,
-            email: c.email,
-            relationship: c.relationship,
-          })),
-        };
-
-        console.log(`[Zapier] Sending comprehensive payload (trigger: ${input.trigger})`);
-        const response = await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: AbortSignal.timeout(15_000),
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          const responseText = await response.text();
-          console.error("[Zapier] Webhook rejected delivery:", response.status);
-          return { success: false, message: "Webhook delivery failed" };
-        }
-
-        return { success: true, message: "Comprehensive data sent to Zapier" };
-      } catch (error) {
-        console.error("[Zapier] Send error:", error);
-        return {
-          success: false,
-          message: error instanceof Error ? error.message : "Unknown error",
-        };
-      }
-    }),
+  sendComprehensiveToZapier: visitorProcedure.input(z.object({
+    trigger: z.enum(["form_completed", "strategy_completed", "exit", "timeout"]),
+    currentPage: z.string().max(100).optional(),
+    formStep: z.number().int().min(0).max(5).optional(),
+    sessionDurationSeconds: z.number().int().nonnegative().optional(),
+    unsavedFormData: z.record(z.string(), z.unknown()).optional(),
+  })).mutation(({ input, ctx }) => sendHandoff(ctx.user, input)),
+  // Retain legacy trigger names while using exactly the same payload and transport.
+  sendToZapier: visitorProcedure.input(z.object({
+    formData: z.record(z.string(), z.unknown()).optional(),
+    trigger: z.enum(["completed", "exit", "timeout", "save"]),
+    currentStep: z.number().int().min(0).max(6).optional(),
+    completionPercentage: z.number().min(0).max(100).optional(),
+    sessionDurationSeconds: z.number().int().nonnegative().optional(),
+  })).mutation(({ input, ctx }) => sendHandoff(ctx.user, {
+    trigger: { completed: "form_completed", exit: "exit", timeout: "timeout", save: "exit" }[input.trigger],
+    formStep: input.currentStep, sessionDurationSeconds: input.sessionDurationSeconds, unsavedFormData: input.formData,
+  })),
 });

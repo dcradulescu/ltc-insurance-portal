@@ -865,17 +865,17 @@
 - [ ] Test Strategy page: form completion, PDF download, email delivery, Zapier webhook
 - [ ] Test Contact page: form submission, email delivery, calendar integration
 - [x] Test Profile page: name/email editing, contact management
-- [ ] Test footer links: Privacy Policy, Terms of Use, all external links
-- [ ] Test navigation: all page transitions, scroll to top behavior
+- [x] Test footer links: Privacy Policy, Terms of Use, all external links
+- [x] Test navigation: all page transitions, scroll to top behavior
 - [ ] Test chat widget: on all pages, message sending, response generation
 - [ ] Test mobile responsiveness: all pages on mobile/tablet
-- [ ] Document all issues found in prioritized list
+- [x] Document all issues found in prioritized list
 
 ### Phase 2: Critical Fixes (Dead Links, Form Issues, Flow Problems)
-- [ ] Fix any broken navigation links
+- [x] Fix any broken navigation links
 - [x] Fix form validation errors
-- [ ] Fix page flow/navigation issues
-- [ ] Fix scroll-to-top on page transitions
+- [x] Fix page flow/navigation issues
+- [x] Fix scroll-to-top on page transitions
 - [ ] Fix mobile layout issues
 - [ ] Verify all CTAs work correctly
 
@@ -891,7 +891,7 @@
 - [ ] Test Zapier webhook on Policy Form submission
 - [ ] Test Zapier webhook on Strategy page email delivery
 - [ ] Test Zapier webhook on Contact form submission
-- [ ] Verify webhook payloads are correct
+- [x] Verify webhook payloads are correct
 - [x] Test error handling for failed webhooks
 
 ### Phase 5: Final Testing & Delivery

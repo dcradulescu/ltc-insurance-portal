@@ -26,3 +26,15 @@ After `pnpm build`, run `pnpm test:workflows` with Playwright and its Chromium b
 The script starts and stops its own local production server. It mocks all private-data and messaging transport, blocks external browser requests, and disables outbound service configuration in the server process. Only the local `pdfDelivery.generatePdf` endpoint is exercised without mocks. Tests cover profile/contact editing, error handling, strategy selection and task persistence, recipient validation, and both actual PDF downloads. These checks do not replace a real MySQL round-trip, inbox verification, model-provider generation or calendar booking test.
 
 Profile CC preferences are included in the comprehensive office-handoff payload. Strategy email recipients must currently be chosen explicitly. Notification preferences are stored but are not wired to automatic delivery. The Profile screen states these limits.
+
+## Navigation and interaction regression checks
+
+After a production build, `pnpm test:navigation` covers the 10 main routes and all resource guides at 1440, 768 and 390 pixels. It clicks every distinct rendered internal destination from each source page, verifies scroll reset and education fragments, and exercises both chat widgets with fixture responses. `QA_WIDTHS` can restrict the comma-separated viewport list; `QA_PORT` defaults to 3014 and `QA_OUTPUT_DIR` to `.qa-navigation`.
+
+`pnpm test:interactions` covers all six suggested chat prompts, failure/retry, duplicate sends, mobile menu links, sharing success/denial/cancellation, and video-control state and errors. Media APIs are mocked: this verifies control behavior, not third-party playback. Its default port is 3015 and output directory is `.qa-interactions`. Both scripts accept `PLAYWRIGHT_MODULE`, start/stop their own server, block external browser requests and disable outbound server integrations.
+
+## Office handoff contract
+
+The comprehensive policy handoff contains `_meta`, the current `user`, `policyForm`, optional `unsavedFormData`, the saved policy's `strategy`, document metadata and contacts with `receiveCcEmails`. It is distinct from the email events with a `type` field. Strategy tasks reflect saved completion records, including explicit unchecking. Both comprehensive and legacy trigger endpoints use the same HTTPS transport. The receiving automation must recognize this contract and decide which notifications, if any, to send. An accepted handoff does not establish inbox delivery.
+
+Extended form fields remain in the existing `equipmentAllowance` JSON column for compatibility. The allowlist now includes the separate insured/carrier address parts, care-log requirement, claim-packet source/submission method and reimbursement-delay answers. No schema migration is needed for these fields. Do not replace the JSON with a standalone allowance string.

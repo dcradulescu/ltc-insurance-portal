@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { ENV } from "./env";
 
 /** A provider acceptance is not proof of arrival in the recipient's inbox. */
-export async function deliver(payload: Record<string, unknown>) {
+export async function postWebhook(payload: Record<string, unknown>) {
   const configured = ENV.zapierWebhookUrl;
   if (!configured) throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Email delivery is not configured. Please download your information or contact the office." });
   let url: URL;
@@ -15,10 +15,14 @@ export async function deliver(payload: Record<string, unknown>) {
       signal: AbortSignal.timeout(15_000),
     });
     if (!response.ok) throw new Error(`Provider status ${response.status}`);
-    return { success: true as const, status: "accepted" as const, message: "Accepted for email delivery. Inbox arrival is not yet confirmed." };
+
   } catch {
     throw new TRPCError({ code: "BAD_GATEWAY", message: "Email delivery was not accepted. Please try again or download your information." });
   }
+}
+export async function deliver(payload: Record<string, unknown>) {
+  await postWebhook(payload);
+  return { success: true as const, status: "accepted" as const, message: "Accepted for email delivery. Inbox arrival is not yet confirmed." };
 }
 export function resumeOrigin() {
   const value = process.env.APP_URL;

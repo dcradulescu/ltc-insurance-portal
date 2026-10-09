@@ -8,8 +8,8 @@ import { toast } from 'sonner';
 export default function Resources() {
  const {slug}=useParams<{slug?:string}>();const guide=RESOURCE_GUIDES.find(g=>g.slug===slug);const [busy,setBusy]=useState(false);
  const download=async(format:'pdf'|'docx')=>{if(!guide)return;setBusy(true);try{await downloadResource(guide,format);}catch{toast.error('Download failed. Please try again.');}finally{setBusy(false);}};
- return <Layout><Helmet><title>{guide?.title??'Resource Center'} | SC Visiting Angels</title></Helmet>
- <section className="resource-hero text-white py-12"><div className="container relative"><p className="uppercase tracking-widest text-sm mb-3">Practical tools for your family</p><h1 className="text-3xl md:text-4xl font-bold !text-white">{guide?.title??'LTC Resource Center'}</h1><p className="mt-4 max-w-2xl">{guide?.summary??'Twelve guides and worksheets, organized in the order you need them. Read online, download, or print.'}</p></div></section>
+ return <Layout><Helmet><title>{`${guide?.title ?? 'Resource Center'} | SC Visiting Angels`}</title></Helmet>
+ <section className="resource-hero text-white py-12"><div className="container relative"><p className="uppercase tracking-widest text-sm mb-3">Practical tools for your family</p><h1 className="text-3xl md:text-4xl font-bold !text-white">{guide?.title??'LTC Resource Center'}</h1><p className="mt-4 max-w-2xl">{guide?.summary??`${RESOURCE_GUIDES.length} guides and worksheets, organized in the order you need them. Read online, download, or print.`}</p></div></section>
  <div className="container py-10 max-w-5xl">
  {slug&&!guide?<p role="alert">This guide was not found. <Link href="/resources" className="underline">View all resources</Link></p>:guide?<>
  <div className="resource-actions flex gap-3 flex-wrap mb-6"><button className="va-btn" disabled={busy} onClick={()=>download('pdf')}>Download PDF</button>{guide.format==='docx'&&<button className="va-btn" disabled={busy} onClick={()=>download('docx')}>Download Word worksheet</button>}<button className="va-btn" onClick={()=>window.print()}>Print guide</button><Link href="/resources" className="underline self-center">All resources</Link></div>

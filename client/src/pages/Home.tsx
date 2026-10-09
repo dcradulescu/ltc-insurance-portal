@@ -1,3 +1,4 @@
+import { shareResource } from "@/lib/shareResource";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
@@ -277,12 +278,7 @@ export default function Home() {
                 style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
                 onClick={async () => {
                   const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
-                  if (navigator.share && navigator.canShare?.(shareData)) {
-                    try { await navigator.share(shareData); } catch {}
-                  } else {
-                    await navigator.clipboard.writeText(window.location.origin);
-                    toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
-                  }
+                  await shareResource(shareData, "Link copied to clipboard!");
                 }}
               >
                 <Share2 className="w-4 h-4" />

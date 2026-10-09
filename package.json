@@ -11,7 +11,9 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
-    "test:workflows": "node scripts/qa-workflows.cjs"
+    "test:workflows": "node scripts/qa-workflows.cjs",
+    "test:navigation": "node scripts/qa-navigation.cjs",
+    "test:interactions": "node scripts/qa-interactions.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",

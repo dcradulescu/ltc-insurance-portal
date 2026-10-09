@@ -90,7 +90,7 @@ export const appRouter = router({
 
   policy: router({
     get: visitorProcedure.query(async ({ ctx }) => {
-      // Allow public access - return first policy for public user
+      // Return only the current visitor's saved policy.
       const policy = await getPolicyByUserId(ctx.user.id);
       if (policy) return hydratePolicyMetadata(policy);
       // Return empty policy object if none exists
@@ -100,6 +100,19 @@ export const appRouter = router({
     save: visitorProcedure
       .input(z.object({
         id: z.number().optional(),
+        insuredAddress: z.string().optional(),
+        insuredCity: z.string().optional(),
+        insuredState: z.string().optional(),
+        insuredZip: z.string().optional(),
+        carrierAddress: z.string().optional(),
+        carrierCity: z.string().optional(),
+        carrierState: z.string().optional(),
+        carrierZip: z.string().optional(),
+        careLogsheetsRequired: z.string().optional(),
+        whereToGetClaimsPacket: z.string().optional(),
+        howToSubmitClaimsPacket: z.string().optional(),
+        invoiceReimbursementDelay: z.string().optional(),
+
         // Insured Person
         insuredFullName: z.string().optional(),
         insuredDob: z.string().optional(),
@@ -182,46 +195,13 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
-        // Use a default userId for public access
+        // Ownership comes from the signed visitor session.
         const userId = ctx.user.id;
         
-        // Strip form-only fields that don't exist in the database
-        const {
-          poa_name, poa_relationship,
-          lookBackPeriodEnabled, lookBackPeriodDays,
-          careCoordinatorReductionEnabled, careCoordinatorReducedToDays,
-          reductionInCareProvidedEnabled, reductionInCareDaysCountedAs7,
-          qualifyingAdls,
-          approvedAgencyRequired, numberOfDaysUntilPayment,
-          equipmentAllowanceEnabled, equipmentAllowanceAmount, equipmentAllowanceCoverage,
-          equipmentAllowanceDeductedFromLifetime, equipmentAllowanceRelatedAdls,
-          equipmentNeeds, equipmentAllowanceNotes,
-          inflationAdjustmentEnabled, inflationType, inflationPercentagePerYear,
-          inflationContinuesAfterBenefits,
-          caseManagerAssigned,
-          careNeeds, careNotes,
-          diagnosisCheckboxes, diagnosisNotes,
-          ...dbData
-        } = data as any;
-        
-        // Store form-only fields as JSON in equipmentAllowance for strategy generator
-        const metadata = JSON.stringify({
-          poa_name, poa_relationship,
-          lookBackPeriodEnabled, lookBackPeriodDays,
-          careCoordinatorReductionEnabled, careCoordinatorReducedToDays,
-          reductionInCareProvidedEnabled, reductionInCareDaysCountedAs7,
-          qualifyingAdls,
-          approvedAgencyRequired, numberOfDaysUntilPayment,
-          equipmentAllowanceEnabled, equipmentAllowanceAmount, equipmentAllowanceCoverage,
-          equipmentAllowanceDeductedFromLifetime, equipmentAllowanceRelatedAdls,
-          equipmentNeeds, equipmentAllowanceNotes,
-          inflationAdjustmentEnabled, inflationType, inflationPercentagePerYear,
-          inflationContinuesAfterBenefits,
-          caseManagerAssigned,
-          careNeeds, careNotes,
-          diagnosisCheckboxes, diagnosisNotes,
-        });
-        
+        const metadataValues = readPolicyMetadata(JSON.stringify(data));
+        const dbData = Object.fromEntries(Object.entries(data).filter(([key]) => !(key in metadataValues)));
+        const metadata = JSON.stringify(metadataValues);
+
         const saveData = { ...dbData, equipmentAllowance: metadata };
         
         if (id) {

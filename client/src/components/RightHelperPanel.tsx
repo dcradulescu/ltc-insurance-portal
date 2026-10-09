@@ -1,3 +1,5 @@
+import { nanoid } from "nanoid";
+import { usePolicyContext } from "@/contexts/PolicyContext";
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
@@ -24,49 +26,49 @@ const pageContent: Record<string, { videoTitle: string; videoUrl: string; downlo
     videoTitle: "Welcome to LTC Navigator",
     videoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/MjPhBEQZfvIrfZms.mp4",
     downloads: [
-      { label: "LTC Insurance Overview", url: "#" },
-      { label: "Getting Started Guide", url: "#" },
+      { label: "LTC Insurance Overview", url: "/resources/insurance-basics" },
+      { label: "Getting Started Guide", url: "/resources/planning-worksheet" },
     ],
   },
   "/academy": {
     videoTitle: "Academy Introduction",
     videoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NiJblCFJqXDChprB.mp4",
     downloads: [
-      { label: "LTC Glossary PDF", url: "#" },
-      { label: "Understanding ADLs", url: "#" },
-      { label: "Policy Basics Guide", url: "#" },
+      { label: "LTC Glossary PDF", url: "/resources/policy-glossary" },
+      { label: "Understanding ADLs", url: "/education#adl" },
+      { label: "Policy Basics Guide", url: "/resources/insurance-basics" },
     ],
   },
   "/education": {
     videoTitle: "What is LTC Insurance?",
     videoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/QlCyvRbUBXkLwOND.mp4",
     downloads: [
-      { label: "LTC Education Guide", url: "#" },
-      { label: "Definitions Cheat Sheet", url: "#" },
+      { label: "LTC Education Guide", url: "/resources/insurance-basics" },
+      { label: "Definitions Cheat Sheet", url: "/resources/policy-glossary" },
     ],
   },
   "/policy-form": {
     videoTitle: "Filling Out Your Policy Form",
     videoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/UZLuXdBXwBOgyGSg.mp4",
     downloads: [
-      { label: "Policy Worksheet", url: "#" },
-      { label: "What to Have Ready", url: "#" },
-      { label: "Sample Completed Form", url: "#" },
+      { label: "Policy Worksheet", url: "/resources/key-terms-reference" },
+      { label: "What to Have Ready", url: "/resources/document-checklist" },
+      { label: "Sample Completed Form", url: "/resources/sample-completed-form" },
     ],
   },
   "/strategy": {
     videoTitle: "Understanding Your Strategy",
     videoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/MjPhBEQZfvIrfZms.mp4",
     downloads: [
-      { label: "Strategy Checklist", url: "#" },
-      { label: "Claim Timeline Template", url: "#" },
+      { label: "Strategy Checklist", url: "/resources/claim-filing-checklist" },
+      { label: "Claim Timeline Template", url: "/resources/claim-timeline-template" },
     ],
   },
   "/contact": {
     videoTitle: "How We Can Help",
     videoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NiJblCFJqXDChprB.mp4",
     downloads: [
-      { label: "Contact Information", url: "#" },
+      { label: "Contact Information", url: "/contact" },
     ],
   },
   "/profile": {
@@ -108,15 +110,22 @@ export function RightHelperPanel() {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const desktopMessagesRef = useRef<HTMLDivElement>(null);
+  const mobileMessagesRef = useRef<HTMLDivElement>(null);
+  const pendingRef = useRef(false);
+  const faqTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [sessionId] = useState(() => nanoid());
+  const { activePolicyId } = usePolicyContext();
+  useEffect(() => () => { if (faqTimerRef.current) clearTimeout(faqTimerRef.current); }, []);
 
   const content = pageContent[location] || pageContent["/"];
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    for (const ref of [desktopMessagesRef, mobileMessagesRef]) { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }
   }, [messages]);
 
   const chatMutation = trpc.chat.send.useMutation({
+    onSettled: () => { pendingRef.current = false; },
     onSuccess: (data) => {
       setMessages((prev) => [...prev, { role: "assistant", content: data.content }]);
       setIsTyping(false);
@@ -128,7 +137,8 @@ export function RightHelperPanel() {
   });
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping || pendingRef.current) return;
+    pendingRef.current = true;
     const userMsg = input.trim();
     setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
     setInput("");
@@ -137,19 +147,20 @@ export function RightHelperPanel() {
     // Check FAQ first
     const faqAnswer = findFaqAnswer(userMsg);
     if (faqAnswer) {
-      setTimeout(() => {
+      faqTimerRef.current = setTimeout(() => {
         setMessages((prev) => [...prev, { role: "assistant", content: faqAnswer }]);
         setIsTyping(false);
+        pendingRef.current = false;
       }, 500);
     } else {
       // Use LLM for complex questions
-      chatMutation.mutate({ message: userMsg });
+      chatMutation.mutate({ message: userMsg, sessionId, policyId: activePolicyId });
     }
   };
 
   // Desktop panel (hidden on mobile)
-  const DesktopPanel = () => (
-    <aside
+  const renderDesktopPanel = () => (
+    <aside aria-label="Page helper"
       className="hidden lg:flex flex-col fixed right-0 top-[110px] bottom-0 w-[280px] border-l z-40"
       style={{ background: "#FAFCFD", borderColor: "#e8edf1" }}
     >
@@ -167,7 +178,7 @@ export function RightHelperPanel() {
             className="w-full h-full object-cover"
             muted
             playsInline
-            onMouseEnter={(e) => (e.target as HTMLVideoElement).play()}
+            onMouseEnter={(e) => { void (e.target as HTMLVideoElement).play().catch(() => undefined); }}
             onMouseLeave={(e) => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0; }}
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-all">
@@ -210,7 +221,7 @@ export function RightHelperPanel() {
             Ask a Question
           </h4>
         </div>
-        <div className="flex-1 overflow-y-auto space-y-2 mb-2 pr-1">
+        <div ref={desktopMessagesRef} aria-live="polite" className="flex-1 overflow-y-auto space-y-2 mb-2 pr-1">
           {messages.map((msg, i) => (
             <div
               key={i}
@@ -230,19 +241,20 @@ export function RightHelperPanel() {
               Typing...
             </div>
           )}
-          <div ref={chatEndRef} />
+
         </div>
         <div className="flex gap-1.5">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            aria-label="Helper question" maxLength={2000}
             placeholder="Type a question..."
             className="flex-1 text-xs px-2.5 py-2 rounded border outline-none transition-all focus:border-[#34B1C4]"
             style={{ borderColor: "#e0e0e0", fontFamily: "'Open Sans', sans-serif" }}
           />
           <button
-            onClick={handleSend}
+            aria-label="Send helper question" onClick={handleSend}
             disabled={!input.trim() || isTyping}
             className="p-2 rounded transition-all duration-200 disabled:opacity-40"
             style={{ background: VA_TEAL, color: "#fff" }}
@@ -255,7 +267,7 @@ export function RightHelperPanel() {
   );
 
   // Mobile bottom drawer
-  const MobileDrawer = () => (
+  const renderMobileDrawer = () => (
     <>
       {/* Floating trigger button */}
       <button
@@ -269,7 +281,7 @@ export function RightHelperPanel() {
 
       {/* Drawer overlay */}
       {isOpen && (
-        <div className="lg:hidden fixed inset-0 z-[60] flex flex-col justify-end">
+        <div role="dialog" aria-label="Page help" onKeyDown={event => { if (event.key === "Escape") setIsOpen(false); }} className="lg:hidden fixed inset-0 z-[60] flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/30" onClick={() => setIsOpen(false)} />
           <div
             className="relative bg-white rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col animate-slide-up"
@@ -293,7 +305,7 @@ export function RightHelperPanel() {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-1.5 rounded hover:bg-gray-100">
+              <button aria-label="Close help" onClick={() => setIsOpen(false)} className="p-1.5 rounded hover:bg-gray-100">
                 <X className="w-4 h-4" style={{ color: VA_BODY }} />
               </button>
             </div>
@@ -326,7 +338,7 @@ export function RightHelperPanel() {
               )}
               {activeTab === "chat" && (
                 <div className="flex flex-col h-[50vh]">
-                  <div className="flex-1 overflow-y-auto space-y-2 mb-3">
+                  <div ref={mobileMessagesRef} aria-live="polite" className="flex-1 overflow-y-auto space-y-2 mb-3">
                     {messages.map((msg, i) => (
                       <div
                         key={i}
@@ -344,19 +356,20 @@ export function RightHelperPanel() {
                         <Loader2 className="w-3 h-3 animate-spin" /> Thinking...
                       </div>
                     )}
-                    <div ref={chatEndRef} />
+
                   </div>
                   <div className="flex gap-2">
                     <input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                      aria-label="Helper question" maxLength={2000}
                       placeholder="Ask about LTC insurance..."
                       className="flex-1 text-sm px-3 py-2.5 rounded border outline-none focus:border-[#34B1C4]"
                       style={{ borderColor: "#e0e0e0" }}
                     />
                     <button
-                      onClick={handleSend}
+                      aria-label="Send helper question" onClick={handleSend}
                       disabled={!input.trim() || isTyping}
                       className="px-4 py-2.5 rounded font-bold text-sm transition-all disabled:opacity-40"
                       style={{ background: VA_TEAL, color: "#fff" }}
@@ -375,8 +388,8 @@ export function RightHelperPanel() {
 
   return (
     <>
-      <DesktopPanel />
-      <MobileDrawer />
+      {renderDesktopPanel()}
+      {renderMobileDrawer()}
     </>
   );
 }

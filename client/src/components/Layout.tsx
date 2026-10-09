@@ -1,3 +1,4 @@
+import { shareResource as sharePortalResource } from "@/lib/shareResource";
 import { JourneyNavigation } from "./JourneyNavigation";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Phone, Globe, Share2, ExternalLink } from "lucide-react";
@@ -32,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  useEffect(() => { setMobileMenuOpen(false); window.scrollTo({top:0,behavior:"instant"}); }, [location]);
+  useEffect(() => { setMobileMenuOpen(false); }, [location]);
 
   const shareResource = async () => {
     const shareData = {
@@ -40,12 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.",
       url: window.location.origin,
     };
-    if (navigator.share && navigator.canShare?.(shareData)) {
-      try { await navigator.share(shareData); } catch {}
-    } else {
-      await navigator.clipboard.writeText(window.location.origin);
-      toast.success("Link copied!", { description: "Share it with family members who need help with LTC insurance." });
-    }
+    await sharePortalResource(shareData, "Link copied!", "Share it with family members who need help with LTC insurance.");
   };
 
   return (
@@ -163,6 +159,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="md:hidden p-2 rounded transition-all duration-200"
             style={{ color: "#454545" }}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
           >
             <div className="relative w-5 h-5">
               <X className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${mobileMenuOpen ? "opacity-100 rotate-0" : "opacity-0 rotate-90"}`} />
@@ -173,6 +171,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile menu */}
         <div
+          id="mobile-navigation"
+          inert={!mobileMenuOpen}
           className={`md:hidden bg-white overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           }`}

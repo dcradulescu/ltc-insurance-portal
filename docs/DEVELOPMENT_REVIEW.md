@@ -111,3 +111,35 @@ Verification:
 - Repeated the 30 page/viewport smoke checks: no uncaught page errors or horizontal document overflow.
 
 Remaining gates are unchanged: configured MySQL persistence/migrations and retention, receiving-automation and inbox verification, AI/SMS/booking integrations, all external assets/video playback, full accessibility/conditional-field coverage, PDF/Word layout and medical/insurance content review, and historical checklist reconciliation. No live messages, main-branch merge or deployment was performed.
+
+## Continuation — UI/UX preservation, navigation, chat and handoff contracts
+
+GitHub branch head `8e4e1de` was verified before continuing. The latest user instruction is to **retain UI/UX**. This pass preserves existing page structure, colors, typography, artwork references and video-player presentation. Changes repair behavior and accessibility within the existing components. Two missing resources use the existing resource-page and download layout.
+
+**29 of the original 61 open TODO entries now have completion evidence; 32 remain open.** The seven newly completed entries cover footer links, navigation testing, issue documentation, broken internal links, page flow, scroll reset and webhook payload verification. `TODO_CONTINUATION.md` explicitly reconciles all 39 entries that were open before this pass. Historical visual redesign requests remain open under the latest preservation instruction. The 670 inherited checkmarks are still not newly certified.
+
+### Prioritized findings
+
+| Priority | Finding | Resolution / remaining gate |
+|---|---|---|
+| High | The save schema silently discarded 12 current form fields: separate insured/carrier address parts, care-log requirement, claim-packet source/submission method and reimbursement delay | Added these to validated input and the existing metadata allowlist. A regression saves and reloads all 66 sample fields, then verifies partial updates preserve untouched values, false booleans and empty arrays. Only real table columns reach the DB adapter. Real MySQL acceptance remains open. |
+| High | Comprehensive handoffs omitted form metadata and email/phone, could select an unrelated latest strategy and did not reflect saved task unchecking | Hydrates allowlisted policy metadata, chooses the strategy by saved policy and owner, merges task records and preserves explicit zero values. Draft identifiers/unknown keys are discarded. Both trigger APIs now share the HTTPS, timeout and no-redirect transport. Live receiver acceptance remains open. |
+| Medium | Thirteen helper resource links were placeholders | Linked matching resources, education definitions and contact information. Added a carrier-confirmed claim timeline worksheet and a clearly fictional 66-field completed-form example using existing download components. |
+| Medium | Competing route scroll effects and missing education fragments caused unreliable positioning | One route scroll owner, fixed-header offsets, definition expansion and same-path/history listeners. Mobile menu exposes expanded state and its closed content is inert. Layout and animation classes are retained. |
+| Medium | Suggested chat buttons sent stale input; helper inputs remounted on each keystroke; messages could scroll the whole page | Explicit prompt argument, stable helper render tree, pane-only scrolling, duplicate-send guards, stable session ID and policy context. Both widgets support Escape and labelled controls. Real model responses remain unconfigured. |
+| Medium | Sharing APIs could reject without feedback; cancelled native sharing should not be an error | Shared helper confirms clipboard success, handles unavailable/denied APIs, and quietly accepts user cancellation. |
+| Medium | Video play failures showed misleading playing state and could reject without handling | Playback state follows media events, failure copy appears in the existing overlay, timers are cleaned up, seeking is bounded/keyboard accessible and fullscreen failures are caught. Media-control tests use fixtures; original external playback is still unverified. |
+| Low | Resource pages had an empty document title and a hardcoded guide count | Render a single title string and the current guide count. |
+
+No stylesheet or theme changes were made. Original media was not substituted. External media availability still blocks full visual acceptance. Public SC Visiting Angels, Visiting Angels and NAIC reference pages were retrievable; that does not establish media or booking availability.
+
+### Verification and limits
+
+- **141 tests pass across 16 files, with no skips.** This includes 17 handoff trigger/ownership/payload/failure tests, six email contract tests with genuine PDF attachments and mocked fetch, and the 66-field router round-trip regression with mocked persistence.
+- TypeScript and production client/server build pass. The existing large client-chunk warning remains.
+- The six existing production browser workflow scenarios pass again, including both real local PDF download controls, profile/contact editing and strategy task behavior. The eight policy-form restoration/save/validation scenarios also pass again with mocked transport.
+- Fourteen focused interaction checks pass: all six suggested prompts, provider failure/retry, duplicate sends, sharing success/denial/cancellation, all mobile-menu destinations, helper Escape and video controls/errors. Media APIs and model responses are mocked.
+- The two added resource PDFs and the claim-timeline Word worksheet downloaded successfully. Full PDF/Word typography and all-page acceptance remain open; download success is not a layout certification.
+- Final production navigation run: **72 route/viewport checks**, **798 distinct internal-link transitions**, **42 deep-link checks**, three same-path/back/forward history scenarios and three helper-chat scenarios passed. Tested widths are 1440, 768 and 390. All 24 public content/resource routes had a title, heading, no horizontal document overflow and no uncaught JavaScript errors. Every route received a fixture chat reply without moving the page. The 404 fallback and legacy static print guide are outside this chat/viewport matrix; the print-guide link itself is included in transition checks. External media requests are blocked in this fixture suite, so it is not visual/media acceptance.
+
+Configured database, receiving automation, inbox/template, live model, SMS and booking acceptance remain outstanding. No live messages, main-branch merge or deployment were performed.
