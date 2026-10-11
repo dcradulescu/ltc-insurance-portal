@@ -21,7 +21,7 @@ export function registerRequestSecurity(app: Express) {
       if (procedures.length !== 1) { res.status(400).json({ error: "Sign-in must be a separate request" }); return; }
       return loginLimit(req, res, next);
     }
-    if (req.method === "POST" && procedures.some(name => /^(email\.|pdfDelivery\.|policyForm\.|chat\.send$|strategy\.generate|documents\.upload$|sms\.)/.test(name))) {
+    if (req.method === "POST" && procedures.some(name => /^(email\.|pdfDelivery\.|policyForm\.|chat\.send$|publicLtc\.(generatePdf|emailPdf|generateStrategy|chat)$|strategy\.generate|documents\.upload$|sms\.)/.test(name))) {
       if (procedures.length !== 1) { res.status(400).json({ error: "This operation must be a separate request" }); return; }
       return heavyLimit(req, res, next);
     }

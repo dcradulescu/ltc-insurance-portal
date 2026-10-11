@@ -64,10 +64,22 @@ function anonymousReport(report: z.infer<typeof pdfInputSchema>) {
   };
 }
 
+// Canonical PDFs launch Chromium and consume substantial memory; cap active
+// anonymous renders instead of allowing unbounded resource exhaustion.
+const MAX_CONCURRENT_PDFS = 2;
+let inFlightPdfs = 0;
 async function renderGuestReport(report: z.infer<typeof pdfInputSchema>) {
-  const safe = anonymousReport(report);
-  const rendered = await renderApprovedLtcReport(safe);
-  return rendered.buffer;
+  if (inFlightPdfs >= MAX_CONCURRENT_PDFS) {
+    throw new TRPCError({code:"TOO_MANY_REQUESTS",message:"Report generation is busy; please retry shortly."});
+  }
+  inFlightPdfs++;
+  try {
+    const safe = anonymousReport(report);
+    const rendered = await renderApprovedLtcReport(safe);
+    return rendered.buffer;
+  } finally {
+    inFlightPdfs--;
+  }
 }
 
 function plainTextAsSafeHtml(value: string): string {
@@ -113,7 +125,10 @@ export const publicLtcRouter = router({
         waiverOfPremium:policy.waiverOfPremium,
         assignmentOfBenefits:policy.assignmentOfBenefits,
         thirdPartyAssessmentRequired:policy.thirdPartyAssessmentRequired,
-        claimsInstructions:policy.howToSubmitClaimsPacket,
+        // Convert free-text submission notes to bounded channel flags; arbitrary
+        // notes can accidentally contain a name or other private identifier.
+        claimsSubmissionChannels:["mail","fax","online"].filter(channel =>
+          new RegExp("\\b"+channel+"\\b","i").test(String(policy.howToSubmitClaimsPacket || ""))),
       };
       const reply = await invokeLLM({messages:[
         {role:"system",content:systemPrompt},

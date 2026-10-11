@@ -2,6 +2,7 @@ import { accountStorage } from "@/lib/accountStorage";
 import { publicPolicyForService, sanitizePublicPolicy } from "@shared/publicLtcPolicy";
 import { validateLocalCareScenario } from "@/lib/localCareScenario";
 import { downloadPublicPdf } from "@/lib/downloadPublicPdf";
+import { safePublicStrategyHtml } from "@/lib/publicStrategyHtml";
 import type { CareInputs } from "@shared/careCalculator";
 import { localDate, localDateKey } from "@shared/claimSchedule";
 import { Helmet } from "react-helmet-async";
@@ -108,7 +109,10 @@ export default function Strategy() {
     } catch { return null; }
   }, []);
   const [strategy, setStrategy] = useState<any>(() => {
-    try { const raw = accountStorage.getItem("ltc_strategy"); return raw ? JSON.parse(raw) : null; }
+    try { const raw = accountStorage.getItem("ltc_strategy"); if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return {...parsed, strategyHtml:safePublicStrategyHtml(parsed.strategyHtml),
+        strategyContent:safePublicStrategyHtml(parsed.strategyContent)}; }
     catch { return null; }
   });
   const [taskCompletions, setTaskCompletions] = useState<Array<{taskId:string;completed:boolean;completedAt:string|null}>>(() => {
@@ -143,7 +147,7 @@ export default function Strategy() {
       const now = new Date().toISOString();
       setStrategy({
         id:1,policyId:1,createdAt:now,generatedAt:now,scheduleStartDate:now.slice(0,10),
-        strategyContent:data.content,strategyHtml:data.content,
+        strategyContent:safePublicStrategyHtml(data.content),strategyHtml:safePublicStrategyHtml(data.content),
         stage1Tasks:data.stage1Tasks,stage2Tasks:data.stage2Tasks,stage3Tasks:data.stage3Tasks,
         currentStage:1,claimStatus:"not_started",policyKey:currentPolicyKey,selfReportedApproval:false,
       });

@@ -23,6 +23,10 @@ export async function sendEmail(options: EmailOptions) {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || "587"),
     secure: process.env.SMTP_SECURE === "true",
+    // If TLS is unavailable or its certificate is invalid, do not deliver
+    // potentially sensitive LTC strategy reports over an insecure connection.
+    requireTLS: true,
+    tls: { minVersion: "TLSv1.2", rejectUnauthorized: true },
     connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 20000,
     auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
   });

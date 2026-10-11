@@ -1,5 +1,6 @@
 import { accountStorage, clearAccountDrafts } from "@/lib/accountStorage";
 import { sanitizePublicPolicy, REDACTED_LTC_FIELDS } from "@shared/publicLtcPolicy";
+import { assessLtcBenefitPathways } from "@shared/ltcBenefitPathways";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { trpc } from "@/lib/trpc";
@@ -239,7 +240,7 @@ const defaultForm: FormData = {
   carrierPhone: "", carrierFax: "",
   policyNumber: "", claimPreClaimNumber: "",
   eliminationPeriod: "", lookBackPeriodEnabled: false, lookBackPeriodDays: "", careCoordinatorReductionEnabled: false, careCoordinatorReducedToDays: "", reductionInCareProvidedEnabled: false, reductionInCareDaysCountedAs7: "", dailyMaximum: "", monthlyMaximum: "", lifetimeMaximum: "",
-  minAdlsRequired: "0", qualifyingAdls: ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"], waiverOfPremium: "", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "", careLogsheetsRequired: "", whereToGetClaimsPacket: "", howToSubmitClaimsPacket: "", invoiceReimbursementDelay: "",
+  minAdlsRequired: "0", qualifyingAdls: ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"], waiverOfPremium: "no", cnaRequired: "", approvedAgencyRequired: "", careNotesRequired: "", careLogsheetsRequired: "", whereToGetClaimsPacket: "", howToSubmitClaimsPacket: "", invoiceReimbursementDelay: "",
   assignmentOfBenefits: "",
   equipmentAllowanceEnabled: false, equipmentAllowanceAmount: "", equipmentAllowanceCoverage: "", equipmentAllowanceDeductedFromLifetime: "", equipmentAllowanceRelatedAdls: [], equipmentNeeds: [], equipmentAllowanceNotes: "",
   inflationAdjustmentEnabled: false, inflationType: "none", inflationPercentagePerYear: "", inflationContinuesAfterBenefits: false,
@@ -336,7 +337,7 @@ export default function PolicyForm() {
         loaded.careNeeds = loaded.careNeeds.map((v: string) => v === "None" ? "NoneADL" : v)
           .filter((v: string) => allowed.includes(v));
       }
-      return sanitizePublicPolicy({ ...defaultForm, ...loaded });
+      return sanitizePublicPolicy({ ...defaultForm, ...loaded, waiverOfPremium: loaded.waiverOfPremium || "no" });
     } catch { return { ...defaultForm }; }
   });
   const [saving, setSaving] = useState(false);
@@ -344,6 +345,7 @@ export default function PolicyForm() {
   const [showAdlModal, setShowAdlModal] = useState(false);
   const [pendingAdlAdvance, setPendingAdlAdvance] = useState(false);
   const prevAdlRef = useRef<string[]>([]);
+  const clearingDraftRef = useRef(false);
   const prevIadlRef = useRef<string[]>([]);
 
   const completionPct = useMemo(() => {
@@ -358,6 +360,8 @@ export default function PolicyForm() {
   useEffect(() => { accountStorage.setItem("ltc_policy_step", String(step)); }, [step]);
   useEffect(() => {
     const flush = () => {
+      // "Clear All Data" must never be undone by a pagehide autosave.
+      if (clearingDraftRef.current) return;
       accountStorage.setItem("ltc_policy_form", JSON.stringify(sanitizePublicPolicy(form)));
       accountStorage.setItem("ltc_policy_step", String(step));
     };
@@ -461,13 +465,12 @@ export default function PolicyForm() {
   const handleNext = () => {
     if (!validateStep(step)) return;
     if (step === 4) {
-      const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
-      const adls = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
-      const actual = (form.careNeeds || []).filter(v => adls.includes(v));
-      const qualifying = form.qualifyingAdls || [];
-      if (minAdlsRequired > 0 &&
-          (actual.length < minAdlsRequired || actual.some(v => !qualifying.includes(v)) ||
-            (form.careNeeds || []).includes("NoneADL"))) {
+      const pathway = assessLtcBenefitPathways(form);
+      // Cognitive impairment is an alternative possible trigger. Do not block
+      // an Alzheimer's/dementia scenario merely for insufficient ADLs.
+      // The carrier must still confirm substantial supervision and eligibility.
+      if (pathway.required > 0 &&
+          !pathway.adlThresholdMet && !pathway.possibleCognitivePathway) {
         setShowAdlModal(true);
         return;
       }
@@ -486,7 +489,7 @@ export default function PolicyForm() {
   };
 
   const steps = [
-    { title: "Insured Person", icon: "👤" },
+    { title: "Getting Started", icon: "👤" },
     { title: "LTC Ins Company", icon: "🏢" },
     { title: "Policy Info", icon: "📄" },
     { title: "Coverage Details", icon: "📋" },
@@ -532,7 +535,7 @@ export default function PolicyForm() {
                 </div>
               </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif mb-4 leading-tight">Tell Us About Your <span className="text-teal">Policy</span></h1>
-              <p className="text-white/90 max-w-lg text-base leading-relaxed">Complete this form to receive a personalized strategy for filing your long-term care insurance claim. All information is securely stored and can be edited at any time.</p>
+              <p className="text-white/90 max-w-lg text-base leading-relaxed">Complete your coverage and care-needs information for an educational strategy. Your progress is saved automatically in this browser; use a private device for sensitive selections.</p>
             </div>
             <div className="hidden lg:block">
               <VideoPlaceholder title="How to Complete the Policy Form" description="Watch this guide to understand what information you'll need and how to find it in your policy documents" thumbnailUrl="/media/cdn/prngCKWDVnvVgXBI.png" videoUrl="/media/cdn/UZLuXdBXwBOgyGSg.mp4" />
@@ -948,7 +951,7 @@ export default function PolicyForm() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Do You <span style={{ color: '#34B1C4' }}>Qualify?</span></h3>
-                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Now tell us about your current care needs and health conditions. This helps us determine if you meet your policy's requirements to file a claim right now.</p>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Now tell us about your current care needs and health conditions. These selections help explore potential policy benefit triggers. Your insurer must still confirm eligibility and required clinical evidence.</p>
               </div>
 
               {/* Qualification context banner */}
@@ -1062,6 +1065,18 @@ export default function PolicyForm() {
                 const listOk = nonQualifyingAdls.length === 0;
                 const qualificationMet = countOk && listOk;
                 if (qualificationMet) return null;
+                const pathway = assessLtcBenefitPathways(form);
+                if (pathway.possibleCognitivePathway) return (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">Potential Cognitive-Impairment Benefit Pathway</h4>
+                    <p className="text-sm text-blue-800">
+                      The reported Alzheimer's/dementia condition and selected policy trigger may provide
+                      an alternative to the ADL threshold. A diagnosis alone is not sufficient: confirm the
+                      policy's substantial-supervision requirement, assessments, and carrier approval.
+                      You may continue to review your educational strategy without claiming eligibility.
+                    </p>
+                  </div>
+                );
                 return (
                   <div className="space-y-3">
                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -1194,6 +1209,7 @@ export default function PolicyForm() {
                 variant="outline" 
                 onClick={() => {
                   if (confirm('Are you sure you want to clear all form data? This cannot be undone.')) {
+                    clearingDraftRef.current = true;
                     clearAccountDrafts();
                     sessionStorage.removeItem("ltc_strategy_arrival_celebrated");
                     toast.success('All data cleared. Form reset.');

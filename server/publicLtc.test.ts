@@ -50,6 +50,18 @@ describe("anonymous LTC routes",()=>{
     expect(result.stage3Tasks.length).toBeGreaterThan(0);
     expect(result.content).toContain("Stage 1");
   });
+  it("does not transmit arbitrary claims notes or accidental identifiers to strategy AI",async()=>{
+    await appRouter.createCaller(ctx("203.0.113.46")).publicLtc.generateStrategy({
+      policy:{
+        carrierName:"Illustrative Carrier",
+        howToSubmitClaimsPacket:"Fax documents to JANE PRIVATE-PERSON at the claims office",
+      },
+    });
+    const prompts=JSON.stringify(vi.mocked(invokeLLM).mock.calls[0][0].messages);
+    expect(prompts).toContain("fax");
+    expect(prompts).not.toContain("JANE PRIVATE-PERSON");
+    expect(prompts).not.toContain("howToSubmitClaimsPacket");
+  });
   it("renders in memory only and redacts all identifiers, no stored PDF URL",async()=>{
     const result=await appRouter.createCaller(ctx("203.0.113.19")).publicLtc.generatePdf(sample);
     expect(result.pageCount).toBe(18);
@@ -78,6 +90,44 @@ describe("anonymous LTC routes",()=>{
       report:sample,recipients:["recipient@example.test"],acknowledgedBcc:false as any,
     })).rejects.toHaveProperty("code","BAD_REQUEST");
     expect(mail.sendEmail).not.toHaveBeenCalled();
+  });
+  it("disables temporary BCC when the production testing toggle is off",async()=>{
+    const original=process.env.LTC_TEST_BCC_ENABLED;
+    try{
+      process.env.LTC_TEST_BCC_ENABLED="false";
+      const cfg=await appRouter.createCaller(ctx("203.0.113.40")).publicLtc.mailConfig();
+      expect(cfg.testingBccEnabled).toBe(false);
+      await appRouter.createCaller(ctx("203.0.113.41")).publicLtc.emailPdf({
+        report:sample,recipients:["recipient@example.test"],acknowledgedBcc:true,
+      });
+      expect(vi.mocked(mail.sendEmail).mock.calls[0][0].bcc).toEqual([]);
+    }finally{
+      if(original===undefined)delete process.env.LTC_TEST_BCC_ENABLED;
+      else process.env.LTC_TEST_BCC_ENABLED=original;
+    }
+  });
+  it("limits concurrent anonymous PDF renders and releases slots after completion",async()=>{
+    type PdfResponse=Awaited<ReturnType<typeof report.renderApprovedLtcReport>>;
+    const canned:PdfResponse={
+      buffer:Buffer.from("%PDF-1.7 synthetic concurrency test"),
+      pageCount:18,templateId:"sc-visiting-angels-ltc-original-18-v1",
+      renderingMode:"original-image-with-searchable-text-layer",reportWarnings:[],pageChanges:[],
+    };
+    const release: Array<(result:PdfResponse)=>void>=[];
+    vi.mocked(report.renderApprovedLtcReport).mockImplementation(
+      ()=>new Promise<PdfResponse>(resolve=>{release.push(resolve);})
+    );
+    const first=appRouter.createCaller(ctx("203.0.113.42")).publicLtc.generatePdf(sample);
+    const second=appRouter.createCaller(ctx("203.0.113.43")).publicLtc.generatePdf(sample);
+    for(let n=0;n<30&&release.length<2;n++)await Promise.resolve();
+    expect(release).toHaveLength(2);
+    await expect(appRouter.createCaller(ctx("203.0.113.44")).publicLtc.generatePdf(sample))
+      .rejects.toHaveProperty("code","TOO_MANY_REQUESTS");
+    release.forEach(resolve=>resolve(canned));
+    await Promise.all([first,second]);
+    vi.mocked(report.renderApprovedLtcReport).mockResolvedValue(canned);
+    const after=await appRouter.createCaller(ctx("203.0.113.45")).publicLtc.generatePdf(sample);
+    expect(after.pageCount).toBe(18);
   });
   it("does not persist AI chat messages or require identifying policy IDs",async()=>{
     const result=await appRouter.createCaller(ctx("203.0.113.23")).publicLtc.chat({

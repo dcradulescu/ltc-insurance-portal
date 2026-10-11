@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
               "Coverage and carrier details you enter for educational planning",
               "Selections about diagnoses, cognitive impairment, ADLs, and care requirements",
               "Financial and calculator inputs and optional personal learning notes saved on your device",
-              "Name, email address, phone number, and message only if you voluntarily use Contact Us",
+              "Name, email address, phone number, and message if you voluntarily use Contact Us or submit a question from Education",
               "Recipient email address only when you request PDF email delivery",
             ]} />
             <P>Our website servers may receive technical metadata, including IP address, request times and browser information, for hosting, reliability, rate limits and security. Do not enter Social Security numbers or financial account numbers.</P>
@@ -75,7 +75,7 @@ export default function PrivacyPolicy() {
               "Provide an AI support chat in response to questions you choose to submit",
               "Generate your original 18-page PDF when you request it",
               "Email your PDF only to recipients you specify, with temporary testing BCC disclosed before submission",
-              "Respond to your voluntary Contact Us inquiries",
+              "Respond to your voluntary Contact Us and Education page inquiries",
             ]} />
             <P>Information entered in the public Policy Form is not automatically transmitted to our team, Zapier, or a claim management database. We do not sell this information for advertising.</P>
           </Section>

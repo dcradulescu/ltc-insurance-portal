@@ -88,14 +88,17 @@ export default function Terms() {
           <section className="bg-blue-50 border border-blue-200 rounded-xl p-6">
             <h2 className="text-lg font-bold text-blue-800 mb-3">🔒 Privacy & Data Use</h2>
             <p>
-              Information you enter into the LTC Insurance Navigator tool is used solely to generate your
-              personalized strategy report and to allow SC Visiting Angels to follow up with you regarding
-              home care services. We do not sell your personal information to third parties.
+              Policy Form answers and progress are saved on your device, not automatically shared with
+              SC Visiting Angels. If you request a Strategy, selected non-identifying coverage and care
+              details are processed by an AI service. PDF email and Support Chat require separate actions.
+              We do not sell your personal information to third parties.
             </p>
             <p className="mt-3">
-              By using this tool, you consent to SC Visiting Angels contacting you via the email address
-              and/or phone number you provide. You may opt out of communications at any time by contacting
-              us at <a href="mailto:info@scvisitingangels.com" className="text-blue-700 underline">info@scvisitingangels.com</a>.
+              Browsing the portal does not enroll you in follow-up calls or messages. If you voluntarily
+              submit a Contact Us or Education question form, we may reply using the contact details you
+              provide. When you request PDF email delivery, the report is sent to the designated recipient
+              and the disclosed testing BCC if enabled. For privacy questions, contact
+              <a href="mailto:info@scvisitingangels.com" className="text-blue-700 underline">info@scvisitingangels.com</a>.
             </p>
           </section>
 

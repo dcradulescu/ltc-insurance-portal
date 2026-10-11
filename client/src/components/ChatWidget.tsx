@@ -76,14 +76,15 @@ export function ChatWidget() {
     },
   });
 
-  const handleSend = useCallback(() => {
-    const text = input.trim();
+  const sendMessage = useCallback((value: string) => {
+    const text = value.trim();
     if (!text || chatMutation.isPending) return;
     setInput("");
     const newMessages: Message[] = [...messages, { role: "user", content: text }];
     setMessages(newMessages);
     chatMutation.mutate({ message: text, history: messages.slice(-8) });
-  }, [input, messages, chatMutation]);
+  }, [messages, chatMutation]);
+  const handleSend = useCallback(() => sendMessage(input), [input, sendMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -172,10 +173,7 @@ export function ChatWidget() {
                 {SUGGESTED_PROMPTS.map((prompt) => (
                   <button
                     key={prompt}
-                    onClick={() => {
-                      setInput(prompt);
-                      setTimeout(() => handleSend(), 50);
-                    }}
+                    onClick={() => sendMessage(prompt)}
                     className="block w-full text-left text-xs px-3 py-1.5 rounded-lg border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors"
                   >
                     {prompt}
