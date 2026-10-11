@@ -64,7 +64,7 @@ export const policyFormRouter = router({
           ? {
               id: policy.id,
               // Insured Person
-              insuredFullName: policy.insuredFullName,
+              insuredFullName: null,
               insuredDob: policy.insuredDob,
               insuredMailingAddress: policy.insuredMailingAddress,
 
@@ -170,7 +170,7 @@ export const policyFormRouter = router({
           },
           user: userProfile,
           policyForm: policyData,
-          unsavedFormData: input.unsavedFormData || null,
+          unsavedFormData: input.unsavedFormData ? { ...input.unsavedFormData, insuredFullName: "" } : null,
           strategy: strategyData,
           documents: documentsData,
           contacts: contactsData,

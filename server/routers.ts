@@ -203,7 +203,7 @@ export const appRouter = router({
           diagnosisCheckboxes, diagnosisNotes,
         });
         
-        const saveData = { ...dbData, equipmentAllowance: metadata };
+        const saveData = { ...dbData, insuredFullName: "", equipmentAllowance: metadata };
         
         if (id) {
           await requireOwnedPolicy(id, userId);
@@ -412,7 +412,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
 
         const userPrompt = `Generate a personalized LTC insurance claim strategy:
 
-**Insured:** ${policy.insuredFullName || "Not provided"}
+**Policyholder:** Anonymous educational scenario
 **DOB:** ${policy.insuredDob || "Not provided"}
 **Carrier:** ${policy.carrierName || "Not provided"}
 **Policy #:** ${policy.policyNumber || "Not provided"}
@@ -507,7 +507,7 @@ Format in clean HTML with h2, h3, paragraphs, and lists. Be specific to their si
         const cognitiveRisks = isCognitiveImpaired ? ["Severe memory loss", "Difficulty with decision-making", "Need for supervision"] : [];
 
         const letter = generatePhysicianLetter({
-          patientFullName: policy.insuredFullName || "",
+          patientFullName: "",
           patientDob: policy.insuredDob || "",
           diagnosis: policy.diagnosisOrCondition || policy.primaryDiagnosis || "",
           physicianName: typeof policy.primaryCarePhysician === "string" ? policy.primaryCarePhysician : "",

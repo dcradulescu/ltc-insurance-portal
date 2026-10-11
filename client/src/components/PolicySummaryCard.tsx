@@ -47,7 +47,7 @@ export function PolicySummaryCard({ policy }: PolicySummaryCardProps) {
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-serif text-lg font-bold text-white">{policy.insuredFullName || "Insured"}</h2>
+              <h2 className="font-serif text-lg font-bold text-white">Policyholder</h2>
               <p className="text-white/85 text-sm">Policy #{policy.policyNumber || "N/A"}</p>
             </div>
           </div>

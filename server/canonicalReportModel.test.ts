@@ -53,8 +53,16 @@ describe("Canonical LTC report inputs and policy safety",()=>{
     expect(model.policy.lifetimeMax).toBeNull();
     expect(model.warnings.join(" ")).toMatch(/Benefit caps/);
   });
-  it.each([""," ","\t"])("rejects invalid identity %j",insuredName=>{
-    expect(()=>buildCanonicalReportModel(base({insuredName}),NOW)).toThrow(/actual insured name/);
+  it.each([""," ","\t","NAMED PERSON"])("leaves the PDF name line blank for %j",insuredName=>{
+    const report=buildCanonicalReportModel(base({insuredName}),NOW);
+    expect(report.person.fullName).toBe("____________________________");
+    expect(report.person.firstName).toBe("Policyholder");
+  });
+  it("does not reintroduce a historical stored name in the PDF",()=>{
+    const report=buildCanonicalReportModel(base({
+      verifiedPolicy:{insuredFullName:"HISTORICAL PERSON"} as any,
+    }),NOW);
+    expect(report.person.fullName).toBe("____________________________");
   });
   it("rejects missing policy number or carrier rather than making up a carrier",()=>{
     expect(()=>buildCanonicalReportModel(base({carrierName:" "}),NOW)).toThrow(/carrier/);

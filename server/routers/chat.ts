@@ -155,7 +155,7 @@ export const chatRouter = router({
           if (policy) {
             policyContext = `
 USER'S POLICY CONTEXT:
-- Insured: ${policy.insuredFullName || "Not provided"}
+- Policyholder: Anonymous educational scenario
 - Policy #: ${policy.policyNumber || "Not provided"}
 - Carrier: ${policy.carrierName || "Not provided"}
 - Elimination Period: ${policy.eliminationPeriod || "Not provided"}

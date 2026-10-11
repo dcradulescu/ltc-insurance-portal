@@ -67,17 +67,18 @@ describe("Approved 18-page report delivery",()=>{
       .rejects.toThrow(/daily benefit does not match/);
     expect(report.renderApprovedLtcReport).not.toHaveBeenCalled();
   });
-  it("rejects mismatched insured identity even with an otherwise valid policy",async()=>{
-    await expect(generateStrategyPdf({...example,insuredName:"ANOTHER CLIENT"},7))
-      .rejects.toThrow(/signed-in account/);
-    expect(storage.storagePut).not.toHaveBeenCalled();
+  it("does not send a client-supplied or historical insured name to the PDF",async()=>{
+    await generateStrategyPdf({...example,insuredName:"ANOTHER CLIENT"},7);
+    const [reportInput]=vi.mocked(report.renderApprovedLtcReport).mock.calls[0];
+    expect(reportInput.insuredName).toBe("");
+    expect(reportInput.verifiedPolicy?.policyNumber).toBe("TEST-0001");
   });
   it("routes the download to the original template renderer, not the legacy jsPDF",async()=>{
     const result=await generateStrategyPdf(example,7);
     expect(result.key).toMatch(/^users\/7\/strategies\/qa\.pdf$/);
     expect(report.renderApprovedLtcReport).toHaveBeenCalledOnce();
     expect(report.renderApprovedLtcReport).toHaveBeenCalledWith(expect.objectContaining({
-      ...example,careInputs:undefined,
+      ...example,insuredName:"",careInputs:undefined,
       verifiedPolicy:expect.objectContaining({id:20,policyNumber:"TEST-0001"}),
     }));
     expect(storage.storagePut).toHaveBeenCalledOnce();

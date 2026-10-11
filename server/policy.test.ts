@@ -129,12 +129,12 @@ vi.mock("./storage", () => ({
 }));
 
 describe("policy ownership", () => {
-  it("creates and updates a policy for its account", async () => {
+  it("does not retain insured names while preserving account-scoped updates", async () => {
     const caller = appRouter.createCaller(createAuthContext(101).ctx);
     const created = await caller.policy.save({ insuredFullName: "Jane Smith" });
     const updated = await caller.policy.save({ id: created.id, insuredFullName: "Jane Updated" });
     expect(updated.id).toBe(created.id);
-    expect(await caller.policy.get()).toMatchObject({ userId: 101, insuredFullName: "Jane Updated" });
+    expect(await caller.policy.get()).toMatchObject({ userId: 101, insuredFullName: "" });
   });
   it("does not return another account's latest policy", async () => {
     const caller = appRouter.createCaller(createAuthContext(999).ctx);

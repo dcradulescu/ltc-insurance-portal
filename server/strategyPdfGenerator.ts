@@ -12,7 +12,7 @@ export async function generateStrategyPdf(data: PdfData, userId: number): Promis
   const policy=await getPolicyByUserId(userId);
   const equalText=(a:string|null|undefined,b:string|null|undefined)=>
     (a||"").trim().toLocaleLowerCase("en-US")===(b||"").trim().toLocaleLowerCase("en-US");
-  if(!policy || !equalText(policy.insuredFullName,data.insuredName) ||
+  if(!policy ||
      !equalText(policy.policyNumber,data.policyNumber) ||
      !equalText(policy.carrierName,data.carrierName)) {
     throw new Error("Report policy does not match the signed-in account. Save the current policy and retry.");
@@ -41,6 +41,7 @@ export async function generateStrategyPdf(data: PdfData, userId: number): Promis
     ? savedScenario.inputs ?? undefined : undefined;
   const trustedData={
     ...data,
+    insuredName:"", // The name field stays blank, including for older stored records.
     careInputs:verifiedInputs,
     verifiedPolicy:policy,
     insuredDob:policy.insuredDob || undefined,

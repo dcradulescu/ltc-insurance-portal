@@ -256,7 +256,7 @@ function generatePdfDocument(data: PdfDeliveryPanelProps['policyData']): jsPDF {
   drawFooter(pageNum);
 
   sectionTitle('Executive Summary');
-  bodyText(`This personalized strategy guide has been created specifically for ${data.insuredName} to help navigate the long-term care insurance claim process. This document outlines a comprehensive three-stage approach designed to maximize benefits, minimize claim denials, and ensure seamless access to quality home care services.`);
+  bodyText(`This personalized strategy guide is intended to help the policyholder navigate the long-term care insurance claim process. This document outlines a comprehensive three-stage approach designed to maximize benefits, minimize claim denials, and ensure seamless access to quality home care services.`);
 
   subTitle('Key Benefits Summary');
   highlightBox([
@@ -446,7 +446,7 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
       if (data.url) {
         const link = document.createElement('a');
         link.href = data.url;
-        link.download = `LTC-Strategy-${policyData.insuredName.replace(/\s+/g, '-')}.pdf`;
+        link.download = "LTC-Strategy.pdf";
         link.target = '_blank';
         link.click();
         setStatus({ type: 'success', message: 'PDF downloaded successfully!' });

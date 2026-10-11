@@ -251,7 +251,7 @@ const defaultForm: FormData = {
 };
 
 const sampleForm: FormData = {
-  insuredFullName: "John Smith", insuredEmail: "john@example.com", insuredPhone: "(555) 123-4567", insuredDob: "1950-06-15", insuredMailingAddress: "123 Main St, Charleston, SC 29401", insuredAddress: "123 Main St", insuredCity: "Charleston", insuredState: "SC", insuredZip: "29401",
+  insuredFullName: "", insuredEmail: "john@example.com", insuredPhone: "(555) 123-4567", insuredDob: "1950-06-15", insuredMailingAddress: "123 Main St, Charleston, SC 29401", insuredAddress: "123 Main St", insuredCity: "Charleston", insuredState: "SC", insuredZip: "29401",
   powerOfAttorneyPresent: "Yes", poa_name: "Jane Smith", poa_relationship: "Daughter",
   carrierName: "Genworth", carrierAddress1: "123 Insurance Blvd", carrierAddress2: "Suite 100", carrierCityStateZip: "Richmond, VA 23219", carrierAddress: "123 Insurance Blvd Suite 100", carrierCity: "Richmond", carrierState: "VA", carrierZip: "23219",
   carrierPhone: "(800) 555-1234", carrierFax: "(804) 555-5678",
@@ -376,7 +376,7 @@ export default function PolicyForm() {
       initialLoadDone.current = true; // prevent localStorage from overwriting
       const data = resumeQuery.data;
       if (data.formData && typeof data.formData === 'object') {
-        setForm(prev => ({ ...prev, ...(data.formData as any) }));
+        setForm(prev => ({ ...prev, ...(data.formData as any), insuredFullName: "" }));
       }
       if (typeof data.currentStep === 'number') {
         setStep(data.currentStep);
@@ -408,7 +408,7 @@ export default function PolicyForm() {
               .map((v: string) => v === "None" ? "NoneADL" : v)
               .filter((v: string) => validCareNeedsValues.includes(v));
           }
-          setForm(parsed);
+          setForm({ ...defaultForm, ...parsed, insuredFullName: "" });
         }
         if (savedStep) {
           setStep(parseInt(savedStep, 10));
@@ -444,7 +444,7 @@ export default function PolicyForm() {
       const p = policyQuery.data;
       setPolicyId(p.id);
       setForm({
-        insuredFullName: p.insuredFullName || "",
+        insuredFullName: "",
         insuredEmail: p.insuredEmail || "",
         insuredPhone: p.insuredPhone || "",
         insuredDob: p.insuredDob || "",
@@ -597,7 +597,7 @@ export default function PolicyForm() {
     }
     
     // Name fields: capitalize first letter of each word
-    if (field === 'insuredFullName' || field === 'carrierName' || field === 'caseManagerName' || field === 'poa_name' || field === 'poa_relationship') {
+    if (field === 'carrierName' || field === 'caseManagerName' || field === 'poa_name' || field === 'poa_relationship') {
       value = capitalizeFirstLetter(value);
     }
     
@@ -637,7 +637,6 @@ export default function PolicyForm() {
     const errors: Record<string, string> = {};
 
     if (currentStep === 0) {
-      if (!form.insuredFullName.trim()) errors.insuredFullName = "Full name is required.";
       if (!form.insuredEmail.trim()) {
         errors.insuredEmail = "Email address is required.";
       } else if (!isValidEmail(form.insuredEmail)) {
@@ -702,7 +701,7 @@ export default function PolicyForm() {
       await handleSave();
       const result = await sendSaveLinkMutation.mutateAsync({
         email: saveLinkEmail,
-        insuredName: form.insuredFullName || undefined,
+        insuredName: undefined,
         stepTitle: steps[step]?.title || `Step ${step + 1}`,
         origin: window.location.origin,
         formData: form as Record<string, any>,
@@ -1082,10 +1081,6 @@ export default function PolicyForm() {
                 <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Start by telling us about the person who holds the LTC insurance policy — the person who will receive care. Use the information exactly as it appears on the policy documents.</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Full Name of Insured" name="insuredFullName" isRequired>
-                  <Input id="insuredFullName" value={form.insuredFullName} onChange={e => { update("insuredFullName", e.target.value); clearError("insuredFullName"); }} placeholder="Enter full legal name" className={fieldErrors.insuredFullName ? "border-red-500 focus-visible:ring-red-500" : ""} />
-                  {fieldErrors.insuredFullName && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredFullName}</p>}
-                </TooltipField>
                 <TooltipField label="Date of Birth" name="insuredDob">
                   <Input id="insuredDob" type="text" value={getDisplayDate(form.insuredDob)} onChange={e => handleDateChange(e.target.value)} placeholder="MM/DD/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in format MM/DD/YYYY" maxLength={10} />
                 </TooltipField>
@@ -1617,7 +1612,7 @@ export default function PolicyForm() {
               </div>
               <div className="grid gap-4">
                 {[
-                  { title: "Insured Person", items: [["Name", form.insuredFullName], ["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["POA Name", form.poa_name], ["POA Relationship", form.poa_relationship]] },
+                  { title: "Insured Person", items: [["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["POA Name", form.poa_name], ["POA Relationship", form.poa_relationship]] },
                   { title: "LTC Insurance Company", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Policy #", form.policyNumber], ["Claim #", form.claimPreClaimNumber]] },
                   { title: "Claims Info", items: [["Case Manager", form.caseManagerAssigned], ["Case Manager Name", form.caseManagerName], ["Claims Packet", form.whereToGetClaimsPacket || "\u2014"], ["Submit Via", form.howToSubmitClaimsPacket || "\u2014"], ["Reimbursement Delay", form.invoiceReimbursementDelay || "\u2014"]] },
                   { title: "Coverage Details", items: [["Elimination Period", form.eliminationPeriod], ["Daily Max", form.dailyMaximum], ["Monthly Max", form.monthlyMaximum], ["Lifetime Max", form.lifetimeMaximum], ["Min ADLs", form.minAdlsRequired], ["AOB", form.assignmentOfBenefits], ["Waiver of Premium", form.waiverOfPremium], ["Cognitive Impairment Trigger", form.cognitiveImpairmentTrigger]] },
@@ -1649,8 +1644,8 @@ export default function PolicyForm() {
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  setForm(sampleForm);
-                  accountStorage.setItem('ltc_policy_form', JSON.stringify(sampleForm));
+                  setForm({ ...sampleForm, insuredFullName: "" });
+                  accountStorage.setItem("ltc_policy_form", JSON.stringify({ ...sampleForm, insuredFullName: "" }));
                   toast.success('Sample data loaded. You can now test the form.');
                 }} 
                 className="gap-1 text-blue-600 hover:text-blue-700"

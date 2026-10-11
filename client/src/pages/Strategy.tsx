@@ -65,10 +65,9 @@ const careRecommendations: Record<string, { schedule: string; prevention: string
 // Helper to check if form is complete
 function isFormComplete(policy: any) {
   if (!policy) return false;
-  const hasBasicInfo = policy.insuredFullName && policy.insuredEmail && policy.insuredPhone &&
+  const hasBasicInfo = policy.insuredEmail && policy.insuredPhone &&
                        policy.carrierName && policy.policyNumber;
   if (!hasBasicInfo) return false;
-  const hasInsuredName = policy.insuredFullName && policy.insuredFullName.toString().trim() !== "";
   const hasInsuredEmail = policy.insuredEmail && policy.insuredEmail.toString().trim() !== "";
   const hasInsuredPhone = policy.insuredPhone && policy.insuredPhone.toString().trim() !== "";
   const hasCarrierName = policy.carrierName && policy.carrierName.toString().trim() !== "";
@@ -91,7 +90,7 @@ function isFormComplete(policy: any) {
       adlCountValid = adlArray.length >= minRequired;
     }
   }
-  const isComplete = hasInsuredName && hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber && 
+  const isComplete = hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber &&
          hasEliminationPeriod && hasWaiverOfPremium && (hasDailyMaximum || hasMonthlyMaximum) && hasLifetimeMaximum &&
          hasAdlsOrCognitive && hasMinAdlsRequired && adlCountValid;
   return isComplete;
@@ -403,7 +402,7 @@ export default function Strategy() {
   const handleDownloadPDF = useCallback(() => {
     if (!policy) { toast.error("Please complete the Policy Intake Form first."); return; }
     downloadPdfMutation.mutate({
-      insuredName: policy.insuredFullName || "",
+      insuredName: "",
       insuredDob: policy.insuredDob || "",
       insuredPhone: policy.insuredPhone || "",
       insuredEmail: policy.insuredEmail || "",
@@ -454,7 +453,7 @@ export default function Strategy() {
       strategyId: strategy.id,
       recipients: validEmails,
       policyData: policy ? {
-        insuredName: policy.insuredFullName || "",
+        insuredName: "",
         insuredDob: policy.insuredDob || "",
         insuredPhone: policy.insuredPhone || "",
         insuredEmail: policy.insuredEmail || "",
@@ -744,7 +743,7 @@ export default function Strategy() {
                 Your strategy requires these fields to be completed in the Policy Form:
               </p>
               <div className="max-w-sm mx-auto mb-8 text-left space-y-1.5">
-                {["Full Name", "Email Address", "Phone Number", "Insurance Company", "Policy Number", "Elimination Period", "Waiver of Premium", "Daily or Monthly Maximum", "Lifetime Maximum", "ADLs or Cognitive Decline"].map(f => (
+                {["Email Address", "Phone Number", "Insurance Company", "Policy Number", "Elimination Period", "Waiver of Premium", "Daily or Monthly Maximum", "Lifetime Maximum", "ADLs or Cognitive Decline"].map(f => (
                   <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-1.5 h-1.5 rounded-full bg-teal/50" />
                     {f}
@@ -1155,7 +1154,7 @@ export default function Strategy() {
 
                     <PdfDeliveryPanel
                       policyData={{
-                        insuredName: policy?.insuredFullName || "",
+                        insuredName: "",
                         insuredDob: policy?.insuredDob || "",
                         insuredPhone: policy?.insuredPhone || "",
                         insuredEmail: policy?.insuredEmail || "",

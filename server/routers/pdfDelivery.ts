@@ -11,7 +11,7 @@ export { canonicalCareInputsSchema } from "../../shared/careScenarioSchema";
 // Full schema matching PdfData interface
 const pdfInputSchema = z.object({
   // Insured
-  insuredName: z.string().min(1, "Insured name is required"),
+  insuredName: z.string(),
   insuredDob: z.string().optional(),
   insuredPhone: z.string().optional(),
   insuredEmail: z.string().optional(),
@@ -93,10 +93,10 @@ export const pdfDeliveryRouter = router({
       const pdfResult = await generateStrategyPdf(input, ctx.user.id);
       const emailUrl = await getSignedStorageUrl(pdfResult.key, 3600);
       const delivery = await submitEmail({ recipients: [input.recipientEmail],
-        subject: `Your LTC Insurance Strategy for ${input.insuredName}`,
+        subject: "Your LTC Insurance Strategy",
         text: `Hi ${input.recipientName},\n\n${input.message || "Your strategy PDF is ready."}\n\nDownload your PDF (link expires in one hour): ${emailUrl}`,
         payload: { type: "strategy_email", recipientEmail: input.recipientEmail, recipientName: input.recipientName,
-          insuredName: input.insuredName, policyNumber: input.policyNumber, carrierName: input.carrierName,
+          insuredName: "", policyNumber: input.policyNumber, carrierName: input.carrierName,
           pdfUrl: emailUrl, personalMessage: input.message || "" } });
       return { ...delivery, message: `Email service accepted the request for ${input.recipientEmail}. Inbox delivery is not confirmed. The PDF link expires in one hour.`, pdfUrl: pdfResult.url };
     }),

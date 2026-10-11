@@ -94,8 +94,9 @@ export function buildCanonicalReportModel(
 ): CanonicalReportModel {
   const warnings: string[] = [];
   const policyRecord=input.verifiedPolicy;
-  const name = (policyRecord?.insuredFullName || input.insuredName)?.trim();
-  if (!name) throw new Error("Canonical report requires the actual insured name.");
+  // The PDF retains a blank line for handwritten completion. Never load
+  // a name from current or historical policy/visitor data.
+  const name = "____________________________";
   const carrierName = (policyRecord?.carrierName || input.carrierName)?.trim();
   const policyNumber = (policyRecord?.policyNumber || input.policyNumber)?.trim();
   if (!carrierName || !policyNumber) throw new Error("Canonical report requires carrier and policy number.");
@@ -106,7 +107,7 @@ export function buildCanonicalReportModel(
   if (max === null || pool === null) warnings.push("Benefit caps and/or lifetime pool are not confirmed.");
   const birthday = validDate(policyRecord?.insuredDob || input.insuredDob);
   const reportDate = validDate(input.reportDate) || now.toISOString().slice(0,10);
-  const person = name.split(/\s+/);
+  const person = ["Policyholder"];
   const age = birthday ? (() => {
     const a = new Date(birthday + "T00:00:00Z"), b = new Date(reportDate + "T00:00:00Z");
     const count = b.getUTCFullYear() - a.getUTCFullYear();
