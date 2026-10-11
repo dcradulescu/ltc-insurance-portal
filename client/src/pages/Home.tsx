@@ -416,7 +416,7 @@ export default function Home() {
               </p>
               <div className="space-y-4 mb-8">
                 <VaCheckItem title="Complete Policy Details" desc="Capture your policy number, carrier, coverage dates, and benefit amounts" />
-                <VaCheckItem title="Organized Documentation" desc="Store medical records, care assessments, and supporting documents in one secure location" />
+                <VaCheckItem title="Organized Documentation" desc="Organize required documents using your own private records without uploading personal files" />
                 <VaCheckItem title="Ready for Your Call" desc="When you contact your insurance company, you'll have all the information they need" />
               </div>
               <div className="flex justify-center">

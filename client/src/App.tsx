@@ -1,6 +1,3 @@
-import Login from "./pages/Login";
-import Documents from "./pages/Documents";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -15,12 +12,10 @@ import PolicyForm from "./pages/PolicyForm";
 import Strategy from "./pages/Strategy";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
-import Profile from "./pages/Profile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Academy from "./pages/Academy";
 import { ChatWidget } from "./components/ChatWidget";
 import { TermsGate } from "./components/TermsGate";
-import { usePolicyContext } from "./contexts/PolicyContext";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -30,28 +25,21 @@ function ScrollToTop() {
   return null;
 }
 
-function PrivatePage({ children }: { children: React.ReactNode }) {
-  const { user, loading, error } = useAuth();
-  if (loading) return <p className="p-10 text-center" role="status">Checking your session…</p>;
-  if (error) return <p className="p-10 text-center" role="alert">Unable to check your session. Please reload the page.</p>;
-  if (!user) return <Redirect to={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`} />;
-  return <div key={user.id}>{children}</div>;
-}
 function Router() {
   return (
     <>
       <ScrollToTop />
       <Switch>
-        <Route path="/login" component={Login} />
+        <Route path="/login"><Redirect to="/policy-form" /></Route>
         <Route path={"/"} component={Home} />
         <Route path={"/education"} component={Education} />
-        <Route path={"/policy-form"}><PrivatePage><PolicyForm /></PrivatePage></Route>
-        <Route path={"/strategy"}><PrivatePage><Strategy /></PrivatePage></Route>
+        <Route path={"/policy-form"} component={PolicyForm} />
+        <Route path={"/strategy"} component={Strategy} />
         <Route path={"/contact"} component={Contact} />
         <Route path={"/terms"} component={Terms} />
         <Route path={"/privacy"} component={PrivacyPolicy} />
-        <Route path="/documents"><PrivatePage><Documents /></PrivatePage></Route>
-        <Route path={"/profile"}><PrivatePage><Profile /></PrivatePage></Route>
+        <Route path="/documents"><Redirect to="/strategy" /></Route>
+        <Route path={"/profile"}><Redirect to="/policy-form" /></Route>
         <Route path={"/academy"} component={Academy} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
@@ -61,18 +49,15 @@ function Router() {
 }
 
 function AppInner() {
-  const { activePolicyId } = usePolicyContext();
-  const { user } = useAuth();
-  const [location] = useLocation();
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          {location === "/login" ? <Router /> : <TermsGate>
+          <TermsGate>
             <Router />
-            {user ? <ChatWidget key={user.id} policyId={activePolicyId} /> : null}
-          </TermsGate>}
+            <ChatWidget />
+          </TermsGate>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
@@ -80,7 +65,7 @@ function AppInner() {
 }
 
 function App() {
-  return <AuthProvider><AppInner /></AuthProvider>;
+  return <AppInner />;
 }
 
 export default App;

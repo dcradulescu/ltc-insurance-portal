@@ -1,4 +1,7 @@
 import { accountStorage } from "@/lib/accountStorage";
+import { publicPolicyForService, sanitizePublicPolicy } from "@shared/publicLtcPolicy";
+import { validateLocalCareScenario } from "@/lib/localCareScenario";
+import { downloadPublicPdf } from "@/lib/downloadPublicPdf";
 import type { CareInputs } from "@shared/careCalculator";
 import { localDate, localDateKey } from "@shared/claimSchedule";
 import { Helmet } from "react-helmet-async";
@@ -23,7 +26,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import confetti from "canvas-confetti";
-import { usePolicyContext } from "@/contexts/PolicyContext";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useStageCelebration } from "@/hooks/useStageCelebration";
@@ -63,37 +65,14 @@ const careRecommendations: Record<string, { schedule: string; prevention: string
 };
 
 // Helper to check if form is complete
-function isFormComplete(policy: any) {
-  if (!policy) return false;
-  const hasBasicInfo = policy.insuredEmail && policy.insuredPhone &&
-                       policy.carrierName && policy.policyNumber;
-  if (!hasBasicInfo) return false;
-  const hasInsuredEmail = policy.insuredEmail && policy.insuredEmail.toString().trim() !== "";
-  const hasInsuredPhone = policy.insuredPhone && policy.insuredPhone.toString().trim() !== "";
-  const hasCarrierName = policy.carrierName && policy.carrierName.toString().trim() !== "";
-  const hasPolicyNumber = policy.policyNumber && policy.policyNumber.toString().trim() !== "";
-  const hasEliminationPeriod = policy.eliminationPeriod && policy.eliminationPeriod.toString().trim() !== "";
-  const hasWaiverOfPremium = policy.waiverOfPremium && policy.waiverOfPremium.toString().trim() !== "";
-  const hasDailyMaximum = policy.dailyMaximum && policy.dailyMaximum.toString().trim() !== "";
-  const hasMonthlyMaximum = policy.monthlyMaximum && policy.monthlyMaximum.toString().trim() !== "";
-  const hasLifetimeMaximum = policy.lifetimeMaximum && policy.lifetimeMaximum.toString().trim() !== "";
-  const hasQualifyingAdls = policy.qualifyingAdls && Array.isArray(policy.qualifyingAdls) && policy.qualifyingAdls.length > 0;
-  const hasAdlLimitations = policy.adlLimitations && Array.isArray(policy.adlLimitations) && policy.adlLimitations.length > 0;
-  const hasAdlsOrCognitive = hasQualifyingAdls || hasAdlLimitations || 
-                             (policy.cognitiveImpairmentTrigger && policy.cognitiveImpairmentTrigger.toString().trim() !== "");
-  const hasMinAdlsRequired = policy.minAdlsRequired !== undefined && policy.minAdlsRequired !== null && policy.minAdlsRequired.toString().trim() !== "";
-  let adlCountValid = true;
-  if (hasMinAdlsRequired) {
-    const adlArray = policy.qualifyingAdls || policy.adlLimitations || [];
-    if (Array.isArray(adlArray)) {
-      const minRequired = parseInt(policy.minAdlsRequired);
-      adlCountValid = adlArray.length >= minRequired;
-    }
-  }
-  const isComplete = hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber &&
-         hasEliminationPeriod && hasWaiverOfPremium && (hasDailyMaximum || hasMonthlyMaximum) && hasLifetimeMaximum &&
-         hasAdlsOrCognitive && hasMinAdlsRequired && adlCountValid;
-  return isComplete;
+function isFormComplete(policy: any): boolean {
+  if (!policy || !String(policy.carrierName || "").trim()) return false;
+  if (!String(policy.eliminationPeriod || "").trim()) return false;
+  if (!String(policy.lifetimeMaximum || "").trim()) return false;
+  if (!String(policy.dailyMaximum || "").trim() && !String(policy.monthlyMaximum || "").trim()) return false;
+  if (!String(policy.waiverOfPremium || "").trim()) return false;
+  if (!Array.isArray(policy.diagnosisCheckboxes) || !policy.diagnosisCheckboxes.length) return false;
+  return Array.isArray(policy.careNeeds) && policy.careNeeds.length > 0;
 }
 
 type StrategyTask = {
@@ -110,6 +89,7 @@ export default function Strategy() {
   const [, navigate] = useLocation();
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailRecipients, setEmailRecipients] = useState<string[]>([""]);
+  const [emailAcknowledged, setEmailAcknowledged] = useState(false);
   const [planView, setPlanView] = useState<PlanView>("timeline");
   const [activeTab, setActiveTab] = useState("timeline");
   const [scheduleStartDraft, setScheduleStartDraft] = useState("");
@@ -120,111 +100,87 @@ export default function Strategy() {
   const [celebratedStages, setCelebratedStages] = useState<Set<number>>(new Set());
   const [expandedStages, setExpandedStages] = useState<Set<number>>(new Set([1, 2, 3]));
 
-  // Load policy data from localStorage
-  const [policyFromStorage, setPolicyFromStorage] = useState<any>(null);
-  useEffect(() => {
+  // Anonymous strategy, tasks and calculator data persist in this browser only.
+  const policy = useMemo<any>(() => {
     try {
-      const saved = accountStorage.getItem("ltc_policy_form");
-      if (saved) setPolicyFromStorage(JSON.parse(saved));
-    } catch (err) {
-      console.error("[Strategy] Failed to load policy from localStorage:", err);
-    }
+      const raw = accountStorage.getItem("ltc_policy_form");
+      return raw ? sanitizePublicPolicy(JSON.parse(raw)) : null;
+    } catch { return null; }
   }, []);
-
-  const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
-  const strategyQuery = trpc.strategy.getMine.useQuery(undefined, { enabled: true });
-  const claimMilestonesQuery = trpc.strategy.listClaimMilestones.useQuery(
-    { strategyId: strategyQuery.data?.id || 0 },
-    { enabled: !!strategyQuery.data?.id }
-  );
-  const careScenarioQuery = trpc.strategy.getCareScenario.useQuery(
-    {strategyId: strategyQuery.data?.id || 0},
-    {enabled: !!strategyQuery.data?.id}
-  );
-  const saveCareScenarioMutation = trpc.strategy.saveCareScenario.useMutation();
-  const taskCompletionsQuery = trpc.strategy.getTaskCompletions.useQuery(
-    { strategyId: strategyQuery.data?.id || 0 },
-    { enabled: !!strategyQuery.data?.id }
-  );
-  const saveTaskCompletionMutation = trpc.strategy.saveTaskCompletion.useMutation();
-  const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
-  const sessionStartRef = useRef(Date.now());
-  const zapierSentRef = useRef(false);
-
-  const sendToZapier = useCallback((trigger: "form_completed" | "strategy_completed" | "exit" | "timeout") => {
-    if (zapierSentRef.current) return;
-    zapierSentRef.current = true;
-    const sessionDurationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
-    sendComprehensiveZapier.mutate({ trigger, currentPage: "strategy", sessionDurationSeconds });
-  }, [sendComprehensiveZapier]);
-
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (!zapierSentRef.current) {
-        zapierSentRef.current = true;
-        const sessionDurationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
-        void fetch("/api/trpc/policyForm.sendComprehensiveToZapier", { method: "POST", keepalive: true, credentials: "include", headers: { "Content-Type": "application/json", "x-ltc-request": "1" }, body: JSON.stringify({ json: { trigger: "exit", currentPage: "strategy", sessionDurationSeconds } }) }).catch(() => {});
+  const [strategy, setStrategy] = useState<any>(() => {
+    try { const raw = accountStorage.getItem("ltc_strategy"); return raw ? JSON.parse(raw) : null; }
+    catch { return null; }
+  });
+  const [taskCompletions, setTaskCompletions] = useState<Array<{taskId:string;completed:boolean;completedAt:string|null}>>(() => {
+    try { return JSON.parse(accountStorage.getItem("ltc_task_completions") || "[]"); }
+    catch { return []; }
+  });
+  const [savedScenario, setSavedScenario] = useState<any>(() => {
+    try {
+      const saved = JSON.parse(accountStorage.getItem("ltc_care_scenario") || "null");
+      const draft = JSON.parse(accountStorage.getItem("ltc_care_scenario_draft") || "null");
+      if (draft?.inputs && (!saved || JSON.stringify(draft.inputs) !== JSON.stringify(saved.inputs))) {
+        return {...draft,status:"needs_review",reason:"Draft restored from this browser. Review and confirm for projections."};
       }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      if (!zapierSentRef.current) sendToZapier("exit");
-    };
-  }, [sendToZapier]);
-
-  const generateMutation = trpc.strategy.generate.useMutation({
-    onSuccess: () => {
-      strategyQuery.refetch();
+      return saved;
+    } catch { return null; }
+  });
+  const currentPolicyKey = JSON.stringify(publicPolicyForService(policy || {}));
+  const scenarioPolicyKey = JSON.stringify({
+    daily:policy?.dailyMaximum,monthly:policy?.monthlyMaximum,
+    pool:policy?.lifetimeMaximum,waiting:policy?.eliminationPeriod,
+  });
+  const strategyQuery = {data:strategy};
+  const policyQuery = {data:policy,isLoading:false};
+  const taskCompletionsQuery = {data:taskCompletions};
+  const careScenarioQuery = {data:savedScenario,isLoading:false,isError:false};
+  const mailConfig = trpc.publicLtc.mailConfig.useQuery(undefined,{retry:false});
+  useEffect(() => { if (strategy) accountStorage.setItem("ltc_strategy",JSON.stringify(strategy)); },[strategy]);
+  useEffect(() => { accountStorage.setItem("ltc_task_completions",JSON.stringify(taskCompletions)); },[taskCompletions]);
+  useEffect(() => { if (savedScenario) accountStorage.setItem("ltc_care_scenario",JSON.stringify(savedScenario)); },[savedScenario]);
+  const generateMutation = trpc.publicLtc.generateStrategy.useMutation({
+    onSuccess: data => {
+      const now = new Date().toISOString();
+      setStrategy({
+        id:1,policyId:1,createdAt:now,generatedAt:now,scheduleStartDate:now.slice(0,10),
+        strategyContent:data.content,strategyHtml:data.content,
+        stage1Tasks:data.stage1Tasks,stage2Tasks:data.stage2Tasks,stage3Tasks:data.stage3Tasks,
+        currentStage:1,claimStatus:"not_started",policyKey:currentPolicyKey,selfReportedApproval:false,
+      });
+      setTaskCompletions([]);
       toast.success("Your personalized strategy has been generated!");
-      zapierSentRef.current = false;
-      sendToZapier("strategy_completed");
     },
-    onError: () => toast.error("Failed to generate strategy. Please try again."),
+    onError: error => toast.error("Strategy generation failed: "+error.message),
   });
-  const updateTasksMutation = trpc.strategy.updateTasks.useMutation();
-  const saveScheduleStartMutation = trpc.strategy.updateScheduleStartDate.useMutation();
-  const emailMutation = trpc.email.sendStrategy.useMutation({
-    onSuccess: (data) => { toast.success(data.message); setEmailDialogOpen(false); },
-    onError: (error) => toast.error(error.message),
+  const emailMutation = trpc.publicLtc.emailPdf.useMutation({
+    onSuccess: data => {toast.success(data.message);setEmailDialogOpen(false);setEmailAcknowledged(false);},
+    onError: error => toast.error(error.message),
   });
-  const utils = trpc.useUtils();
-
-  const strategy = strategyQuery.data;
   const savedStartDate = strategy?.scheduleStartDate ||
     (strategy?.createdAt ? localDateKey(localDate(strategy.createdAt)) : "");
+  useEffect(() => setScheduleStartDraft(savedStartDate), [savedStartDate]);
   useEffect(() => {
-    setScheduleStartDraft(savedStartDate);
-  }, [strategy?.id, savedStartDate]);
-  const policy = policyFromStorage || policyQuery.data;
-  useEffect(() => {
-    // Policy changes invalidate an in-memory financial model immediately.
-    setConfirmedCareInputs(null);
-  }, [policy?.id]);
-  useEffect(() => {
-    const saved=careScenarioQuery.data;
-    if(!strategy?.id || !saved) return;
-    setConfirmedCareInputs(saved.status==="saved_valid" ? saved.inputs : null);
-  }, [careScenarioQuery.data, strategy?.id, policy?.id]);
-
+    if (!savedScenario) return;
+    const valid = savedScenario.policyKey === scenarioPolicyKey &&
+      savedScenario.status === "saved_valid";
+    setConfirmedCareInputs(valid ? savedScenario.inputs : null);
+  },[savedScenario,scenarioPolicyKey]);
   const persistCareScenario = useCallback(async (inputs:CareInputs) => {
-    if(!strategy?.id) throw new Error("Complete and save a strategy before using the calculator.");
-    const result=await saveCareScenarioMutation.mutateAsync({
-      strategyId:strategy.id,inputs,
-    });
-    // Future reloads query the account-owned database record.
-    if(result.status!=="saved_valid") setConfirmedCareInputs(null);
-    else setConfirmedCareInputs(result.inputs);
-    return {status:result.status,reason:result.reason};
-  }, [strategy?.id, saveCareScenarioMutation]);
+    if (!strategy?.id) throw new Error("Generate a strategy before saving care projections.");
+    const assessment=validateLocalCareScenario(inputs,policy || {});
+    const entry={...assessment,inputs,policyKey:scenarioPolicyKey};
+    accountStorage.setItem("ltc_care_scenario",JSON.stringify(entry));
+    accountStorage.removeItem("ltc_care_scenario_draft");
+    setSavedScenario(entry);
+    setConfirmedCareInputs(assessment.status==="saved_valid"?inputs:null);
+    return assessment;
+  },[strategy?.id,policy,scenarioPolicyKey]);
+  const persistCareDraft = useCallback((inputs:CareInputs) => {
+    accountStorage.setItem("ltc_care_scenario_draft",
+      JSON.stringify({inputs,policyKey:scenarioPolicyKey}));
+  },[scenarioPolicyKey]);
 
-  // Share active policy ID with the global ChatWidget
-  const { setActivePolicyId } = usePolicyContext();
-  useEffect(() => {
-    if (policy?.id) setActivePolicyId(policy.id);
-    return () => setActivePolicyId(undefined);
-  }, [policy?.id, setActivePolicyId]);
-
+  // Account-scoped policy context is not used for this public educational flow.
   const stage1Tasks: StrategyTask[] = useMemo(() => {
     const tasks = (strategy?.stage1Tasks as unknown as StrategyTask[]) || [];
     const completions = taskCompletionsQuery.data || [];
@@ -251,9 +207,7 @@ export default function Strategy() {
       completed: completions.find(c => c.taskId === task.id)?.completed ?? task.completed
     }));
   }, [strategy?.stage3Tasks, taskCompletionsQuery.data]);
-  const hasRecordedCarrierApproval = (claimMilestonesQuery.data || []).some(
-    event => event.kind === "carrier_approval" && event.evidenceDocumentId !== null
-  );
+  const hasRecordedCarrierApproval = Boolean(strategy?.selfReportedApproval);
   const currentStage = strategy?.currentStage || 1;
 
   const stageProgress = (tasks: StrategyTask[]) => tasks.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
@@ -300,77 +254,42 @@ export default function Strategy() {
   }, [stage1Tasks, stage2Tasks, stage3Tasks]);
 
   const savePlanningStartDate = async () => {
-    if (!strategy?.id || !scheduleStartDraft || saveScheduleStartMutation.isPending) return;
-    try {
-      await saveScheduleStartMutation.mutateAsync({
-        strategyId: strategy.id,
-        startDate: scheduleStartDraft,
-      });
-      await utils.strategy.getMine.invalidate();
-      toast.success("Planning start date saved. The timeline and checklist have been refreshed.");
-    } catch (error) {
-      toast.error("Unable to save the planning date. Confirm the date and try again.");
-    }
+    if (!strategy?.id || !scheduleStartDraft || scheduleStartDraft === savedStartDate) return;
+    setStrategy((current:any) => current ? {...current,scheduleStartDate:scheduleStartDraft} : current);
+    toast.success("Planning start date saved locally.");
   };
-
   const handleGenerate = () => {
-    if (!policy) { toast.error("Please complete the Policy Intake Form first."); navigate("/policy-form"); return; }
-    generateMutation.mutate({ policyId: policy.id });
-  };
-
-  const toggleTask = async (stage: "stage1Tasks" | "stage2Tasks" | "stage3Tasks", tasks: StrategyTask[], taskId: string) => {
-    if (!strategy) return;
-    if (stage === "stage3Tasks" && (strategy.currentStage !== 3 ||
-      strategy.claimStatus !== "approved" || !hasRecordedCarrierApproval)) {
-      toast.info("Stage 3 tasks unlock after explicit carrier approval confirmation.");
+    if (!policy || !isFormComplete(policy)) {
+      toast.error("Complete required coverage and care-needs fields first.");
+      navigate("/policy-form");
       return;
     }
-    const task = tasks.find(t => t.id === taskId);
+    generateMutation.mutate({policy:publicPolicyForService(policy)});
+  };
+  const toggleTask = (stage:"stage1Tasks"|"stage2Tasks"|"stage3Tasks",tasks:StrategyTask[],taskId:string) => {
+    if (!strategy) return;
+    if (stage === "stage3Tasks" && !hasRecordedCarrierApproval) {
+      toast.info("Post-approval tasks are for people reporting actual carrier approval.");
+      return;
+    }
+    const task=tasks.find(t=>t.id===taskId);
     if (!task) return;
-    const newCompleted = !task.completed;
-    const stageNum = parseInt(stage.replace(/\D/g, ''));
-    
-    try {
-      await saveTaskCompletionMutation.mutateAsync({
-        strategyId: strategy.id,
-        taskId,
-        taskTitle: task.label,
-        stage: stageNum,
-        completed: newCompleted,
-      });
-      taskCompletionsQuery.refetch();
-      
-      // Show success toast notification
-      if (newCompleted) {
-        toast.success(`✓ Task completed: ${task.label}`, {
-          description: "Great progress on your claim strategy!",
-          duration: 3000,
-        });
-      } else {
-        toast.info(`Task marked incomplete: ${task.label}`, {
-          duration: 2000,
-        });
-      }
-    } catch (_e) { 
-      toast.error("Failed to update task.");
-    }
+    const completed=!task.completed;
+    setTaskCompletions(current=>[
+      ...current.filter(t=>t.taskId!==taskId),
+      {taskId,completed,completedAt:completed?new Date().toISOString():null}
+    ]);
+    toast.info(completed ? "Task marked complete" : "Task marked incomplete");
   };
-
-  const advanceStage = async (newStage: number) => {
-    if (!strategy) return;
-    if (newStage === 3) {
-      toast.error("Stage 3 is unlocked only by recording the carrier decision and supporting document.");
-      return;
-    }
-    try {
-      await updateTasksMutation.mutateAsync({
-        strategyId: strategy.id, stage: "stage1Tasks", tasks: stage1Tasks,
-        currentStage: newStage,
-        claimStatus: newStage === 2 ? "in_progress" : "not_started",
-      });
-      utils.strategy.getMine.invalidate();
-      toast.success(`Advanced to Stage ${newStage}`);
-    } catch (_e) { toast.error("Failed to advance stage."); }
+  const advanceStage = (newStage:number) => {
+    if (!strategy || newStage>3 || (newStage===3 && !hasRecordedCarrierApproval)) return;
+    setStrategy((current:any)=>({...current,currentStage:newStage,
+      claimStatus:newStage===3?"approved":newStage===2?"in_progress":"not_started"}));
+    toast.success("Advanced to Stage "+newStage);
+  };
+  const recordSelfReportedApproval = () => {
+    setStrategy((current:any)=>current?{...current,selfReportedApproval:true,currentStage:3,claimStatus:"approved"}:current);
+    toast.info("Recorded locally as self-reported carrier approval. This does not verify a claim.");
   };
 
   const toggleStageExpanded = (stageNum: number) => {
@@ -385,116 +304,44 @@ export default function Strategy() {
     });
   };
 
-  const downloadPdfMutation = trpc.pdfDelivery.generatePdf.useMutation({
-    onSuccess: (data) => {
-      if (data.url) {
-        const link = document.createElement("a");
-        link.href = data.url;
-        link.download = `LTC-Strategy-${(policy?.insuredFullName || "Report").replace(/\s+/g, "-")}.pdf`;
-        link.target = "_blank";
-        link.click();
-        toast.success("PDF downloaded successfully!");
-      }
-    },
-    onError: () => toast.error("Failed to generate PDF. Please try again."),
+  const buildReportPayload = () => ({
+    insuredName:"", insuredDob:"",insuredPhone:"",insuredEmail:"",insuredAddress:"",
+    policyNumber:"",claimNumber:"",carrierName:policy?.carrierName || "",
+    carrierPhone:policy?.carrierPhone || "",eliminationPeriod:policy?.eliminationPeriod || "",
+    dailyMaximum:parseCurrencyValue(policy?.dailyMaximum || 0),
+    monthlyMaximum:parseCurrencyValue(policy?.monthlyMaximum || 0),
+    lifetimeMaximum:parseCurrencyValue(policy?.lifetimeMaximum || 0),
+    minAdlsRequired:policy?.minAdlsRequired ? Number(policy.minAdlsRequired) : undefined,
+    waiverOfPremium:policy?.waiverOfPremium || "",
+    assignmentOfBenefits:policy?.assignmentOfBenefits || "",
+    adlLimitations:policy?.qualifyingAdls || [],diagnosisCheckboxes:policy?.diagnosisCheckboxes || [],
+    cognitiveImpairmentTrigger:policy?.cognitiveImpairmentTrigger || "",
+    stage1Tasks:stage1Tasks.map(t=>t.label),stage1TaskIds:stage1Tasks.map(t=>t.id),
+    stage2Tasks:stage2Tasks.map(t=>t.label),stage2TaskIds:stage2Tasks.map(t=>t.id),
+    stage3Tasks:stage3Tasks.map(t=>t.label),stage3TaskIds:stage3Tasks.map(t=>t.id),
+    planStartDate:strategy?.scheduleStartDate || undefined,
+    taskCompletionDates:taskCompletions.map(t=>({...t})),
+    careRecommendations:policy?.careRecommendations || "",strategyContent:strategy?.strategyContent || "",
+    diagnosis:policy?.primaryDiagnosis || "",caseManagerName:"",
+    thirdPartyAssessmentRequired:policy?.thirdPartyAssessmentRequired || "",
+    careInputs:confirmedCareInputs ?? undefined,
+    claimsAddress1:policy?.carrierAddress || "",claimsAddress2:policy?.carrierAddress2 || "",
+    claimsCityStateZip:[policy?.carrierCity,policy?.carrierState,policy?.carrierZip].filter(Boolean).join(", "),
+    claimsFax:policy?.carrierFax || "",
   });
-
-  const handleDownloadPDF = useCallback(() => {
-    if (!policy) { toast.error("Please complete the Policy Intake Form first."); return; }
-    downloadPdfMutation.mutate({
-      insuredName: "",
-      insuredDob: policy.insuredDob || "",
-      insuredPhone: policy.insuredPhone || "",
-      insuredEmail: policy.insuredEmail || "",
-      insuredAddress: policy.insuredMailingAddress || "",
-      policyNumber: policy.policyNumber || "",
-      claimNumber: policy.claimNumber || "",
-      carrierName: policy.carrierName || "",
-      carrierPhone: policy.carrierPhone || "",
-      eliminationPeriod: policy.eliminationPeriod || "",
-      dailyMaximum: parseCurrencyValue(policy.dailyMaximum || 0),
-      monthlyMaximum: (() => { const v = parseFloat((policy.monthlyMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(v) ? 0 : v; })(),
-      lifetimeMaximum: (() => { const v = parseFloat((policy.lifetimeMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(v) ? 0 : v; })(),
-      minAdlsRequired: policy.minAdlsRequired ? parseInt(policy.minAdlsRequired) : undefined,
-      waiverOfPremium: policy.waiverOfPremium || "",
-      assignmentOfBenefits: policy.assignmentOfBenefits || "",
-      adlLimitations: policy.qualifyingAdls || policy.adlLimitations || [],
-      diagnosisCheckboxes: policy.diagnosisCheckboxes || [],
-      cognitiveImpairmentTrigger: policy.cognitiveImpairmentTrigger || "",
-      stage1Tasks: stage1Tasks.map(t => t.label),
-      stage1TaskIds: stage1Tasks.map(t => t.id),
-      stage2Tasks: stage2Tasks.map(t => t.label),
-      stage2TaskIds: stage2Tasks.map(t => t.id),
-      stage3Tasks: stage3Tasks.map(t => t.label),
-      stage3TaskIds: stage3Tasks.map(t => t.id),
-      planStartDate: strategy?.scheduleStartDate ?? (strategy?.createdAt ? new Date(strategy.createdAt).toISOString() : undefined),
-      taskCompletionDates: (taskCompletionsQuery.data ?? []).map(c => ({ taskId: c.taskId, completed: c.completed, completedAt: c.completedAt ? new Date(c.completedAt).toISOString() : null })),
-      careRecommendations: policy.careRecommendations || "",
-      strategyContent: strategy?.strategyContent || "",
-      diagnosis: policy.primaryDiagnosis || "",
-      caseManagerName: policy.caseManagerName || "",
-      thirdPartyAssessmentRequired: policy.thirdPartyAssessmentRequired || "",
-      careInputs: confirmedCareInputs ?? undefined,
-      issueDate: policy.issueDate || undefined,
-      policyStatus: policy.policyStatus || undefined,
-      benefitPeriod: policy.benefitPeriod || undefined,
-      claimsAddress1: policy.carrierAddress1 || undefined,
-      claimsAddress2: policy.carrierAddress2 || undefined,
-      claimsCityStateZip: policy.carrierCityStateZip || undefined,
-      claimsFax: policy.carrierFax || undefined,
-    });
-  }, [policy, strategy, stage1Tasks, stage2Tasks, stage3Tasks, downloadPdfMutation, confirmedCareInputs]);
-
+  const downloadPdfMutation = trpc.publicLtc.generatePdf.useMutation({
+    onSuccess: data => {downloadPublicPdf(data.pdfBase64);toast.success("18-page PDF ready.");},
+    onError: error => toast.error("PDF generation failed: "+error.message),
+  });
+  const handleDownloadPDF = () => {
+    if (!policy) {toast.error("Please complete the Policy Form first.");return;}
+    downloadPdfMutation.mutate(buildReportPayload());
+  };
   const handleSendEmail = () => {
-    const validEmails = emailRecipients.filter(e => e.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim()));
-    if (!validEmails.length) { toast.error("Please enter at least one valid email address."); return; }
-    if (!strategy?.id) return;
-    emailMutation.mutate({
-      strategyId: strategy.id,
-      recipients: validEmails,
-      policyData: policy ? {
-        insuredName: "",
-        insuredDob: policy.insuredDob || "",
-        insuredPhone: policy.insuredPhone || "",
-        insuredEmail: policy.insuredEmail || "",
-        insuredAddress: policy.insuredMailingAddress || "",
-        policyNumber: policy.policyNumber || "",
-        claimNumber: policy.claimNumber || "",
-        carrierName: policy.carrierName || "",
-        carrierPhone: policy.carrierPhone || "",
-        eliminationPeriod: policy.eliminationPeriod || "",
-        dailyMaximum: parseCurrencyValue(policy.dailyMaximum || 0),
-        monthlyMaximum: (() => { const val = parseFloat((policy.monthlyMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
-        lifetimeMaximum: (() => { const val = parseFloat((policy.lifetimeMaximum || "0").toString().replace(/[^0-9.]/g, "")); return isNaN(val) ? 0 : val; })(),
-        minAdlsRequired: policy.minAdlsRequired ? parseInt(policy.minAdlsRequired) : undefined,
-        waiverOfPremium: policy.waiverOfPremium || "",
-        assignmentOfBenefits: policy.assignmentOfBenefits || "",
-        diagnosis: policy.primaryDiagnosis || "",
-        adlLimitations: policy.qualifyingAdls || policy.adlLimitations || [],
-        diagnosisCheckboxes: policy.diagnosisCheckboxes || [],
-        cognitiveImpairmentTrigger: policy.cognitiveImpairmentTrigger || "",
-        stage1Tasks: stage1Tasks.map(t => t.label),
-      stage1TaskIds: stage1Tasks.map(t => t.id),
-        stage2Tasks: stage2Tasks.map(t => t.label),
-      stage2TaskIds: stage2Tasks.map(t => t.id),
-        stage3Tasks: stage3Tasks.map(t => t.label),
-      stage3TaskIds: stage3Tasks.map(t => t.id),
-      planStartDate: strategy?.scheduleStartDate ?? (strategy?.createdAt ? new Date(strategy.createdAt).toISOString() : undefined),
-      taskCompletionDates: (taskCompletionsQuery.data ?? []).map(c => ({ taskId: c.taskId, completed: c.completed, completedAt: c.completedAt ? new Date(c.completedAt).toISOString() : null })),
-        careRecommendations: policy.careRecommendations || "",
-        strategyContent: strategy.strategyContent || "",
-        caseManagerName: policy.caseManagerName || "",
-        thirdPartyAssessmentRequired: policy.thirdPartyAssessmentRequired || "",
-        careInputs: confirmedCareInputs ?? undefined,
-        issueDate: policy.issueDate || undefined,
-        policyStatus: policy.policyStatus || undefined,
-        benefitPeriod: policy.benefitPeriod || undefined,
-        claimsAddress1: policy.carrierAddress1 || undefined,
-        claimsAddress2: policy.carrierAddress2 || undefined,
-        claimsCityStateZip: policy.carrierCityStateZip || undefined,
-        claimsFax: policy.carrierFax || undefined,
-      } : undefined,
-    });
+    const recipients=emailRecipients.map(v=>v.trim()).filter(v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+    if (!recipients.length || recipients.length > 5) {toast.error("Enter 1–5 valid email addresses.");return;}
+    if (!emailAcknowledged) {toast.error("Acknowledge the testing copy and email sharing first.");return;}
+    emailMutation.mutate({recipients,report:buildReportPayload(),acknowledgedBcc:true});
   };
 
   const addRecipient = () => setEmailRecipients(prev => [...prev, ""]);
@@ -572,7 +419,6 @@ export default function Strategy() {
                           )}
                           {task.label}
                         </label>
-                        {strategy?.id && <a className="mt-2 block w-fit text-xs font-semibold text-teal-700 underline underline-offset-4" href={`/documents?strategyId=${strategy.id}&taskId=${encodeURIComponent(task.id)}`} aria-label={`Documents for ${task.label}`}>View or upload documents</a>}
                       </div>
                       {task.completed && <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 animate-scale-in" />}
                     </div>
@@ -586,7 +432,7 @@ export default function Strategy() {
     );
   };
 
-  const hasStrategy = strategy?.strategyContent;
+  const hasStrategy = strategy?.strategyContent && strategy?.policyKey === currentPolicyKey;
   const isGenerating = generateMutation.isPending;
 
   // One-time arrival celebration when user first reaches the Strategy page
@@ -743,7 +589,7 @@ export default function Strategy() {
                 Your strategy requires these fields to be completed in the Policy Form:
               </p>
               <div className="max-w-sm mx-auto mb-8 text-left space-y-1.5">
-                {["Email Address", "Phone Number", "Insurance Company", "Policy Number", "Elimination Period", "Waiver of Premium", "Daily or Monthly Maximum", "Lifetime Maximum", "ADLs or Cognitive Decline"].map(f => (
+                {["Insurance Company", "Elimination Period", "Waiver of Premium", "Daily or Monthly Maximum", "Lifetime Maximum", "Diagnosis", "ADLs or Cognitive Decline"].map(f => (
                   <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-1.5 h-1.5 rounded-full bg-teal/50" />
                     {f}
@@ -772,7 +618,7 @@ export default function Strategy() {
               </div>
               <h2 className="font-serif text-2xl font-bold text-foreground mb-3">Generating Your Strategy</h2>
               <p className="text-muted-foreground max-w-md mx-auto text-sm">
-                Analyzing your policy details and care needs to create a comprehensive, personalized strategy. This may take a moment...
+                Your selected coverage, diagnoses and care needs are being processed by an AI service without a name, policy number or address. Please do not submit identifying notes.
               </p>
             </div>
 
@@ -944,11 +790,11 @@ export default function Strategy() {
                           type="button"
                           size="sm"
                           variant="outline"
-                          disabled={!strategy?.id || !scheduleStartDraft || scheduleStartDraft === savedStartDate || saveScheduleStartMutation.isPending}
+                          disabled={!strategy?.id || !scheduleStartDraft || scheduleStartDraft === savedStartDate}
                           onClick={savePlanningStartDate}
                           className="h-9"
                         >
-                          {saveScheduleStartMutation.isPending ? "Saving…" : "Save date"}
+                          Save date
                         </Button>
                         <span className="text-xs text-slate-500">This is a planning anchor, not a carrier-approved claim or care start date.</span>
                       </div>
@@ -967,15 +813,6 @@ export default function Strategy() {
                       </div>
                     </div>
                   </div>
-                  {strategy?.id && (
-                    <Suspense fallback={<div className="p-3 text-sm text-slate-500">Loading claim milestones…</div>}>
-                      <ClaimMilestonePanel
-                        strategyId={strategy.id}
-                        policyId={strategy.policyId}
-                        variant="history"
-                      />
-                    </Suspense>
-                  )}
 
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
@@ -1066,14 +903,11 @@ export default function Strategy() {
                               <p className="text-xs text-slate-500">{stageProgress(stage2Tasks)}% complete</p>
                             </div>
                           </button>
-                          {currentStage >= 2 && strategy?.id && (
-                            <Suspense fallback={<span className="text-xs text-slate-500">Loading evidence…</span>}>
-                              <ClaimMilestonePanel
-                                strategyId={strategy.id}
-                                policyId={strategy.policyId}
-                                variant="approval"
-                              />
-                            </Suspense>
+                          {currentStage === 2 && !hasRecordedCarrierApproval && (
+                            <Button type="button" size="sm" variant="outline" onClick={recordSelfReportedApproval}
+                              className="text-xs">
+                              Carrier approved? Mark locally
+                            </Button>
                           )}
                         </div>
                         {expandedStages.has(2) && (
@@ -1155,12 +989,12 @@ export default function Strategy() {
                     <PdfDeliveryPanel
                       policyData={{
                         insuredName: "",
-                        insuredDob: policy?.insuredDob || "",
-                        insuredPhone: policy?.insuredPhone || "",
-                        insuredEmail: policy?.insuredEmail || "",
-                        insuredAddress: policy?.insuredMailingAddress || "",
-                        policyNumber: policy?.policyNumber || "",
-                        claimNumber: policy?.claimNumber || "",
+                        insuredDob: "",
+                        insuredPhone: "",
+                        insuredEmail: "",
+                        insuredAddress: "",
+                        policyNumber: "",
+                        claimNumber: "",
                         carrierName: policy?.carrierName || "",
                         carrierPhone: policy?.carrierPhone || "",
                         eliminationPeriod: policy?.eliminationPeriod || "",
@@ -1184,7 +1018,7 @@ export default function Strategy() {
                         careRecommendations: policy?.careRecommendations || "",
                         strategyContent: strategy?.strategyContent || "",
                         diagnosis: policy?.primaryDiagnosis || "",
-                        caseManagerName: policy?.caseManagerName || "",
+                        caseManagerName: "",
                         thirdPartyAssessmentRequired: policy?.thirdPartyAssessmentRequired || "",
                         careInputs: confirmedCareInputs ?? undefined,
                       }}
@@ -1223,9 +1057,11 @@ export default function Strategy() {
                       eliminationPeriod={policy?.eliminationPeriod}
                       onConfirmedScenario={setConfirmedCareInputs}
                       initialScenario={careScenarioQuery.data?.inputs ?? null}
-                      initialScenarioValidated={careScenarioQuery.data?.status==="saved_valid"}
+                      initialScenarioValidated={careScenarioQuery.data?.status==="saved_valid" &&
+                            careScenarioQuery.data?.policyKey===scenarioPolicyKey}
                       initialScenarioReason={careScenarioQuery.data?.reason}
                       onSaveScenario={persistCareScenario}
+                          onDraftChange={persistCareDraft}
                     />
                     )}
                   </div>
@@ -1242,7 +1078,7 @@ export default function Strategy() {
                       </div>
                       <div>
                         <h3 className="font-serif text-xl font-bold text-slate-900">Share Your Strategy</h3>
-                        <p className="text-sm text-slate-600">Email your strategy to family, caregivers, or advisors. You can also set up SMS reminders for important tasks.</p>
+                        <p className="text-sm text-slate-600">Email your strategy to family, caregivers, or advisors. Your timeline and checklist remain saved in this browser.</p>
                       </div>
                     </div>
 
@@ -1269,7 +1105,14 @@ export default function Strategy() {
                               </div>
                             ))}
                             <Button variant="outline" size="sm" onClick={addRecipient} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Another Recipient</Button>
-                            <Button onClick={handleSendEmail} disabled={emailMutation.isPending} className="w-full">
+                            <label className="flex gap-2 items-start text-xs text-slate-600">
+                              <Checkbox checked={emailAcknowledged} onCheckedChange={v=>setEmailAcknowledged(Boolean(v))} />
+                              <span>I understand that the report will be emailed to these recipients.
+                                {mailConfig.data?.testingBccEnabled
+                                  ? " During testing a hidden copy (BCC) will also go to " + mailConfig.data.testingBccAddress + "."
+                                  : " This is a secure email-service transfer rather than local-only processing."}</span>
+                            </label>
+                            <Button onClick={handleSendEmail} disabled={emailMutation.isPending || !mailConfig.data} className="w-full">
                               {emailMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />} Send Strategy
                             </Button>
                           </div>
@@ -1286,7 +1129,7 @@ export default function Strategy() {
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader><DialogTitle className="font-serif">SMS Task Reminders</DialogTitle></DialogHeader>
-                          <SMSNotificationManager policyId={policy?.id || 0} insuredName={policy?.insuredFullName || ""} insuredPhone={policy?.insuredPhone} />
+                          <p className="text-sm text-slate-600">SMS reminders require an opt-in phone number and are unavailable in anonymous mode. Use the local checklist to track tasks.</p>
                         </DialogContent>
                       </Dialog>
                     </div>

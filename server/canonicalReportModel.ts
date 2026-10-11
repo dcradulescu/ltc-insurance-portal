@@ -98,14 +98,14 @@ export function buildCanonicalReportModel(
   // a name from current or historical policy/visitor data.
   const name = "____________________________";
   const carrierName = (policyRecord?.carrierName || input.carrierName)?.trim();
-  const policyNumber = (policyRecord?.policyNumber || input.policyNumber)?.trim();
-  if (!carrierName || !policyNumber) throw new Error("Canonical report requires carrier and policy number.");
+  const policyNumber = "____________________________"; // Writable blank: unique policy identifier never printed.
+  if (!carrierName) throw new Error("Canonical report requires insurance carrier name.");
   const eliminationDays = parseEliminationDays(input.eliminationPeriod);
   if (eliminationDays === null) warnings.push("Elimination period is not verified.");
   const max = positive(input.dailyMaximum);
   const pool = positive(input.lifetimeMaximum);
   if (max === null || pool === null) warnings.push("Benefit caps and/or lifetime pool are not confirmed.");
-  const birthday = validDate(policyRecord?.insuredDob || input.insuredDob);
+  const birthday = null; // Identifying DOB is never exported.
   const reportDate = validDate(input.reportDate) || now.toISOString().slice(0,10);
   const person = ["Policyholder"];
   const age = birthday ? (() => {
@@ -185,12 +185,12 @@ export function buildCanonicalReportModel(
   return {
     templateId:"sc-visiting-angels-ltc-original-18-v1",
     person:{fullName:name,firstName:person[0],dob:birthday,age,
-      email:policyRecord?.insuredEmail || input.insuredEmail || null,
-      phone:policyRecord?.insuredPhone || input.insuredPhone || null,
-      address:policyRecord?.insuredMailingAddress || input.insuredAddress || null},
+      email:null,
+      phone:null,
+      address:null},
     policy:{carrierName,policyNumber,
       issueDate:validDate(policyRecord?.effectiveDate || input.issueDate),
-      claimNumber:policyRecord?.claimPreClaimNumber||input.claimNumber||null,
+      claimNumber:null, // Leave claim and pre-claim identifiers for handwriting.
       carrierPhone:policyRecord?.carrierPhone||input.carrierPhone||null,
       claimsAddress1:policyRecord?.carrierAddress1||input.claimsAddress1||null,
       claimsAddress2:policyRecord?.carrierAddress2||input.claimsAddress2||null,
@@ -210,7 +210,7 @@ export function buildCanonicalReportModel(
       paymentCycle:policyRecord?.paymentCycle||null,
       paymentMethod:input.careInputs?.paymentType==="reimbursement"?
         "Reimbursement (client-confirmed; verify carrier terms)":null,
-      caseManager:policyRecord?.caseManagerName||input.caseManagerName||null,
+      caseManager:null, // Leave the case manager name for handwriting.
       cnaRequired:policyRecord?.cnaRequired||null,
       careLogsRequired:policyRecord?.careNotesRequired||null,
       assessorRequired:policyRecord?.thirdPartyAssessmentRequired||input.thirdPartyAssessmentRequired||null,

@@ -29,6 +29,8 @@ interface CareCalculatorProps {
   initialScenarioValidated?: boolean;
   initialScenarioReason?: string | null;
   onSaveScenario?: (inputs: CareInputs) => Promise<{status:string;reason:string|null}>;
+  /** Browser-only draft persistence; the financial formulas and UI are unchanged. */
+  onDraftChange?: (inputs: CareInputs) => void;
 }
 const money = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -102,6 +104,7 @@ function CalculatorForm(props: CareCalculatorProps) {
   const update = <K extends keyof CareInputs>(key: K, value: CareInputs[K]) => {
     changeVersion.current++;
     setInput(old => ({ ...old, [key]: value }));
+    props.onDraftChange?.({ ...input, [key]: value });
     setSaveStatus("idle");
     setSaveMessage(null);
     setSubmitted(null); // Never leave stale results visible beneath edited inputs.

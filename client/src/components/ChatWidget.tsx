@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Bot, User, Loader2, ChevronDown } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -45,20 +44,21 @@ function MarkdownText({ text }: { text: string }) {
 
 function formatInline(text: string): string {
   return text
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#039;")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(/`(.*?)`/g, "<code class='bg-slate-100 px-1 rounded text-xs'>$1</code>");
 }
 
-export function ChatWidget({ policyId }: { policyId?: number }) {
+export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [sessionId] = useState(() => nanoid());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const chatMutation = trpc.chat.send.useMutation({
+  const chatMutation = trpc.publicLtc.chat.useMutation({
     onSuccess: (response) => {
       setMessages((prev) => [
         ...prev,
@@ -82,8 +82,8 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
     setInput("");
     const newMessages: Message[] = [...messages, { role: "user", content: text }];
     setMessages(newMessages);
-    chatMutation.mutate({ message: text, sessionId, policyId });
-  }, [input, messages, chatMutation, sessionId, policyId]);
+    chatMutation.mutate({ message: text, history: messages.slice(-8) });
+  }, [input, messages, chatMutation]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -161,7 +161,7 @@ export function ChatWidget({ policyId }: { policyId?: number }) {
               </div>
               <div className="bg-white rounded-2xl rounded-tl-sm px-3.5 py-2.5 shadow-sm border border-slate-100 max-w-[85%]">
                 <p className="text-sm text-slate-700 leading-relaxed">
-                  Hello! I'm your LTC insurance guide. I can help you understand your policy, navigate the claims process, and answer any questions about long-term care. How can I help you today?
+                  Hello! I'm your LTC insurance guide. I can help you understand your policy, navigate the claims process, and answer any questions about long-term care. How can I help you today? Please do not enter personal identifiers or private medical records.
                 </p>
               </div>
             </div>

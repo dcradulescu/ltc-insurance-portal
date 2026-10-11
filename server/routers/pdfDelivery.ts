@@ -9,7 +9,7 @@ import { canonicalCareInputsSchema } from "../../shared/careScenarioSchema";
 export { canonicalCareInputsSchema } from "../../shared/careScenarioSchema";
 
 // Full schema matching PdfData interface
-const pdfInputSchema = z.object({
+export const pdfInputSchema = z.object({
   // Insured
   insuredName: z.string(),
   insuredDob: z.string().optional(),
@@ -17,7 +17,7 @@ const pdfInputSchema = z.object({
   insuredEmail: z.string().optional(),
   insuredAddress: z.string().optional(),
   // Policy
-  policyNumber: z.string().min(1, "Policy number is required"),
+  policyNumber: z.string(),
   claimNumber: z.string().optional(),
   carrierName: z.string().min(1, "Carrier name is required"),
   carrierPhone: z.string().optional(),

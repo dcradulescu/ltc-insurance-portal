@@ -11,6 +11,11 @@ export type TrpcContext = {
 export async function createContext(
   opts: CreateExpressContextOptions
 ): Promise<TrpcContext> {
+  // Public educational routes never need account lookup, even if a browser
+  // retains a cookie from the old authenticated portal.
+  if (/(?:^|\/)publicLtc\./.test(opts.req.originalUrl || opts.req.url || "")) {
+    return { req: opts.req, res: opts.res, user: null };
+  }
   let user: User | null = null;
 
   try {

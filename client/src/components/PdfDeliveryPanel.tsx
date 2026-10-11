@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Download, Mail, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { trpc } from '@/lib/trpc';
+import { downloadPublicPdf } from '@/lib/downloadPublicPdf';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { CareInputs } from "@shared/careCalculator";
 
 interface PdfDeliveryPanelProps {
@@ -436,59 +438,57 @@ function generatePdfDocument(data: PdfDeliveryPanelProps['policyData']): jsPDF {
 export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
   const [activeTab, setActiveTab] = useState<'download' | 'email'>('download');
   const [recipientEmail, setRecipientEmail] = useState('');
-  const [recipientName, setRecipientName] = useState('');
+  const [acknowledgedBcc, setAcknowledgedBcc] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+  const mailConfig = trpc.publicLtc.mailConfig.useQuery(undefined,{retry:false});
+  const safeReport = () => ({
+    ...policyData, insuredName:"", insuredDob:"", insuredPhone:"",
+    insuredEmail:"", insuredAddress:"", policyNumber:"",
+    claimNumber:"", caseManagerName:"",
+  });
 
-  const generatePdfMutation = trpc.pdfDelivery.generatePdf.useMutation({
+  const generatePdfMutation = trpc.publicLtc.generatePdf.useMutation({
     onSuccess: (data) => {
-      if (data.url) {
-        const link = document.createElement('a');
-        link.href = data.url;
-        link.download = "LTC-Strategy.pdf";
-        link.target = '_blank';
-        link.click();
-        setStatus({ type: 'success', message: 'PDF downloaded successfully!' });
-      }
+      downloadPublicPdf(data.pdfBase64);
+      setStatus({ type: 'success', message: 'Your approved 18-page PDF has been generated.' });
     },
-    onError: (error) => {
-      setStatus({ type: 'error', message: `Failed to generate PDF: ${error.message}` });
-    },
+    onError: (error) => setStatus({type:'error',message:'PDF generation failed: '+error.message}),
     onSettled: () => setLoading(false),
   });
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = () => {
     setLoading(true);
     setStatus({ type: null, message: '' });
-    generatePdfMutation.mutate(policyData);
+    generatePdfMutation.mutate(safeReport());
   };
 
-  const sendEmailMutation = trpc.pdfDelivery.sendPdfByEmail.useMutation({
+  const sendEmailMutation = trpc.publicLtc.emailPdf.useMutation({
     onSuccess: (data) => {
       setStatus({ type: 'success', message: data.message });
       setRecipientEmail('');
-      setRecipientName('');
       setMessage('');
+      setAcknowledgedBcc(false);
     },
-    onError: (error) => {
-      setStatus({ type: 'error', message: `Failed to send email: ${error.message}` });
-    },
+    onError: (error) => setStatus({ type: 'error', message: error.message }),
     onSettled: () => setLoading(false),
   });
 
-  const handleSendEmail = async () => {
-    if (!recipientEmail || !recipientName) {
-      setStatus({ type: 'error', message: 'Please enter recipient email and name' });
+  const handleSendEmail = () => {
+    if (!recipientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+      setStatus({ type: 'error', message: 'Enter a valid recipient email.' });
+      return;
+    }
+    if (!acknowledgedBcc) {
+      setStatus({ type: 'error', message: 'Please acknowledge report email sharing.' });
       return;
     }
     setLoading(true);
     setStatus({ type: null, message: '' });
     sendEmailMutation.mutate({
-      recipientEmail,
-      recipientName,
-      message,
-      ...policyData,
+      recipients: [recipientEmail.trim()], acknowledgedBcc: true, report: safeReport(),
+      message: message.trim() || undefined,
     });
   };
 
@@ -572,19 +572,14 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Recipient's Name *
-                </label>
-                <Input
-                  type="text"
-                  placeholder="John Smith"
-                  value={recipientName}
-                  onChange={(e) => setRecipientName(e.target.value)}
-                  disabled={loading}
-                  className="w-full"
-                />
-              </div>
+              <label className="flex items-start gap-2 text-xs text-gray-600">
+                <Checkbox checked={acknowledgedBcc} onCheckedChange={v => setAcknowledgedBcc(Boolean(v))} />
+                <span>I understand this report will be emailed to the recipient.
+                  {mailConfig.data?.testingBccEnabled
+                    ? " During testing a BCC copy also goes to " + mailConfig.data.testingBccAddress + "."
+                    : " Email delivery uses a secure email service."}
+                </span>
+              </label>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -601,7 +596,7 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
 
               <Button
                 onClick={handleSendEmail}
-                disabled={loading || !recipientEmail || !recipientName}
+                disabled={loading || !recipientEmail || !acknowledgedBcc || !mailConfig.data}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 text-lg font-semibold"
               >
                 {loading ? 'Sending Email...' : 'Send Strategy PDF by Email'}

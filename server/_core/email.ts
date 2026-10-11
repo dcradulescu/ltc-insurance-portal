@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 
 interface EmailOptions {
   to: string | string[];
+  bcc?: string | string[];
   subject: string;
   html: string;
   attachments?: Array<{ filename: string; path?: string; content?: Buffer | string; contentType?: string }>;

@@ -1,5 +1,5 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { accountStorage } from "@/lib/accountStorage";
+import { accountStorage, clearAccountDrafts } from "@/lib/accountStorage";
+import { sanitizePublicPolicy, REDACTED_LTC_FIELDS } from "@shared/publicLtcPolicy";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { trpc } from "@/lib/trpc";
@@ -320,266 +320,50 @@ const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
 
 export default function PolicyForm() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormData>(defaultForm);
-  const [policyId, setPolicyId] = useState<number | null>(null);
+  const [step, setStep] = useState(() => {
+    const value = Number(accountStorage.getItem("ltc_policy_step") || 0);
+    return Number.isInteger(value) && value >= 0 && value <= 5 ? value : 0;
+  });
+  const [form, setForm] = useState<FormData>(() => {
+    try {
+      const stored = accountStorage.getItem("ltc_policy_form");
+      if (!stored) return { ...defaultForm };
+      const loaded = JSON.parse(stored);
+      const allowed = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence",
+        "Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry",
+        "Shopping/Errands", "Transportation", "Money Management", "Telephone Use", "NoneADL", "NoneIADL"];
+      if (Array.isArray(loaded.careNeeds)) {
+        loaded.careNeeds = loaded.careNeeds.map((v: string) => v === "None" ? "NoneADL" : v)
+          .filter((v: string) => allowed.includes(v));
+      }
+      return sanitizePublicPolicy({ ...defaultForm, ...loaded });
+    } catch { return { ...defaultForm }; }
+  });
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [zapierSent, setZapierSent] = useState(false);
   const [showAdlModal, setShowAdlModal] = useState(false);
   const [pendingAdlAdvance, setPendingAdlAdvance] = useState(false);
-  const [showSaveLinkDialog, setShowSaveLinkDialog] = useState(false);
-  const { user } = useAuth();
-  const saveLinkEmail = user?.email || "";
-  const [savedResumeUrl, setSavedResumeUrl] = useState("");
-  const [saveLinkMessage, setSaveLinkMessage] = useState("");
-  const [saveLinkSending, setSaveLinkSending] = useState(false);
   const prevAdlRef = useRef<string[]>([]);
   const prevIadlRef = useRef<string[]>([]);
-  const sessionStartRef = useRef(Date.now());
-  const lastActivityRef = useRef(Date.now());
-  const zapierSentRef = useRef(false);
-
-  const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
-  const saveMutation = trpc.policy.save.useMutation({
-    onError: (error) => {
-      console.error("tRPC mutation error:", error);
-      if ((error.data as any)?.zodError) {
-        console.error("Zod validation error:", (error.data as any).zodError);
-      }
-    }
-  });
-  const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
-  const sendSaveLinkMutation = trpc.email.sendSaveLink.useMutation();
-  const notifyStepProgressMutation = trpc.email.notifyStepProgress.useMutation();
-  // Resume token from URL query string
-  const resumeToken = useMemo(() => new URLSearchParams(window.location.search).get('resume'), []);
-  const resumeQuery = trpc.email.getResumeData.useQuery(
-    { token: resumeToken! },
-    { enabled: !!resumeToken, retry: false }
-  );
 
   const completionPct = useMemo(() => {
-    const fields = Object.entries(form).filter(([k]) => k !== "adlLimitations");
+    const fields = Object.entries(form).filter(([k]) => k !== "adlLimitations" && !REDACTED_LTC_FIELDS.has(k));
     const filled = fields.filter(([, v]) => typeof v === "string" ? v.trim() !== "" : Array.isArray(v) ? v.length > 0 : !!v);
     return Math.round((filled.length / fields.length) * 100);
   }, [form]);
 
-  // Track whether initial load has happened
-  const initialLoadDone = useRef(false);
-  const resumeApplied = useRef(false);
-
-  // Restore from server-side resume token (takes priority over localStorage)
+  // Autosave each change and wizard step, including refresh, tab close and browser restart.
+  // No account, network write, upload, or email is involved.
+  useEffect(() => { accountStorage.setItem("ltc_policy_form", JSON.stringify(sanitizePublicPolicy(form))); }, [form]);
+  useEffect(() => { accountStorage.setItem("ltc_policy_step", String(step)); }, [step]);
   useEffect(() => {
-    if (resumeQuery.data?.found && !resumeApplied.current) {
-      resumeApplied.current = true;
-      initialLoadDone.current = true; // prevent localStorage from overwriting
-      const data = resumeQuery.data;
-      if (data.formData && typeof data.formData === 'object') {
-        setForm(prev => ({ ...prev, ...(data.formData as any), insuredFullName: "" }));
-      }
-      if (typeof data.currentStep === 'number') {
-        setStep(data.currentStep);
-      }
-      toast.success('Progress restored!', { description: `Resuming from Step ${(data.currentStep || 0) + 1}` });
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, [resumeQuery.data]);
-
-  // Load form data from localStorage on component mount
-  useEffect(() => {
-    if (!initialLoadDone.current) {
-      initialLoadDone.current = true;
-      try {
-        const savedForm = accountStorage.getItem('ltc_policy_form');
-        const savedStep = accountStorage.getItem('ltc_policy_step');
-        if (savedForm) {
-          const parsed = JSON.parse(savedForm);
-          // Migrate old free-text careNeeds to exact ADL checkbox values
-          const validCareNeedsValues = [
-            "Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence",
-            "Meal Preparation", "Medication Management", "Housekeeping/Cleaning", "Laundry",
-            "Shopping/Errands", "Transportation", "Money Management", "Telephone Use",
-            "NoneADL", "NoneIADL"
-          ];
-          if (Array.isArray(parsed.careNeeds)) {
-            // Migrate old "None" sentinel to "NoneADL"
-            parsed.careNeeds = parsed.careNeeds
-              .map((v: string) => v === "None" ? "NoneADL" : v)
-              .filter((v: string) => validCareNeedsValues.includes(v));
-          }
-          setForm({ ...defaultForm, ...parsed, insuredFullName: "" });
-        }
-        if (savedStep) {
-          setStep(parseInt(savedStep, 10));
-        }
-      } catch (err) {
-        console.error('[Form] Failed to restore from localStorage:', err);
-      }
-    }
-  }, []);
-
-  // Save form data to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      accountStorage.setItem('ltc_policy_form', JSON.stringify(form));
-    } catch (err) {
-      console.error('[Form] Failed to save to localStorage:', err);
-    }
-  }, [form]);
-
-  // Save current step to localStorage
-  useEffect(() => {
-    try {
-      accountStorage.setItem('ltc_policy_step', step.toString());
-    } catch (err) {
-      console.error('[Form] Failed to save step to localStorage:', err);
-    }
-  }, [step]);
-
-  // Load existing policy data (only on initial load, not on refetch after save)
-  useEffect(() => {
-    if (policyQuery.data && policyQuery.data !== null && !initialLoadDone.current) {
-      initialLoadDone.current = true;
-      const p = policyQuery.data;
-      setPolicyId(p.id);
-      setForm({
-        insuredFullName: "",
-        insuredEmail: p.insuredEmail || "",
-        insuredPhone: p.insuredPhone || "",
-        insuredDob: p.insuredDob || "",
-        insuredMailingAddress: p.insuredMailingAddress || "",
-        insuredAddress: p.insuredAddress || "",
-        insuredCity: p.insuredCity || "",
-        insuredState: p.insuredState || "",
-        insuredZip: p.insuredZip || "",
-
-        powerOfAttorneyPresent: p.powerOfAttorneyPresent || "",
-        poa_name: p.poa_name || "",
-        poa_relationship: p.poa_relationship || "",
-        carrierName: p.carrierName || "",
-        carrierAddress1: p.carrierAddress1 || "",
-        carrierAddress2: p.carrierAddress2 || "",
-        carrierCityStateZip: p.carrierCityStateZip || "",
-        carrierAddress: p.carrierAddress || "",
-        carrierCity: p.carrierCity || "",
-        carrierState: p.carrierState || "",
-        carrierZip: p.carrierZip || "",
-        carrierPhone: p.carrierPhone || "",
-        carrierFax: p.carrierFax || "",
-        policyNumber: p.policyNumber || "",
-        claimPreClaimNumber: p.claimPreClaimNumber || "",
-        eliminationPeriod: p.eliminationPeriod || "",
-        lookBackPeriodEnabled: p.lookBackPeriodEnabled || false,
-        lookBackPeriodDays: p.lookBackPeriodDays || "",
-        careCoordinatorReductionEnabled: p.careCoordinatorReductionEnabled || false,
-        careCoordinatorReducedToDays: p.careCoordinatorReducedToDays || "",
-        reductionInCareProvidedEnabled: p.reductionInCareProvidedEnabled || false,
-        reductionInCareDaysCountedAs7: p.reductionInCareDaysCountedAs7 || "",
-        dailyMaximum: p.dailyMaximum || "",
-        monthlyMaximum: p.monthlyMaximum || "",
-        lifetimeMaximum: p.lifetimeMaximum || "",
-        minAdlsRequired: p.minAdlsRequired || "",
-        qualifyingAdls: Array.isArray(p.qualifyingAdls) ? (p.qualifyingAdls as string[]) : [],
-        waiverOfPremium: p.waiverOfPremium || "",
-        cnaRequired: p.cnaRequired || "",
-        approvedAgencyRequired: p.approvedAgencyRequired || "",
-        careNotesRequired: p.careNotesRequired || "",
-        careLogsheetsRequired: p.careLogsheetsRequired || "",
-        whereToGetClaimsPacket: p.whereToGetClaimsPacket || "",
-        howToSubmitClaimsPacket: p.howToSubmitClaimsPacket || "",
-        invoiceReimbursementDelay: p.invoiceReimbursementDelay || "",
-
-        assignmentOfBenefits: p.assignmentOfBenefits || "",
-        equipmentAllowanceEnabled: p.equipmentAllowanceEnabled || false,
-        equipmentAllowanceAmount: p.equipmentAllowanceAmount || "",
-        equipmentAllowanceCoverage: p.equipmentAllowanceCoverage || "",
-        equipmentAllowanceDeductedFromLifetime: p.equipmentAllowanceDeductedFromLifetime || "",
-        equipmentAllowanceRelatedAdls: Array.isArray(p.equipmentAllowanceRelatedAdls) ? (p.equipmentAllowanceRelatedAdls as string[]) : [],
-        equipmentNeeds: Array.isArray(p.equipmentNeeds) ? (p.equipmentNeeds as string[]) : [],
-        equipmentAllowanceNotes: p.equipmentAllowanceNotes || "",
-        inflationAdjustmentEnabled: p.inflationAdjustmentEnabled || false,
-        inflationType: p.inflationType || "none",
-        inflationPercentagePerYear: p.inflationPercentagePerYear || "",
-        inflationContinuesAfterBenefits: p.inflationContinuesAfterBenefits || false,
-        caseManagerAssigned: p.caseManagerAssigned || "",
-        caseManagerName: p.caseManagerName || "",
-        thirdPartyAssessmentRequired: p.thirdPartyAssessmentRequired || "",
-        cognitiveImpairmentTrigger: p.cognitiveImpairmentTrigger || "",
-        careNeeds: Array.isArray(p.careNeeds) ? (p.careNeeds as string[]) : [],
-        careNotes: p.careNotes || "",
-        diagnosisCheckboxes: Array.isArray(p.diagnosisCheckboxes) ? (p.diagnosisCheckboxes as string[]) : [],
-        diagnosisNotes: p.diagnosisNotes || "",
-        preferredCareType: p.preferredCareType || "",
-        additionalNotes: p.additionalNotes || "",
-      });
-    }
-  }, [policyQuery.data]);
-
-  // Send comprehensive data to Zapier (called once on completion, exit, or timeout)
-  const sendToZapier = useCallback(async (trigger: "form_completed" | "exit" | "timeout") => {
-    if (zapierSentRef.current) return; // Prevent duplicate sends
-    zapierSentRef.current = true;
-    setZapierSent(true);
-
-    const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
-
-    try {
-      await sendComprehensiveZapier.mutateAsync({
-        trigger,
-        currentPage: "policy-form",
-        formStep: step,
-        sessionDurationSeconds: sessionDuration,
-        unsavedFormData: form as unknown as Record<string, any>,
-      });
-      console.log(`[Form] Comprehensive Zapier webhook sent (trigger: ${trigger})`);
-    } catch (err) {
-      console.error("[Form] Zapier send failed (non-blocking):", err);
-    }
-  }, [form, step, sendComprehensiveZapier]);
-
-  // Track user activity for timeout
-  useEffect(() => {
-    const resetActivity = () => { lastActivityRef.current = Date.now(); };
-    window.addEventListener("mousemove", resetActivity);
-    window.addEventListener("keydown", resetActivity);
-    window.addEventListener("click", resetActivity);
-    window.addEventListener("scroll", resetActivity);
-
-    // Check for inactivity every 60 seconds
-    const interval = setInterval(() => {
-      if (Date.now() - lastActivityRef.current > INACTIVITY_TIMEOUT_MS && !zapierSentRef.current) {
-        console.log("[Form] Inactivity timeout — sending to Zapier");
-        sendToZapier("timeout");
-      }
-    }, 60_000);
-
-    return () => {
-      window.removeEventListener("mousemove", resetActivity);
-      window.removeEventListener("keydown", resetActivity);
-      window.removeEventListener("click", resetActivity);
-      window.removeEventListener("scroll", resetActivity);
-      clearInterval(interval);
+    const flush = () => {
+      accountStorage.setItem("ltc_policy_form", JSON.stringify(sanitizePublicPolicy(form)));
+      accountStorage.setItem("ltc_policy_step", String(step));
     };
-  }, [sendToZapier]);
-
-  // Send to Zapier on page unload / navigation away
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (!zapierSentRef.current) {
-        zapierSentRef.current = true;
-        const sessionDuration = Math.round((Date.now() - sessionStartRef.current) / 1000);
-        void fetch("/api/trpc/policyForm.sendComprehensiveToZapier", {
-          method: "POST", keepalive: true, credentials: "include",
-          headers: { "Content-Type": "application/json", "x-ltc-request": "1" },
-          body: JSON.stringify({ json: { trigger: "exit", currentPage: "policy-form", formStep: step, sessionDurationSeconds: sessionDuration } }),
-        }).catch(() => {});
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [step]);
+    window.addEventListener("pagehide", flush);
+    return () => window.removeEventListener("pagehide", flush);
+  }, [form, step]);
 
   // Scroll to top whenever the user navigates to a new step
   useEffect(() => {
@@ -587,8 +371,6 @@ export default function PolicyForm() {
   }, [step]);
 
   const update = (field: keyof FormData, value: any) => {
-    lastActivityRef.current = Date.now();
-    
     // Apply formatting based on field type
     
     // Phone number fields: format to (###)###-####
@@ -626,7 +408,6 @@ export default function PolicyForm() {
 
   // Handle date input with MM/DD/YYYY display format
   const handleDateChange = (displayValue: string) => {
-    lastActivityRef.current = Date.now();
     const formatted = formatDateInput(displayValue);
     const dateValue = convertToDateFormat(formatted);
     setForm(prev => ({ ...prev, insuredDob: dateValue }));
@@ -636,25 +417,8 @@ export default function PolicyForm() {
   const validateStep = (currentStep: number): boolean => {
     const errors: Record<string, string> = {};
 
-    if (currentStep === 0) {
-      if (!form.insuredEmail.trim()) {
-        errors.insuredEmail = "Email address is required.";
-      } else if (!isValidEmail(form.insuredEmail)) {
-        errors.insuredEmail = "Please enter a valid email address.";
-      }
-      if (!form.insuredPhone.trim()) {
-        errors.insuredPhone = "Phone number is required.";
-      } else if (!isValidPhoneNumber(form.insuredPhone)) {
-        errors.insuredPhone = "Please enter a valid phone number: (000) 000-0000.";
-      }
-    }
-
     if (currentStep === 1) {
       if (!form.carrierName.trim()) errors.carrierName = "Insurance company name is required.";
-    }
-
-    if (currentStep === 2) {
-      if (!form.policyNumber.trim()) errors.policyNumber = "Policy number is required.";
     }
 
     if (currentStep === 3) {
@@ -693,185 +457,32 @@ export default function PolicyForm() {
     }
   };
 
-  // Save to database only (no validation required, no Zapier)
-  const handleSendSaveLink = async () => {
-    if (!saveLinkEmail) return;
-    setSaveLinkSending(true);
-    try {
-      await handleSave();
-      const result = await sendSaveLinkMutation.mutateAsync({
-        email: saveLinkEmail,
-        insuredName: undefined,
-        stepTitle: steps[step]?.title || `Step ${step + 1}`,
-        origin: window.location.origin,
-        formData: form as Record<string, any>,
-        currentStep: step,
-      });
-      setSavedResumeUrl(new URL(result.resumePath, window.location.origin).href);
-      setSaveLinkMessage(result.message);
-      if (result.success) toast.success(result.message);
-      else toast.warning(result.message);
-    } catch {
-      toast.error("Could not create a resume link. Your current browser draft is still available.");
-    } finally {
-      setSaveLinkSending(false);
-    }
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      // Create and save form submission
-      const submission = createFormSubmission(
-        form,
-        step,
-        "manual_save",
-        SESSION_ID,
-        FORM_START_TIME
-      );
-      accountStorage.setItem("ltc_form_current", JSON.stringify(submission));
-      accountStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
-
-      // Filter out fields that don't exist in the database schema
-      const { poa_name, poa_relationship, ...validFormData } = form;
-      
-      // Also save to database
-      const result = await saveMutation.mutateAsync({ ...validFormData, id: policyId || undefined });
-      if (!policyId) setPolicyId(result.id);
-      
-      toast.success("Form saved successfully!");
-      
-      // Send to Zapier asynchronously (don't block on this)
-      try {
-        const blob = new Blob([JSON.stringify(submission, null, 2)], { type: "application/json" });
-        const formData = new FormData();
-        formData.append("file", blob, `ltc_form_${submission.submissionId}.json`);
-        // You can send this to Zapier webhook here
-      } catch (err) {
-        console.error("Error preparing Zapier data:", err);
-      }
-    } catch (e) {
-      toast.error("Failed to save. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Navigate to next step — validate first, then save to DB silently
+  // The entire draft is browser-local. React effects persist on every change.
   const handleNext = () => {
-    // Run per-step validation first — block if errors found
     if (!validateStep(step)) return;
-
-    // ADL Validation: If on step 4 (Care Needs), check ADL requirements
     if (step === 4) {
       const minAdlsRequired = parseInt(form.minAdlsRequired || "0");
-      const adlList = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
-      
-      // Get qualifying ADLs (checked in Coverage Details - Qualifying Events section)
-      const qualifyingAdls = form.qualifyingAdls || [];
-      
-      // Get actual ADLs selected in Care Needs (Claims Info step)
-      const actualAdls = form.careNeeds?.filter(need => adlList.includes(need)) || [];
-      const actualAdlCount = actualAdls.length;
-      
-      // Check if ADL None is selected
-      const noneSelected = form.careNeeds?.includes("NoneADL") || false;
-      
-      // Check 1: Is there at least the minimum number of ADLs?
-      // Check 2: Are all selected ADLs in the qualifying list?
-      const allAdlsQualify = actualAdls.every(adl => qualifyingAdls.includes(adl));
-      
-            if (minAdlsRequired > 0 && (actualAdlCount < minAdlsRequired || !allAdlsQualify || noneSelected)) {
-        // Save all data first before showing modal
-        const { poa_name, poa_relationship, ...validFormData } = form;
-        const submission = createFormSubmission(validFormData, step, "page_transition", SESSION_ID, FORM_START_TIME);
-        accountStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
-        accountStorage.setItem("ltc_form_current", JSON.stringify(submission));
-        saveMutation.mutate({ ...form, id: policyId || undefined } as any, {
-          onSuccess: (result) => { if (!policyId) setPolicyId(result.id); },
-          onError: (e) => { console.error("Background save failed:", e); },
-        });
-        // Show modal — do NOT advance step yet
+      const adls = ["Bathing", "Dressing", "Eating/Feeding", "Toileting", "Transferring", "Continence"];
+      const actual = (form.careNeeds || []).filter(v => adls.includes(v));
+      const qualifying = form.qualifyingAdls || [];
+      if (minAdlsRequired > 0 &&
+          (actual.length < minAdlsRequired || actual.some(v => !qualifying.includes(v)) ||
+            (form.careNeeds || []).includes("NoneADL"))) {
         setShowAdlModal(true);
         return;
       }
     }
-    // Create and save form submission for page transition
-    const { poa_name, poa_relationship, ...validFormData } = form;
-    const submission = createFormSubmission(
-      validFormData,
-      step,
-      "page_transition",
-      SESSION_ID,
-      FORM_START_TIME
-    );
-    accountStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
-    accountStorage.setItem("ltc_form_current", JSON.stringify(submission));
-
-    // Notify owner of step progress (fire-and-forget)
-    notifyStepProgressMutation.mutate({
-      stepNumber: step + 1,
-      stepTitle: steps[step]?.title || `Step ${step + 1}`,
-      formData: form as unknown as Record<string, any>,
-    });
-
-    // Advance step immediately (non-blocking)
-    setStep(prev => prev + 1);
-    // Save to DB in background (fire-and-forget)
-      saveMutation.mutate({ ...form, id: policyId || undefined } as any, {
-      onSuccess: (result) => {
-        if (!policyId) setPolicyId(result.id);
-      },
-      onError: (e) => {
-        console.error("Background save failed:", e);
-      },
-    });
+    setStep(v => Math.min(5, v + 1));
   };
-
-  // Navigate to previous step
   const handlePrev = () => {
-    if (step > 0) {
-      // Create and save form submission for page transition
-      const submission = createFormSubmission(
-        form,
-        step,
-        "page_transition",
-        SESSION_ID,
-        FORM_START_TIME
-      );
-      accountStorage.setItem(`ltc_form_step_${step}`, JSON.stringify(submission));
-      accountStorage.setItem("ltc_form_current", JSON.stringify(submission));
-      setStep(prev => prev - 1);
-    } else {
-      // Send to Zapier when navigating away from form
-      sendToZapier("exit");
-      navigate("/education");
-    }
+    if (step > 0) setStep(v => v - 1);
+    else navigate("/education");
   };
-
-  // Final submission — save, send to Zapier, then navigate
-  const handleComplete = async () => {
-    setSaving(true);
-    try {
-      // Save to DB - send form data as-is (strings)
-      const result = await saveMutation.mutateAsync({ ...form, id: policyId || undefined });
-      if (!policyId) setPolicyId(result.id);
-
-      // Send comprehensive data to Zapier
-      await sendToZapier("form_completed");
-
-      toast.success("Form submitted successfully!");
-      navigate("/strategy");
-    } catch (e) {
-      console.error("Save error:", e);
-      if (e instanceof Error) {
-        console.error("Error message:", e.message);
-        console.error("Error stack:", e.stack);
-      }
-      toast.error("Failed to save. Please try again.");
-    } finally {
-      setSaving(false);
-    }
+  const handleComplete = () => {
+    if (!validateStep(4) || !validateStep(3) || !validateStep(1)) return;
+    accountStorage.setItem("ltc_policy_form", JSON.stringify(sanitizePublicPolicy(form)));
+    accountStorage.setItem("ltc_policy_step", String(step));
+    navigate("/strategy");
   };
 
   const steps = [
@@ -1073,62 +684,22 @@ export default function PolicyForm() {
 
           {/* Step Content */}
           <div className="px-6 md:px-8 py-8">
-          {/* Step 0: Insured Person */}
+          {/* Step 0: Anonymous visitor — same approved wizard styling */}
           {step === 0 && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>About the <span style={{ color: '#34B1C4' }}>Insured Person</span></h3>
-                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Start by telling us about the person who holds the LTC insurance policy — the person who will receive care. Use the information exactly as it appears on the policy documents.</p>
+                <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: "#454545" }}>About Your <span style={{ color: "#34B1C4" }}>LTC Coverage</span></h3>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: "#666666" }}>
+                  You can explore your insurance benefits and home-care options anonymously. No name,
+                  birth date, address, telephone number, policy number, or account is required.
+                </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Date of Birth" name="insuredDob">
-                  <Input id="insuredDob" type="text" value={getDisplayDate(form.insuredDob)} onChange={e => handleDateChange(e.target.value)} placeholder="MM/DD/YYYY" pattern="\d{2}/\d{2}/\d{4}" title="Please enter date in format MM/DD/YYYY" maxLength={10} />
-                </TooltipField>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 space-y-2">
+                <p className="text-sm text-slate-700">Have your coverage amounts and policy provisions available for the next steps.
+                  Your progress is saved automatically in this browser and restored when you return.</p>
+                <p className="text-xs text-slate-500">On a shared device, others who use this browser may see the saved answers.
+                  Clearing browser data also clears progress.</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Email Address" name="insuredEmail" isRequired>
-                  <Input id="insuredEmail" type="email" value={form.insuredEmail} onChange={e => { update("insuredEmail", e.target.value); clearError("insuredEmail"); }} placeholder="your.email@example.com" className={fieldErrors.insuredEmail ? "border-red-500 focus-visible:ring-red-500" : ""} />
-                  {fieldErrors.insuredEmail && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredEmail}</p>}
-                </TooltipField>
-                <TooltipField label="Phone Number" name="insuredPhone" isRequired>
-                  <Input id="insuredPhone" type="tel" value={form.insuredPhone} onChange={e => { update("insuredPhone", e.target.value); clearError("insuredPhone"); }} placeholder="(000) 000-0000" className={fieldErrors.insuredPhone ? "border-red-500 focus-visible:ring-red-500" : ""} />
-                  {fieldErrors.insuredPhone && <p className="text-xs text-red-600 mt-1">{fieldErrors.insuredPhone}</p>}
-                </TooltipField>
-              </div>
-              <TooltipField label="Mailing Address" name="insuredMailingAddress">
-                <Input id="insuredAddress" value={form.insuredAddress} onChange={e => update("insuredAddress", e.target.value)} placeholder="Street address" />
-              </TooltipField>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <TooltipField label="City" name="insuredCity">
-                  <Input id="insuredCity" value={form.insuredCity} onChange={e => update("insuredCity", e.target.value)} placeholder="City" />
-                </TooltipField>
-                <TooltipField label="State" name="insuredState">
-                  <Input id="insuredState" value={form.insuredState} onChange={e => update("insuredState", e.target.value.toUpperCase())} placeholder="ST" maxLength={2} />
-                </TooltipField>
-                <TooltipField label="Zip Code" name="insuredZip">
-                  <Input id="insuredZip" value={form.insuredZip} onChange={e => update("insuredZip", e.target.value)} placeholder="00000" />
-                </TooltipField>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <TooltipField label="Power of Attorney Present?" name="powerOfAttorneyPresent">
-                  <Select value={form.powerOfAttorneyPresent || "no"} onValueChange={v => update("powerOfAttorneyPresent", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-                {form.powerOfAttorneyPresent === "yes" && (
-                  <>
-                    <TooltipField label="POA Name" name="poa_name">
-                      <Input id="poa_name" value={form.poa_name} onChange={e => update("poa_name", e.target.value)} placeholder="Full name" />
-                    </TooltipField>
-                    <TooltipField label="POA Relationship" name="poa_relationship">
-                      <Input id="poa_relationship" value={form.poa_relationship} onChange={e => update("poa_relationship", e.target.value)} placeholder="e.g., Spouse, Child" />
-                    </TooltipField>
-                  </>
-                )}
-              </div>
-
             </div>
           )}
 
@@ -1173,31 +744,9 @@ export default function PolicyForm() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Your <span style={{ color: '#34B1C4' }}>Policy Details</span></h3>
-                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Tell us about your specific policy. Your policy number, claim number, and other details help us understand your coverage and create an accurate strategy.</p>
+                <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Tell us about your policy provisions so the strategy can evaluate benefits without collecting identifying numbers.</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Policy Number" name="policyNumber" isRequired>
-                  <Input id="policyNumber" value={form.policyNumber} onChange={e => { update("policyNumber", e.target.value); clearError("policyNumber"); }} placeholder="Your policy number" className={fieldErrors.policyNumber ? "border-red-500 focus-visible:ring-red-500" : ""} />
-                  {fieldErrors.policyNumber && <p className="text-xs text-red-600 mt-1">{fieldErrors.policyNumber}</p>}
-                </TooltipField>
-                <TooltipField label="Claim / Pre-Claim Number" name="claimPreClaimNumber">
-                  <Input id="claimPreClaimNumber" value={form.claimPreClaimNumber} onChange={e => update("claimPreClaimNumber", e.target.value)} placeholder="If already assigned" />
-                </TooltipField>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TooltipField label="Case Manager Assigned?" name="caseManagerAssigned">
-                  <Select value={form.caseManagerAssigned || "no"} onValueChange={v => update("caseManagerAssigned", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value="yes">Yes</SelectItem><SelectItem value="no">No</SelectItem></SelectContent>
-                  </Select>
-                </TooltipField>
-                {form.caseManagerAssigned === "yes" && (
-                  <TooltipField label="Case Manager Name" name="caseManagerName">
-                    <Input id="caseManagerName" value={form.caseManagerName} onChange={e => update("caseManagerName", e.target.value)} placeholder="Enter case manager name" />
-                  </TooltipField>
-                )}
-              </div>
-
+              <p className="text-sm text-slate-600">Policy and claim numbers can be handwritten into the downloaded PDF when needed.</p>
               {/* Claims Info */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 space-y-4">
                 <h3 className="text-base font-semibold text-slate-800">Claims Info</h3>
@@ -1444,9 +993,6 @@ export default function PolicyForm() {
                 </div>
                 {fieldErrors.diagnosisCheckboxes && <p className="text-xs text-red-600 mt-2">{fieldErrors.diagnosisCheckboxes}</p>}
               </div>
-              <TooltipField label="Diagnosis Notes" name="diagnosisNotes">
-                <Textarea id="diagnosisNotes" value={form.diagnosisNotes} onChange={e => update("diagnosisNotes", e.target.value)} placeholder="Additional details about the diagnosis, conditions, or cognitive impairments..." rows={3} />
-              </TooltipField>
 
               {/* ADLs Section */}
               <div>
@@ -1589,13 +1135,6 @@ export default function PolicyForm() {
                   </label>
                 </div>
               </div>
-
-
-
-              
-              <TooltipField label="Care Notes" name="careNotes">
-                <Textarea id="careNotes" value={form.careNotes} onChange={e => update("careNotes", e.target.value)} placeholder="Any additional notes about the care services selected..." rows={3} />
-              </TooltipField>
               
               <TooltipField label="Additional Notes" name="additionalNotes">
                 <Textarea id="additionalNotes" value={form.additionalNotes} onChange={e => update("additionalNotes", e.target.value)} placeholder="Any additional information that may be relevant..." rows={3} />
@@ -1612,9 +1151,8 @@ export default function PolicyForm() {
               </div>
               <div className="grid gap-4">
                 {[
-                  { title: "Insured Person", items: [["DOB", form.insuredDob], ["Address", form.insuredMailingAddress], ["POA", form.powerOfAttorneyPresent], ["POA Name", form.poa_name], ["POA Relationship", form.poa_relationship]] },
-                  { title: "LTC Insurance Company", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Policy #", form.policyNumber], ["Claim #", form.claimPreClaimNumber]] },
-                  { title: "Claims Info", items: [["Case Manager", form.caseManagerAssigned], ["Case Manager Name", form.caseManagerName], ["Claims Packet", form.whereToGetClaimsPacket || "\u2014"], ["Submit Via", form.howToSubmitClaimsPacket || "\u2014"], ["Reimbursement Delay", form.invoiceReimbursementDelay || "\u2014"]] },
+                  { title: "LTC Insurance Company", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Fax", form.carrierFax], ["Address", form.carrierAddress]] },
+                  { title: "Claims Info", items: [["Claims Packet", form.whereToGetClaimsPacket || "\u2014"], ["Submit Via", form.howToSubmitClaimsPacket || "\u2014"], ["Reimbursement Delay", form.invoiceReimbursementDelay || "\u2014"]] },
                   { title: "Coverage Details", items: [["Elimination Period", form.eliminationPeriod], ["Daily Max", form.dailyMaximum], ["Monthly Max", form.monthlyMaximum], ["Lifetime Max", form.lifetimeMaximum], ["Min ADLs", form.minAdlsRequired], ["AOB", form.assignmentOfBenefits], ["Waiver of Premium", form.waiverOfPremium], ["Cognitive Impairment Trigger", form.cognitiveImpairmentTrigger]] },
                   { title: "Qualifying (Care Needs)", items: [["Care Services", (form.careNeeds || []).join(", ") || "None selected"], ["Diagnosis", (form.diagnosisCheckboxes || []).join(", ") || "None selected"], ["Home Care Covered", form.equipmentAllowanceEnabled === true ? "Yes" : form.equipmentAllowanceEnabled === false ? "No" : "\u2014"], ["Approved Agency Req.", form.approvedAgencyRequired || "\u2014"], ["CNA Required", form.cnaRequired || "\u2014"], ["Care Notes Required", form.careNotesRequired || "\u2014"], ["RN Assessment", form.thirdPartyAssessmentRequired || "\u2014"]] },
                 ].map(section => (
@@ -1644,8 +1182,8 @@ export default function PolicyForm() {
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  setForm({ ...sampleForm, insuredFullName: "" });
-                  accountStorage.setItem("ltc_policy_form", JSON.stringify({ ...sampleForm, insuredFullName: "" }));
+                  setForm(sanitizePublicPolicy({ ...sampleForm }));
+                  accountStorage.setItem("ltc_policy_form", JSON.stringify(sanitizePublicPolicy({ ...sampleForm })));
                   toast.success('Sample data loaded. You can now test the form.');
                 }} 
                 className="gap-1 text-blue-600 hover:text-blue-700"
@@ -1656,8 +1194,8 @@ export default function PolicyForm() {
                 variant="outline" 
                 onClick={() => {
                   if (confirm('Are you sure you want to clear all form data? This cannot be undone.')) {
-                    accountStorage.removeItem('ltc_policy_form');
-                    accountStorage.removeItem('ltc_calculator_state');
+                    clearAccountDrafts();
+                    sessionStorage.removeItem("ltc_strategy_arrival_celebrated");
                     toast.success('All data cleared. Form reset.');
                     window.location.href = '/policy-form';
                   }
@@ -1665,20 +1203,6 @@ export default function PolicyForm() {
                 className="gap-1 text-destructive hover:text-destructive"
               >
                 Clear All Data
-              </Button>
-              <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-1">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSavedResumeUrl("");
-                  setSaveLinkMessage("");
-                  setShowSaveLinkDialog(true);
-                }}
-                className="gap-1 text-teal-600 hover:text-teal-700 border-teal-200 hover:border-teal-400"
-              >
-                <Mail className="w-4 h-4" /> Email Link
               </Button>
             </div>
             {step < steps.length - 1 ? (
@@ -1764,55 +1288,6 @@ export default function PolicyForm() {
               }}
             >
               Return to Home
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Save & Return Email Dialog */}
-      <Dialog open={showSaveLinkDialog} onOpenChange={setShowSaveLinkDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5 text-teal-600" />
-              Email a Resume Link
-            </DialogTitle>
-            <DialogDescription>
-              Save a link to this step and request an email to your account address. Sign in to the same account to resume on another device.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3 my-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="save-link-email" className="text-sm font-medium">Email Address</Label>
-              <Input
-                id="save-link-email"
-                type="email"
-                placeholder="your@email.com"
-                value={saveLinkEmail}
-                readOnly
-                onKeyDown={e => { if (e.key === "Enter" && saveLinkEmail) handleSendSaveLink(); }}
-              />
-            </div>
-            <p className="text-xs text-slate-500">
-              The link restores this saved version for 30 days. Email acceptance does not confirm inbox delivery.
-            </p>
-          </div>
-          {savedResumeUrl && <div className="space-y-2" role="status">
-            <p className="text-sm">{saveLinkMessage}</p>
-            <Label htmlFor="saved-resume-url">Your resume link</Label>
-            <Input id="saved-resume-url" value={savedResumeUrl} readOnly onFocus={event => event.target.select()} />
-            <p className="text-xs text-slate-500">Select and copy this link to keep it.</p>
-          </div>}
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowSaveLinkDialog(false)}>Close</Button>
-            <Button
-              onClick={handleSendSaveLink}
-              disabled={!saveLinkEmail || saveLinkSending}
-              className="gap-1"
-              style={{ background: saveLinkEmail && !saveLinkSending ? "linear-gradient(135deg, #1B4F8A, #3BBFBF)" : undefined, color: "white" }}
-            >
-              {saveLinkSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-              Send Link
             </Button>
           </DialogFooter>
         </DialogContent>

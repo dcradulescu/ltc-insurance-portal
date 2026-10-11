@@ -94,8 +94,9 @@ export function bindCanonicalReportPage(
 
   // Identity / policy information. This is NOT a fillable public SSN export.
   const p=m.person,policy=m.policy;
+  const writableBlank="____________________________";
   const replacements:[string,string][]=[
-    ["margaret.johnson@email.com",concise(p.email)],
+    ["margaret.johnson@email.com",writableBlank],
     ["Long Term-Care Insurance Strategy Prepared for: Sample","Long Term-Care Insurance Strategy Prepared for: "+p.fullName],
     ["Margaret Anne Johnson",p.fullName],
     ["Margaret's",p.firstName+"'s"],
@@ -108,11 +109,11 @@ export function bindCanonicalReportPage(
     ["Genworth","the carrier"],
     ["LTC-2019-445821",policy.policyNumber],
     ["XXX-XX-4521","Masked — not printed"],
-    ["March 15, 1952 · Age 74",p.dob?prettyDate(p.dob)+(p.age!==null?" · Age "+p.age:""):"Not provided"],
-    ["March 15, 1952",p.dob?prettyDate(p.dob):"Not provided"],
-    ["74 years old",p.age===null?"Not provided":p.age+" years old"],
-    ["1247 Oakwood Drive, Greenville, SC 29601",concise(p.address)],
-    ["(864) 555-0142",concise(p.phone)],
+    ["March 15, 1952 · Age 74",p.dob?prettyDate(p.dob)+(p.age!==null?" · Age "+p.age:""):writableBlank],
+    ["March 15, 1952",p.dob?prettyDate(p.dob):writableBlank],
+    ["74 years old",p.age===null?writableBlank:p.age+" years old"],
+    ["1247 Oakwood Drive, Greenville, SC 29601",writableBlank],
+    ["(864) 555-0142",writableBlank],
     ["(800) 555-0123",concise(policy.carrierPhone)],
     ["(804) 555-0456",concise(policy.claimsFax)],
     ["P.O. Box 12345",concise(policy.claimsAddress2)],
@@ -122,7 +123,7 @@ export function bindCanonicalReportPage(
     ["Current · paid through Dec. 2026","Confirm premium status"],
     ["Premiums are reported current through December 2026.","Confirm the policy's current premium status with the carrier."],
     ["Policy status: Active and eligible","Policy status: "+concise(policy.status)],
-    ["Not yet assigned",policy.claimNumber||"Not yet assigned"],
+    ["Not yet assigned",writableBlank],
     ["3 years / 1,095 days",concise(policy.benefitPeriod)],
     ["3 years",concise(policy.benefitPeriod)],
     ["2 of 6",policy.minAdls===null?"Verify ADL trigger":policy.minAdls+" of 6"],
@@ -237,9 +238,9 @@ export function bindCanonicalReportPage(
     .filter(v=>v&&v.trim()).join(", ") || "Carrier verification required";
   const identity:Record<string,string>={
     "Full name":p.fullName, "Social Security #":"Masked — never include full SSN",
-    "Date of birth":prettyDate(p.dob),
-    "Age":p.age===null?"Not provided":String(p.age),
-    "Address":concise(p.address),"Phone":concise(p.phone),"Email":concise(p.email),
+    "Date of birth":p.dob?prettyDate(p.dob):writableBlank,
+    "Age":p.age===null?writableBlank:String(p.age),
+    "Address":writableBlank,"Phone":writableBlank,"Email":writableBlank,
     "Carrier name":policy.carrierName,"Policy #":policy.policyNumber,
     "Issue date":prettyDate(policy.issueDate),
     "Premium status":concise(policy.status),
@@ -277,7 +278,7 @@ export function bindCanonicalReportPage(
   updateTableRow("Phone Number",[concise(policy.carrierPhone)],".coverage-table");
   updateTableRow("Fax Number",[concise(policy.claimsFax)],".coverage-table");
   updateTableRow("Policy Number",[policy.policyNumber],".coverage-table");
-  updateTableRow("Claim / Pre-Claim Number",[policy.claimNumber||"Not yet assigned"],".coverage-table");
+  updateTableRow("Claim / Pre-Claim Number",[writableBlank],".coverage-table");
   updateTableRow("Elimination Period",[elim],".coverage-table");
   updateTableRow("Daily Maximum",[cap],".coverage-table");
   updateTableRow("Lifetime Maximum",[max],".coverage-table");
@@ -287,7 +288,7 @@ export function bindCanonicalReportPage(
   ],".coverage-table");
 
   const admin:Record<string,string>={
-    "Case Manager (if assigned)":concise(policy.caseManager),
+    "Case Manager (if assigned)":writableBlank,
     "Waiver of Premium":yn(policy.waiver),
     "Payment Cycle to Client":concise(policy.paymentCycle),
     "C.N.A. Caregiver Required":yn(policy.cnaRequired),
@@ -306,8 +307,8 @@ export function bindCanonicalReportPage(
     "Plan of care / prior authorization":concise(policy.planOfCareStatus),
     "Third-party assessment":yn(policy.assessorRequired)+
       (policy.assessorWho?"; "+policy.assessorWho:""),
-    "Case manager":concise(policy.caseManager),
-    "Claim / pre-claim number":concise(policy.claimNumber),
+    "Case manager":writableBlank,
+    "Claim / pre-claim number":writableBlank,
     "Required claim forms and documentation":"Request the current carrier packet",
     "Exclusions and limitations":"Carrier verification required",
   };

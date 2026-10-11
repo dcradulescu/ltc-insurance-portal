@@ -1,0 +1,89 @@
+import { beforeEach,describe,expect,it,vi } from "vitest";
+import { appRouter } from "./routers";
+import * as mail from "./_core/email";
+import * as report from "./canonicalReportPdf";
+import { invokeLLM } from "./_core/llm";
+vi.mock("./_core/email",async importOriginal=>({
+  ...await importOriginal<typeof import("./_core/email")>(),
+  sendEmail:vi.fn(),
+}));
+vi.mock("./canonicalReportPdf",()=>({renderApprovedLtcReport:vi.fn()}));
+vi.mock("./_core/llm",()=>({invokeLLM:vi.fn()}));
+const ctx=(ip:string)=>({user:null,req:{socket:{remoteAddress:ip},headers:{}},res:{}} as any);
+const sample={
+  insuredName:"SYNTHETIC USER",insuredDob:"1950-01-01",insuredEmail:"private@example.test",
+  insuredPhone:"555-0100",insuredAddress:"123 Private Street",policyNumber:"PRIVATE-POLICY",
+  claimNumber:"PRIVATE-CLAIM",caseManagerName:"PRIVATE CASE MANAGER",
+  carrierName:"Illustrative LTC Insurance",dailyMaximum:250,
+  monthlyMaximum:7500,lifetimeMaximum:250000,
+  eliminationPeriod:"90",adlLimitations:["Dressing"],
+  stage1Tasks:[],stage2Tasks:[],stage3Tasks:[],
+};
+beforeEach(()=>{
+  vi.clearAllMocks();
+  vi.mocked(report.renderApprovedLtcReport).mockResolvedValue({
+    buffer:Buffer.from("%PDF-1.7 synthetic test"),pageCount:18,
+    templateId:"sc-visiting-angels-ltc-original-18-v1",
+    renderingMode:"original-image-with-searchable-text-layer",reportWarnings:[],pageChanges:[],
+  });
+  vi.mocked(mail.sendEmail).mockResolvedValue({success:true,status:"accepted",messageId:"qa-1"});
+  vi.mocked(invokeLLM).mockResolvedValue({choices:[{message:{content:"Stage 1: Contact the carrier"}}]} as any);
+});
+describe("anonymous LTC routes",()=>{
+  it("exposes visitor-only BCC notice without an account",async()=>{
+    const info=await appRouter.createCaller(ctx("203.0.113.16")).publicLtc.mailConfig();
+    expect(info).toHaveProperty("testingBccEnabled");
+  });
+  it("rejects identifying fields sent to the strategy route",async()=>{
+    await expect(appRouter.createCaller(ctx("203.0.113.17")).publicLtc.generateStrategy({
+      policy:{carrierName:"Illustrative LTC Insurance",insuredFullName:"SYNTHETIC USER"},
+    })).rejects.toHaveProperty("code","BAD_REQUEST");
+    expect(invokeLLM).not.toHaveBeenCalled();
+  });
+  it("provides education and canonical three-stage checklist without database login",async()=>{
+    const result=await appRouter.createCaller(ctx("203.0.113.18")).publicLtc.generateStrategy({
+      policy:{carrierName:"Illustrative LTC Insurance",diagnosisCheckboxes:["Dementia"],
+        careNeeds:["Dressing"],minAdlsRequired:"2",eliminationPeriod:"90"},
+    });
+    expect(result.stage1Tasks.length).toBeGreaterThan(0);
+    expect(result.stage2Tasks.length).toBeGreaterThan(0);
+    expect(result.stage3Tasks.length).toBeGreaterThan(0);
+    expect(result.content).toContain("Stage 1");
+  });
+  it("renders in memory only and redacts all identifiers, no stored PDF URL",async()=>{
+    const result=await appRouter.createCaller(ctx("203.0.113.19")).publicLtc.generatePdf(sample);
+    expect(result.pageCount).toBe(18);
+    expect(Buffer.from(result.pdfBase64,"base64").toString()).toContain("%PDF-");
+    const [safe]=vi.mocked(report.renderApprovedLtcReport).mock.calls[0];
+    for(const key of ["insuredName","insuredDob","insuredEmail","insuredPhone",
+      "insuredAddress","policyNumber","claimNumber","caseManagerName"]){
+      expect(safe[key as keyof typeof safe]).toBe("");
+    }
+    expect(result).not.toHaveProperty("url");
+  });
+  it("SMTP sends PDF attachment to recipient with prefilled test BCC",async()=>{
+    const cfg=await appRouter.createCaller(ctx("203.0.113.20")).publicLtc.mailConfig();
+    const result=await appRouter.createCaller(ctx("203.0.113.21")).publicLtc.emailPdf({
+      report:sample,recipients:["recipient@example.test"],acknowledgedBcc:true,
+    });
+    expect(result.status).toBe("accepted");
+    expect(mail.sendEmail).toHaveBeenCalledOnce();
+    const [sent]=vi.mocked(mail.sendEmail).mock.calls[0];
+    expect(sent.to).toEqual(["recipient@example.test"]);
+    if(cfg.testingBccEnabled) expect(sent.bcc).toEqual(["daniel@scvisitingangels.com"]);
+    expect(sent.attachments?.[0].content).toBeInstanceOf(Buffer);
+  });
+  it("asks for conscious acknowledgement before sending email",async()=>{
+    await expect(appRouter.createCaller(ctx("203.0.113.22")).publicLtc.emailPdf({
+      report:sample,recipients:["recipient@example.test"],acknowledgedBcc:false as any,
+    })).rejects.toHaveProperty("code","BAD_REQUEST");
+    expect(mail.sendEmail).not.toHaveBeenCalled();
+  });
+  it("does not persist AI chat messages or require identifying policy IDs",async()=>{
+    const result=await appRouter.createCaller(ctx("203.0.113.23")).publicLtc.chat({
+      message:"What counts as a cognitive impairment trigger?",history:[],
+    });
+    expect(result.content).toContain("Stage 1");
+    expect(invokeLLM).toHaveBeenCalledOnce();
+  });
+});

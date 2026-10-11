@@ -64,14 +64,15 @@ describe("Canonical LTC report inputs and policy safety",()=>{
     }),NOW);
     expect(report.person.fullName).toBe("____________________________");
   });
-  it("rejects missing policy number or carrier rather than making up a carrier",()=>{
+  it("requires only carrier identification and keeps the policy number writable and anonymous",()=>{
     expect(()=>buildCanonicalReportModel(base({carrierName:" "}),NOW)).toThrow(/carrier/);
-    expect(()=>buildCanonicalReportModel(base({policyNumber:" "}),NOW)).toThrow(/policy/);
+    expect(buildCanonicalReportModel(base({policyNumber:" "}),NOW).policy.policyNumber)
+      .toBe("____________________________");
   });
-  it("computes age from DOB relative to report date, not operating system time",()=>{
+  it("never calculates identifying age from a birthdate supplied by a browser",()=>{
     const model=buildCanonicalReportModel(base({insuredDob:"1950-10-11",reportDate:"2026-10-10"}),NOW);
-    expect(model.person.age).toBe(75);
-    expect(buildCanonicalReportModel(base({insuredDob:"1950-10-10",reportDate:"2026-10-10"}),NOW).person.age).toBe(76);
+    expect(model.person.age).toBeNull();
+    expect(model.person.dob).toBeNull();
   });
   it("does not invent DOB or age when missing",()=>{
     const model=buildCanonicalReportModel(base({insuredDob:""}),NOW);
@@ -176,11 +177,13 @@ describe("Canonical administrative fields use the saved insurer policy",()=>{
       insuredEmail:"fake@example.test",claimNumber:"FORGED-CLAIM",
       policyStatus:"inactive",benefitPeriod:"12 years",
     }),NOW);
-    expect(model.person.phone).toBe(record.insuredPhone);
-    expect(model.person.email).toBe(record.insuredEmail);
-    expect(model.policy.claimNumber).toBe(record.claimPreClaimNumber);
+    expect(model.person.phone).toBeNull();
+    expect(model.person.email).toBeNull();
+    expect(model.person.address).toBeNull();
+    expect(model.policy.policyNumber).toBe("____________________________");
+    expect(model.policy.claimNumber).toBeNull();
     expect(model.policy.claimsFax).toBe(record.carrierFax);
-    expect(model.policy.caseManager).toBe("Fictional Manager");
+    expect(model.policy.caseManager).toBeNull();
     expect(model.policy.cnaRequired).toBe("yes");
     expect(model.policy.careLogsRequired).toBe("yes");
     expect(model.policy.paymentCycle).toBe("Monthly");

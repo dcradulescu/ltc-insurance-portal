@@ -31,7 +31,9 @@ vi.mock("./db", async original => ({
 vi.mock("./_core/llm", () => ({ invokeLLM: vi.fn() }));
 vi.mock("./storage", () => ({ storagePut: vi.fn(), getSignedStorageUrl: vi.fn() }));
 const context = (id: number | null, role = "user") => ({ user: id ? { id, role, name: "Client", email: `client${id}@example.com` } : null, req: { headers: {} }, res: {} } as any);
-const publicRoutes = new Set(["auth.me", "auth.login", "auth.logout", "system.health", "email.sendContactForm"]);
+const publicRoutes = new Set(["auth.me", "auth.login", "auth.logout", "system.health", "email.sendContactForm",
+  "publicLtc.mailConfig", "publicLtc.generateStrategy", "publicLtc.generatePdf",
+  "publicLtc.emailPdf", "publicLtc.chat"]);
 const protectedPaths = Object.keys(appRouter._def.procedures).filter(path => !publicRoutes.has(path));
 function procedure(caller: any, path: string): any { return path.split(".").reduce((value, part) => value[part], caller); }
 

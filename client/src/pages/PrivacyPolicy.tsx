@@ -37,7 +37,7 @@ export default function PrivacyPolicy() {
         <div className="container max-w-3xl">
           <p className="text-xs uppercase tracking-widest font-semibold mb-3" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Legal</p>
           <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>Privacy Policy</h1>
-          <p className="text-white/85 text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>Effective Date: June 1, 2025 &nbsp;·&nbsp; Last Updated: June 1, 2025</p>
+          <p className="text-white/85 text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>Effective Date: October 11, 2026 &nbsp;·&nbsp; Last Updated: October 11, 2026</p>
           <div className="flex items-center gap-3 mt-5">
             <div style={{ height: 2, width: 40, background: VA_TEAL }} />
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: VA_TEAL }} />
@@ -57,70 +57,58 @@ export default function PrivacyPolicy() {
           </P>
 
           <Section title="1. Information We Collect">
-            <P>We collect information you voluntarily provide through the Policy Intake Form, including:</P>
+            <P>The public LTC Policy Form does not request an insured person’s name, phone number, email address, date of birth, home address, policy number, claim number, or case manager name.</P>
             <VAList items={[
-              "Name, email address, and phone number of the insured person",
-              "Insurance carrier name, policy number, and coverage details",
-              "Medical information including diagnoses, ADL limitations, and care needs",
-              "Contact information for care providers and family members",
+              "Coverage and carrier details you enter for educational planning",
+              "Selections about diagnoses, cognitive impairment, ADLs, and care requirements",
+              "Financial and calculator inputs and optional personal learning notes saved on your device",
+              "Name, email address, phone number, and message only if you voluntarily use Contact Us",
+              "Recipient email address only when you request PDF email delivery",
             ]} />
-            <P>
-              We also collect limited technical data automatically, including your browser type and approximate geographic region,
-              solely for the purpose of improving site performance. We do not use tracking cookies or advertising pixels.
-            </P>
+            <P>Our website servers may receive technical metadata, including IP address, request times and browser information, for hosting, reliability, rate limits and security. Do not enter Social Security numbers or financial account numbers.</P>
           </Section>
 
           <Section title="2. How We Use Your Information">
-            <P>We use the information you provide to:</P>
             <VAList items={[
-              "Generate your personalized LTC insurance claim strategy",
-              "Deliver your strategy document by email when requested",
-              "Send you a \"Save &amp; Resume\" link to restore your form progress",
-              "Contact you in response to inquiries submitted through the Contact form",
-              "Notify our team of new form submissions so we can provide follow-up support",
+              "Restore your Policy Form and calculations automatically in the same browser",
+              "Generate your educational LTC Strategy from non-identifying coverage and care selections",
+              "Provide an AI support chat in response to questions you choose to submit",
+              "Generate your original 18-page PDF when you request it",
+              "Email your PDF only to recipients you specify, with temporary testing BCC disclosed before submission",
+              "Respond to your voluntary Contact Us inquiries",
             ]} />
-            <P>We do not sell, rent, or share your personal information with third parties for marketing purposes.</P>
+            <P>Information entered in the public Policy Form is not automatically transmitted to our team, Zapier, or a claim management database. We do not sell this information for advertising.</P>
           </Section>
 
           <Section title="3. Data Storage and Security">
-            <P>
-              Form data you enter is stored in your browser's local storage and, when you use the Save &amp; Resume feature,
-              in our secure database. We use industry-standard encryption (TLS/HTTPS) for all data in transit.
-              Stored data is retained for up to 90 days unless you request earlier deletion.
-            </P>
-            <P>
-              While we take reasonable precautions to protect your information, no method of electronic transmission
-              or storage is 100% secure. We encourage you to avoid entering sensitive financial account numbers
-              or Social Security numbers into the form.
-            </P>
+            <P>Draft Policy Form answers, Additional Notes, care-calculator drafts, checklist progress, and strategy progress are stored automatically in your browser's persistent local storage. This storage is not an encrypted backup and can be accessible to others who use the same browser or device. We recommend using a private, password-protected device for health-related information.</P>
+            <P>Progress normally returns when you revisit in the same browser. Clearing website data, private browsing, browser restrictions, or switching devices may erase or prevent restoration. The Clear All Data control deletes this public portal's locally stored drafts.</P>
+            <P>The public flow does not create a long-term server record of these drafts or completed PDFs. Strategy generation, PDF generation, and email delivery can temporarily process information on servers or service providers when you explicitly use those functions. Earlier authenticated portal records, if any, are not deleted or silently migrated by this change.</P>
+            <P>We use HTTPS for transmission where deployed securely. No method of electronic processing or storage is perfectly secure.</P>
           </Section>
 
           <Section title="4. Third-Party Services">
-            <P>We use the following third-party services to operate the Site:</P>
             <VAList items={[
-              "<strong>Zapier</strong> — used to route form submission notifications to our team's email",
-              "<strong>Portal infrastructure providers</strong> — provide hosting, database, storage, and AI services",
+              "<strong>AI processing provider</strong> — processes approved, non-identifying coverage and care selections to generate the Strategy, and processes questions deliberately submitted to Support Chat",
+              "<strong>Email delivery provider</strong> — sends requested PDF reports and Contact Us replies, and may retain copies or delivery logs under its own terms",
+              "<strong>Infrastructure provider</strong> — hosts the website, processes temporary PDF rendering, and supports service security",
             ]} />
-            <P>These services receive only the data necessary to perform their function and are bound by their own privacy policies.</P>
+            <P>AI prompts and chat messages may be processed outside your browser. The portal does not automatically send your personal Additional Notes or your saved chat history with policy data. Do not type names, policy numbers, claim numbers or detailed private medical records into Support Chat.</P>
+            <P>When testing BCC is enabled, an additional copy of an emailed PDF is sent to daniel@scvisitingangels.com. This is disclosed in the sending interface. BCC recipients are hidden from other recipients, but are not hidden from the sender or the email service. Email providers and recipients may retain copies after sending.</P>
           </Section>
 
           <Section title="5. Cookies and Session Data">
-            <P>
-              The Site uses a single session cookie to remember that you have accepted the Terms of Use during your visit.
-              This cookie does not contain personally identifiable information and is cleared when you close your browser.
-              We do not use analytics cookies, advertising cookies, or cross-site tracking.
-            </P>
+            <P>The portal uses browser local storage to remember the accepted Terms of Use and silently restore your form. Account registration and sign-in are not required in the public flow. Browser features and infrastructure services may still use essential technical cookies or security signals. We do not intentionally use advertising cookies to profile your insurance details.</P>
           </Section>
 
           <Section title="6. Your Rights">
-            <P>You have the right to:</P>
             <VAList items={[
-              "Request a copy of the personal information we hold about you",
-              "Request correction of inaccurate information",
-              "Request deletion of your data from our systems",
-              "Withdraw consent at any time by ceasing use of the Site",
+              "Clear public Policy Form, calculator, and strategy progress through the Clear All Data control on the Policy Form",
+              "Stop using optional AI chat and PDF email delivery at any time",
+              "Request information about separately submitted contact messages and emailed reports",
+              "Request correction or deletion of records retained by our office, subject to applicable retention obligations",
             ]} />
-            <P>To exercise any of these rights, please contact us at the information below.</P>
+            <P>To learn about contact or email records or request assistance, use the Contact Us page or call our office. Browser-local drafts are under the control of the person using that browser; we cannot retrieve them from our servers.</P>
           </Section>
 
           <Section title="7. Children's Privacy">

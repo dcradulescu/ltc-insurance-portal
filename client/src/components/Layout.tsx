@@ -1,6 +1,3 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { trpc } from "@/lib/trpc";
-import { clearAccountDrafts } from "@/lib/accountStorage";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Phone, Globe, Share2 } from "lucide-react";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -12,20 +9,11 @@ const navLinks = [
   { href: "/academy", label: "Academy" },
   { href: "/policy-form", label: "Policy" },
   { href: "/strategy", label: "Strategy" },
-  { href: "/documents", label: "Documents" },
   { href: "/contact", label: "Contact" },
-  { href: "/profile", label: "Profile" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { user } = useAuth();
-  const logout = trpc.auth.logout.useMutation();
-  async function signOut() {
-    try {
-      await logout.mutateAsync(); clearAccountDrafts(); window.location.assign("/login");
-    } catch { toast.error("Could not sign out. Please try again."); }
-  }
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -67,7 +55,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             Helping families navigate long-term care insurance — at no cost
           </span>
           <div className="flex items-center gap-5">
-            {user ? <button type="button" onClick={signOut} disabled={logout.isPending} className="font-semibold underline">{logout.isPending ? "Signing out…" : "Sign out"}</button> : <Link href="/login" className="font-semibold underline">Sign in</Link>}
             <a
               href="tel:+18642446300"
               className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors duration-200 group"
@@ -263,7 +250,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   { href: "/education", label: "Education" },
                   { href: "/policy-form", label: "Policy" },
                   { href: "/strategy", label: "Strategy" },
-  { href: "/documents", label: "Documents" },
                 ].map(({ href, label }) => (
                   <li key={href}>
                     <Link
