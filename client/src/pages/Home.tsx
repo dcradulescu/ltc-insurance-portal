@@ -1,4 +1,3 @@
-import { shareResource } from "@/lib/shareResource";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
@@ -211,14 +210,14 @@ export default function Home() {
         <meta name="description" content="SC Visiting Angels helps families navigate long-term care insurance claims with free education, a personalized strategy, and step-by-step guidance. No cost, ever." />
         <meta property="og:title" content="LTC Insurance Navigator — Free Resource for Families" />
         <meta property="og:description" content="SC Visiting Angels helps families navigate long-term care insurance claims with free education, a personalized strategy, and step-by-step guidance." />
-        <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-home-YpxVsqvUs5V8rFXhkJW7Dx.png" />
+        <meta property="og:image" content="/media/core/home-hero_8fb65dbf.jpg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="LTC Insurance Navigator — Free Resource for Families" />
         <meta name="twitter:description" content="SC Visiting Angels helps families navigate long-term care insurance claims with free education, a personalized strategy, and step-by-step guidance." />
-        <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-home-YpxVsqvUs5V8rFXhkJW7Dx.png" />
+        <meta name="twitter:image" content="/media/core/home-hero_8fb65dbf.jpg" />
       </Helmet>
 
       {/* ── Free Resource Alert Banner ── */}
@@ -255,7 +254,7 @@ export default function Home() {
       {/* ── Hero ── */}
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
-          <img src="/manus-storage/home-hero_8fb65dbf.jpg" alt="Caregiver helping senior at home" className="w-full h-full object-cover" />
+          <img src="/media/core/home-hero_8fb65dbf.jpg" alt="Caregiver helping senior at home" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.82)' }} />
         </div>
         <div className="container relative py-section">
@@ -278,7 +277,12 @@ export default function Home() {
                 style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
                 onClick={async () => {
                   const shareData = { title: "LTC Insurance Navigator — Free Resource", text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.", url: window.location.origin };
-                  await shareResource(shareData, "Link copied to clipboard!");
+                  if (navigator.share && navigator.canShare?.(shareData)) {
+                    try { await navigator.share(shareData); } catch {}
+                  } else {
+                    await navigator.clipboard.writeText(window.location.origin);
+                    toast.success("Link copied to clipboard!", { description: "Share it with family members who need help navigating LTC insurance." });
+                  }
                 }}
               >
                 <Share2 className="w-4 h-4" />
@@ -291,8 +295,8 @@ export default function Home() {
               <VideoPlaceholder
                 title="Welcome to LTC Navigator"
                 description="Watch our brief introduction to learn how we can help your family"
-                thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg"
-                videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/MjPhBEQZfvIrfZms.mp4"
+                thumbnailUrl="/media/cdn/ZFmUJyMqNgTRQtRW.png"
+                videoUrl="/media/cdn/MjPhBEQZfvIrfZms.mp4"
               />
             </div>
           </div>
@@ -357,7 +361,7 @@ export default function Home() {
             <div ref={eduLeftRef} className="relative flex lg:flex reveal reveal-left w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: eduRightRef?.current?.offsetHeight ? `${eduRightRef.current.offsetHeight}px` : 'auto' }}>
                 <img
-                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step1-education-600x450-26Zj4spKh33ZER3qyicxip.webp"
+                  src="/media/cdn/ZFmUJyMqNgTRQtRW.png"
                   alt="Adult woman calmly reading LTC insurance documents at home"
                   loading="lazy"
                   className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
@@ -424,7 +428,7 @@ export default function Home() {
             <div ref={intakeRightRef} className="relative flex lg:flex reveal reveal-right w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: intakeLeftRef?.current?.offsetHeight ? `${intakeLeftRef.current.offsetHeight}px` : 'auto' }}>
                 <img
-                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step2-policy-600x450-nicJag3knmKGCq79iEqaXB.webp"
+                  src="/media/cdn/prngCKWDVnvVgXBI.png"
                   alt="Care coordinator helping elderly couple with LTC insurance details"
                   loading="lazy"
                   className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
@@ -447,7 +451,7 @@ export default function Home() {
             <div ref={stratLeftRef} className="relative flex lg:flex order-2 lg:order-1 reveal reveal-left w-full">
               <div className="relative w-full rounded overflow-hidden shadow-xl" style={{ height: stratRightRef?.current?.offsetHeight ? `${stratRightRef.current.offsetHeight}px` : 'auto' }}>
                 <img
-                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/step3-strategy-600x450-UExwXyk7heWTvVJSZ4gdVY.webp"
+                  src="/media/cdn/gwMDIGGTHLJRGnPt.png"
                   alt="Care coordinator presenting a personalized LTC strategy plan to a family"
                   loading="lazy"
                   className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
@@ -486,7 +490,7 @@ export default function Home() {
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section className="parallax-section relative py-section text-white" style={{ backgroundImage: "url('/manus-storage/strategy-hero_bcf2cf67.jpg')" }}>
+      <section className="parallax-section relative py-section text-white" style={{ backgroundImage: "url('/media/core/strategy-hero_bcf2cf67.jpg')" }}>
         <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.88)' }} />
         <div ref={ctaRef} className="reveal container relative text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>Ready to Get Started?</h2>
@@ -627,7 +631,7 @@ export default function Home() {
             <div ref={storyLeftRef} className="reveal reveal-left relative">
               <div className="rounded overflow-hidden shadow-2xl h-[400px] group">
                 <img
-                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/swQpXlcRmPQTVKfl.jpg"
+                  src="/media/cdn/swQpXlcRmPQTVKfl.png"
                   alt="Elderly couple embracing a Visiting Angels care coordinator"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />

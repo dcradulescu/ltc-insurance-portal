@@ -39,7 +39,7 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
     stage: 1,
     completed: false,
     critical: true,
-    instructions: `Your effective elimination period is ${calculateEffectiveEliminationPeriod(policy)} days. This is the number of days you must pay for care before insurance begins reimbursing.`,
+    instructions: `Your effective elimination period is ${calculateEffectiveEliminationPeriod(policy)} days. This is a preliminary estimate only; verify whether the issued policy counts calendar or service days and confirm carrier benefit eligibility.`,
   });
 
   tasks.push({
@@ -50,7 +50,7 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
     stage: 1,
     completed: false,
     critical: true,
-    instructions: `Call ${policy.carrierPhone || "(phone number)"} or fax ${policy.carrierFax || "(fax number)"} to request the claim packet. DO NOT start a claim on the phone yet.`,
+    instructions: `Call ${policy.carrierPhone || "(phone number)"} or fax ${policy.carrierFax || "(fax number)"} to request the claim packet. Ask how to provide timely initial claim notice, confirm filing deadlines, and request the claim packet.`,
     documentsNeeded: ["Claim packet from insurance company"],
   });
 
@@ -58,11 +58,11 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
   tasks.push({
     id: "stage1-gather-lookback",
     title: "Gather Look Back Documentation",
-    description: `Collect all out-of-pocket care expenses from the past 90 days.`,
+    description: `Gather existing care expense records; verify the carrier's actual lookback and elimination-credit rules.`,
     timeline: "Week 1-2",
     stage: 1,
     completed: false,
-    instructions: `Gather receipts, invoices, and documentation for any care provided during the look back period. These can help reduce your elimination period.`,
+    instructions: `Gather receipts, invoices, and documentation for any care provided during the look back period. Ask the carrier whether and how previously paid qualifying care may receive credit under your particular policy.`,
     documentsNeeded: ["Receipts for care expenses", "Invoices from providers", "Documentation of dates and services"],
   });
 
@@ -206,11 +206,11 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
     tasks.push({
       id: "stage1-monthly-premiums",
       title: "Switch to Monthly Premium Payments",
-      description: "Switch from annual to monthly premium payments to preserve cash flow.",
+      description: "Review premium billing frequency and waiver-of-premium eligibility with the carrier.",
       timeline: "Week 2-4",
       stage: 1,
       completed: false,
-      instructions: `Your policy includes Waiver of Premium (premiums stop when benefits begin). Switch to monthly payments now so you don't lose unused annual premiums if claim is approved.\n\nCall ${policy.carrierPhone || "(phone number)"} to request monthly billing.`,
+      instructions: `Your policy includes Waiver of Premium (premiums stop when benefits begin). Do not change billing frequency unless the carrier confirms timing, premium consequences, and waiver eligibility.\n\nCall ${policy.carrierPhone || "(phone number)"} to request monthly billing.`,
       documentsNeeded: ["Confirmation of billing change"],
     });
   }
@@ -267,12 +267,12 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
   tasks.push({
     id: "stage2-insurance-review",
     title: "Insurance Review Period",
-    description: "Insurance company reviews application (30-day window).",
+    description: "The carrier reviews claim materials under its applicable policy and regulatory deadlines.",
     timeline: "Week 4-12",
     stage: 2,
     completed: false,
     critical: true,
-    instructions: `Insurance company has 30 days to review. You can call ${policy.carrierPhone || "(phone number)"} for quicker verbal update on status.`,
+    instructions: `Ask the carrier for the review deadlines that apply to this claim. You can call ${policy.carrierPhone || "(phone number)"} for quicker verbal update on status.`,
     documentsNeeded: ["Claim reference number"],
   });
 
@@ -333,7 +333,7 @@ export function generateStrategyTasks(policy: Policy | null): StrategyTask[] {
     stage: 2,
     completed: false,
     critical: true,
-    instructions: "Insurance typically provides written determination within 30 days. Possible outcomes: Approved, Denied, or Conditional.",
+    instructions: "Request the carrier's written decision and applicable review timeline. Possible outcomes: Approved, Denied, or Conditional.",
     documentsNeeded: ["Determination letter"],
   });
 

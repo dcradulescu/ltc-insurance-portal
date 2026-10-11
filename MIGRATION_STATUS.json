@@ -1,0 +1,105 @@
+{
+  "status": "development_in_progress_not_deployed",
+  "updated_date": "2026-10-10",
+  "current_status_document": "DEVELOPMENT_2026-10-09.md",
+  "automated_tests": {
+    "passed": 367,
+    "failed": 0,
+    "skipped": 0
+  },
+  "typescript_check": "pass",
+  "production_build": "pass",
+  "live_providers_verified": false,
+  "public_url_verified": false,
+  "historical_2026_08_12": {
+    "project": "LTC Insurance Portal",
+    "migration_build_date": "2026-08-12",
+    "portable_source_ready": true,
+    "active_manus_runtime_references": 0,
+    "media_files_bundled": 19,
+    "media_reference_validation": "all referenced /media files exist",
+    "source_backup_secrets_copied": false,
+    "project_config_included": false,
+    "database_schema_and_migrations_included": true,
+    "live_database_rows_included": false,
+    "live_database_export_required": true,
+    "missing_original_asset": "education-video.mp4",
+    "education_video_fallback": "media/cdn/MjPhBEQZfvIrfZms.mp4",
+    "storage_adapter": "S3-compatible",
+    "ai_adapter": "OpenAI-compatible chat completions",
+    "notification_adapter": "SMTP",
+    "container_deployment": "Dockerfile included",
+    "health_endpoint": "/healthz",
+    "test_limit": "Full pnpm install/build/tests could not be run in this execution environment because npm registry network access is unavailable.",
+    "static_validation": [
+      "TypeScript/TSX syntax transpilation",
+      "package-lock importer consistency",
+      "media path existence",
+      "old-platform dependency scan",
+      "exact original-sensitive-value scan"
+    ]
+  },
+  "checkpoint": 12,
+  "document_ui": "attach/detach verified in real authenticated Chromium UI with MySQL in checkpoint 7; mocked desktop/tablet/mobile checks passed in checkpoint 6",
+  "browser_font_exception": "External Google Fonts request failed; system fallback fonts rendered",
+  "production_database_verified": false,
+  "disposable_mysql_verified": true,
+  "mysql_version": "8.0.46",
+  "real_database_checks": {
+    "passed": 24,
+    "failed": 0,
+    "checkpoint": 9,
+    "api_mocks": false
+  },
+  "database_guard_tests": {
+    "passed": 3,
+    "failed": 0
+  },
+  "task_documents": "existing attachment, detachment with retained file access and concurrent conflicts verified against real MySQL; live S3 unverified",
+  "application_checks_last_run_checkpoint": 12,
+  "database_timezone_verified": {
+    "host": "EDT",
+    "session": "+00:00"
+  },
+  "configuration_review": {
+    "command": "corepack pnpm config:check",
+    "offline": true,
+    "secret_values_printed": false,
+    "production_configuration_supplied": false,
+    "deployment_verified": false
+  },
+  "latest_automated_test_report": "DEVELOPMENT_TEST_RESULTS_CHECKPOINT12.json",
+  "password_change": {
+    "implemented": true,
+    "all_sessions_revoked": true,
+    "real_database_http_verified": true,
+    "browser_form_verified_with_mocked_api": true,
+    "email_recovery_implemented": false
+  },
+  "calculator_audit": {
+    "report": "CALCULATOR_AUDIT_2026-10-09.md",
+    "engine": "shared/careCalculator.ts",
+    "direct_engine_tests": 116,
+    "accounting_scenarios": 108,
+    "browser_checks": "passed",
+    "viewports": [
+      1440,
+      1024,
+      390
+    ],
+    "browser_api_fixtures_mocked": true,
+    "calculator_engine_mocked": false,
+    "actual_policy_contract_reviewed": false,
+    "supported_model": "Expense reimbursement, eligible home care, finite dollar pool, daily/calendar-month limits, continuous eligibility episode; verified fixed annual inflation optional",
+    "projection_years": 5,
+    "full_waiver_default_assumed": true,
+    "waiver_assumption_carrier_confirmation": false,
+    "latest_browser_evidence": "verification/LTC_Portal_Calculator_UI_Verification_CHECKPOINT12.json",
+    "latest_browser_scope": "Single/dual/no waiver, spouse input validation, monthly effective care cost, all full/partial months, cents and negative offsets, invariant care/pool accounting; desktop/tablet/mobile",
+    "dual_waiver_default": false,
+    "separate_spouse_premium_input": true,
+    "effective_monthly_cost_formula": "Gross monthly care expense minus insured waived premium minus spouse waived premium when dual waiver is selected; before reimbursement",
+    "partial_month_waiver": "Unavailable without carrier terms; full-month offsets not applied to partial care periods",
+    "inflation_scope_exception": "Remaining-pool riders such as FLTCIP are not supported by the verified total-maximum increase branch"
+  }
+}

@@ -8,11 +8,12 @@ import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
 import pino from "pino";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { serveStatic, setupVite } from "./vite";
+import { serveStatic } from "./vite";
+import { registerBodyParsers } from "./bodyParsers";
+import { registerRequestSecurity } from "./requestSecurity";
 
 // Structured logger — replaces console.log in production
 // pino-pretty is optional (dev only); fall back to plain JSON if unavailable
@@ -33,7 +34,7 @@ export const logger = buildLogger();
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
-    server.listen(port, () => {
+    server.listen({ port, host: process.env.HOST }, () => {
       server.close(() => resolve(true));
     });
     server.on("error", () => resolve(false));
@@ -49,12 +50,22 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-// Allowed origins for CORS
-const ALLOWED_ORIGINS = (process.env.APP_URL ?? "").split(",").filter(Boolean);
-if (process.env.NODE_ENV !== "production") ALLOWED_ORIGINS.push("http://localhost:3000", "http://127.0.0.1:3000");
+// Allowed origins for CORS. Configure production origins with CORS_ORIGINS.
+const configuredOrigins = (process.env.CORS_ORIGINS || process.env.APP_PUBLIC_URL || "")
+  .split(",")
+  .map(value => value.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
+const ALLOWED_ORIGINS: Array<string | RegExp> = [
+  ...configuredOrigins,
+  /^https?:\/\/localhost(:\d+)?$/,
+  /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
+];
 
 async function startServer() {
   const app = express();
+  // Set only to the known reverse-proxy hop count, never blanket trust.
+  if (process.env.TRUST_PROXY_HOPS) app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS));
   const server = createServer(app);
 
   // ── HTTP request logger ──────────────────────────────────────────────────
@@ -62,7 +73,7 @@ async function startServer() {
     app.use(
       pinoHttp({
         logger,
-        serializers: { req: req => ({ method: req.method, path: (req.url ?? "").split("?")[0] }), res: res => ({ statusCode: res.statusCode }) },
+        serializers: { req: req => ({ method: req.method, url: req.url?.split("?")[0] }), res: res => ({ statusCode: res.statusCode }) },
         // Skip logging for static assets and health checks
         autoLogging: {
           ignore: req =>
@@ -86,18 +97,22 @@ async function startServer() {
   );
 
   // ── CORS ─────────────────────────────────────────────────────────────────
-  app.use("/api",
+  app.use(
     cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (curl, mobile apps, same-origin)
         if (!origin) return callback(null, true);
-        const allowed = ALLOWED_ORIGINS.includes(origin);
+        const allowed = ALLOWED_ORIGINS.some(pattern =>
+          typeof pattern === "string"
+            ? pattern === origin
+            : pattern.test(origin)
+        );
         if (allowed) return callback(null, true);
         callback(new Error(`CORS: origin ${origin} not allowed`));
       },
       credentials: true,
       methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+      allowedHeaders: ["Content-Type", "Authorization", "Cookie", "x-ltc-request"],
     })
   );
 
@@ -112,47 +127,21 @@ async function startServer() {
     skip: req => process.env.NODE_ENV === "development",
   });
 
-  // Strict limit for LLM/PDF routes: 20 req / 15 min per IP
-  const heavyLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 20,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: {
-      error:
-        "Too many strategy or PDF requests. Please wait 15 minutes before trying again.",
-    },
-    skip: req => process.env.NODE_ENV === "development",
-  });
+  app.use("/api/trpc", generalLimiter);
 
-  // OAuth endpoints: 10 req / 15 min per IP
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { error: "Too many auth requests. Please try again later." },
-    skip: req => process.env.NODE_ENV === "development",
-  });
+  // ── Body parsers ──────────────────────────────────────────────────────────
+  // Default: 1 MB limit for most routes
+  registerRequestSecurity(app);
+  registerBodyParsers(app);
 
-  app.use("/api/oauth", authLimiter);
-  // Inspect each batched procedure; Express mount prefixes do not match dots.
-  app.use("/api/trpc", (req, res, next) => {
-    const paths = req.path.slice(1).split(",");
-    if (paths.length > 10) return res.status(400).json({error: "Batch limit exceeded"});
-    if (paths.some(path => /^(email\.|pdfDelivery\.|policyForm\.|chat\.|sms\.|strategy\.(generate|generatePhysicianLetter))/.test(path))) return heavyLimiter(req, res, next);
-    next();
-  }, generalLimiter);
-  app.use(express.json({ limit: "1mb" }));
-  app.use(express.urlencoded({ limit: "1mb", extended: true }));
-  app.get("/healthz", (_req, res) => res.json({status: "ok"}));
+  // Simple hosting/load-balancer health check.
+  app.get("/healthz", (_req, res) => {
+    res.status(200).json({ ok: true });
+  });
 
   // ── Application routes ────────────────────────────────────────────────────
-  // Storage proxy for /manus-storage/* paths
+  // Stable application proxy for private S3 objects.
   registerStorageProxy(app);
-
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
 
   // tRPC API
   app.use(
@@ -170,6 +159,7 @@ async function startServer() {
 
   // ── Static / Vite ─────────────────────────────────────────────────────────
   if (process.env.NODE_ENV === "development") {
+    const { setupVite } = await import("./devServer");
     await setupVite(app, server);
   } else {
     serveStatic(app);
@@ -182,7 +172,7 @@ async function startServer() {
     logger.warn(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
-  server.listen(port, () => {
+  server.listen({ port, host: process.env.HOST }, () => {
     logger.info(`Server running on http://localhost:${port}/`);
   });
 }

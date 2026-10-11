@@ -1,0 +1,12 @@
+{
+  "title": "LTC Insurance Navigator — Free Resource by SC Visiting Angels",
+  "desktop": "1440x1000",
+  "mobile": "390x844",
+  "browser": "Playwright Chromium; Browser plugin unavailable",
+  "privateRedirect": true,
+  "privateApiBeforeAuthentication": false,
+  "unconfiguredLoginError": true,
+  "passwordCleared": true,
+  "mobileOverflow": false,
+  "pageErrors": []
+}

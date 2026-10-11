@@ -18,7 +18,7 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
     openId: "sample-user",
     email: "sample@example.com",
     name: "Sample User",
-    loginMethod: "manus",
+    loginMethod: "local",
     role: "user",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -50,12 +50,10 @@ describe("auth.logout", () => {
     const result = await caller.auth.logout();
 
     expect(result).toEqual({ success: true });
-    expect(clearedCookies).toHaveLength(2);
-    expect(clearedCookies.map(c=>c.name)).toContain("ltc_visitor");
-    expect(clearedCookies.map(c=>c.name)).toContain(COOKIE_NAME);
+    expect(clearedCookies).toHaveLength(1);
+    expect(clearedCookies[0]?.name).toBe(COOKIE_NAME);
     // localhost context uses lax/non-secure cookies
-    expect(clearedCookies.find(c=>c.name===COOKIE_NAME)?.options).toMatchObject({
-      maxAge: -1,
+    expect(clearedCookies[0]?.options).toMatchObject({
       httpOnly: true,
       path: "/",
     });

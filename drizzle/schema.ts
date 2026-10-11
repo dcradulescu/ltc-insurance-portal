@@ -1,4 +1,21 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, boolean, index } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, customType, boolean, index, uniqueIndex } from "drizzle-orm/mysql-core";
+
+/**
+ * MySQL JSON columns return decoded objects, but Windows MariaDB represents
+ * JSON as LONGTEXT plus json_valid(CHECK). mysql2's prepared statement path
+ * returns that alias as a string. Both must deserialize to the same value.
+ *
+ * The SQL type remains JSON, preserving the approved migration/DDL contract.
+ */
+export const portableJson = customType<{ data: unknown; driverData: string }>({
+  dataType: () => "json",
+  toDriver: (value) => JSON.stringify(value),
+  fromDriver: (value) => {
+    if(typeof value!=="string")return value;
+    try { return JSON.parse(value); }
+    catch { throw new Error("Invalid stored JSON value"); }
+  },
+});
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -7,7 +24,7 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  notificationPreferences: json("notificationPreferences"),
+  notificationPreferences: portableJson("notificationPreferences"),
   createdAt: timestamp("createdAt").defaultNow(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -15,6 +32,25 @@ export const users = mysqlTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+export const portalAccounts = mysqlTable("portalAccounts", {
+  userId: int("userId").primaryKey().references(() => users.id),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  passwordHash: varchar("passwordHash", { length: 255 }).notNull(),
+  active: boolean("active").default(true).notNull(),
+  failedAttempts: int("failedAttempts").default(0).notNull(),
+  lockedUntil: timestamp("lockedUntil"),
+});
+export const portalSessions = mysqlTable("portalSessions", {
+  tokenHash: varchar("tokenHash", { length: 64 }).primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  expiresAt: timestamp("expiresAt").notNull(),
+}, table => ({ userIdx: index("idx_portal_sessions_user").on(table.userId) }));
+export const portalFiles = mysqlTable("portalFiles", {
+  fileKey: varchar("fileKey", { length: 512 }).primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
 
 export const policies = mysqlTable("policies", {
   id: int("id").autoincrement().primaryKey(),
@@ -30,6 +66,7 @@ export const policies = mysqlTable("policies", {
   insuredEmail: varchar("insuredEmail", { length: 320 }),
   insuredPhone: varchar("insuredPhone", { length: 32 }),
   insuredMailingAddress: text("insuredMailingAddress"),
+  insuredSsn: varchar("insuredSsn", { length: 16 }),
   insuredMedicareNumber: varchar("insuredMedicareNumber", { length: 64 }),
   insuredMedicaidNumber: varchar("insuredMedicaidNumber", { length: 64 }),
   powerOfAttorneyPresent: varchar("powerOfAttorneyPresent", { length: 8 }),
@@ -66,7 +103,7 @@ export const policies = mysqlTable("policies", {
 
   // === ADL & Care Requirements ===
   minAdlsRequired: varchar("minAdlsRequired", { length: 16 }),
-  adlLimitations: json("adlLimitations"),
+  adlLimitations: portableJson("adlLimitations"),
   waiverOfPremium: varchar("waiverOfPremium", { length: 8 }),
   cnaRequired: varchar("cnaRequired", { length: 8 }),
   careNotesRequired: varchar("careNotesRequired", { length: 8 }),
@@ -83,9 +120,9 @@ export const policies = mysqlTable("policies", {
   ltcCoordinatorAssigned: varchar("ltcCoordinatorAssigned", { length: 255 }),
 
   // === Medical Providers (JSON arrays) ===
-  primaryCarePhysician: json("primaryCarePhysician"),
-  otherProviders: json("otherProviders"),
-  facilitiesUsed: json("facilitiesUsed"),
+  primaryCarePhysician: portableJson("primaryCarePhysician"),
+  otherProviders: portableJson("otherProviders"),
+  facilitiesUsed: portableJson("facilitiesUsed"),
   dischargeDocumentation: varchar("dischargeDocumentation", { length: 8 }),
 
   // === Care Needs ===
@@ -117,11 +154,14 @@ export const strategies = mysqlTable("strategies", {
   currentStage: int("currentStage").default(1).notNull(),
   strategyContent: text("strategyContent"),
   strategyHtml: text("strategyHtml"),
-  stage1Tasks: json("stage1Tasks"),
-  stage2Tasks: json("stage2Tasks"),
-  stage3Tasks: json("stage3Tasks"),
-  checklistItems: json("checklistItems"),
+  stage1Tasks: portableJson("stage1Tasks"),
+  stage2Tasks: portableJson("stage2Tasks"),
+  stage3Tasks: portableJson("stage3Tasks"),
+  checklistItems: portableJson("checklistItems"),
   claimStatus: varchar("claimStatus", { length: 32 }).default("not_started"),
+  scheduleStartDate: varchar("scheduleStartDate", { length: 10 }),
+  /** Account-owned calculator draft and verified snapshot; no PII in migrations. */
+  careScenario: portableJson("careScenario"),
   generatedAt: timestamp("generatedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow(),
@@ -156,6 +196,29 @@ export const documentUploads = mysqlTable("documentUploads", {
 
 export type DocumentUpload = typeof documentUploads.$inferSelect;
 export type InsertDocumentUpload = typeof documentUploads.$inferInsert;
+
+export const claimMilestoneEvents = mysqlTable("claimMilestoneEvents", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  strategyId: int("strategyId").notNull(),
+  policyId: int("policyId").notNull(),
+  kind: varchar("kind", { length: 48 }).notNull(),
+  effectiveDate: varchar("effectiveDate", { length: 10 }).notNull(),
+  carrierReference: varchar("carrierReference", { length: 128 }),
+  approvalDedupeKey: varchar("approvalDedupeKey", { length: 96 }).unique(),
+  evidenceDocumentId: int("evidenceDocumentId").references(() => documentUploads.id, { onDelete: "restrict" }),
+  attestedByUserId: int("attestedByUserId").notNull(),
+  evidenceLevel: varchar("evidenceLevel", { length: 32 }).default("user_submitted").notNull(),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+}, table => ({
+  userIndex: index("idx_claim_milestones_user").on(table.userId),
+  strategyIndex: index("idx_claim_milestones_strategy").on(table.strategyId),
+  kindIndex: index("idx_claim_milestones_kind").on(table.kind),
+}));
+export type ClaimMilestoneEvent = typeof claimMilestoneEvents.$inferSelect;
+export type InsertClaimMilestoneEvent = typeof claimMilestoneEvents.$inferInsert;
+
+
 
 export const userContacts = mysqlTable("userContacts", {
   id: int("id").autoincrement().primaryKey(),
@@ -225,6 +288,7 @@ export const taskCompletions = mysqlTable("taskCompletions", {
 }, (table) => ({
   strategyIdIdx: index("idx_task_completions_strategy_id").on(table.strategyId),
   userIdIdx: index("idx_task_completions_user_id").on(table.userId),
+  oneCompletionPerTask: uniqueIndex("uq_task_completions_owner_strategy_task").on(table.userId, table.strategyId, table.taskId),
 }));
 
 export type TaskCompletion = typeof taskCompletions.$inferSelect;
@@ -236,10 +300,11 @@ export type InsertTaskCompletion = typeof taskCompletions.$inferInsert;
 // === Save & Resume Links ===
 export const saveLinks = mysqlTable("saveLinks", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"), // Legacy links remain unassigned and cannot be resumed.
   token: varchar("token", { length: 64 }).notNull().unique(),
   email: varchar("email", { length: 320 }).notNull(),
   insuredName: varchar("insuredName", { length: 255 }),
-  formData: json("formData").notNull(),
+  formData: portableJson("formData").notNull(),
   currentStep: int("currentStep").default(0).notNull(),
   used: boolean("used").default(false).notNull(),
   expiresAt: timestamp("expiresAt").notNull(),

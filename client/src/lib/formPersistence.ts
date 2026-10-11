@@ -1,3 +1,4 @@
+import { accountStorage } from "@/lib/accountStorage";
 /**
  * Form Persistence & Zapier Integration
  * Handles saving form data to JSON format for Zapier webhook integration
@@ -201,14 +202,14 @@ export const saveFormToLocalStorage = (formData: FormData, sessionId: string, fo
     formStartTime
   );
 
-  localStorage.setItem("ltc_form_data", JSON.stringify(submission));
+  accountStorage.setItem("ltc_form_data", JSON.stringify(submission));
 };
 
 /**
  * Load form data from localStorage
  */
 export const loadFormFromLocalStorage = (): FormSubmissionData | null => {
-  const stored = localStorage.getItem("ltc_form_data");
+  const stored = accountStorage.getItem("ltc_form_data");
   return stored ? JSON.parse(stored) : null;
 };
 
@@ -216,61 +217,18 @@ export const loadFormFromLocalStorage = (): FormSubmissionData | null => {
  * Clear form data from localStorage
  */
 export const clearFormFromLocalStorage = (): void => {
-  localStorage.removeItem("ltc_form_data");
+  accountStorage.removeItem("ltc_form_data");
 };
 
 /**
  * Send form data to Zapier webhook
  */
 export const sendToZapier = async (submission: FormSubmissionData): Promise<boolean> => {
-  try {
-    const webhookUrl = import.meta.env.VITE_ZAPIER_WEBHOOK_URL;
-
-    if (!webhookUrl) {
-      console.warn("Zapier webhook URL not configured");
-      return false;
-    }
-
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(submission),
-    });
-
-    if (!response.ok) {
-      console.error("Zapier webhook failed:", response.statusText);
-      return false;
-    }
-
-    console.log("Form data sent to Zapier successfully");
-    return true;
-  } catch (error) {
-    console.error("Error sending to Zapier:", error);
-    return false;
-  }
-};
-
-/**
- * Format form data as pretty JSON string
- */
-export const formatFormAsJSON = (submission: FormSubmissionData): string => {
-  return JSON.stringify(submission, null, 2);
-};
-
-/**
- * Download form data as JSON file
- */
-export const downloadFormAsJSON = (submission: FormSubmissionData, filename?: string): void => {
-  const jsonString = formatFormAsJSON(submission);
-  const blob = new Blob([jsonString], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename || `ltc_form_${submission.submissionId}.json`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  const response = await fetch("/api/trpc/policyForm.sendToZapier", {
+    method: "POST", credentials: "include", headers: { "Content-Type": "application/json", "x-ltc-request": "1" },
+    body: JSON.stringify({ json: { trigger: "completed", formData: submission } }),
+  });
+  if (!response.ok) return false;
+  const result = await response.json();
+  return result?.result?.data?.json?.success === true;
 };

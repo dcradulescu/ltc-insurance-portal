@@ -1,3 +1,4 @@
+import { accountStorage } from "@/lib/accountStorage";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,7 +109,7 @@ const fieldTooltips: Record<string, string> = {
 
 export function PolicyFormComprehensive() {
   const [formData, setFormData] = useState<FormData>(() => {
-    const saved = localStorage.getItem("policyFormData");
+    const saved = accountStorage.getItem("policyFormData");
     return saved ? JSON.parse(saved) : {
       insuredFullName: "",
       insuredDOB: "",
@@ -159,7 +160,7 @@ export function PolicyFormComprehensive() {
 
   // Save to localStorage on change
   useEffect(() => {
-    localStorage.setItem("policyFormData", JSON.stringify(formData));
+    accountStorage.setItem("policyFormData", JSON.stringify(formData));
   }, [formData]);
 
   const validateForm = (): boolean => {

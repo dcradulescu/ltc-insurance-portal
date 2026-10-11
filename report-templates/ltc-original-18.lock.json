@@ -1,0 +1,129 @@
+{
+  "template_id": "sc-visiting-angels-ltc-original-18-v1",
+  "status": "CANONICAL_DESIGN_APPROVED",
+  "approval_date": "2026-10-10",
+  "source_of_truth": "original-templates/ (the 18 standalone HTML files in numbered order)",
+  "provenance": "Dropbox /Ai/LTC Portal/Customized-LTC-Strategy-Report-18-Pages",
+  "page_count": 18,
+  "reference_master": "PDF_TEMPLATE_18PAGE_MASTER.html (preserve; not the per-page canonical set)",
+  "immutable_visual_reference": true,
+  "default_future_report_visual_design": true,
+  "allow_data_binding_without_visual_redesign": true,
+  "do_not_edit_original_html_files": true,
+  "engine_state": {
+    "approved_template": "sc-visiting-angels-ltc-original-18-v1",
+    "current_download_engine": "server/pdfConverter.ts (legacy jsPDF)",
+    "current_download_engine_matches_original_18_pages": false,
+    "canonical_dynamic_renderer": "INTEGRATION_PENDING"
+  },
+  "pages": [
+    {
+      "page": 1,
+      "file": "original-templates/01-Cover.html",
+      "sha256": "df08c3c0002c8c0d70e2cb4ee82e4cab6ce32fd1f3dba3f1d37c9a2f12a2d553",
+      "bytes": 2808964
+    },
+    {
+      "page": 2,
+      "file": "original-templates/02-Complete-Policy-Information.html",
+      "sha256": "b64bbc2304ed489c2ff88dac206b62cdb76470b7d002ef586f74b06a06818c4e",
+      "bytes": 2810381
+    },
+    {
+      "page": 3,
+      "file": "original-templates/03-Coverage-Breakdown-Complete-Form.html",
+      "sha256": "b307f666ece6c4e276ff15ebbdad16a8493e22598c8157289f0d44324f1881f4",
+      "bytes": 2727825
+    },
+    {
+      "page": 4,
+      "file": "original-templates/04-Coverage-Breakdown-Continued.html",
+      "sha256": "5f461babe52e766499f5475606bba4b9bbeb7e6b29725cb9abf3ee03fd29ca22",
+      "bytes": 2728082
+    },
+    {
+      "page": 5,
+      "file": "original-templates/05-Claim-Administration.html",
+      "sha256": "6e42e7e9d2fe1206432f50ab7e07cf8d14e447f8d47a23dd75028e3e3b9b7c8d",
+      "bytes": 2729417
+    },
+    {
+      "page": 6,
+      "file": "original-templates/06-Educational-Definitions.html",
+      "sha256": "38ad69b29e1e39d9a8a0446ff1ec14c06dfe193d4d58d89da34488b77d8d1223",
+      "bytes": 2808531
+    },
+    {
+      "page": 7,
+      "file": "original-templates/07-Educational-Definitions-Continued.html",
+      "sha256": "676e292b1b6d569665fd5827fcbb676f0316ece98051902c068e7122c4d667b1",
+      "bytes": 2728923
+    },
+    {
+      "page": 8,
+      "file": "original-templates/08-Helpful-Claim-Information.html",
+      "sha256": "f3ff3be4c16ead0105d009267f63144083d6ef189b148ba6f18870e95f508265",
+      "bytes": 2728854
+    },
+    {
+      "page": 9,
+      "file": "original-templates/09-Policy-Protections.html",
+      "sha256": "db8ba196055663ab61b335721a9ed64bcf977b9c6bb1eebc05ccb809b76773c5",
+      "bytes": 2728881
+    },
+    {
+      "page": 10,
+      "file": "original-templates/10-Claim-Review.html",
+      "sha256": "900df773c6b242540604604ff10fa191b1e7a7ccc9dc3c2f688f725136013d05",
+      "bytes": 2728904
+    },
+    {
+      "page": 11,
+      "file": "original-templates/11-Documentation.html",
+      "sha256": "2f693ca205776d774bede2bd3cae015ce1d1d3e88be60590705c74be0a6f46f4",
+      "bytes": 2728926
+    },
+    {
+      "page": 12,
+      "file": "original-templates/12-Home-Care-Cost-Analysis.html",
+      "sha256": "2d0fe526de71c487fa8f20b41675b0a84858c42e041ad6837dd4ccdbcc4f1757",
+      "bytes": 2812717
+    },
+    {
+      "page": 13,
+      "file": "original-templates/13-Claim-Roadmap-Gantt.html",
+      "sha256": "fdfb80278982bc29898710c1fc95dac51db5d9d42d29dc4e210de2c1e0e176b9",
+      "bytes": 2809206
+    },
+    {
+      "page": 14,
+      "file": "original-templates/14-Action-Checklist.html",
+      "sha256": "960e848d27bbc3c151a29a6d1d2715993bcc25a4b5c42f1986c02ea5f1b7801c",
+      "bytes": 2808266
+    },
+    {
+      "page": 15,
+      "file": "original-templates/15-Financial-Scenarios.html",
+      "sha256": "084e91377adecb60002ace74b6022904ede37628d7e4f9712585496f0f6b7b42",
+      "bytes": 2808315
+    },
+    {
+      "page": 16,
+      "file": "original-templates/16-Next-Best-Moves.html",
+      "sha256": "958a94682dcb1801c538db3cda4f4cd29c8b3b93078f305b5eef2b66b27a35de",
+      "bytes": 2810868
+    },
+    {
+      "page": 17,
+      "file": "original-templates/17-Next-Best-Moves-Continued.html",
+      "sha256": "3dbbb57e22f1c7403beadc97711b4959db8eb76ea3b90abcaa95ab93608505e7",
+      "bytes": 2744609
+    },
+    {
+      "page": 18,
+      "file": "original-templates/18-Help-Navigating-The-Process.html",
+      "sha256": "2aad32a6f83970803e7543ed3fa67fbb329675a4f8f0ce19c201a00a01e9b14c",
+      "bytes": 6063331
+    }
+  ]
+}

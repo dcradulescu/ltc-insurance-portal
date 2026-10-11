@@ -51,7 +51,7 @@ export default function PrivacyPolicy() {
         <div className="container max-w-3xl">
           <P>
             SC Visiting Angels ("we," "us," or "our") operates the LTC Insurance Navigator at{" "}
-            <a href="https://ltcportal.manus.space" className="hover:underline font-semibold" style={{ color: VA_TEAL }}>ltcportal.manus.space</a>{" "}
+            <a href="/" className="hover:underline font-semibold" style={{ color: VA_TEAL }}>LTC Insurance Navigator</a>{" "}
             (the "Site"). This Privacy Policy explains how we collect, use, and protect information you provide when using the Site.
             By using the Site, you agree to the practices described in this policy.
           </P>
@@ -99,7 +99,7 @@ export default function PrivacyPolicy() {
             <P>We use the following third-party services to operate the Site:</P>
             <VAList items={[
               "<strong>Zapier</strong> — used to route form submission notifications to our team's email",
-              "<strong>Manus Platform</strong> — provides hosting, database, and AI strategy generation infrastructure",
+              "<strong>Portal infrastructure providers</strong> — provide hosting, database, storage, and AI services",
             ]} />
             <P>These services receive only the data necessary to perform their function and are bound by their own privacy policies.</P>
           </Section>

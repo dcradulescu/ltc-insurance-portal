@@ -1,23 +1,31 @@
-import { shareResource as sharePortalResource } from "@/lib/shareResource";
-import { JourneyNavigation } from "./JourneyNavigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { trpc } from "@/lib/trpc";
+import { clearAccountDrafts } from "@/lib/accountStorage";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Phone, Globe, Share2, ExternalLink } from "lucide-react";
+import { Menu, X, Phone, Globe, Share2 } from "lucide-react";
 import { SiteFooter } from "@/components/SiteFooter";
-import { RightHelperPanel } from "@/components/RightHelperPanel";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
-const navLinks: { href: string; label: string }[] = [
+const navLinks = [
   { href: "/", label: "Home" },
   { href: "/academy", label: "Academy" },
   { href: "/policy-form", label: "Policy" },
   { href: "/strategy", label: "Strategy" },
+  { href: "/documents", label: "Documents" },
   { href: "/contact", label: "Contact" },
   { href: "/profile", label: "Profile" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { user } = useAuth();
+  const logout = trpc.auth.logout.useMutation();
+  async function signOut() {
+    try {
+      await logout.mutateAsync(); clearAccountDrafts(); window.location.assign("/login");
+    } catch { toast.error("Could not sign out. Please try again."); }
+  }
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -41,7 +49,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       text: "SC Visiting Angels offers a completely free tool to help families navigate long-term care insurance claims.",
       url: window.location.origin,
     };
-    await sharePortalResource(shareData, "Link copied!", "Share it with family members who need help with LTC insurance.");
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try { await navigator.share(shareData); } catch {}
+    } else {
+      await navigator.clipboard.writeText(window.location.origin);
+      toast.success("Link copied!", { description: "Share it with family members who need help with LTC insurance." });
+    }
   };
 
   return (
@@ -54,6 +67,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             Helping families navigate long-term care insurance — at no cost
           </span>
           <div className="flex items-center gap-5">
+            {user ? <button type="button" onClick={signOut} disabled={logout.isPending} className="font-semibold underline">{logout.isPending ? "Signing out…" : "Sign out"}</button> : <Link href="/login" className="font-semibold underline">Sign in</Link>}
             <a
               href="tel:+18642446300"
               className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors duration-200 group"
@@ -90,9 +104,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-2.5 no-underline group"
           >
             <img
-              src="/brand-logo.svg"
+              src="/media/cdn/NnImPmoCbXXIfDiW.png"
               alt="SC Visiting Angels"
-              className="w-14 h-10 object-contain transition-transform duration-300 group-hover:scale-110"
+              className="w-9 h-9 object-contain transition-transform duration-300 group-hover:scale-110"
             />
             <div className="flex flex-col leading-tight">
               <span
@@ -111,7 +125,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </a>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-0">
+          <nav className="hidden xl:flex items-center gap-0">
             {navLinks.map((link) => {
               const isActive = location === link.href;
               return (
@@ -132,35 +146,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-            {/* Divider + Sign Up Now */}
-            <span className="mx-3 h-6 w-px" style={{ background: "#e0dede" }} />
             <a
-              href="https://www.SCVisitingAngels.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-2 inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider px-4 py-2 rounded transition-all duration-200 no-underline"
-              style={{
-                background: "linear-gradient(135deg, #FF6B9D, #E8567F)",
-                color: "#ffffff",
-                fontFamily: "'Roboto', sans-serif",
-                fontSize: "0.7rem",
-                letterSpacing: "0.08em",
-                boxShadow: "0 2px 8px rgba(255,107,157,0.3)",
-              }}
+              href="/academy"
+              className="ml-4 va-btn text-sm"
+              style={{ paddingTop: "0.6rem", paddingBottom: "0.6rem", paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
             >
-              Sign Up Now
-              <ExternalLink className="w-3 h-3" />
+              Start Here
             </a>
           </nav>
 
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded transition-all duration-200"
+            className="xl:hidden p-2 rounded transition-all duration-200"
             style={{ color: "#454545" }}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="mobile-navigation"
           >
             <div className="relative w-5 h-5">
               <X className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${mobileMenuOpen ? "opacity-100 rotate-0" : "opacity-0 rotate-90"}`} />
@@ -171,9 +171,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile menu */}
         <div
-          id="mobile-navigation"
-          inert={!mobileMenuOpen}
-          className={`lg:hidden bg-white overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`xl:hidden bg-white overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           }`}
           style={{ borderTop: "1px solid #e0dede" }}
@@ -198,23 +196,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 )}
               </Link>
             ))}
-            {/* Divider */}
-            <div className="mx-5 my-2" style={{ borderTop: "1px solid #e0dede", width: "80%" }} />
-            {/* Sign Up Now button */}
             <div className="p-4">
-              <a
-                href="https://www.SCVisitingAngels.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full text-center block text-sm font-bold uppercase tracking-wider py-3 rounded transition-all duration-200 no-underline"
-                style={{
-                  background: "linear-gradient(135deg, #FF6B9D, #E8567F)",
-                  color: "#ffffff",
-                  fontFamily: "'Roboto', sans-serif",
-                  boxShadow: "0 2px 8px rgba(255,107,157,0.3)",
-                }}
-              >
-                Sign Up Now
+              <a href="/education" className="va-btn w-full text-center block text-sm">
+                Start Here
               </a>
             </div>
           </nav>
@@ -222,10 +206,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* ── Main content ── */}
-      <main className="flex-1 min-w-0 lg:mr-[280px]"><JourneyNavigation />{children}</main>
-
-      {/* ── Right Helper Panel (Video + Downloads + Chat) ── */}
-      <RightHelperPanel />
+      <main className="flex-1">{children}</main>
 
       {/* ── Shared Site Footer (consultation callout, home care, stats, legal disclaimer) ── */}
       <SiteFooter />
@@ -239,7 +220,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <div className="flex items-center gap-2.5 mb-4">
                 <img
-                  src="/manus-storage/Dove-White-Transparent_925915bc.png"
+                  src="/media/core/Dove-White-Transparent_925915bc.png"
                   alt="SC Visiting Angels"
                   className="w-8 h-8 object-contain"
                 />
@@ -282,6 +263,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   { href: "/education", label: "Education" },
                   { href: "/policy-form", label: "Policy" },
                   { href: "/strategy", label: "Strategy" },
+  { href: "/documents", label: "Documents" },
                 ].map(({ href, label }) => (
                   <li key={href}>
                     <Link
@@ -394,7 +376,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           >
             <div className="flex justify-center mb-3">
               <img
-                src="/manus-storage/Dove-Trans_4328daa6.gif"
+                src="/media/core/Dove-Trans_4328daa6.gif"
                 alt="SC Visiting Angels dove"
                 className="w-12 h-12 object-contain"
               />
@@ -402,13 +384,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p style={{ fontFamily: "'Open Sans', sans-serif" }}>
               &copy; {new Date().getFullYear()} SC Visiting Angels. All rights reserved.
               &nbsp;·&nbsp;
-              <Link href="/privacy" className="break-all hover:text-[#34B1C4] transition-colors duration-200">Privacy Policy</Link>
+              <Link href="/privacy" className="inline-block max-w-full break-all hover:text-[#34B1C4] transition-colors duration-200">Privacy Policy</Link>
               &nbsp;·&nbsp;
               <a
                 href="https://www.visitingangels.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="break-all hover:text-[#34B1C4] transition-colors duration-200"
+                className="inline-block max-w-full break-all hover:text-[#34B1C4] transition-colors duration-200"
               >
                 www.visitingangels.com
               </a>
@@ -417,7 +399,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 href="https://www.scvisitingangels.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="break-all hover:text-[#34B1C4] transition-colors duration-200"
+                className="inline-block max-w-full break-all hover:text-[#34B1C4] transition-colors duration-200"
               >
                 www.scvisitingangels.com
               </a>

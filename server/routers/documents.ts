@@ -1,12 +1,17 @@
-import { router, publicProcedure } from "../_core/trpc";
+import { TRPCError } from "@trpc/server";
+import type { DocumentUpload } from "../../drizzle/schema";
+import { requireOwnedPolicy, requireOwnedStrategy, owned } from "../_core/ownership";
+import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { storagePut } from "../storage";
 import { nanoid } from "nanoid";
+import { isDocumentClaimEvidence } from "../claimMilestones";
 import {
   createDocumentUpload,
   getDocumentsByUserId,
   getDocumentsByTaskId,
   deleteDocument,
+  updateDocumentTaskLink,
 } from "../db";
 
 // Allowed file types and sizes
@@ -76,36 +81,57 @@ const DOCUMENT_CATEGORIES = {
   },
 };
 
+// Ignore legacy/public URLs: every listed document goes through the ownership proxy.
+function presentDocument(doc: DocumentUpload) {
+  const key = doc.fileKey.split("/").map(encodeURIComponent).join("/");
+  return { ...doc, fileUrl: `/storage/${key}?filename=${encodeURIComponent(doc.fileName)}`,
+    status: "uploaded" as const, category: doc.category || "Other", uploadedAt: doc.createdAt };
+}
+function invalid(message: string): never { throw new TRPCError({ code: "BAD_REQUEST", message }); }
+
+const taskInput = z.object({ strategyId: z.number().int().positive(), taskId: z.string().min(1).max(128) });
+async function taskContext(strategyId: number, taskId: string, userId: number) {
+  const strategy = await requireOwnedStrategy(strategyId, userId);
+  const tasks = [strategy.stage1Tasks, strategy.stage2Tasks, strategy.stage3Tasks]
+    .flatMap(stage => Array.isArray(stage) ? stage : []);
+  const task = tasks.find(task => task && typeof task === "object" && task.id === taskId && typeof task.label === "string");
+  if (!task) throw new TRPCError({ code: "NOT_FOUND", message: "Strategy task not found" });
+  return { strategyId: strategy.id, policyId: strategy.policyId, taskId, taskLabel: task.label as string };
+}
+
 export const documentsRouter = router({
   /**
    * Upload a document with validation
    */
-  upload: publicProcedure
+  upload: protectedProcedure
     .input(
       z.object({
-        fileName: z.string().min(1).max(512),
+        fileName: z.string().trim().min(1).max(512).refine(name => !/[\x00-\x1f\x7f]/.test(name), "Filename contains unsupported characters"),
         fileData: z.string(), // base64
         mimeType: z.string(),
         category: z.string(),
         description: z.string().optional(),
         tags: z.array(z.string()).optional(),
-        taskId: z.string().optional(),
-        policyId: z.number().optional(),
-        strategyId: z.number().optional(),
+        taskId: z.string().min(1).max(128).optional(),
+        policyId: z.number().int().positive().optional(),
+        strategyId: z.number().int().positive().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       // Validate file type
       if (!ALLOWED_MIME_TYPES.includes(input.mimeType)) {
-        throw new Error(
+        invalid(
           `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}`
         );
       }
 
       // Validate file size
+      if (input.fileData.length > Math.ceil(MAX_FILE_SIZE / 3) * 4) invalid("File exceeds 50 MB");
       const buffer = Buffer.from(input.fileData, "base64");
+      if (buffer.length === 0) invalid("File is empty");
+      if (buffer.toString("base64") !== input.fileData) invalid("Invalid file encoding");
       if (buffer.length > MAX_FILE_SIZE) {
-        throw new Error(
+        invalid(
           `File size exceeds maximum allowed size of ${MAX_FILE_SIZE_DISPLAY}`
         );
       }
@@ -118,7 +144,7 @@ export const documentsRouter = router({
       );
 
       if (!categoryKey) {
-        throw new Error(`Invalid document category: ${input.category}`);
+        invalid(`Invalid document category: ${input.category}`);
       }
 
       const category =
@@ -126,20 +152,25 @@ export const documentsRouter = router({
 
       // Check if file type is allowed for category
       if (!category.allowedTypes.includes(input.mimeType)) {
-        throw new Error(
+        invalid(
           `File type not allowed for ${category.name}. Allowed types: ${category.allowedTypes.join(", ")}`
         );
       }
 
       // Upload to S3
-      const userId = 1; // Default public user
-      const fileKey = `${userId}-docs/${nanoid()}-${input.fileName}`;
-      const { url } = await storagePut(fileKey, buffer, input.mimeType);
+      const userId = ctx.user.id;
+      const policy = input.policyId ? await requireOwnedPolicy(input.policyId, userId) : undefined;
+      const strategy = input.strategyId ? await requireOwnedStrategy(input.strategyId, userId) : undefined;
+      if (policy && strategy && strategy.policyId !== policy.id) invalid("Policy and strategy do not match");
+      if (input.taskId && !input.strategyId) invalid("A strategy is required for a task attachment");
+      if (input.taskId && input.strategyId) await taskContext(input.strategyId, input.taskId, userId);
+      const fileKey = `users/${userId}/documents/${nanoid()}`;
+      const { url } = await storagePut(fileKey, buffer, input.mimeType, userId);
 
       // Create document record
       const docId = await createDocumentUpload({
         userId,
-        policyId: input.policyId ?? null,
+        policyId: strategy?.policyId ?? input.policyId ?? null,
         strategyId: input.strategyId ?? null,
         taskId: input.taskId ?? null,
         category: input.category,
@@ -163,78 +194,111 @@ export const documentsRouter = router({
   /**
    * List all documents for user
    */
-  list: publicProcedure.query(async () => {
-    const documents = await getDocumentsByUserId(1); // Default public user
-    return documents.map((doc) => ({
-      ...doc,
-      status: "uploaded",
-      category: doc.category || "Other",
-      uploadedAt: doc.createdAt,
-    }));
+  list: protectedProcedure.query(async ({ ctx }) => {
+    const documents = await getDocumentsByUserId(ctx.user.id); // Account owner
+    return documents.map(presentDocument);
   }),
 
   /**
    * List documents by category
    */
-  listByCategory: publicProcedure
+  listByCategory: protectedProcedure
     .input(z.object({ category: z.string() }))
-    .query(async ({ input }) => {
-      const documents = await getDocumentsByUserId(1);
+    .query(async ({ input, ctx }) => {
+      const documents = await getDocumentsByUserId(ctx.user.id);
       return documents
         .filter((doc) => doc.category === input.category)
-        .map((doc) => ({
-          ...doc,
-          status: "uploaded",
-          uploadedAt: doc.createdAt,
-        }));
+        .map(presentDocument);
     }),
 
   /**
    * List documents for specific task
    */
-  listByTask: publicProcedure
-    .input(z.object({ taskId: z.string() }))
-    .query(async ({ input }) => {
-      const documents = await getDocumentsByTaskId(input.taskId, 1);
-      return documents.map((doc) => ({
-        ...doc,
-        status: "uploaded",
-        uploadedAt: doc.createdAt,
-      }));
+  listByTask: protectedProcedure
+    .input(taskInput)
+    .query(async ({ input, ctx }) => {
+      await taskContext(input.strategyId, input.taskId, ctx.user.id);
+      const documents = await getDocumentsByTaskId(input.taskId, ctx.user.id, input.strategyId);
+      return documents.map(presentDocument);
+    }),
+
+  taskDocuments: protectedProcedure.input(taskInput).query(async ({ input, ctx }) => {
+    const context = await taskContext(input.strategyId, input.taskId, ctx.user.id);
+    const documents = await getDocumentsByTaskId(input.taskId, ctx.user.id, input.strategyId);
+    return { ...context, documents: documents.map(presentDocument) };
+  }),
+
+  availableForTask: protectedProcedure.input(taskInput).query(async ({ input, ctx }) => {
+    const task = await taskContext(input.strategyId, input.taskId, ctx.user.id);
+    return (await getDocumentsByUserId(ctx.user.id))
+      .filter(doc => doc.taskId === null && (doc.strategyId === null || doc.strategyId === task.strategyId)
+        && (doc.policyId === null || doc.policyId === task.policyId)).map(presentDocument);
+  }),
+
+  attachToTask: protectedProcedure.input(taskInput.extend({ documentId: z.number().int().positive() }))
+    .mutation(async ({ input, ctx }) => {
+      const task = await taskContext(input.strategyId, input.taskId, ctx.user.id);
+      const doc = owned((await getDocumentsByUserId(ctx.user.id)).find(doc => doc.id === input.documentId), ctx.user.id);
+      if (doc.policyId !== null && doc.policyId !== task.policyId) invalid("This document belongs to another policy");
+      if (doc.strategyId === task.strategyId && doc.taskId === task.taskId && doc.policyId === task.policyId) return { success: true };
+      if (await isDocumentClaimEvidence(ctx.user.id, doc.id)) {
+        throw new TRPCError({ code: "CONFLICT", message: "This document is part of the recorded claim history and cannot be reassigned." });
+      }
+      if (doc.taskId !== null || (doc.strategyId !== null && doc.strategyId !== task.strategyId)) {
+        throw new TRPCError({ code: "CONFLICT", message: "This document is already attached elsewhere. Refresh the list." });
+      }
+      if (!await updateDocumentTaskLink(doc, { policyId: task.policyId, strategyId: task.strategyId, taskId: task.taskId })) {
+        throw new TRPCError({ code: "CONFLICT", message: "This document changed. Refresh the list before trying again." });
+      }
+      return { success: true };
+    }),
+
+  detachFromTask: protectedProcedure.input(taskInput.extend({ documentId: z.number().int().positive() }))
+    .mutation(async ({ input, ctx }) => {
+      await requireOwnedStrategy(input.strategyId, ctx.user.id);
+      const doc = owned((await getDocumentsByUserId(ctx.user.id)).find(doc => doc.id === input.documentId), ctx.user.id);
+      if (doc.strategyId !== input.strategyId || doc.taskId !== input.taskId) {
+        throw new TRPCError({ code: "CONFLICT", message: "This document is no longer attached to this task. Refresh the list." });
+      }
+      if (await isDocumentClaimEvidence(ctx.user.id, doc.id)) {
+        throw new TRPCError({ code: "CONFLICT", message: "This document is part of the recorded claim history and cannot be detached." });
+      }
+      if (!await updateDocumentTaskLink(doc, { policyId: doc.policyId, strategyId: null, taskId: null })) {
+        throw new TRPCError({ code: "CONFLICT", message: "This document changed. Refresh the list before trying again." });
+      }
+      return { success: true };
     }),
 
   /**
    * Get document details
    */
-  get: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
-      const documents = await getDocumentsByUserId(1);
+  get: protectedProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .query(async ({ input, ctx }) => {
+      const documents = await getDocumentsByUserId(ctx.user.id);
       const doc = documents.find((d) => d.id === input.id);
-      if (!doc) {
-        throw new Error("Document not found");
-      }
-      return {
-        ...doc,
-        status: "uploaded",
-        uploadedAt: doc.createdAt,
-      };
+      if (!doc) throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
+      return presentDocument(doc);
     }),
 
   /**
    * Delete document
    */
-  delete: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
-      await deleteDocument(input.id, 1); // Default public user
+  delete: protectedProcedure
+    .input(z.object({ id: z.number().int().positive() }))
+    .mutation(async ({ input, ctx }) => {
+      owned((await getDocumentsByUserId(ctx.user.id)).find(doc => doc.id === input.id), ctx.user.id);
+      if (await isDocumentClaimEvidence(ctx.user.id, input.id)) {
+        throw new TRPCError({ code: "CONFLICT", message: "This document supports the claim audit history and cannot be deleted." });
+      }
+      await deleteDocument(input.id, ctx.user.id); // Account owner
       return { success: true };
     }),
 
   /**
    * Get document categories
    */
-  getCategories: publicProcedure.query(() => {
+  getCategories: protectedProcedure.query(() => {
     return Object.entries(DOCUMENT_CATEGORIES).map(([key, category]) => ({
       id: key,
       name: category.name,
@@ -247,7 +311,7 @@ export const documentsRouter = router({
   /**
    * Get upload requirements
    */
-  getRequirements: publicProcedure.query(() => {
+  getRequirements: protectedProcedure.query(() => {
     return {
       maxFileSize: MAX_FILE_SIZE,
       maxFileSizeDisplay: MAX_FILE_SIZE_DISPLAY,
@@ -265,11 +329,11 @@ export const documentsRouter = router({
   /**
    * Validate file before upload
    */
-  validateFile: publicProcedure
+  validateFile: protectedProcedure
     .input(
       z.object({
         fileName: z.string(),
-        fileSize: z.number(),
+        fileSize: z.number().int().nonnegative(),
         mimeType: z.string(),
         category: z.string(),
       })
@@ -285,6 +349,7 @@ export const documentsRouter = router({
       }
 
       // Check file size
+      if (input.fileSize === 0) errors.push("File is empty");
       if (input.fileSize > MAX_FILE_SIZE) {
         errors.push(
           `File size exceeds maximum allowed size of ${MAX_FILE_SIZE_DISPLAY}`

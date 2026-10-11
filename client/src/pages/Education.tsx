@@ -3,7 +3,6 @@ import { Link } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { PageNavigation } from "@/components/PageNavigation";
 import {
   ArrowRight, Heart, FileSearch, ClipboardList, CheckCircle2,
   ChevronDown, ChevronUp, AlertCircle, Lightbulb, Info, Printer,
@@ -64,16 +63,6 @@ const FAQS: { q: string; a: string }[] = [
   { q: "What if care costs more than my daily benefit amount?", a: "You pay the difference out-of-pocket. For example, if your daily benefit is $200 and care costs $250/day, you pay $50/day. Some families supplement with personal savings, family contributions, or other resources. The LTC Navigator strategy tool will show you exactly how to manage this gap." },
   { q: "Can I use LTC insurance benefits for a family member who provides care?", a: "Generally, no. Most policies require care to be provided by a licensed professional caregiver or home care agency, not a family member. Some policies have 'informal care' provisions — check your specific policy language." },
 ];
-
-const TERM_ANCHORS: Record<string, string> = {
-  adl: "Activities of Daily Living (ADLs)",
-  "elimination-period": "Elimination Period", aob: "Assignment of Benefits (AOB)",
-  "care-logs": "Care Logs", appeals: "Appeals Process", assessment: "Third-Party Assessment",
-  waiver: "Waiver of Premium", inflation: "Inflation Rider", "claim-form": "Claims Packet",
-};
-const SECTION_ANCHORS: Record<string, string[]> = {
-  "stage-3": ["plan-of-care", "poa", "hipaa"], "stage-4": ["invoicing"],
-};
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
 
@@ -149,7 +138,6 @@ function Stage({
 }) {
   return (
     <section id={id} className="py-section scroll-mt-28" style={{ background: bg }}>
-      {(SECTION_ANCHORS[id] ?? []).map(alias => <span id={alias} key={alias} aria-hidden="true" />)}
       <div className="container max-w-3xl">
         <div className="flex items-start gap-4 mb-6">
           <div
@@ -234,18 +222,6 @@ export default function Education() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [questionForm, setQuestionForm] = useState({ name: "", email: "", question: "" });
   const [questionSubmitted, setQuestionSubmitted] = useState(false);
-  useEffect(() => {
-    const openLinkedTerm = () => {
-      const term = TERM_ANCHORS[window.location.hash.slice(1)];
-      if (!term) return;
-      const stage = TERM_STAGES.findIndex(group => group.terms.some(item => item.term === term));
-      if (stage >= 0) { setActiveTermStage(stage); setActiveTerm(term); }
-    };
-    openLinkedTerm();
-    const events = ["hashchange", "popstate", "pushState", "replaceState"];
-    events.forEach(event => window.addEventListener(event, openLinkedTerm));
-    return () => events.forEach(event => window.removeEventListener(event, openLinkedTerm));
-  }, []);
   const sendQuestion = trpc.email.sendContactForm.useMutation({
     onSuccess: () => { setQuestionSubmitted(true); setQuestionForm({ name: "", email: "", question: "" }); },
     onError: () => toast.error("Could not send your question. Please try again."),
@@ -274,21 +250,21 @@ export default function Education() {
         <meta name="description" content="Understand the LTC insurance journey in four stages: recognizing the need for care, understanding your policy, filing the claim, and what happens after approval. Free guides from SC Visiting Angels." />
         <meta property="og:title" content="LTC Insurance Education Center — Free Guides & Resources" />
         <meta property="og:description" content="Free education on long-term care insurance: understand your policy, benefits, ADLs, elimination periods, and how to file a claim." />
-        <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-education-5pEx3gNnpSRGB9hKqZu9Pb.png" />
+        <meta property="og:image" content="/media/cdn/lSMqOjgOjuvfRlJs.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="LTC Insurance Education Center — Free Guides & Resources" />
         <meta name="twitter:description" content="Free education on long-term care insurance: understand your policy, benefits, ADLs, elimination periods, and how to file a claim." />
-        <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-education-5pEx3gNnpSRGB9hKqZu9Pb.png" />
+        <meta name="twitter:image" content="/media/cdn/lSMqOjgOjuvfRlJs.png" />
       </Helmet>
 
       {/* ── Print-only header (hidden on screen) ── */}
       <div className="hidden print:block" style={{ borderBottom: '3px solid #34B1C4', paddingBottom: '12px', marginBottom: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/manus-storage/Dove-Trans_bbc93e8e.gif" alt="SC Visiting Angels" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+            <img src="/media/core/Dove-Trans_4328daa6.gif" alt="SC Visiting Angels" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
             <div>
               <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#34B1C4', fontFamily: "'Roboto', sans-serif" }}>SC Visiting Angels</div>
               <div style={{ fontSize: '11px', color: '#555', fontFamily: "'Open Sans', sans-serif" }}>LTC Insurance Education Guide</div>
@@ -309,7 +285,7 @@ export default function Education() {
       <section className="relative text-white overflow-hidden print:hidden">
         <div className="absolute inset-0">
           <img
-            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg"
+            src="/media/cdn/lSMqOjgOjuvfRlJs.png"
             alt=""
             className="w-full h-full object-cover"
           />
@@ -333,7 +309,8 @@ export default function Education() {
                 className="w-full h-full object-cover"
                 style={{ background: "#000" }}
               >
-                <source src="/manus-storage/education-video.mp4" type="video/mp4" />
+                {/* Migration fallback: the original education-video.mp4 was absent from the source backup. */}
+                <source src="/media/cdn/MjPhBEQZfvIrfZms.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
             </div>
@@ -713,7 +690,6 @@ export default function Education() {
 
       {/* ── Terms & Definitions ── */}
       <section id="terms" className="py-section" style={{ background: "#ffffff" }}>
-        <span id="glossary" aria-hidden="true" />
         <div className="container max-w-5xl">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-4" style={{ background: "#e8f7f9", color: "#34B1C4", fontFamily: "'Open Sans', sans-serif" }}>
@@ -747,7 +723,7 @@ export default function Education() {
             <div className="flex-1 rounded-xl border overflow-hidden" style={{ borderColor: "#e0dcdc" }}>
               <div className="divide-y divide-gray-100">
                 {TERM_STAGES[activeTermStage].terms.map((t) => (
-                  <div key={t.term} id={Object.keys(TERM_ANCHORS).find(key => TERM_ANCHORS[key] === t.term)}>
+                  <div key={t.term}>
                     <button
                       onClick={() => setActiveTerm(activeTerm === t.term ? null : t.term)}
                       className="w-full flex items-center justify-between px-5 py-3.5 text-left text-sm font-semibold transition-colors duration-150 hover:bg-blue-50"
@@ -887,7 +863,7 @@ export default function Education() {
             </div>
             <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ minHeight: 320 }}>
               <img
-                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg"
+                src="/media/cdn/lSMqOjgOjuvfRlJs.png"
                 alt="SC Visiting Angels caregiver providing compassionate home care to a senior"
                 className="w-full h-full object-cover"
                 style={{ minHeight: 320 }}
@@ -897,11 +873,6 @@ export default function Education() {
           </div>
         </div>
       </section>
-
-      {/* Page Navigation */}
-      <div className="container max-w-3xl pb-8">
-        <PageNavigation />
-      </div>
 
     </Layout>
   );

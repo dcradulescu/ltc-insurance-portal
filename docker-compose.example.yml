@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        VITE_PUBLIC_URL: ${VITE_PUBLIC_URL:-http://localhost:3000}
+    env_file: .env
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

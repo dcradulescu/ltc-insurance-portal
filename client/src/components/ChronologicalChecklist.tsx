@@ -1,7 +1,9 @@
+import type { ClaimCompletionEvidence } from "@shared/claimSchedule";
 import { useMemo, useState } from "react";
 import { CheckCircle2, AlertTriangle, Calendar, ChevronDown, ChevronRight, FileText, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { buildClaimSchedule, isRecurringClaimTask, parseEliminationDays, localDate, localDateKey } from "@shared/claimSchedule";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type StrategyTask = {
@@ -17,6 +19,8 @@ interface ChronologicalChecklistProps {
   stage2Tasks: StrategyTask[];
   stage3Tasks: StrategyTask[];
   eliminationPeriod?: string;
+  planStartDate?: Date | string | null;
+  taskCompletionDates?: ClaimCompletionEvidence[];
   onToggleTask?: (stageKey: string, taskId: string) => void;
 }
 
@@ -47,36 +51,6 @@ const DOCUMENT_LINKS: { pattern: RegExp; label: string; href: string }[] = [
 
 function getDocumentLinks(label: string) {
   return DOCUMENT_LINKS.filter(d => d.pattern.test(label));
-}
-
-// ── Schedule mapping (same as GanttTimeline) ──────────────────────────────────
-function buildSchedule(elimDays: number) {
-  const sched: Record<string, [number, number]> = {
-    "s1-1": [0, 3], "s1-2": [0, 3], "s1-3": [0, 3],
-    "s1-4": [2, 7], "s1-5": [2, 7],
-    "s1-6": [3, 5], "s1-7": [5, 5], "s1-8": [5, 10], "s1-9": [7, 7], "s1-10": [7, 10],
-    "s1-11": [5, 10], "s1-12": [10, 5],
-    "s1-13": [10, 7], "s1-14": [12, 7], "s1-15": [10, 5], "s1-16": [14, 5],
-    "s1-17": [18, Math.max(elimDays, 14)],
-    "s1-18": [3, 5], "s1-19": [3, 7], "s1-20": [10, 5], "s1-21": [10, 5],
-  };
-  const p = 25;
-  const s2Sched: Record<string, [number, number]> = {
-    "s2-1": [p, 5], "s2-2": [p + 3, 3], "s2-3": [p + 2, 2], "s2-4": [p + 2, 2],
-    "s2-5": [p + 3, 2], "s2-6": [p + 3, 2], "s2-7": [p + 3, 2], "s2-8": [p + 4, 2],
-    "s2-9": [p + 4, 3], "s2-10": [p + 6, 2], "s2-11": [p + 7, 1],
-    "s2-12": [p + 10, 5], "s2-13": [p + 10, 5], "s2-14": [p + 10, 5],
-    "s2-15": [p + 10, 5], "s2-16": [p + 10, 5],
-    "s2-17": [p + 8, 30], "s2-18": [p + 8, 30],
-  };
-  const s2End = p + 8 + 30;
-  const s3Sched: Record<string, [number, number]> = {
-    "s3-1": [s2End, elimDays], "s3-2": [s2End, elimDays], "s3-3": [s2End, elimDays],
-    "s3-4": [s2End + 14, 14], "s3-5": [s2End + 14, 14],
-    "s3-6": [s2End + 7, 21], "s3-7": [s2End + 14, 21], "s3-8": [s2End + 21, 21],
-    "s3-9": [s2End, 30], "s3-10": [s2End, 30],
-  };
-  return { ...sched, ...s2Sched, ...s3Sched };
 }
 
 // ── Date formatting ────────────────────────────────────────────────────────────
@@ -132,19 +106,21 @@ export function ChronologicalChecklist({
   stage2Tasks,
   stage3Tasks,
   eliminationPeriod,
+  planStartDate,
+  taskCompletionDates,
   onToggleTask,
 }: ChronologicalChecklistProps) {
   const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
   const [filterStage, setFilterStage] = useState<number | null>(null); // null = all
   const [showCompleted, setShowCompleted] = useState(true);
 
-  const elimDays = eliminationPeriod ? parseInt(eliminationPeriod, 10) || 90 : 90;
-  const startDate = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
+  const elimDays = parseEliminationDays(eliminationPeriod);
+  const startDate = useMemo(() => localDate(planStartDate), [planStartDate]);
   const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
 
   // Build chronological items from all stages
   const { dateGroups, totalTasks, completedTasks } = useMemo(() => {
-    const schedule = buildSchedule(elimDays);
+    const schedule = buildClaimSchedule(elimDays, { planStartDate: startDate, completedTasks: taskCompletionDates, activeTaskIds: [...stage1Tasks, ...stage2Tasks, ...stage3Tasks].map(t => t.id) });
     const allItems: ChronoItem[] = [];
 
     const addTasks = (tasks: StrategyTask[], stage: number, stageKey: string) => {
@@ -171,7 +147,7 @@ export function ChronologicalChecklist({
     // Group by start date
     const groupMap = new Map<string, DateGroup>();
     for (const item of allItems) {
-      const key = item.startDate.toISOString().split("T")[0];
+      const key = localDateKey(item.startDate);
       if (!groupMap.has(key)) {
         const dayNum = item.startDay + 1;
         groupMap.set(key, {
@@ -190,7 +166,7 @@ export function ChronologicalChecklist({
     const completed = allItems.filter(i => i.task.completed).length;
 
     return { dateGroups: groups, totalTasks: total, completedTasks: completed };
-  }, [stage1Tasks, stage2Tasks, stage3Tasks, elimDays, startDate, today]);
+  }, [stage1Tasks, stage2Tasks, stage3Tasks, elimDays, startDate, today, taskCompletionDates]);
 
   const pct = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
@@ -231,6 +207,7 @@ export function ChronologicalChecklist({
         </div>
       </div>
 
+      <p className="px-5 py-2 text-[10px] text-muted-foreground border-b">Dates are preliminary estimates. Carrier approval and elimination counting must be confirmed before relying on the schedule.</p>
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 px-5 py-2.5 border-b border-border bg-muted/10">
         <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Filter:</span>
@@ -293,12 +270,12 @@ export function ChronologicalChecklist({
         {filteredGroups.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground">
             <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-400" />
-            <p className="text-sm font-medium">All tasks are completed!</p>
-            <p className="text-xs mt-1">Great work on your claim process.</p>
+            <p className="text-sm font-medium">{totalTasks === 0 ? "No scheduled tasks" : "No tasks match these filters"}</p>
+            <p className="text-xs mt-1">Adjust the filters to review your tasks.</p>
           </div>
         ) : (
           filteredGroups.map((group) => {
-            const dateKey = group.date.toISOString().split("T")[0];
+            const dateKey = localDateKey(group.date);
             const isCollapsed = collapsedDates.has(dateKey);
             const groupCompleted = group.items.filter(i => i.task.completed).length;
             const groupTotal = group.items.length;
@@ -398,6 +375,7 @@ export function ChronologicalChecklist({
                           <div className="flex-shrink-0 mt-0.5">
                             <Checkbox
                               checked={done}
+                              aria-label={item.task.label}
                               onCheckedChange={() => onToggleTask?.(item.stageKey, item.task.id)}
                               className={done ? "" : `${stageStyle.ring}`}
                               onClick={(e) => e.stopPropagation()}
@@ -435,7 +413,9 @@ export function ChronologicalChecklist({
                                 {catLabel}
                               </span>
                               <span className="text-[10px] text-muted-foreground">
-                                &middot; {formatDateShort(item.startDate)} – {formatDateShort(item.endDate)} ({item.duration} {item.duration === 1 ? "day" : "days"})
+                                &middot; {isRecurringClaimTask(item.task.id) ? "Recurring activity · dates estimated; verify billing cadence" : (
+                                  <>{formatDateShort(item.startDate)} – {formatDateShort(item.endDate)} ({item.duration} {item.duration === 1 ? "day" : "days"})</>
+                                )}
                               </span>
                             </div>
 

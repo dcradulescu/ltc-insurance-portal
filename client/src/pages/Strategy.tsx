@@ -1,6 +1,6 @@
-import { isStrategyPolicyComplete, applyTaskCompletions } from "@shared/strategyState";
-import { strategyRecipientsSchema } from "@shared/contactValidation";
-import DOMPurify from "dompurify";
+import { accountStorage } from "@/lib/accountStorage";
+import type { CareInputs } from "@shared/careCalculator";
+import { localDate, localDateKey } from "@shared/claimSchedule";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
@@ -11,6 +11,7 @@ const PdfDeliveryPanel = lazy(() => import("@/components/PdfDeliveryPanel").then
 const SMSNotificationManager = lazy(() => import("@/components/SMSNotificationManager").then(m => ({ default: m.SMSNotificationManager })));
 const GanttTimeline = lazy(() => import("@/components/GanttTimeline").then(m => ({ default: m.GanttTimeline })));
 const ChronologicalChecklist = lazy(() => import("@/components/ChronologicalChecklist").then(m => ({ default: m.ChronologicalChecklist })));
+const ClaimMilestonePanel = lazy(() => import("@/components/ClaimMilestonePanel").then(m => ({ default: m.ClaimMilestonePanel })));
 const PolicySummaryCard = lazy(() => import("@/components/PolicySummaryCard").then(m => ({ default: m.PolicySummaryCard })));
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,41 @@ const careRecommendations: Record<string, { schedule: string; prevention: string
   },
 };
 
+// Helper to check if form is complete
+function isFormComplete(policy: any) {
+  if (!policy) return false;
+  const hasBasicInfo = policy.insuredFullName && policy.insuredEmail && policy.insuredPhone &&
+                       policy.carrierName && policy.policyNumber;
+  if (!hasBasicInfo) return false;
+  const hasInsuredName = policy.insuredFullName && policy.insuredFullName.toString().trim() !== "";
+  const hasInsuredEmail = policy.insuredEmail && policy.insuredEmail.toString().trim() !== "";
+  const hasInsuredPhone = policy.insuredPhone && policy.insuredPhone.toString().trim() !== "";
+  const hasCarrierName = policy.carrierName && policy.carrierName.toString().trim() !== "";
+  const hasPolicyNumber = policy.policyNumber && policy.policyNumber.toString().trim() !== "";
+  const hasEliminationPeriod = policy.eliminationPeriod && policy.eliminationPeriod.toString().trim() !== "";
+  const hasWaiverOfPremium = policy.waiverOfPremium && policy.waiverOfPremium.toString().trim() !== "";
+  const hasDailyMaximum = policy.dailyMaximum && policy.dailyMaximum.toString().trim() !== "";
+  const hasMonthlyMaximum = policy.monthlyMaximum && policy.monthlyMaximum.toString().trim() !== "";
+  const hasLifetimeMaximum = policy.lifetimeMaximum && policy.lifetimeMaximum.toString().trim() !== "";
+  const hasQualifyingAdls = policy.qualifyingAdls && Array.isArray(policy.qualifyingAdls) && policy.qualifyingAdls.length > 0;
+  const hasAdlLimitations = policy.adlLimitations && Array.isArray(policy.adlLimitations) && policy.adlLimitations.length > 0;
+  const hasAdlsOrCognitive = hasQualifyingAdls || hasAdlLimitations || 
+                             (policy.cognitiveImpairmentTrigger && policy.cognitiveImpairmentTrigger.toString().trim() !== "");
+  const hasMinAdlsRequired = policy.minAdlsRequired !== undefined && policy.minAdlsRequired !== null && policy.minAdlsRequired.toString().trim() !== "";
+  let adlCountValid = true;
+  if (hasMinAdlsRequired) {
+    const adlArray = policy.qualifyingAdls || policy.adlLimitations || [];
+    if (Array.isArray(adlArray)) {
+      const minRequired = parseInt(policy.minAdlsRequired);
+      adlCountValid = adlArray.length >= minRequired;
+    }
+  }
+  const isComplete = hasInsuredName && hasInsuredEmail && hasInsuredPhone && hasCarrierName && hasPolicyNumber && 
+         hasEliminationPeriod && hasWaiverOfPremium && (hasDailyMaximum || hasMonthlyMaximum) && hasLifetimeMaximum &&
+         hasAdlsOrCognitive && hasMinAdlsRequired && adlCountValid;
+  return isComplete;
+}
+
 type StrategyTask = {
   id: string;
   label: string;
@@ -77,17 +113,36 @@ export default function Strategy() {
   const [emailRecipients, setEmailRecipients] = useState<string[]>([""]);
   const [planView, setPlanView] = useState<PlanView>("timeline");
   const [activeTab, setActiveTab] = useState("timeline");
+  const [scheduleStartDraft, setScheduleStartDraft] = useState("");
+  const [confirmedCareInputs, setConfirmedCareInputs] = useState<CareInputs | null>(null);
   const strategyContentRef = useRef<HTMLDivElement>(null);
+  const initialLoadDone = useRef(false);
   const { celebrateStageCompletion } = useStageCelebration();
   const [celebratedStages, setCelebratedStages] = useState<Set<number>>(new Set());
   const [expandedStages, setExpandedStages] = useState<Set<number>>(new Set([1, 2, 3]));
 
-  // Strategies always use the visitor-owned saved policy, including its server ID.
-  const policyQuery = trpc.policy.get.useQuery();
-  const policy = policyQuery.data?.id ? policyQuery.data : null;
-  const strategyQuery = trpc.strategy.getByPolicy.useQuery(
-    { policyId: policy?.id ?? 0 }, { enabled: !!policy?.id }
+  // Load policy data from localStorage
+  const [policyFromStorage, setPolicyFromStorage] = useState<any>(null);
+  useEffect(() => {
+    try {
+      const saved = accountStorage.getItem("ltc_policy_form");
+      if (saved) setPolicyFromStorage(JSON.parse(saved));
+    } catch (err) {
+      console.error("[Strategy] Failed to load policy from localStorage:", err);
+    }
+  }, []);
+
+  const policyQuery = trpc.policy.get.useQuery(undefined, { enabled: true });
+  const strategyQuery = trpc.strategy.getMine.useQuery(undefined, { enabled: true });
+  const claimMilestonesQuery = trpc.strategy.listClaimMilestones.useQuery(
+    { strategyId: strategyQuery.data?.id || 0 },
+    { enabled: !!strategyQuery.data?.id }
   );
+  const careScenarioQuery = trpc.strategy.getCareScenario.useQuery(
+    {strategyId: strategyQuery.data?.id || 0},
+    {enabled: !!strategyQuery.data?.id}
+  );
+  const saveCareScenarioMutation = trpc.strategy.saveCareScenario.useMutation();
   const taskCompletionsQuery = trpc.strategy.getTaskCompletions.useQuery(
     { strategyId: strategyQuery.data?.id || 0 },
     { enabled: !!strategyQuery.data?.id }
@@ -96,26 +151,20 @@ export default function Strategy() {
   const sendComprehensiveZapier = trpc.policyForm.sendComprehensiveToZapier.useMutation();
   const sessionStartRef = useRef(Date.now());
   const zapierSentRef = useRef(false);
-  const zapierPendingRef = useRef(false);
-  const zapierMutationRef = useRef(sendComprehensiveZapier);
-  zapierMutationRef.current = sendComprehensiveZapier;
 
   const sendToZapier = useCallback((trigger: "form_completed" | "strategy_completed" | "exit" | "timeout") => {
-    if (zapierSentRef.current || zapierPendingRef.current) return;
-    zapierPendingRef.current = true;
+    if (zapierSentRef.current) return;
+    zapierSentRef.current = true;
     const sessionDurationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
-    zapierMutationRef.current.mutate({ trigger, currentPage: "strategy", sessionDurationSeconds }, {
-      onSuccess: data => { zapierSentRef.current = data.success; },
-      onSettled: () => { zapierPendingRef.current = false; },
-    });
-  }, []);
+    sendComprehensiveZapier.mutate({ trigger, currentPage: "strategy", sessionDurationSeconds });
+  }, [sendComprehensiveZapier]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (!zapierSentRef.current && !zapierPendingRef.current) {
+      if (!zapierSentRef.current) {
         zapierSentRef.current = true;
         const sessionDurationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000);
-        navigator.sendBeacon?.("/api/trpc/policyForm.sendComprehensiveToZapier?batch=1", new Blob([JSON.stringify({ "0": { json: { trigger: "exit", currentPage: "strategy", sessionDurationSeconds } } })], { type: "application/json" }));
+        void fetch("/api/trpc/policyForm.sendComprehensiveToZapier", { method: "POST", keepalive: true, credentials: "include", headers: { "Content-Type": "application/json", "x-ltc-request": "1" }, body: JSON.stringify({ json: { trigger: "exit", currentPage: "strategy", sessionDurationSeconds } }) }).catch(() => {});
       }
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -126,8 +175,8 @@ export default function Strategy() {
   }, [sendToZapier]);
 
   const generateMutation = trpc.strategy.generate.useMutation({
-    onSuccess: async () => {
-      await strategyQuery.refetch();
+    onSuccess: () => {
+      strategyQuery.refetch();
       toast.success("Your personalized strategy has been generated!");
       zapierSentRef.current = false;
       sendToZapier("strategy_completed");
@@ -135,13 +184,40 @@ export default function Strategy() {
     onError: () => toast.error("Failed to generate strategy. Please try again."),
   });
   const updateTasksMutation = trpc.strategy.updateTasks.useMutation();
+  const saveScheduleStartMutation = trpc.strategy.updateScheduleStartDate.useMutation();
   const emailMutation = trpc.email.sendStrategy.useMutation({
     onSuccess: (data) => { toast.success(data.message); setEmailDialogOpen(false); },
-    onError: () => toast.error("Failed to send email."),
+    onError: (error) => toast.error(error.message),
   });
   const utils = trpc.useUtils();
 
   const strategy = strategyQuery.data;
+  const savedStartDate = strategy?.scheduleStartDate ||
+    (strategy?.createdAt ? localDateKey(localDate(strategy.createdAt)) : "");
+  useEffect(() => {
+    setScheduleStartDraft(savedStartDate);
+  }, [strategy?.id, savedStartDate]);
+  const policy = policyFromStorage || policyQuery.data;
+  useEffect(() => {
+    // Policy changes invalidate an in-memory financial model immediately.
+    setConfirmedCareInputs(null);
+  }, [policy?.id]);
+  useEffect(() => {
+    const saved=careScenarioQuery.data;
+    if(!strategy?.id || !saved) return;
+    setConfirmedCareInputs(saved.status==="saved_valid" ? saved.inputs : null);
+  }, [careScenarioQuery.data, strategy?.id, policy?.id]);
+
+  const persistCareScenario = useCallback(async (inputs:CareInputs) => {
+    if(!strategy?.id) throw new Error("Complete and save a strategy before using the calculator.");
+    const result=await saveCareScenarioMutation.mutateAsync({
+      strategyId:strategy.id,inputs,
+    });
+    // Future reloads query the account-owned database record.
+    if(result.status!=="saved_valid") setConfirmedCareInputs(null);
+    else setConfirmedCareInputs(result.inputs);
+    return {status:result.status,reason:result.reason};
+  }, [strategy?.id, saveCareScenarioMutation]);
 
   // Share active policy ID with the global ChatWidget
   const { setActivePolicyId } = usePolicyContext();
@@ -153,20 +229,32 @@ export default function Strategy() {
   const stage1Tasks: StrategyTask[] = useMemo(() => {
     const tasks = (strategy?.stage1Tasks as unknown as StrategyTask[]) || [];
     const completions = taskCompletionsQuery.data || [];
-    return applyTaskCompletions(tasks, completions);
+    return tasks.map(task => ({
+      ...task,
+      completed: completions.find(c => c.taskId === task.id)?.completed ?? task.completed
+    }));
   }, [strategy?.stage1Tasks, taskCompletionsQuery.data]);
   
   const stage2Tasks: StrategyTask[] = useMemo(() => {
     const tasks = (strategy?.stage2Tasks as unknown as StrategyTask[]) || [];
     const completions = taskCompletionsQuery.data || [];
-    return applyTaskCompletions(tasks, completions);
+    return tasks.map(task => ({
+      ...task,
+      completed: completions.find(c => c.taskId === task.id)?.completed ?? task.completed
+    }));
   }, [strategy?.stage2Tasks, taskCompletionsQuery.data]);
   
   const stage3Tasks: StrategyTask[] = useMemo(() => {
     const tasks = (strategy?.stage3Tasks as unknown as StrategyTask[]) || [];
     const completions = taskCompletionsQuery.data || [];
-    return applyTaskCompletions(tasks, completions);
+    return tasks.map(task => ({
+      ...task,
+      completed: completions.find(c => c.taskId === task.id)?.completed ?? task.completed
+    }));
   }, [strategy?.stage3Tasks, taskCompletionsQuery.data]);
+  const hasRecordedCarrierApproval = (claimMilestonesQuery.data || []).some(
+    event => event.kind === "carrier_approval" && event.evidenceDocumentId !== null
+  );
   const currentStage = strategy?.currentStage || 1;
 
   const stageProgress = (tasks: StrategyTask[]) => tasks.length ? Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0;
@@ -206,26 +294,42 @@ export default function Strategy() {
   const primaryDiagnosis = policy?.primaryDiagnosis as keyof typeof careRecommendations | undefined;
   const recommendations = primaryDiagnosis && careRecommendations[primaryDiagnosis] ? careRecommendations[primaryDiagnosis] : null;
 
-  const handleToggleTask = (stageKey: string, taskId: string) => {
+  const handleToggleTask = useCallback((stageKey: string, taskId: string) => {
     const taskMap: Record<string, StrategyTask[]> = { stage1Tasks, stage2Tasks, stage3Tasks };
     const tasks = taskMap[stageKey];
     if (tasks) toggleTask(stageKey as "stage1Tasks" | "stage2Tasks" | "stage3Tasks", tasks, taskId);
+  }, [stage1Tasks, stage2Tasks, stage3Tasks]);
+
+  const savePlanningStartDate = async () => {
+    if (!strategy?.id || !scheduleStartDraft || saveScheduleStartMutation.isPending) return;
+    try {
+      await saveScheduleStartMutation.mutateAsync({
+        strategyId: strategy.id,
+        startDate: scheduleStartDraft,
+      });
+      await utils.strategy.getMine.invalidate();
+      toast.success("Planning start date saved. The timeline and checklist have been refreshed.");
+    } catch (error) {
+      toast.error("Unable to save the planning date. Confirm the date and try again.");
+    }
   };
 
   const handleGenerate = () => {
-    if (!policy?.id || !isStrategyPolicyComplete(policy)) { toast.error("Complete and save your Policy Intake Form first."); navigate("/policy-form"); return; }
+    if (!policy) { toast.error("Please complete the Policy Intake Form first."); navigate("/policy-form"); return; }
     generateMutation.mutate({ policyId: policy.id });
   };
 
-  const pendingTasks = useRef(new Set<string>());
-
   const toggleTask = async (stage: "stage1Tasks" | "stage2Tasks" | "stage3Tasks", tasks: StrategyTask[], taskId: string) => {
-    if (!strategy || taskCompletionsQuery.isLoading || taskCompletionsQuery.isError || pendingTasks.current.has(taskId)) return;
+    if (!strategy) return;
+    if (stage === "stage3Tasks" && (strategy.currentStage !== 3 ||
+      strategy.claimStatus !== "approved" || !hasRecordedCarrierApproval)) {
+      toast.info("Stage 3 tasks unlock after explicit carrier approval confirmation.");
+      return;
+    }
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
     const newCompleted = !task.completed;
     const stageNum = parseInt(stage.replace(/\D/g, ''));
-    pendingTasks.current.add(taskId);
     
     try {
       await saveTaskCompletionMutation.mutateAsync({
@@ -235,11 +339,7 @@ export default function Strategy() {
         stage: stageNum,
         completed: newCompleted,
       });
-      utils.strategy.getTaskCompletions.setData({ strategyId: strategy.id }, old => [
-        ...(old ?? []).filter(completion => completion.taskId !== taskId),
-        { userId: strategy.userId, strategyId: strategy.id, taskId, taskTitle: task.label, stage: stageNum, completed: newCompleted, completedAt: newCompleted ? new Date() : null, id: 0, createdAt: new Date(), updatedAt: new Date() },
-      ]);
-      await taskCompletionsQuery.refetch();
+      taskCompletionsQuery.refetch();
       
       // Show success toast notification
       if (newCompleted) {
@@ -254,17 +354,22 @@ export default function Strategy() {
       }
     } catch (_e) { 
       toast.error("Failed to update task.");
-    } finally { pendingTasks.current.delete(taskId); }
+    }
   };
 
   const advanceStage = async (newStage: number) => {
     if (!strategy) return;
+    if (newStage === 3) {
+      toast.error("Stage 3 is unlocked only by recording the carrier decision and supporting document.");
+      return;
+    }
     try {
       await updateTasksMutation.mutateAsync({
         strategyId: strategy.id, stage: "stage1Tasks", tasks: stage1Tasks,
-        currentStage: newStage, claimStatus: newStage === 2 ? "in_progress" : newStage === 3 ? "approved" : "not_started",
+        currentStage: newStage,
+        claimStatus: newStage === 2 ? "in_progress" : "not_started",
       });
-      await strategyQuery.refetch();
+      utils.strategy.getMine.invalidate();
       toast.success(`Advanced to Stage ${newStage}`);
     } catch (_e) { toast.error("Failed to advance stage."); }
   };
@@ -283,15 +388,13 @@ export default function Strategy() {
 
   const downloadPdfMutation = trpc.pdfDelivery.generatePdf.useMutation({
     onSuccess: (data) => {
-      if (data.base64) {
+      if (data.url) {
         const link = document.createElement("a");
-        const url = URL.createObjectURL(new Blob([Uint8Array.from(atob(data.base64), c => c.charCodeAt(0))], {type:"application/pdf"}));
-        link.href = url;
+        link.href = data.url;
         link.download = `LTC-Strategy-${(policy?.insuredFullName || "Report").replace(/\s+/g, "-")}.pdf`;
         link.target = "_blank";
         link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-        toast.success("Your browser download has started.");
+        toast.success("PDF downloaded successfully!");
       }
     },
     onError: () => toast.error("Failed to generate PDF. Please try again."),
@@ -320,23 +423,36 @@ export default function Strategy() {
       diagnosisCheckboxes: policy.diagnosisCheckboxes || [],
       cognitiveImpairmentTrigger: policy.cognitiveImpairmentTrigger || "",
       stage1Tasks: stage1Tasks.map(t => t.label),
+      stage1TaskIds: stage1Tasks.map(t => t.id),
       stage2Tasks: stage2Tasks.map(t => t.label),
+      stage2TaskIds: stage2Tasks.map(t => t.id),
       stage3Tasks: stage3Tasks.map(t => t.label),
+      stage3TaskIds: stage3Tasks.map(t => t.id),
+      planStartDate: strategy?.scheduleStartDate ?? (strategy?.createdAt ? new Date(strategy.createdAt).toISOString() : undefined),
+      taskCompletionDates: (taskCompletionsQuery.data ?? []).map(c => ({ taskId: c.taskId, completed: c.completed, completedAt: c.completedAt ? new Date(c.completedAt).toISOString() : null })),
       careRecommendations: policy.careRecommendations || "",
       strategyContent: strategy?.strategyContent || "",
       diagnosis: policy.primaryDiagnosis || "",
       caseManagerName: policy.caseManagerName || "",
       thirdPartyAssessmentRequired: policy.thirdPartyAssessmentRequired || "",
+      careInputs: confirmedCareInputs ?? undefined,
+      issueDate: policy.issueDate || undefined,
+      policyStatus: policy.policyStatus || undefined,
+      benefitPeriod: policy.benefitPeriod || undefined,
+      claimsAddress1: policy.carrierAddress1 || undefined,
+      claimsAddress2: policy.carrierAddress2 || undefined,
+      claimsCityStateZip: policy.carrierCityStateZip || undefined,
+      claimsFax: policy.carrierFax || undefined,
     });
-  }, [policy, strategy, stage1Tasks, stage2Tasks, stage3Tasks, downloadPdfMutation]);
+  }, [policy, strategy, stage1Tasks, stage2Tasks, stage3Tasks, downloadPdfMutation, confirmedCareInputs]);
 
   const handleSendEmail = () => {
-    const recipients = strategyRecipientsSchema.safeParse(emailRecipients);
-    if (!recipients.success) { toast.error("Enter a valid address for every recipient (maximum 10)."); return; }
+    const validEmails = emailRecipients.filter(e => e.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim()));
+    if (!validEmails.length) { toast.error("Please enter at least one valid email address."); return; }
     if (!strategy?.id) return;
     emailMutation.mutate({
       strategyId: strategy.id,
-      recipients: recipients.data,
+      recipients: validEmails,
       policyData: policy ? {
         insuredName: policy.insuredFullName || "",
         insuredDob: policy.insuredDob || "",
@@ -359,12 +475,25 @@ export default function Strategy() {
         diagnosisCheckboxes: policy.diagnosisCheckboxes || [],
         cognitiveImpairmentTrigger: policy.cognitiveImpairmentTrigger || "",
         stage1Tasks: stage1Tasks.map(t => t.label),
+      stage1TaskIds: stage1Tasks.map(t => t.id),
         stage2Tasks: stage2Tasks.map(t => t.label),
+      stage2TaskIds: stage2Tasks.map(t => t.id),
         stage3Tasks: stage3Tasks.map(t => t.label),
+      stage3TaskIds: stage3Tasks.map(t => t.id),
+      planStartDate: strategy?.scheduleStartDate ?? (strategy?.createdAt ? new Date(strategy.createdAt).toISOString() : undefined),
+      taskCompletionDates: (taskCompletionsQuery.data ?? []).map(c => ({ taskId: c.taskId, completed: c.completed, completedAt: c.completedAt ? new Date(c.completedAt).toISOString() : null })),
         careRecommendations: policy.careRecommendations || "",
         strategyContent: strategy.strategyContent || "",
         caseManagerName: policy.caseManagerName || "",
         thirdPartyAssessmentRequired: policy.thirdPartyAssessmentRequired || "",
+        careInputs: confirmedCareInputs ?? undefined,
+        issueDate: policy.issueDate || undefined,
+        policyStatus: policy.policyStatus || undefined,
+        benefitPeriod: policy.benefitPeriod || undefined,
+        claimsAddress1: policy.carrierAddress1 || undefined,
+        claimsAddress2: policy.carrierAddress2 || undefined,
+        claimsCityStateZip: policy.carrierCityStateZip || undefined,
+        claimsFax: policy.carrierFax || undefined,
       } : undefined,
     });
   };
@@ -418,7 +547,7 @@ export default function Strategy() {
               <AccordionContent className="px-4 pb-3">
                 <div className="space-y-1.5">
                   {catTasks.map(task => (
-                    <label
+                    <div
                       key={task.id}
                       className={`group/task flex items-start gap-3 p-2.5 rounded-lg cursor-pointer transition-all duration-200 ${
                         task.completed
@@ -429,23 +558,25 @@ export default function Strategy() {
                       }`}
                     >
                       <Checkbox
+                        id={`task-${stage}-${task.id}`}
+                        aria-label={task.label}
                         checked={task.completed}
-                        disabled={saveTaskCompletionMutation.isPending || taskCompletionsQuery.isLoading || taskCompletionsQuery.isError}
                         onCheckedChange={() => toggleTask(stage, tasks, task.id)}
                         className={`mt-0.5 transition-transform duration-150 ${task.completed ? "scale-110" : "group-hover/task:scale-105"}`}
                       />
                       <div className="flex-1 min-w-0">
-                        <span className={`text-sm leading-relaxed transition-all duration-200 ${
+                        <label htmlFor={`task-${stage}-${task.id}`} className={`cursor-pointer text-sm leading-relaxed transition-all duration-200 ${
                           task.completed ? "line-through text-slate-400" : task.critical ? "font-medium text-amber-800" : "text-slate-700 group-hover/task:text-slate-900"
                         }`}>
                           {task.critical && !task.completed && (
                             <AlertTriangle className="w-3.5 h-3.5 inline mr-1.5 text-amber-500" />
                           )}
                           {task.label}
-                        </span>
+                        </label>
+                        {strategy?.id && <a className="mt-2 block w-fit text-xs font-semibold text-teal-700 underline underline-offset-4" href={`/documents?strategyId=${strategy.id}&taskId=${encodeURIComponent(task.id)}`} aria-label={`Documents for ${task.label}`}>View or upload documents</a>}
                       </div>
                       {task.completed && <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 animate-scale-in" />}
-                    </label>
+                    </div>
                   ))}
                 </div>
               </AccordionContent>
@@ -463,9 +594,8 @@ export default function Strategy() {
   const [showArrivalBanner, setShowArrivalBanner] = useState(false);
   useEffect(() => {
     const key = "ltc_strategy_arrival_celebrated";
-    let celebrated = false;
-    try { celebrated = !!sessionStorage.getItem(key); if (!celebrated) sessionStorage.setItem(key, "1"); } catch { /* Celebration is optional when storage is blocked. */ }
-    if (!celebrated) {
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, "1");
       setShowArrivalBanner(true);
       // Fire confetti burst after a short delay so the page has rendered
       const timer = setTimeout(() => {
@@ -484,14 +614,14 @@ export default function Strategy() {
         <meta name="description" content="Your step-by-step long-term care insurance claim strategy from SC Visiting Angels. Track your progress, complete tasks, and file your claim with confidence." />
         <meta property="og:title" content="Your Personalized LTC Claim Strategy" />
         <meta property="og:description" content="Your step-by-step long-term care insurance claim strategy from SC Visiting Angels. Track your progress and file your claim with confidence." />
-        <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-strategy-KHRCL3vGMdstnpa8qzFQKT.png" />
+        <meta property="og:image" content="/media/cdn/gwMDIGGTHLJRGnPt.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Your Personalized LTC Claim Strategy" />
         <meta name="twitter:description" content="Your step-by-step long-term care insurance claim strategy from SC Visiting Angels. Track your progress and file your claim with confidence." />
-        <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/og-strategy-KHRCL3vGMdstnpa8qzFQKT.png" />
+        <meta name="twitter:image" content="/media/cdn/gwMDIGGTHLJRGnPt.png" />
       </Helmet>
       {/* Arrival celebration banner — shown once per session on first visit */}
       {showArrivalBanner && (
@@ -516,7 +646,7 @@ export default function Strategy() {
       {/* Hero */}
       <section className="relative text-white py-section">
         <div className="absolute inset-0">
-          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/gwMDIGGTHLJRGnPt.jpg" alt="" className="w-full h-full object-cover" />
+          <img src="/media/cdn/gwMDIGGTHLJRGnPt.png" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a3a4a]/90 via-[#1a3a4a]/80 to-[#2c5060]/70" />
         </div>
         <div className="container relative max-w-5xl">
@@ -606,15 +736,7 @@ export default function Strategy() {
       <section className="py-section bg-gradient-to-b from-slate-50 to-white">
         <div className="container max-w-5xl">
           {/* State: Form incomplete */}
-          {policyQuery.isLoading || (policy && strategyQuery.isLoading) ? (
-            <p role="status" className="text-center py-16">Loading your saved policy and strategy…</p>
-          ) : policyQuery.isError || strategyQuery.isError ? (
-            <div role="alert" className="text-center py-16 space-y-4">
-              <h2 className="text-2xl font-bold">Your saved information is unavailable</h2>
-              <p>Please try again. Any local draft remains in the Policy Form.</p>
-              <Button onClick={() => { void policyQuery.refetch(); if (policy) void strategyQuery.refetch(); }}>Try Again</Button>
-            </div>
-          ) : policy && !isStrategyPolicyComplete(policy) ? (
+          {policy && !isFormComplete(policy) ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
               <AlertTriangle className="w-14 h-14 text-amber-500 mx-auto mb-6" />
               <h2 className="font-serif text-2xl font-bold text-foreground mb-3">Complete Required Fields</h2>
@@ -622,7 +744,7 @@ export default function Strategy() {
                 Your strategy requires these fields to be completed in the Policy Form:
               </p>
               <div className="max-w-sm mx-auto mb-8 text-left space-y-1.5">
-                {["Full Name", "Email Address", "Phone Number", "Insurance Company", "Policy Number", "Elimination Period", "Daily Maximum", "Lifetime Maximum", "Care Needs and Diagnosis"].map(f => (
+                {["Full Name", "Email Address", "Phone Number", "Insurance Company", "Policy Number", "Elimination Period", "Waiver of Premium", "Daily or Monthly Maximum", "Lifetime Maximum", "ADLs or Cognitive Decline"].map(f => (
                   <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-1.5 h-1.5 rounded-full bg-teal/50" />
                     {f}
@@ -637,7 +759,7 @@ export default function Strategy() {
               <FileText className="w-14 h-14 text-muted-foreground/30 mx-auto mb-6" />
               <h2 className="font-serif text-2xl font-bold text-foreground mb-3">No Policy Information Found</h2>
               <p className="text-muted-foreground mb-8 max-w-md mx-auto text-sm">
-                Please complete and save the policy intake form first so we can generate a strategy tailored to your specific situation.
+                Please complete the policy intake form first so we can generate a strategy tailored to your specific situation.
               </p>
               <Button asChild size="lg"><a href="/policy-form">Complete Policy Form <ArrowRight className="w-4 h-4 ml-2" /></a></Button>
             </div>
@@ -665,7 +787,6 @@ export default function Strategy() {
               </div>
             }>
             <div className="space-y-5 md:space-y-8">
-              {taskCompletionsQuery.isError && <p role="alert">Task progress could not be loaded. <button className="underline" onClick={() => void taskCompletionsQuery.refetch()}>Retry loading progress</button></p>}
               {/* Policy Summary - Always visible at top */}
               {policy && <PolicySummaryCard policy={policy} />}
 
@@ -793,7 +914,7 @@ export default function Strategy() {
                       <div
                         ref={strategyContentRef}
                         className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-foreground prose-h2:text-2xl prose-h2:border-b-2 prose-h2:border-teal prose-h2:pb-2 prose-h2:mt-10 prose-h3:text-xl prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-muted-foreground prose-strong:text-foreground prose-a:text-teal"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(strategy?.strategyHtml || "", { USE_PROFILES: { html: true } }) }}
+                        dangerouslySetInnerHTML={{ __html: strategy?.strategyHtml || "" }}
                       />
                     </div>
                   </div>
@@ -807,19 +928,55 @@ export default function Strategy() {
                     <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
                       <h3 className="font-serif text-xl font-bold text-slate-900">Timeline</h3>
                       <p className="text-sm text-slate-600 mt-1">See your claim process on a calendar. Shows when each task should be completed and how long each stage takes.</p>
+                      <div className="mt-3 flex flex-wrap items-end gap-2">
+                        <div>
+                          <Label htmlFor="ltc-plan-start" className="text-xs text-slate-700">Planning start date</Label>
+                          <Input
+                            id="ltc-plan-start"
+                            type="date"
+                            min="1900-01-01"
+                            max="2100-12-31"
+                            value={scheduleStartDraft}
+                            onChange={event => setScheduleStartDraft(event.target.value)}
+                            className="mt-1 h-9 w-[180px] border-slate-300 bg-white text-sm"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={!strategy?.id || !scheduleStartDraft || scheduleStartDraft === savedStartDate || saveScheduleStartMutation.isPending}
+                          onClick={savePlanningStartDate}
+                          className="h-9"
+                        >
+                          {saveScheduleStartMutation.isPending ? "Saving…" : "Save date"}
+                        </Button>
+                        <span className="text-xs text-slate-500">This is a planning anchor, not a carrier-approved claim or care start date.</span>
+                      </div>
                     </div>
                     <div className="px-4 py-5 md:px-6 overflow-x-auto">
-                      <div className="min-w-[600px]">
+                      <div className="min-w-0">
                       <GanttTimeline
                         stage1Tasks={stage1Tasks}
                         stage2Tasks={stage2Tasks}
                         stage3Tasks={stage3Tasks}
                         eliminationPeriod={policy?.eliminationPeriod}
+                        planStartDate={strategy?.scheduleStartDate ?? strategy?.createdAt ?? strategy?.generatedAt}
+                        taskCompletionDates={taskCompletionsQuery.data ?? []}
                         onToggleTask={handleToggleTask}
                       />
                       </div>
                     </div>
                   </div>
+                  {strategy?.id && (
+                    <Suspense fallback={<div className="p-3 text-sm text-slate-500">Loading claim milestones…</div>}>
+                      <ClaimMilestonePanel
+                        strategyId={strategy.id}
+                        policyId={strategy.policyId}
+                        variant="history"
+                      />
+                    </Suspense>
+                  )}
 
                   <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-teal/5 to-cyan-50">
@@ -830,8 +987,8 @@ export default function Strategy() {
                       <VideoPlaceholder
                         title="Understanding Your Strategy"
                         description="Learn how to use your personalized 3-stage strategy to navigate the claims process"
-                        thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NXdvbYzcqmcgIfxG.jpg"
-                        videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/QlCyvRbUBXkLwOND.mp4"
+                        thumbnailUrl="/media/cdn/NXdvbYzcqmcgIfxG.png"
+                        videoUrl="/media/cdn/QlCyvRbUBXkLwOND.mp4"
                       />
                     </div>
                   </div>
@@ -846,6 +1003,8 @@ export default function Strategy() {
                     stage2Tasks={stage2Tasks}
                     stage3Tasks={stage3Tasks}
                     eliminationPeriod={policy?.eliminationPeriod}
+                    planStartDate={strategy?.scheduleStartDate ?? strategy?.createdAt ?? strategy?.generatedAt}
+                    taskCompletionDates={taskCompletionsQuery.data ?? []}
                     onToggleTask={handleToggleTask}
                   />
 
@@ -874,7 +1033,7 @@ export default function Strategy() {
                             </div>
                           </button>
                           {stageProgress(stage1Tasks) === 100 && currentStage === 1 && (
-                            <Button size="sm" disabled={updateTasksMutation.isPending} onClick={() => advanceStage(2)} className="gap-1.5">
+                            <Button size="sm" onClick={() => advanceStage(2)} className="gap-1.5">
                               Advance to Stage 2 <ArrowRight className="w-3.5 h-3.5" />
                             </Button>
                           )}
@@ -883,7 +1042,7 @@ export default function Strategy() {
                           <>
                             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-sm text-amber-800 flex items-start gap-2">
                               <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                              <span><strong>Critical:</strong> Do NOT initiate your claim until ALL Stage 1 tasks are complete. Submit everything in ONE packet.</span>
+                              <span><strong>Critical:</strong> Confirm required claim-notice deadlines with the carrier. Assemble a complete claim packet, but do not delay time-sensitive notice or urgent care solely to finish this checklist.</span>
                             </div>
                             {renderTaskChecklist("stage1Tasks", stage1Tasks)}
                           </>
@@ -908,10 +1067,14 @@ export default function Strategy() {
                               <p className="text-xs text-slate-500">{stageProgress(stage2Tasks)}% complete</p>
                             </div>
                           </button>
-                          {stageProgress(stage2Tasks) === 100 && currentStage === 2 && (
-                            <Button size="sm" disabled={updateTasksMutation.isPending} onClick={() => advanceStage(3)} className="gap-1.5">
-                              Advance to Stage 3 <ArrowRight className="w-3.5 h-3.5" />
-                            </Button>
+                          {currentStage >= 2 && strategy?.id && (
+                            <Suspense fallback={<span className="text-xs text-slate-500">Loading evidence…</span>}>
+                              <ClaimMilestonePanel
+                                strategyId={strategy.id}
+                                policyId={strategy.policyId}
+                                variant="approval"
+                              />
+                            </Suspense>
                           )}
                         </div>
                         {expandedStages.has(2) && (
@@ -1012,13 +1175,19 @@ export default function Strategy() {
                         diagnosisCheckboxes: policy?.diagnosisCheckboxes || [],
                         cognitiveImpairmentTrigger: policy?.cognitiveImpairmentTrigger || "",
                         stage1Tasks: stage1Tasks.map(t => t.label),
+      stage1TaskIds: stage1Tasks.map(t => t.id),
                         stage2Tasks: stage2Tasks.map(t => t.label),
+      stage2TaskIds: stage2Tasks.map(t => t.id),
                         stage3Tasks: stage3Tasks.map(t => t.label),
+      stage3TaskIds: stage3Tasks.map(t => t.id),
+      planStartDate: strategy?.scheduleStartDate ?? (strategy?.createdAt ? new Date(strategy.createdAt).toISOString() : undefined),
+      taskCompletionDates: (taskCompletionsQuery.data ?? []).map(c => ({ taskId: c.taskId, completed: c.completed, completedAt: c.completedAt ? new Date(c.completedAt).toISOString() : null })),
                         careRecommendations: policy?.careRecommendations || "",
                         strategyContent: strategy?.strategyContent || "",
                         diagnosis: policy?.primaryDiagnosis || "",
                         caseManagerName: policy?.caseManagerName || "",
                         thirdPartyAssessmentRequired: policy?.thirdPartyAssessmentRequired || "",
+                        careInputs: confirmedCareInputs ?? undefined,
                       }}
                     />
                   </div>
@@ -1035,13 +1204,31 @@ export default function Strategy() {
                       </div>
                       <div>
                         <h3 className="font-serif text-xl font-bold text-slate-900">Care Cost Calculator</h3>
-                        <p className="text-sm text-slate-600">Estimate your out-of-pocket costs. See how your daily benefit amount, elimination period, and lifetime maximum affect what you'll pay.</p>
+                        <p className="text-sm text-slate-600">Estimate home-care expenses using your actual benefit limits, remaining pool and elimination-period rules.</p>
                       </div>
                     </div>
+                    {careScenarioQuery.isLoading && <p className="mb-3 text-sm text-slate-600" role="status">
+                      Loading your saved care scenario…
+                    </p>}
+                    {!careScenarioQuery.isLoading && careScenarioQuery.isError && (
+                      <p className="mb-3 text-sm text-red-700" role="alert">
+                        Saved care scenario is unavailable. Calculations can be reviewed, but a scenario must be saved before export.
+                      </p>
+                    )}
+                    {!careScenarioQuery.isLoading && !careScenarioQuery.isError && (
                     <CareCalculator
-                      defaultDailyMax={policy?.dailyMaximum ? parseCurrencyValue(policy.dailyMaximum).toString() : ""}
+                      policyId={policy?.id}
+                      defaultDailyMax={policy?.dailyMaximum || ""}
+                      defaultMonthlyMax={policy?.monthlyMaximum || ""}
                       lifetimeMaximum={policy?.lifetimeMaximum || ""}
+                      eliminationPeriod={policy?.eliminationPeriod}
+                      onConfirmedScenario={setConfirmedCareInputs}
+                      initialScenario={careScenarioQuery.data?.inputs ?? null}
+                      initialScenarioValidated={careScenarioQuery.data?.status==="saved_valid"}
+                      initialScenarioReason={careScenarioQuery.data?.reason}
+                      onSaveScenario={persistCareScenario}
                     />
+                    )}
                   </div>
                 </div>
               )}
@@ -1082,7 +1269,7 @@ export default function Strategy() {
                                 {emailRecipients.length > 1 && <Button variant="ghost" size="icon" onClick={() => removeRecipient(index)}><X className="w-4 h-4" /></Button>}
                               </div>
                             ))}
-                            <Button variant="outline" size="sm" disabled={emailRecipients.length >= 10 || emailMutation.isPending} onClick={addRecipient} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Another Recipient</Button>
+                            <Button variant="outline" size="sm" onClick={addRecipient} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Another Recipient</Button>
                             <Button onClick={handleSendEmail} disabled={emailMutation.isPending} className="w-full">
                               {emailMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />} Send Strategy
                             </Button>

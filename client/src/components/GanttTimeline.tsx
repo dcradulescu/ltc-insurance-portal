@@ -1,5 +1,7 @@
+import type { ClaimCompletionEvidence } from "@shared/claimSchedule";
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Calendar, CheckCircle2 } from "lucide-react";
+import { buildClaimSchedule, isRecurringClaimTask, parseEliminationDays, localDate, calendarDayDifference } from "@shared/claimSchedule";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type StrategyTask = {
@@ -15,6 +17,8 @@ interface GanttTimelineProps {
   stage2Tasks: StrategyTask[];
   stage3Tasks: StrategyTask[];
   eliminationPeriod?: string;
+  planStartDate?: Date | string | null;
+  taskCompletionDates?: ClaimCompletionEvidence[];
   onToggleTask?: (stageKey: string, taskId: string) => void;
 }
 
@@ -69,40 +73,17 @@ const DAY_W = 36;
 const ROW_H = 36;
 const HEADER_H = 48;
 const STAGE_H = 30;
-const LEFT_W = 340;
+const LEFT_W = "clamp(180px, 42vw, 340px)";
 const MAX_VISIBLE_H = 600; // max height of the scrollable body
 
 // ── Build Gantt rows ───────────────────────────────────────────────────────────
-function buildRows(s1: StrategyTask[], s2: StrategyTask[], s3: StrategyTask[], elimDays: number) {
+function buildRows(s1: StrategyTask[], s2: StrategyTask[], s3: StrategyTask[], elimDays: number | null, planStartDate: Date, completedTasks?: ClaimCompletionEvidence[]) {
   const rows: GanttRow[] = [];
   const stageInserts: { beforeRowIdx: number; stage: number }[] = [];
 
-  const sched: Record<string, [number, number]> = {
-    "s1-1": [0, 3], "s1-2": [0, 3], "s1-3": [0, 3],
-    "s1-4": [2, 7], "s1-5": [2, 7],
-    "s1-6": [3, 5], "s1-7": [5, 5], "s1-8": [5, 10], "s1-9": [7, 7], "s1-10": [7, 10],
-    "s1-11": [5, 10], "s1-12": [10, 5],
-    "s1-13": [10, 7], "s1-14": [12, 7], "s1-15": [10, 5], "s1-16": [14, 5],
-    "s1-17": [18, Math.max(elimDays, 14)],
-    "s1-18": [3, 5], "s1-19": [3, 7], "s1-20": [10, 5], "s1-21": [10, 5],
-  };
-  const p = 25; // stage 1 prep end
-  const s2Sched: Record<string, [number, number]> = {
-    "s2-1": [p, 5], "s2-2": [p + 3, 3], "s2-3": [p + 2, 2], "s2-4": [p + 2, 2],
-    "s2-5": [p + 3, 2], "s2-6": [p + 3, 2], "s2-7": [p + 3, 2], "s2-8": [p + 4, 2],
-    "s2-9": [p + 4, 3], "s2-10": [p + 6, 2], "s2-11": [p + 7, 1],
-    "s2-12": [p + 10, 5], "s2-13": [p + 10, 5], "s2-14": [p + 10, 5],
-    "s2-15": [p + 10, 5], "s2-16": [p + 10, 5],
-    "s2-17": [p + 8, 30], "s2-18": [p + 8, 30],
-  };
-  const s2End = p + 8 + 30;
-  const s3Sched: Record<string, [number, number]> = {
-    "s3-1": [s2End, elimDays], "s3-2": [s2End, elimDays], "s3-3": [s2End, elimDays],
-    "s3-4": [s2End + 14, 14], "s3-5": [s2End + 14, 14],
-    "s3-6": [s2End + 7, 21], "s3-7": [s2End + 14, 21], "s3-8": [s2End + 21, 21],
-    "s3-9": [s2End, 30], "s3-10": [s2End, 30],
-  };
-  const all = { ...sched, ...s2Sched, ...s3Sched };
+  const all = buildClaimSchedule(elimDays, { planStartDate, completedTasks, activeTaskIds: [...s1, ...s2, ...s3].map(t => t.id) });
+  const p = 25;
+  const s2End = 63;
 
   const push = (tasks: StrategyTask[], stage: number, key: string, fallback: [number, number]) => {
     for (const t of tasks) {
@@ -131,15 +112,16 @@ const fmtShort = (d: Date) => `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug
 const dayName = (d: Date) => ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
 
 // ── Component ──────────────────────────────────────────────────────────────────
-export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminationPeriod, onToggleTask }: GanttTimelineProps) {
+export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminationPeriod, planStartDate, taskCompletionDates, onToggleTask }: GanttTimelineProps) {
   const leftBodyRef = useRef<HTMLDivElement>(null);
   const rightPaneRef = useRef<HTMLDivElement>(null);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const syncingRef = useRef(false);
 
-  const elimDays = eliminationPeriod ? parseInt(eliminationPeriod, 10) || 90 : 90;
-  const startDate = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
-  const { rows, totalDays, stageInserts } = useMemo(() => buildRows(stage1Tasks, stage2Tasks, stage3Tasks, elimDays), [stage1Tasks, stage2Tasks, stage3Tasks, elimDays]);
+  const elimDays = parseEliminationDays(eliminationPeriod);
+  const startDate = useMemo(() => localDate(planStartDate), [planStartDate]);
+  const todayDay = calendarDayDifference(localDate(), startDate);
+  const { rows, totalDays, stageInserts } = useMemo(() => buildRows(stage1Tasks, stage2Tasks, stage3Tasks, elimDays, startDate, taskCompletionDates), [stage1Tasks, stage2Tasks, stage3Tasks, elimDays, startDate, taskCompletionDates]);
 
   // Build a flat list of visual items: stage headers + task rows
   type VisualItem = { type: "stage"; stage: number } | { type: "task"; rowIdx: number };
@@ -203,9 +185,12 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
     const done = row.task.completed;
     const cc = CAT[row.task.category] || CAT["documents"];
     return (
-      <div
+      <button
+        type="button"
+        aria-label={"Toggle " + row.task.label}
+        aria-pressed={done}
         key={row.task.id}
-        className={`flex items-center gap-2 px-3 border-b border-border/40 transition-colors cursor-pointer group ${isHovered ? "bg-accent/50" : done ? "bg-muted/20" : ""}`}
+        className={`flex items-center gap-2 px-3 border-b border-border/40 transition-colors cursor-pointer group w-full text-left ${isHovered ? "bg-accent/50" : done ? "bg-muted/20" : ""}`}
         style={{ height: ROW_H }}
         onMouseEnter={() => setHoveredRow(idx)}
         onMouseLeave={() => setHoveredRow(null)}
@@ -219,7 +204,7 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
           {row.task.label}
         </span>
         {row.task.critical && !done && <span className="flex-shrink-0 text-[8px] font-bold text-red-500 bg-red-50 px-1 rounded">!</span>}
-      </div>
+      </button>
     );
   };
 
@@ -227,6 +212,7 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
   const renderTaskBar = (row: GanttRow, idx: number) => {
     const isHovered = hoveredRow === idx;
     const done = row.task.completed;
+    const recurring = isRecurringClaimTask(row.task.id);
     const cc = CAT[row.task.category] || CAT["documents"];
     const bg = done ? COMPLETED_BG : cc.bg;
     const border = done ? COMPLETED_BORDER : cc.border;
@@ -241,9 +227,12 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
         onMouseEnter={() => setHoveredRow(idx)}
         onMouseLeave={() => setHoveredRow(null)}
       >
-        <div
+        <button
+          type="button"
+          aria-label={"Toggle " + row.task.label}
+          aria-pressed={done}
           className={`absolute top-[5px] rounded-[4px] border transition-all ${done ? "opacity-45" : "opacity-90 hover:opacity-100"} ${isHovered ? "shadow-md" : "shadow-sm"}`}
-          style={{ left: barLeft, width: barW, height: ROW_H - 10, backgroundColor: bg, borderColor: border }}
+          style={{ left: barLeft, width: barW, height: ROW_H - 10, backgroundColor: bg, borderColor: border, backgroundImage: recurring && !done ? "repeating-linear-gradient(135deg, transparent 0, transparent 10px, rgba(255,255,255,.48) 10px, rgba(255,255,255,.48) 14px)" : undefined }}
           onClick={() => onToggleTask?.(row.stageKey, row.task.id)}
           title={`${row.task.label}\n${row.categoryLabel} · Day ${row.startDay + 1}–${row.startDay + row.duration} (${row.duration} days)`}
         >
@@ -255,7 +244,7 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
               </span>
             </div>
           )}
-        </div>
+        </button>
       </div>
     );
   };
@@ -263,12 +252,12 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
   return (
     <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       {/* ── Top bar ──────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-5 py-2.5 border-b border-border bg-muted/30">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 sm:px-5 py-2.5 border-b border-border bg-muted/30">
+        <div className="flex flex-1 min-w-[170px] items-center gap-3">
           <Calendar className="h-5 w-5 text-primary" />
           <div>
             <h3 className="font-semibold text-foreground text-sm">Claim Timeline</h3>
-            <p className="text-xs text-muted-foreground">Starting {fmtDate(startDate)} &middot; {totalDays} days &middot; {elimDays}-day elimination period</p>
+            <p className="text-xs text-muted-foreground break-words">Estimated schedule starting {fmtDate(startDate)} &middot; {totalDays} days &middot; {elimDays === null ? "unverified" : String(elimDays) + "-day"} elimination period</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -283,6 +272,7 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
         </div>
       </div>
 
+      <p className="px-5 py-1.5 text-[10px] text-muted-foreground border-b">Dates are planning estimates, not carrier commitments. Stage 3 requires confirmed claim approval; elimination-period counting is policy-specific. Striped bars denote recurring activities.</p>
       {/* ── Gantt body: two-pane layout ──────────────────────────── */}
       <div className="flex" style={{ height: bodyH + HEADER_H }}>
 
@@ -310,7 +300,7 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
               {Array.from({ length: totalDays }, (_, i) => {
                 const d = getDateForDay(i);
                 const wknd = d.getDay() === 0 || d.getDay() === 6;
-                const today = i === 0;
+                const today = i === todayDay;
                 const fom = d.getDate() === 1;
                 return (
                   <div key={i} className={`flex-shrink-0 flex flex-col items-center justify-center border-r ${today ? "bg-primary/10 border-primary/30" : wknd ? "bg-muted/40 border-border/30" : "border-border/30"} ${fom ? "border-l border-l-border/60" : ""}`} style={{ width: DAY_W }}>
@@ -332,7 +322,7 @@ export function GanttTimeline({ stage1Tasks, stage2Tasks, stage3Tasks, eliminati
               })}
 
               {/* Today line */}
-              <div className="absolute top-0 z-10 pointer-events-none" style={{ left: DAY_W / 2 - 1, width: 2, height: contentH, background: "linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--primary) / 0.2))" }} />
+              {todayDay >= 0 && todayDay < totalDays && <div className="absolute top-0 z-10 pointer-events-none" style={{ left: todayDay * DAY_W + DAY_W / 2 - 1, width: 2, height: contentH, background: "linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--primary) / 0.2))" }} />}
 
               {/* Visual rows */}
               {visualItems.map((item, i) =>

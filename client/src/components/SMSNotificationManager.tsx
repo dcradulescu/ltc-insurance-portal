@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +35,14 @@ export function SMSNotificationManager({
     deadlineWarnings: true,
     reminderDaysBefore: [7, 3, 1],
   });
-  const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const { user } = useAuth();
+  const savedPreferences = trpc.sms.getPreferences.useQuery(undefined, { refetchOnWindowFocus: false });
+  useEffect(() => {
+    if (savedPreferences.data) {
+      setPhoneNumber(savedPreferences.data.phoneNumber);
+      setPreferences(savedPreferences.data);
+    }
+  }, [savedPreferences.data]);
   const [testMessage, setTestMessage]   = useState("");
   const [statusMsg, setStatusMsg]       = useState<{ type: "success" | "error" | null; text: string }>({ type: null, text: "" });
 
@@ -103,7 +111,7 @@ export function SMSNotificationManager({
   };
 
   const isSending = sendNotificationMutation.isPending;
-  const isSaving  = savePreferencesMutation.isPending;
+  const isSaving = savePreferencesMutation.isPending || savedPreferences.isPending || savedPreferences.isError;
 
   const reminderOptions = [
     { label: "7 days before", value: 7 },
@@ -114,6 +122,8 @@ export function SMSNotificationManager({
 
   return (
     <div className="w-full space-y-4">
+      <p className="text-sm text-slate-600">Preferences are saved to your account. Automatic SMS reminders are not enabled yet.</p>
+      {savedPreferences.isError && <p role="alert" className="text-sm text-red-700">Saved preferences could not be loaded. Reload before making changes.</p>}
       {/* Global status banner */}
       {statusMsg.type && (
         <div className={`flex items-center gap-2 p-3 rounded-lg ${statusMsg.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
@@ -125,10 +135,10 @@ export function SMSNotificationManager({
       )}
 
       <Tabs defaultValue="setup" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full ${user?.role === "admin" ? "grid-cols-3" : "grid-cols-2"}`}>
           <TabsTrigger value="setup">Setup</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
-          <TabsTrigger value="test">Test</TabsTrigger>
+          {user?.role === "admin" && <TabsTrigger value="test">Test</TabsTrigger>}
         </TabsList>
 
         {/* ── SETUP TAB ── */}
@@ -150,33 +160,7 @@ export function SMSNotificationManager({
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="(123) 456-7890"
                 />
-                <p className="text-xs text-gray-500 mt-1">SMS reminders will be sent to this number</p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-3 block">Additional Recipients</label>
-                <div className="space-y-2">
-                  {[
-                    { id: "poa",       label: "Power of Attorney" },
-                    { id: "family",    label: "Family Member" },
-                    { id: "provider",  label: "Care Provider" },
-                    { id: "insurance", label: "Insurance Company" },
-                  ].map((r) => (
-                    <label key={r.id} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={selectedRecipients.includes(r.id)}
-                        onCheckedChange={() =>
-                          setSelectedRecipients(
-                            selectedRecipients.includes(r.id)
-                              ? selectedRecipients.filter((x) => x !== r.id)
-                              : [...selectedRecipients, r.id]
-                          )
-                        }
-                      />
-                      <span className="text-sm">{r.label}</span>
-                    </label>
-                  ))}
-                </div>
+                <p className="text-xs text-gray-500 mt-1">Preferred number for future SMS reminders</p>
               </div>
 
               <Button onClick={handleSavePreferences} disabled={isSaving} className="w-full">
@@ -277,9 +261,8 @@ export function SMSNotificationManager({
 
               <div className="p-3 bg-blue-50 rounded-lg">
                 <p className="text-xs text-blue-800">
-                  <strong>Note:</strong> SMS delivery requires Twilio credentials to be configured
-                  by your administrator (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER).
-                  Without them, messages will be logged server-side only.
+                  Test messages are available to administrators when the SMS service is configured.
+                  Service acceptance does not confirm delivery to the phone.
                 </p>
               </div>
             </CardContent>

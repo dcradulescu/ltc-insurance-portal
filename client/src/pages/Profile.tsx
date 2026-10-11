@@ -1,4 +1,4 @@
-import { profileDetailsSchema, contactDetailsSchema } from "@shared/contactValidation";
+import { PasswordChangeCard } from "@/components/PasswordChangeCard";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Layout } from "@/components/Layout";
@@ -42,10 +42,8 @@ export default function Profile() {
 
   useEffect(() => {
     if (profileQuery.data) {
-      if (!editingProfile) {
-        setProfileName(profileQuery.data.name ?? "");
-        setProfileEmail(profileQuery.data.email ?? "");
-      }
+      setProfileName(profileQuery.data.name ?? "");
+      setProfileEmail(profileQuery.data.email ?? "");
       const prefs = profileQuery.data.notificationPreferences;
       if (prefs) {
         setNotifyOnNewPolicy(prefs.notifyOnNewPolicy ?? true);
@@ -53,13 +51,14 @@ export default function Profile() {
         setNotifyOnContactForm(prefs.notifyOnContactForm ?? true);
       }
     }
-  }, [profileQuery.data, editingProfile]);
+  }, [profileQuery.data]);
 
   const handleSaveProfile = async () => {
-    const parsed = profileDetailsSchema.safeParse({ name: profileName, email: profileEmail });
-    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     try {
-      await updateProfileMutation.mutateAsync(parsed.data);
+      await updateProfileMutation.mutateAsync({
+        name: profileName || undefined,
+
+      });
       await profileQuery.refetch();
       setEditingProfile(false);
       toast.success("Profile updated successfully");
@@ -103,10 +102,17 @@ export default function Profile() {
   const contacts: Contact[] = (contactsQuery.data as Contact[] | undefined) ?? [];
 
   const handleAddContact = async () => {
-    const parsed = contactDetailsSchema.safeParse(newContact);
-    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    if (!newContact.name.trim() || !newContact.email.trim()) {
+      toast.error("Name and email are required");
+      return;
+    }
     try {
-      await addContactMutation.mutateAsync(parsed.data);
+      await addContactMutation.mutateAsync({
+        name: newContact.name.trim(),
+        email: newContact.email.trim(),
+        relationship: newContact.relationship.trim() || undefined,
+        receiveCcEmails: newContact.receiveCcEmails,
+      });
       await contactsQuery.refetch();
       setNewContact({ name: "", email: "", relationship: "", receiveCcEmails: 1 });
       setShowAddContact(false);
@@ -117,10 +123,13 @@ export default function Profile() {
   };
 
   const handleUpdateContact = async (id: number) => {
-    const parsed = contactDetailsSchema.safeParse(editContact);
-    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     try {
-      await updateContactMutation.mutateAsync({ id, ...parsed.data });
+      await updateContactMutation.mutateAsync({
+        id,
+        name: editContact.name || undefined,
+        email: editContact.email || undefined,
+        relationship: editContact.relationship || undefined,
+      });
       await contactsQuery.refetch();
       setEditingContactId(null);
       toast.success("Contact updated");
@@ -167,7 +176,7 @@ export default function Profile() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Profile & Settings</h1>
           <p className="text-muted-foreground">
-            Manage your profile and save contact details for your care team.
+            Manage your profile and configure who receives copies of strategy emails.
           </p>
         </div>
 
@@ -177,14 +186,14 @@ export default function Profile() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5 text-teal" />
-                Your Profile
+                Operator Profile
               </CardTitle>
               <CardDescription>
-                Your profile details are saved with this portal session.
+                Manage your profile and notification preferences. Contact the office to change your sign-in email.
               </CardDescription>
             </div>
             {!editingProfile && (
-              <Button variant="outline" size="sm" disabled={profileQuery.isLoading || profileQuery.isError || savingPrefs} onClick={() => setEditingProfile(true)}>
+              <Button variant="outline" size="sm" onClick={() => setEditingProfile(true)}>
                 <Edit2 className="w-3.5 h-3.5 mr-1.5" />
                 Edit
               </Button>
@@ -196,14 +205,11 @@ export default function Profile() {
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Loading profile…
               </div>
-            ) : profileQuery.isError ? (
-              <p role="alert">Profile could not be loaded. <button className="underline" onClick={() => void profileQuery.refetch()}>Try again</button></p>
             ) : editingProfile ? (
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="profile-name">Display Name</Label>
                   <Input
-                    disabled={updateProfileMutation.isPending}
                     id="profile-name"
                     value={profileName}
                     onChange={e => setProfileName(e.target.value)}
@@ -214,8 +220,8 @@ export default function Profile() {
                 <div className="space-y-1.5">
                   <Label htmlFor="profile-email">Email Address</Label>
                   <Input
-                    disabled={updateProfileMutation.isPending}
                     id="profile-email"
+                    disabled
                     type="email"
                     value={profileEmail}
                     onChange={e => setProfileEmail(e.target.value)}
@@ -235,7 +241,7 @@ export default function Profile() {
                     )}
                     Save Changes
                   </Button>
-                  <Button variant="outline" disabled={updateProfileMutation.isPending} onClick={() => {
+                  <Button variant="outline" onClick={() => {
                     setEditingProfile(false);
                     setProfileName(profileQuery.data?.name ?? "");
                     setProfileEmail(profileQuery.data?.email ?? "");
@@ -266,6 +272,8 @@ export default function Profile() {
           </CardContent>
         </Card>
 
+        <PasswordChangeCard />
+
         {/* ── CC Contacts Card ──────────────────────────────────────────────── */}
         <Card className="mb-6">
           <CardHeader>
@@ -274,7 +282,7 @@ export default function Profile() {
               CC Contacts
             </CardTitle>
             <CardDescription>
-              Save people you may want to contact about your plan. CC preferences are included in office handoffs; choose recipients explicitly when emailing a strategy.
+              People listed here can be copied on strategy emails sent to families. Toggle the CC switch to include them in outgoing emails.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -284,12 +292,10 @@ export default function Profile() {
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Loading contacts…
               </div>
-            ) : contactsQuery.isError ? (
-              <p role="alert" className="mb-4">Contacts could not be loaded. <button className="underline" onClick={() => void contactsQuery.refetch()}>Try again</button></p>
             ) : contacts.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg mb-4">
                 <Users className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">No contacts yet. Add someone below to your care team.</p>
+                <p className="text-sm">No contacts yet. Add someone below to CC them on emails.</p>
               </div>
             ) : (
               <div className="space-y-3 mb-4">
@@ -299,10 +305,8 @@ export default function Profile() {
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-1">
-                            <Label htmlFor={`contact-name-${contact.id}`} className="text-xs">Name</Label>
+                            <Label className="text-xs">Name</Label>
                             <Input
-                              id={`contact-name-${contact.id}`}
-                              disabled={updateContactMutation.isPending}
                               value={editContact.name}
                               onChange={e => setEditContact(prev => ({ ...prev, name: e.target.value }))}
                               className="h-8 text-sm"
@@ -310,11 +314,9 @@ export default function Profile() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label htmlFor={`contact-email-${contact.id}`} className="text-xs">Email</Label>
+                            <Label className="text-xs">Email</Label>
                             <Input
                               type="email"
-                              id={`contact-email-${contact.id}`}
-                              disabled={updateContactMutation.isPending}
                               value={editContact.email}
                               onChange={e => setEditContact(prev => ({ ...prev, email: e.target.value }))}
                               className="h-8 text-sm"
@@ -322,11 +324,9 @@ export default function Profile() {
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label htmlFor={`contact-relationship-${contact.id}`} className="text-xs">Relationship (optional)</Label>
+                          <Label className="text-xs">Relationship (optional)</Label>
                           <Input
-                            id={`contact-relationship-${contact.id}`}
-                              disabled={updateContactMutation.isPending}
-                              value={editContact.relationship}
+                            value={editContact.relationship}
                             onChange={e => setEditContact(prev => ({ ...prev, relationship: e.target.value }))}
                             placeholder="e.g. Supervisor, Care Coordinator"
                             className="h-8 text-sm"
@@ -337,7 +337,7 @@ export default function Profile() {
                             className="bg-teal hover:bg-teal-dark text-white h-7 text-xs">
                             <CheckCircle2 className="w-3 h-3 mr-1" /> Save
                           </Button>
-                          <Button size="sm" variant="outline" disabled={updateContactMutation.isPending} onClick={() => setEditingContactId(null)} className="h-7 text-xs">
+                          <Button size="sm" variant="outline" onClick={() => setEditingContactId(null)} className="h-7 text-xs">
                             <X className="w-3 h-3 mr-1" /> Cancel
                           </Button>
                         </div>
@@ -363,17 +363,15 @@ export default function Profile() {
                           <div className="flex items-center gap-1.5">
                             <span className="text-xs text-muted-foreground hidden sm:inline">CC</span>
                             <Switch
-                              aria-label={`CC preference for ${contact.name}`}
-                              disabled={updateContactMutation.isPending || deleteContactMutation.isPending}
                               checked={!!contact.receiveCcEmails}
                               onCheckedChange={() => handleToggleCc(contact)}
                             />
                           </div>
-                          <Button size="icon" variant="ghost" className="h-7 w-7" aria-label={`Edit ${contact.name}`} disabled={updateContactMutation.isPending || deleteContactMutation.isPending} onClick={() => startEditContact(contact)}>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => startEditContact(contact)}>
                             <Edit2 className="w-3.5 h-3.5" />
                           </Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
-                            aria-label={`Remove ${contact.name}`} disabled={deleteContactMutation.isPending || updateContactMutation.isPending} onClick={() => handleDeleteContact(contact.id)}>
+                            onClick={() => handleDeleteContact(contact.id)}>
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
@@ -394,7 +392,7 @@ export default function Profile() {
                   <div className="space-y-1.5">
                     <Label htmlFor="new-name" className="text-xs">Name *</Label>
                     <Input
-                      disabled={addContactMutation.isPending} id="new-name"
+                      id="new-name"
                       value={newContact.name}
                       onChange={e => setNewContact(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Full name"
@@ -405,7 +403,7 @@ export default function Profile() {
                   <div className="space-y-1.5">
                     <Label htmlFor="new-email" className="text-xs">Email *</Label>
                     <Input
-                      disabled={addContactMutation.isPending} id="new-email"
+                      id="new-email"
                       type="email"
                       value={newContact.email}
                       onChange={e => setNewContact(prev => ({ ...prev, email: e.target.value }))}
@@ -417,7 +415,7 @@ export default function Profile() {
                 <div className="space-y-1.5">
                   <Label htmlFor="new-relationship" className="text-xs">Relationship (optional)</Label>
                   <Input
-                    disabled={addContactMutation.isPending} id="new-relationship"
+                    id="new-relationship"
                     value={newContact.relationship}
                     onChange={e => setNewContact(prev => ({ ...prev, relationship: e.target.value }))}
                     placeholder="e.g. Supervisor, Care Coordinator, Family Member"
@@ -426,11 +424,11 @@ export default function Profile() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch
-                    disabled={addContactMutation.isPending} id="new-cc"
+                    id="new-cc"
                     checked={!!newContact.receiveCcEmails}
                     onCheckedChange={v => setNewContact(prev => ({ ...prev, receiveCcEmails: v ? 1 : 0 }))}
                   />
-                  <Label htmlFor="new-cc" className="text-sm cursor-pointer">Include CC preference in office handoffs</Label>
+                  <Label htmlFor="new-cc" className="text-sm cursor-pointer">CC this contact on outgoing emails</Label>
                 </div>
                 <div className="flex gap-2 pt-1">
                   <Button
@@ -446,7 +444,7 @@ export default function Profile() {
                     )}
                     Add Contact
                   </Button>
-                  <Button variant="outline" size="sm" disabled={addContactMutation.isPending} onClick={() => {
+                  <Button variant="outline" size="sm" onClick={() => {
                     setShowAddContact(false);
                     setNewContact({ name: "", email: "", relationship: "", receiveCcEmails: 1 });
                   }}>
@@ -489,9 +487,9 @@ export default function Profile() {
                     <p className="text-xs text-muted-foreground">Receive a notification when a family completes the policy intake form</p>
                   </div>
                   <Switch
-                    aria-label="New policy notification preference" checked={notifyOnNewPolicy}
+                    checked={notifyOnNewPolicy}
                     onCheckedChange={v => handleToggleNotification("notifyOnNewPolicy", v)}
-                    disabled={savingPrefs || editingProfile || profileQuery.isError}
+                    disabled={savingPrefs}
                   />
                 </div>
                 <Separator />
@@ -501,9 +499,9 @@ export default function Profile() {
                     <p className="text-xs text-muted-foreground">Receive a notification when a personalized strategy is created</p>
                   </div>
                   <Switch
-                    aria-label="Strategy generated notification preference" checked={notifyOnStrategyGenerated}
+                    checked={notifyOnStrategyGenerated}
                     onCheckedChange={v => handleToggleNotification("notifyOnStrategyGenerated", v)}
-                    disabled={savingPrefs || editingProfile || profileQuery.isError}
+                    disabled={savingPrefs}
                   />
                 </div>
                 <Separator />
@@ -513,15 +511,15 @@ export default function Profile() {
                     <p className="text-xs text-muted-foreground">Receive a notification when someone submits the contact form</p>
                   </div>
                   <Switch
-                    aria-label="Contact form submission notification preference" checked={notifyOnContactForm}
+                    checked={notifyOnContactForm}
                     onCheckedChange={v => handleToggleNotification("notifyOnContactForm", v)}
-                    disabled={savingPrefs || editingProfile || profileQuery.isError}
+                    disabled={savingPrefs}
                   />
                 </div>
               </div>
             )}
             <p className="text-xs text-muted-foreground mt-4 bg-slate-50 rounded p-3">
-              Preferences are saved automatically. Automatic notifications are not connected yet; these settings do not currently trigger or suppress delivery.
+              Notifications are delivered to the configured portal owner email. Changes are saved automatically.
             </p>
           </CardContent>
         </Card>

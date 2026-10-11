@@ -1,0 +1,96 @@
+{
+  "status": "development_in_progress_not_deployed",
+  "updated_date": "2026-10-10",
+  "current_status_document": "DEVELOPMENT_2026-10-09.md",
+  "automated_tests": {
+    "passed": 367,
+    "failed": 0,
+    "skipped": 0
+  },
+  "typescript_check": "pass",
+  "production_build": "pass",
+  "live_providers_verified": false,
+  "public_url_verified": false,
+  "historical_2026_08_12": {
+    "validation_date": "2026-08-12",
+    "typescript_syntax": {
+      "filesChecked": 144,
+      "errorCount": 0,
+      "errors": []
+    },
+    "mjs_syntax": "pass",
+    "package_lock_importer_consistent": true,
+    "local_media_references": 19,
+    "missing_local_media_references": [],
+    "active_old_platform_reference_count": 0,
+    "active_old_platform_references": [],
+    "original_sensitive_value_hit_count": 0,
+    "original_sensitive_value_hits": [],
+    "project_config_present": false,
+    "dotenv_present": false,
+    "full_install_build_tests": "not run: execution environment cannot resolve registry.npmjs.org"
+  },
+  "checkpoint": 12,
+  "document_ui": "attach/detach verified in real authenticated Chromium UI with MySQL in checkpoint 7; mocked desktop/tablet/mobile checks passed in checkpoint 6",
+  "browser_font_exception": "External Google Fonts request failed; system fallback fonts rendered",
+  "production_database_verified": false,
+  "disposable_mysql_verified": true,
+  "mysql_version": "8.0.46",
+  "real_database_checks": {
+    "passed": 24,
+    "failed": 0,
+    "checkpoint": 9,
+    "api_mocks": false
+  },
+  "database_guard_tests": {
+    "passed": 3,
+    "failed": 0
+  },
+  "task_documents": "existing attachment, detachment with retained file access and concurrent conflicts verified against real MySQL; live S3 unverified",
+  "application_checks_last_run_checkpoint": 12,
+  "database_timezone_verified": {
+    "host": "EDT",
+    "session": "+00:00"
+  },
+  "configuration_review": {
+    "command": "corepack pnpm config:check",
+    "offline": true,
+    "secret_values_printed": false,
+    "production_configuration_supplied": false,
+    "deployment_verified": false
+  },
+  "latest_automated_test_report": "DEVELOPMENT_TEST_RESULTS_CHECKPOINT12.json",
+  "password_change": {
+    "implemented": true,
+    "all_sessions_revoked": true,
+    "real_database_http_verified": true,
+    "browser_form_verified_with_mocked_api": true,
+    "email_recovery_implemented": false
+  },
+  "calculator_audit": {
+    "report": "CALCULATOR_AUDIT_2026-10-09.md",
+    "engine": "shared/careCalculator.ts",
+    "direct_engine_tests": 116,
+    "accounting_scenarios": 108,
+    "browser_checks": "passed",
+    "viewports": [
+      1440,
+      1024,
+      390
+    ],
+    "browser_api_fixtures_mocked": true,
+    "calculator_engine_mocked": false,
+    "actual_policy_contract_reviewed": false,
+    "supported_model": "Expense reimbursement, eligible home care, finite dollar pool, daily/calendar-month limits, continuous eligibility episode; verified fixed annual inflation optional",
+    "projection_years": 5,
+    "full_waiver_default_assumed": true,
+    "waiver_assumption_carrier_confirmation": false,
+    "latest_browser_evidence": "verification/LTC_Portal_Calculator_UI_Verification_CHECKPOINT12.json",
+    "latest_browser_scope": "Single/dual/no waiver, spouse input validation, monthly effective care cost, all full/partial months, cents and negative offsets, invariant care/pool accounting; desktop/tablet/mobile",
+    "dual_waiver_default": false,
+    "separate_spouse_premium_input": true,
+    "effective_monthly_cost_formula": "Gross monthly care expense minus insured waived premium minus spouse waived premium when dual waiver is selected; before reimbursement",
+    "partial_month_waiver": "Unavailable without carrier terms; full-month offsets not applied to partial care periods",
+    "inflation_scope_exception": "Remaining-pool riders such as FLTCIP are not supported by the verified total-maximum increase branch"
+  }
+}

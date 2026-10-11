@@ -1,4 +1,3 @@
-import { shareResource } from "@/lib/shareResource";
 import { Helmet } from "react-helmet-async";
 import { Layout } from "@/components/Layout";
 import { LTCAcademyPlayer } from "@/components/LTCAcademyPlayer";
@@ -7,7 +6,6 @@ import { Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { VideoPlaceholder } from "@/components/VideoPlaceholder";
 import { useEffect, useState } from "react";
-import { PageNavigation } from "@/components/PageNavigation";
 
 const VA_TEAL = "#34B1C4";
 const TOTAL_VIDEOS = 4;
@@ -22,7 +20,28 @@ const TIMELINE_STEPS = [
 export default function Academy() {
   const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
 
-  const [activeLesson, setActiveLesson] = useState(0);
+  useEffect(() => {
+    const updateTimeline = () => {
+      const stored = localStorage.getItem('ltc-academy-completed');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setCompletedVideos(new Set(parsed));
+        } catch (e) {
+          console.error('Failed to parse completion data:', e);
+        }
+      }
+    };
+
+    updateTimeline();
+    window.addEventListener('storage', updateTimeline);
+    const interval = setInterval(updateTimeline, 500);
+
+    return () => {
+      window.removeEventListener('storage', updateTimeline);
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <Layout>
@@ -40,7 +59,7 @@ export default function Academy() {
       {/* Hero Banner - Same format as Homepage */}
       <section className="relative text-white overflow-hidden">
         <div className="absolute inset-0">
-          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg" alt="LTC Academy" className="w-full h-full object-cover" />
+          <img src="/media/cdn/ZFmUJyMqNgTRQtRW.png" alt="LTC Academy" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: 'rgba(57,63,67,0.82)' }} />
         </div>
         <div className="container relative py-section">
@@ -57,7 +76,7 @@ export default function Academy() {
               <div className="animate-float-up animate-delay-300 flex flex-row gap-3 sm:gap-4 justify-center">
                 <button
                   onClick={() => {
-                    window.open('/ltc-insurance-guide.html', '_blank', 'noopener,noreferrer');
+                    window.open('/ltc-insurance-guide.html', '_blank');
                   }}
                   className="va-btn text-base px-8 py-4 text-center shadow-lg flex items-center justify-center gap-2"
                 >
@@ -68,7 +87,12 @@ export default function Academy() {
                   style={{ borderColor: 'rgba(255,255,255,0.4)', color: '#fff', background: 'rgba(255,255,255,0.1)' }}
                   onClick={async () => {
                     const shareData = { title: "LTC Academy — Free Video Learning", text: "Learn how to navigate long-term care insurance with our comprehensive video academy.", url: window.location.origin + '/academy' };
-                    await shareResource(shareData, "Link copied to clipboard!");
+                    if (navigator.share && navigator.canShare?.(shareData)) {
+                      try { await navigator.share(shareData); } catch {}
+                    } else {
+                      await navigator.clipboard.writeText(window.location.origin + '/academy');
+                      toast.success("Link copied to clipboard!", { description: "Share it with family members." });
+                    }
                   }}
                 >
                   <Share2 className="w-4 h-4" />
@@ -81,8 +105,8 @@ export default function Academy() {
               <VideoPlaceholder
                 title="Welcome to LTC Academy"
                 description="Expert-led video lessons on navigating long-term care insurance"
-                thumbnailUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/ZFmUJyMqNgTRQtRW.jpg"
-                videoUrl="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/MjPhBEQZfvIrfZms.mp4"
+                thumbnailUrl="/media/cdn/ZFmUJyMqNgTRQtRW.png"
+                videoUrl="/media/cdn/MjPhBEQZfvIrfZms.mp4"
               />
             </div>
           </div>
@@ -95,7 +119,7 @@ export default function Academy() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-4">
             {TIMELINE_STEPS.map((step, idx) => {
               const isCompleted = completedVideos.has('video-' + step.number);
-              const isCurrent = idx === activeLesson;
+              const isCurrent = idx === completedVideos.size && completedVideos.size < TOTAL_VIDEOS;
               
               return (
                 <div key={step.number} className="flex flex-col items-center">
@@ -140,11 +164,7 @@ export default function Academy() {
       </section>
 
       <div id="academy-content">
-        <LTCAcademyPlayer onLessonChange={setActiveLesson} onProgress={setCompletedVideos} />
-      </div>
-      {/* Page Navigation */}
-      <div className="container max-w-6xl pb-8">
-        <PageNavigation />
+        <LTCAcademyPlayer />
       </div>
     </Layout>
   );

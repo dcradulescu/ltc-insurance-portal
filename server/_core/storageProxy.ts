@@ -1,41 +1,22 @@
 import type { Express } from "express";
-import { ENV } from "./env";
+import { getSignedStorageUrl } from "../storage";
+import { canReadFile } from "../db";
+import { sdk } from "./sdk";
+
 export function registerStorageProxy(app: Express) {
-  app.get("/manus-storage/*", async (req, res) => {
+  app.get("/storage/*", async (req, res) => {
+    res.set({ "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" });
+    let user;
+    try { user = await sdk.authenticateRequest(req); }
+    catch { res.status(401).send("Sign in to download this file"); return; }
     const key = (req.params as Record<string, string>)[0];
-    if (!key) {
-      res.status(400).send("Missing storage key");
-      return;
-    }
-    if (!ENV.forgeApiUrl || !ENV.forgeApiKey) {
-      res.status(500).send("Storage proxy not configured");
-      return;
-    }
+    if (!key) { res.status(400).send("Missing storage key"); return; }
     try {
-      const forgeUrl = new URL(
-        "v1/storage/presign/get",
-        ENV.forgeApiUrl.replace(/\/+$/, "") + "/",
-      );
-      forgeUrl.searchParams.set("path", key);
-      const forgeResp = await fetch(forgeUrl, {
-        headers: { Authorization: `Bearer ${ENV.forgeApiKey}` },
-      });
-      if (!forgeResp.ok) {
-        const body = await forgeResp.text().catch(() => "");
-        console.error(`[StorageProxy] forge error: ${forgeResp.status} ${body}`);
-        res.status(502).send("Storage backend error");
-        return;
-      }
-      const { url } = (await forgeResp.json()) as { url: string };
-      if (!url) {
-        res.status(502).send("Empty signed URL from backend");
-        return;
-      }
-      res.set("Cache-Control", "no-store");
-      res.redirect(307, url);
-    } catch (err) {
-      console.error("[StorageProxy] failed:", err);
-      res.status(502).send("Storage proxy error");
+      if (!await canReadFile(key, user.id)) { res.status(404).send("File not found"); return; }
+      const filename = typeof req.query.filename === "string" ? req.query.filename : "document";
+      res.redirect(307, await getSignedStorageUrl(key, 60, filename));
+    } catch {
+      res.status(502).send("Storage backend unavailable");
     }
   });
 }

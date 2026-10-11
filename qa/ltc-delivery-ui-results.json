@@ -1,0 +1,14 @@
+{
+  "boundary": "Mocked authenticated tRPC responses; real production UI bundle",
+  "accountRecipientReadOnly": true,
+  "savedLinkVisibleAfterEmailFailure": true,
+  "clearFailureMessage": true,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "requests": [
+    "auth.me",
+    "policy.get",
+    "policy.save",
+    "email.sendSaveLink"
+  ]
+}

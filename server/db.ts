@@ -1,7 +1,8 @@
-import { eq, and, desc } from "drizzle-orm";
+import { createPool } from "mysql2";
+import { eq, and, desc, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
-  InsertUser, users,
+  InsertUser, users, portalFiles,
   policies, InsertPolicy, Policy,
   strategies, InsertStrategy, Strategy,
   chatMessages, InsertChatMessage,
@@ -11,13 +12,28 @@ import {
   saveLinks, InsertSaveLink, SaveLink,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { persistTaskCompletionAtomic } from './taskCompletionAtomic';
+import { decodeMariaDbJsonColumn } from "./dbJsonCompatibility";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const address = new URL(process.env.DATABASE_URL);
+      address.searchParams.delete("timezone");
+      const pool = createPool({
+        uri: address.toString(), timezone: "Z",
+        typeCast: decodeMariaDbJsonColumn,
+      });
+      // Drizzle encodes timestamp columns as UTC strings. Align MySQL's session
+      // timezone too, including NOW(), defaults, and timestamp comparisons.
+      pool.on("connection", connection => {
+        connection.query("SET time_zone = '+00:00'", error => {
+          if (error) connection.destroy();
+        });
+      });
+      _db = drizzle(pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -109,10 +125,10 @@ export async function getStrategyById(id: number): Promise<Strategy | undefined>
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function updateStrategy(id: number, data: Partial<InsertStrategy>): Promise<void> {
+export async function updateStrategy(id: number, userId: number, data: Partial<InsertStrategy>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.update(strategies).set(data).where(eq(strategies.id, id));
+  await db.update(strategies).set(data).where(and(eq(strategies.id, id), eq(strategies.userId, userId)));
 }
 
 export async function getStrategyByUserId(userId: number): Promise<Strategy | undefined> {
@@ -132,20 +148,43 @@ export async function createDocumentUpload(data: InsertDocumentUpload): Promise<
 
 export async function getDocumentsByUserId(userId: number): Promise<DocumentUpload[]> {
   const db = await getDb();
-  if (!db) return [];
+  if (!db) throw new Error("Document database is unavailable");
   return db.select().from(documentUploads).where(eq(documentUploads.userId, userId)).orderBy(desc(documentUploads.createdAt));
 }
 
-export async function getDocumentsByTaskId(taskId: string, userId: number): Promise<DocumentUpload[]> {
+export async function getDocumentsByTaskId(taskId: string, userId: number, strategyId: number): Promise<DocumentUpload[]> {
   const db = await getDb();
-  if (!db) return [];
-  return db.select().from(documentUploads).where(and(eq(documentUploads.taskId, taskId), eq(documentUploads.userId, userId)));
+  if (!db) throw new Error("Document database is unavailable");
+  return db.select().from(documentUploads).where(and(eq(documentUploads.taskId, taskId), eq(documentUploads.userId, userId), eq(documentUploads.strategyId, strategyId)));
+}
+
+// Compare the complete association so a stale browser cannot move a file
+// that another request attached in the meantime.
+export async function updateDocumentTaskLink(
+  doc: DocumentUpload,
+  next: { policyId: number | null; strategyId: number | null; taskId: string | null },
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Document database is unavailable");
+  const result = await db.update(documentUploads).set(next).where(and(
+    eq(documentUploads.id, doc.id), eq(documentUploads.userId, doc.userId),
+    doc.policyId === null ? isNull(documentUploads.policyId) : eq(documentUploads.policyId, doc.policyId),
+    doc.strategyId === null ? isNull(documentUploads.strategyId) : eq(documentUploads.strategyId, doc.strategyId),
+    doc.taskId === null ? isNull(documentUploads.taskId) : eq(documentUploads.taskId, doc.taskId),
+  ));
+  return result[0].affectedRows === 1;
 }
 
 export async function deleteDocument(id: number, userId: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.delete(documentUploads).where(and(eq(documentUploads.id, id), eq(documentUploads.userId, userId)));
+  await db.transaction(async tx => {
+    const docs = await tx.select({ key: documentUploads.fileKey }).from(documentUploads)
+      .where(and(eq(documentUploads.id, id), eq(documentUploads.userId, userId))).limit(1);
+    if (!docs[0]) return;
+    await tx.delete(portalFiles).where(and(eq(portalFiles.fileKey, docs[0].key), eq(portalFiles.userId, userId)));
+    await tx.delete(documentUploads).where(and(eq(documentUploads.id, id), eq(documentUploads.userId, userId)));
+  });
 }
 
 // ---- User Contacts helpers ----
@@ -162,21 +201,16 @@ export async function getUserContacts(userId: number): Promise<UserContact[]> {
   return db.select().from(userContacts).where(eq(userContacts.userId, userId));
 }
 
-export async function updateUserContact(id: number, userId: number, data: Partial<InsertUserContact>): Promise<boolean> {
+export async function updateUserContact(id: number, userId: number, data: Partial<InsertUserContact>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const owned = and(eq(userContacts.id, id), eq(userContacts.userId, userId));
-  const existing = await db.select({ id: userContacts.id }).from(userContacts).where(owned).limit(1);
-  if (!existing.length) return false;
-  await db.update(userContacts).set(data).where(owned);
-  return true;
+  await db.update(userContacts).set(data).where(and(eq(userContacts.id, id), eq(userContacts.userId, userId)));
 }
 
-export async function deleteUserContact(id: number, userId: number): Promise<boolean> {
+export async function deleteUserContact(id: number, userId: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.delete(userContacts).where(and(eq(userContacts.id, id), eq(userContacts.userId, userId)));
-  return result[0].affectedRows > 0;
+  await db.delete(userContacts).where(and(eq(userContacts.id, id), eq(userContacts.userId, userId)));
 }
 
 // ---- Chat helpers ----
@@ -186,10 +220,10 @@ export async function saveChatMessage(data: InsertChatMessage): Promise<void> {
   await db.insert(chatMessages).values(data);
 }
 
-export async function getChatHistory(sessionId: string, limit = 50): Promise<typeof chatMessages.$inferSelect[]> {
+export async function getChatHistory(sessionId: string, userId: number, limit = 50): Promise<typeof chatMessages.$inferSelect[]> {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(chatMessages).where(eq(chatMessages.sessionId, sessionId)).orderBy(chatMessages.createdAt).limit(limit);
+  return db.select().from(chatMessages).where(and(eq(chatMessages.sessionId, sessionId), eq(chatMessages.userId, userId))).orderBy(chatMessages.createdAt).limit(limit);
 }
 
 // ---- Task Completion helpers ----
@@ -203,46 +237,7 @@ export async function saveTaskCompletion(
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
-  const completedAt = completed ? new Date() : null;
-  
-  // Try to find existing record
-  const existing = await db
-    .select()
-    .from(taskCompletions)
-    .where(
-      and(
-        eq(taskCompletions.userId, userId),
-        eq(taskCompletions.strategyId, strategyId),
-        eq(taskCompletions.taskId, taskId)
-      )
-    )
-    .limit(1);
-  
-  if (existing.length > 0) {
-    // Update existing record
-    await db
-      .update(taskCompletions)
-      .set({ completed, completedAt })
-      .where(
-        and(
-          eq(taskCompletions.userId, userId),
-          eq(taskCompletions.strategyId, strategyId),
-          eq(taskCompletions.taskId, taskId)
-        )
-      );
-  } else {
-    // Insert new record
-    await db.insert(taskCompletions).values({
-      userId,
-      strategyId,
-      taskId,
-      taskTitle,
-      stage,
-      completed,
-      completedAt,
-    });
-  }
+  await persistTaskCompletionAtomic(db, {userId, strategyId, taskId, taskTitle, stage, completed});
 }
 
 export async function getTaskCompletions(
@@ -262,6 +257,14 @@ export async function getTaskCompletions(
       )
     );
   
+  // Never return ambiguous duplicate completion records to the UI.
+  const seen = new Set<string>();
+  for (const completion of results) {
+    if (seen.has(completion.taskId)) {
+      throw new Error("Duplicate completion records require reviewed database remediation");
+    }
+    seen.add(completion.taskId);
+  }
   return results;
 }
 
@@ -283,9 +286,10 @@ export async function getTaskCompletion(
         eq(taskCompletions.taskId, taskId)
       )
     )
-    .limit(1);
+    .limit(2);
   
-  return results.length > 0 ? results[0] : undefined;
+  if (results.length > 1) throw new Error("Duplicate completion records require reviewed database remediation");
+  return results[0];
 }
 
 // ---- Save & Resume Link helpers ----
@@ -307,4 +311,20 @@ export async function markSaveLinkUsed(token: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db.update(saveLinks).set({ used: true }).where(eq(saveLinks.token, token));
+}
+
+export async function canReadFile(fileKey: string, userId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const owned = await db.select({ key: portalFiles.fileKey }).from(portalFiles)
+    .where(and(eq(portalFiles.fileKey, fileKey), eq(portalFiles.userId, userId))).limit(1);
+  if (owned.length) return true;
+  const legacy = await db.select({ id: documentUploads.id }).from(documentUploads)
+    .where(and(eq(documentUploads.fileKey, fileKey), eq(documentUploads.userId, userId))).limit(1);
+  return legacy.length > 0;
+}
+export async function registerFile(fileKey: string, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(portalFiles).values({ fileKey, userId });
 }

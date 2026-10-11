@@ -1,3 +1,4 @@
+import { accountStorage } from "@/lib/accountStorage";
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -48,7 +49,7 @@ export function StrategyChecklist({ tasks, policyId, onTaskToggle }: StrategyChe
   // Load persisted state from localStorage
   useEffect(() => {
     const storageKey = `strategy-checklist-${policyId}`;
-    const saved = localStorage.getItem(storageKey);
+    const saved = accountStorage.getItem(storageKey);
     if (saved) {
       try {
         setTaskStates(JSON.parse(saved));
@@ -68,7 +69,7 @@ export function StrategyChecklist({ tasks, policyId, onTaskToggle }: StrategyChe
   // Save state to localStorage whenever it changes
   useEffect(() => {
     const storageKey = `strategy-checklist-${policyId}`;
-    localStorage.setItem(storageKey, JSON.stringify(taskStates));
+    accountStorage.setItem(storageKey, JSON.stringify(taskStates));
   }, [taskStates, policyId]);
 
   const handleTaskToggle = (taskId: string) => {

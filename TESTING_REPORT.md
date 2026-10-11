@@ -1,3 +1,5 @@
+> Historical source document. Current verified status and exceptions are in DEVELOPMENT_2026-10-08.md; current setup is in START_HERE.md. Any older completion, security, delivery or test claims below are not current verification.
+
 # LTC Insurance Portal - Comprehensive Testing Report
 **Date:** April 7, 2026  
 **Status:** ✅ ALL TESTS PASSING

@@ -1,0 +1,3 @@
+# Preserve the verified October 11 source checkpoint byte-for-byte across operating systems.
+# In particular, never normalize approved PDF or HTML source/template bytes.
+* -text

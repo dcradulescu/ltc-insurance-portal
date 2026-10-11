@@ -2,9 +2,13 @@
  * Tests for Save & Resume (magic link) feature
  * Covers: sendSaveLink mutation and getResumeData query
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
 import * as db from "./db";
+import { ENV } from "./_core/env";
+import { submitEmail } from "./_core/delivery";
+vi.mock("./_core/delivery", () => ({ submitEmail: vi.fn().mockResolvedValue({ success: true, status: "accepted", channel: "webhook" }), submitWebhook: vi.fn() }));
+beforeEach(() => { ENV.appPublicUrl = "https://portal.example.com"; });
 
 // Mock DB helpers used by the save-link procedures
 vi.mock("./db", async (importOriginal) => {
@@ -22,11 +26,10 @@ vi.mock("./_core/notification", () => ({
   notifyOwner: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("./_core/delivery",()=>({deliver:vi.fn().mockResolvedValue({success:true,status:"accepted"}),resumeOrigin:()=>"https://portal.example.com"}));
-const caller = appRouter.createCaller({} as any);
+const caller = appRouter.createCaller({ user: { id: 7, email: "test@example.com" }, req: { headers: {} }, res: {} } as any);
 
 describe("email.sendSaveLink", () => {
-  it("accepts delivery without returning a bearer token when called with valid email", async () => {
+  it("returns success: true and a token when called with valid email", async () => {
     const result = await caller.email.sendSaveLink({
       email: "test@example.com",
       insuredName: "Jane Doe",
@@ -36,8 +39,8 @@ describe("email.sendSaveLink", () => {
       currentStep: 2,
     });
     expect(result.success).toBe(true);
-    expect(result).not.toHaveProperty("token");
-    expect(db.createSaveLink).toHaveBeenCalled();
+    expect(typeof result.token).toBe("string");
+    expect(result.token.length).toBeGreaterThan(10);
   });
 
   it("returns success: true even without optional fields", async () => {
@@ -45,8 +48,21 @@ describe("email.sendSaveLink", () => {
       email: "minimal@example.com",
     });
     expect(result.success).toBe(true);
-    expect(result).not.toHaveProperty("token");
+    expect(result.token).toBeDefined();
   });
+  it("preserves the saved link when email cannot be confirmed", async () => {
+    vi.mocked(submitEmail).mockRejectedValueOnce(new Error("Provider unavailable"));
+    const result = await caller.email.sendSaveLink({ email: "someone-else@example.com", origin: "https://untrusted.example" });
+    expect(result).toMatchObject({ success: false, saved: true, status: "unconfirmed", recipient: "test@example.com" });
+    expect(result.resumePath).toBe(`/policy-form?resume=${result.token}`);
+    expect(db.createSaveLink).toHaveBeenLastCalledWith(expect.objectContaining({ userId: 7, email: "test@example.com" }));
+  });
+  it("uses the configured address and account email", async () => {
+    await caller.email.sendSaveLink({ email: "someone-else@example.com", origin: "https://untrusted.example" });
+    expect(submitEmail).toHaveBeenLastCalledWith(expect.objectContaining({ recipients: ["test@example.com"],
+      payload: expect.objectContaining({ returnUrl: expect.stringContaining("https://portal.example.com/policy-form?resume=") }) }));
+  });
+
 });
 
 describe("email.getResumeData", () => {
@@ -58,13 +74,14 @@ describe("email.getResumeData", () => {
 
   it("returns found: false when token does not exist", async () => {
     getSaveLinkByToken.mockResolvedValue(null);
-    const result = await caller.email.getResumeData({ token: "nonexistent-token000000000000000" });
+    const result = await caller.email.getResumeData({ token: "nonexistent-token" });
     expect(result.found).toBe(false);
   });
 
   it("returns found: false with expired: true when link is expired", async () => {
     getSaveLinkByToken.mockResolvedValue({
-      token: "expired-token0000000000000000000",
+      userId: 7,
+      token: "expired-token",
       email: "test@example.com",
       insuredName: "Jane Doe",
       formData: {},
@@ -72,7 +89,7 @@ describe("email.getResumeData", () => {
       expiresAt: new Date(Date.now() - 1000), // already expired
       usedAt: null,
     });
-    const result = await caller.email.getResumeData({ token: "expired-token0000000000000000000" });
+    const result = await caller.email.getResumeData({ token: "expired-token" });
     expect(result.found).toBe(false);
     if (!result.found) {
       expect((result as any).expired).toBe(true);
@@ -82,7 +99,8 @@ describe("email.getResumeData", () => {
   it("returns formData and currentStep when token is valid", async () => {
     const mockFormData = { insuredFullName: "Jane Doe", policyNumber: "LTC-12345" };
     getSaveLinkByToken.mockResolvedValue({
-      token: "valid-token000000000000000000000",
+      userId: 7,
+      token: "valid-token",
       email: "test@example.com",
       insuredName: "Jane Doe",
       formData: mockFormData,
@@ -90,7 +108,7 @@ describe("email.getResumeData", () => {
       expiresAt: new Date(Date.now() + 86400000), // expires tomorrow
       usedAt: null,
     });
-    const result = await caller.email.getResumeData({ token: "valid-token000000000000000000000" });
+    const result = await caller.email.getResumeData({ token: "valid-token" });
     expect(result.found).toBe(true);
     if (result.found) {
       expect(result.currentStep).toBe(3);

@@ -1,15 +1,16 @@
-import { router, publicProcedure, visitorProcedure } from "../_core/trpc";
+import { requireOwnedPolicy } from "../_core/ownership";
+import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { invokeLLM } from "../_core/llm";
 import { getPolicyById, getDb } from "../db";
 import { chatMessages, ragDocuments } from "../../drizzle/schema";
-import { and, eq, desc, like, or } from "drizzle-orm";
+import { eq, and, desc, like, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 // ── Built-in LTC knowledge base ──────────────────────────────────────────────
 const BUILTIN_KNOWLEDGE = `
 GLOSSARY OF LTC INSURANCE TERMS:
-- Elimination Period: The number of service days you must pay out of pocket before your LTC policy begins paying. Some policies count service days; others use calendar days. Confirm with the carrier.
+- Elimination Period: The number of service days you must pay out of pocket before your LTC policy begins paying. This counts days of actual service, not calendar days since illness onset.
 - Daily Maximum: The maximum amount the insurance company pays per day of care. Costs above this are the client's responsibility.
 - Monthly Maximum: The maximum amount payable per month of care.
 - Lifetime Maximum: The total amount the policy will pay over its entire lifetime.
@@ -27,7 +28,7 @@ GLOSSARY OF LTC INSURANCE TERMS:
 
 STRATEGY STAGES:
 Stage 1 — Prior to Claim (Days 1–25):
-- Contact the carrier and request the claims packet by mail. Ask about notice deadlines and do not delay required notice while gathering information.
+- Contact the carrier and request the claims packet by mail. DO NOT initiate the claim yet — only request information.
 - Evaluate the long-term care need and identify physical/cognitive decline.
 - Identify ADL deficits (minimum 2 ADLs required for most policies).
 - Notify all healthcare providers IN WRITING of intent to file an LTC claim.
@@ -50,12 +51,12 @@ Stage 3 — Post-Approval (Day 64+):
 - Track benefits used against the lifetime maximum.
 
 CRITICAL RULES:
-- Follow notice and filing deadlines while gathering Stage 1 documentation.
+- NEVER initiate a claim until all Stage 1 documentation is gathered.
 - Submit ALL documents in ONE packet — never piecemeal.
 - Policy number MUST appear on every page of every submitted document.
 - Third-party evaluations look for inconsistencies — be honest and thorough.
-- Review written denial reasons, appeal rights and deadlines; obtain qualified help if needed.
-- The elimination period may count service days or calendar days; check the policy.
+- Appeals after denial have low success rates — prevention is key.
+- The elimination period counts service days, not calendar days.
 
 COMMON MISTAKES TO AVOID:
 1. Initiating the claim before gathering all documentation.
@@ -70,7 +71,7 @@ SC Visiting Angels (scvisitingangels.com) is a home care agency in South Carolin
 `;
 
 // ── Keyword-based RAG retrieval from ragDocuments table ───────────────────────
-async function retrieveRelevantDocs(query: string, userId: number, limit = 3): Promise<string[]> {
+async function retrieveRelevantDocs(query: string, limit = 3): Promise<string[]> {
   try {
     const db = await getDb();
     if (!db) return [];
@@ -88,9 +89,7 @@ async function retrieveRelevantDocs(query: string, userId: number, limit = 3): P
     const docs = await db
       .select({ title: ragDocuments.title, content: ragDocuments.content })
       .from(ragDocuments)
-      // The schema has no public/shared visibility flag. Do not treat another
-      // owner's or an inactive document as shared knowledge.
-      .where(and(eq(ragDocuments.userId, userId), eq(ragDocuments.isActive, true), or(...conditions)))
+      .where(or(...conditions.filter(Boolean) as any[]))
       .limit(limit);
 
     return docs.map((d: { title: string; content: string }) => `[${d.title}]\n${d.content.slice(0, 600)}`);
@@ -100,25 +99,25 @@ async function retrieveRelevantDocs(query: string, userId: number, limit = 3): P
 }
 
 // ── Save message to chatMessages table ───────────────────────────────────────
-async function saveMessage(sessionId: string, role: "user" | "assistant", content: string) {
+async function saveMessage(userId: number, sessionId: string, role: "user" | "assistant", content: string) {
   try {
     const db = await getDb();
     if (!db) return;
-    await db.insert(chatMessages).values({ sessionId, role, content });
+    await db.insert(chatMessages).values({ userId, sessionId, role, content });
   } catch {
     // Non-blocking — don't fail the chat if DB write fails
   }
 }
 
 // ── Get recent history from chatMessages table ────────────────────────────────
-async function getHistory(sessionId: string, limit = 10) {
+async function getHistory(userId: number, sessionId: string, limit = 10) {
   try {
     const db = await getDb();
     if (!db) return [];
     const rows = await db
       .select({ role: chatMessages.role, content: chatMessages.content })
       .from(chatMessages)
-      .where(eq(chatMessages.sessionId, sessionId))
+      .where(and(eq(chatMessages.sessionId, sessionId), eq(chatMessages.userId, userId)))
       .orderBy(desc(chatMessages.createdAt))
       .limit(limit);
     return rows.reverse();
@@ -129,20 +128,21 @@ async function getHistory(sessionId: string, limit = 10) {
 
 // ── Chat router ───────────────────────────────────────────────────────────────
 export const chatRouter = router({
-  send: visitorProcedure
+  send: protectedProcedure
     .input(z.object({
       message: z.string().min(1).max(2000),
-      sessionId: z.string().max(100).optional(),
+      sessionId: z.string().optional(),
       policyId: z.number().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
-      const publicSessionId = input.sessionId || nanoid();
-      const sessionId = `${ctx.user.id}:${publicSessionId}`;
+      const sessionId = input.sessionId || nanoid();
+      const policy = input.policyId ? await requireOwnedPolicy(input.policyId, ctx.user.id) : undefined;
 
-      // Read history before saving this turn, so the prompt contains it once.
+      // 1. Save user message
+      await saveMessage(ctx.user.id, sessionId, "user", input.message);
 
       // 2. Retrieve relevant docs from knowledge base
-      const relevantDocs = await retrieveRelevantDocs(input.message, ctx.user.id);
+      const relevantDocs = await retrieveRelevantDocs(input.message);
       const ragContext = relevantDocs.length > 0
         ? `\nRELEVANT KNOWLEDGE BASE DOCUMENTS:\n${relevantDocs.join("\n\n")}\n`
         : "";
@@ -151,8 +151,8 @@ export const chatRouter = router({
       let policyContext = "";
       if (input.policyId) {
         try {
-          const policy = await getPolicyById(input.policyId);
-          if (policy && policy.userId === ctx.user.id) {
+
+          if (policy) {
             policyContext = `
 USER'S POLICY CONTEXT:
 - Insured: ${policy.insuredFullName || "Not provided"}
@@ -171,7 +171,7 @@ USER'S POLICY CONTEXT:
       }
 
       // 4. Get recent conversation history
-      const history = await getHistory(sessionId, 8);
+      const history = await getHistory(ctx.user.id, sessionId, 8);
       const historyMessages = history
         .filter((m: { role: string; content: string }) => m.role === "user" || m.role === "assistant")
         .map((m: { role: string; content: string }) => ({ role: m.role as "user" | "assistant", content: m.content }));
@@ -207,17 +207,16 @@ RESPONSE GUIDELINES:
           ? result.choices[0].message.content
           : JSON.stringify(result.choices[0].message.content);
 
-      // Persist the successful turn together in conversational order.
-      await saveMessage(sessionId, "user", input.message);
-      await saveMessage(sessionId, "assistant", assistantContent);
+      // 7. Save assistant response
+      await saveMessage(ctx.user.id, sessionId, "assistant", assistantContent);
 
-      return { content: assistantContent, sessionId: publicSessionId };
+      return { content: assistantContent, sessionId };
     }),
 
-  getHistory: visitorProcedure
-    .input(z.object({ sessionId: z.string().max(100) }))
+  getHistory: protectedProcedure
+    .input(z.object({ sessionId: z.string() }))
     .query(async ({ input, ctx }) => {
-      const rows = await getHistory(`${ctx.user.id}:${input.sessionId}`, 50);
+      const rows = await getHistory(ctx.user.id, input.sessionId, 50);
       return rows.map((r: { role: string; content: string }) => ({ role: r.role, content: r.content }));
     }),
 });

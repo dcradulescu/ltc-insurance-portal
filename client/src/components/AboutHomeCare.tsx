@@ -13,7 +13,7 @@ export function AboutHomeCare({ showStartButton = false, onStartClick }: AboutHo
         <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
           <div className="flex-shrink-0">
             <img
-              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663383586656/7PNQfuuwdux64rdnaX8mmg/Dove-Trans_350b603e.gif"
+              src="/media/core/Dove-Trans_4328daa6.gif"
               alt="Visiting Angels"
               className="h-14 sm:h-20 w-auto drop-shadow-md transition-transform duration-300 hover:scale-105"
             />

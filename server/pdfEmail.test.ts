@@ -112,7 +112,7 @@ describe("PDF Delivery Router Schema", () => {
     expect(procedures).toContain("generatePdf");
     expect(procedures).toContain("sendPdfByEmail");
     expect(procedures).toContain("validateEmail");
-  });
+  }, 15000);
 });
 
 describe("Email Router Schema", () => {

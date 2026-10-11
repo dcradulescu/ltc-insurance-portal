@@ -78,7 +78,7 @@ export function SiteFooter() {
               {/* Title row with dove */}
               <div className="flex items-center gap-4 mb-3">
                 <img
-                  src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
+                  src="/media/cdn/NnImPmoCbXXIfDiW.png"
                   alt="SC Visiting Angels dove"
                   className="w-14 h-14 object-contain flex-shrink-0"
                 />
@@ -169,7 +169,7 @@ export function SiteFooter() {
             {/* Right: image — same height as content */}
             <div className="relative rounded-2xl overflow-hidden shadow-2xl hidden lg:block" style={{ minHeight: 500 }}>
               <img
-                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/lSMqOjgOjuvfRlJs.jpg"
+                src="/media/cdn/lSMqOjgOjuvfRlJs.png"
                 alt="SC Visiting Angels caregiver providing compassionate home care to a senior"
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ objectPosition: 'center' }}
@@ -178,7 +178,7 @@ export function SiteFooter() {
               <div className="absolute bottom-6 left-6 right-6 bg-white/90 rounded-xl px-5 py-4 shadow-lg backdrop-blur-sm">
                 <div className="flex items-center gap-3 mb-1">
                   <img
-                    src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663383586656/NnImPmoCbXXIfDiW.png"
+                    src="/media/cdn/NnImPmoCbXXIfDiW.png"
                     alt="SC Visiting Angels"
                     className="w-8 h-8 object-contain"
                   />
