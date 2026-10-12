@@ -1,4 +1,6 @@
-# LTC Portal — GoDaddy Microsoft 365 delivery integration
+# LTC Portal — GoDaddy Microsoft 365 delivery integration (legacy, NOT selected)
+
+**Superseded for outbound LTC email:** The approved default is Paubox Email API. See [PAUBOX-EMAIL-API-SETUP.md](PAUBOX-EMAIL-API-SETUP.md). This Microsoft Graph guide is retained for rollback/reference only; no Microsoft Entra setup is needed for the selected Paubox transport.
 
 **Status:** OAuth/Graph application support implemented in the LTC Portal feature branch; real mailbox authorization and end-to-end provider delivery are **not yet configured or verified**.
 

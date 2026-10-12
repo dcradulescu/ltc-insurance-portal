@@ -92,10 +92,15 @@ export function reviewConfiguration(env) {
   const ai = url('OPENAI_BASE_URL', env.OPENAI_BASE_URL ?? 'https://api.openai.com');
   if (ai && /\/v1\/?$/.test(ai.pathname)) error('OPENAI_BASE_URL', 'Remove the trailing /v1: the current adapter appends /v1/chat/completions.');
 
-  // Public LTC delivery can now use OAuth2 Microsoft Graph instead of SMTP password auth.
-  if (env.LTC_MAIL_TRANSPORT && !['graph','smtp'].includes(env.LTC_MAIL_TRANSPORT))
-    error('LTC_MAIL_TRANSPORT', 'Choose graph (recommended for Microsoft 365) or smtp.');
-  if (env.LTC_MAIL_TRANSPORT === 'graph') {
+  // Public LTC delivery defaults to a BAA-backed transactional email provider
+  // when LTC_MAIL_TRANSPORT=paubox; it does not change the GoDaddy inbox.
+  if (env.LTC_MAIL_TRANSPORT && !['paubox','graph','smtp'].includes(env.LTC_MAIL_TRANSPORT))
+    error('LTC_MAIL_TRANSPORT', 'Choose paubox, graph or smtp.');
+  if (env.LTC_MAIL_TRANSPORT === 'paubox') {
+    required('PAUBOX_API_KEY');
+    mailbox('PAUBOX_SENDER_EMAIL');
+    warn('Paubox', 'Verify your Paubox account, BAA, domain SPF/DKIM and live recipient + office inbox delivery separately.');
+  } else if (env.LTC_MAIL_TRANSPORT === 'graph') {
     const uuid = value => /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value||'');
     for (const key of ['MS365_TENANT_ID','MS365_CLIENT_ID']) {
       if(required(key) && !uuid(env[key]))error(key,'Use the exact Microsoft Entra GUID from the app registration.');

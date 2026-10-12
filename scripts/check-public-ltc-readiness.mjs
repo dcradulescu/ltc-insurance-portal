@@ -19,9 +19,16 @@ function present(key){return typeof env[key]==="string" && env[key].trim().lengt
 check("strategy_and_chat_ai",present("OPENAI_API_KEY")&&present("OPENAI_MODEL"),
   "Configure OPENAI_API_KEY and OPENAI_MODEL for Strategy and Support Chat");
 const mailTransport=env.LTC_MAIL_TRANSPORT || "smtp";
-check("mail_transport",["graph","smtp"].includes(mailTransport),
-  "Choose LTC_MAIL_TRANSPORT=graph (Microsoft 365 OAuth2) or smtp (legacy)");
-if(mailTransport==="graph"){
+check("mail_transport",["paubox","graph","smtp"].includes(mailTransport),
+  "Choose LTC_MAIL_TRANSPORT=paubox (preferred) or a separately approved legacy transport");
+if(mailTransport==="paubox"){
+  check("paubox_api_key",present("PAUBOX_API_KEY") &&
+    !/^(REPLACE|CHANGEME|YOUR[_-])/i.test(env.PAUBOX_API_KEY || ""),
+    "Configure the Paubox Email API key as a server-only secret after domain verification");
+  check("paubox_sender_email",
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(env.PAUBOX_SENDER_EMAIL || ""),
+    "Configure PAUBOX_SENDER_EMAIL using your verified sending domain");
+}else if(mailTransport==="graph"){
   const uuid=value=>/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value||"");
   check("microsoft365_oauth_config",
     uuid(env.MS365_TENANT_ID)&&uuid(env.MS365_CLIENT_ID)&&
@@ -60,7 +67,8 @@ const report={
   officeSupportCopies:{enabled:supportCopyEnabled,addressWhenEnabled:supportCopyEnabled?supportEmail:null,
     note:"Support copies follow generated outputs, not unsent browser drafts. Visitor disclosure is required."},
   manualBeforeLaunch:[
-    "Test a real Microsoft 365 delivery for Strategy creation, PDF download, and visitor email with office BCC; verify exact attachments and inbox receipt",
+    "Confirm Paubox account/BAA, sending-domain verification (SPF plus DKIM), API key and sender before enabling real email",
+    "Test a controlled Paubox delivery for Strategy creation, PDF download, and visitor email with office BCC; verify exact attachments, tracking IDs and inbox receipt",
     "Have legal/privacy counsel evaluate HIPAA applicability, business associate agreements and AI/email provider retention",
     "Verify privacy terms, transport security, accessibility, logging, DNS, backups and incident response",
     "Test real Chrome and Edge flows plus accessible mobile behavior; test Safari/Firefox where supported",

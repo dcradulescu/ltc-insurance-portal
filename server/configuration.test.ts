@@ -19,7 +19,7 @@ describe('offline deployment configuration review', () => {
     const env = parse(readFileSync(new URL('../.env.example', import.meta.url)));
     const report = reviewConfiguration(env);
     expect(report.configurationValid).toBe(false);
-    for (const key of ['APP_PUBLIC_URL', 'JWT_SECRET', 'DATABASE_URL', 'OPENAI_API_KEY', 'MS365_TENANT_ID', 'MS365_CLIENT_ID', 'MS365_CLIENT_SECRET']) {
+    for (const key of ['APP_PUBLIC_URL', 'JWT_SECRET', 'DATABASE_URL', 'OPENAI_API_KEY', 'PAUBOX_API_KEY']) {
       expect(errors(report).some((issue: any) => issue.key === key)).toBe(true);
     }
   });

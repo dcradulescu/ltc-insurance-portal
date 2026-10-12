@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { TRPCError } from "@trpc/server";
 import { sendMicrosoftGraphMail } from "./microsoftGraphMail";
+import { sendPauboxMail } from "./pauboxMail";
 
 interface EmailOptions {
   to: string | string[];
@@ -15,9 +16,15 @@ export function escapeHtml(value: string) {
     .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
-/** Success means a transport accepted a message, not inbox delivery. */
+/** Provider acceptance only. Never imply an inbox receipt or automatically retry. */
 export async function sendEmail(options: EmailOptions) {
-  // GoDaddy-hosted Microsoft 365 supports the Graph OAuth 2.0 application flow.
+  // The approved public LTC path uses Paubox rather than registering a
+  // Microsoft Entra app. Existing GoDaddy/M365 receives office copies normally.
+  if (process.env.LTC_MAIL_TRANSPORT === "paubox") {
+    return sendPauboxMail(options);
+  }
+  // Legacy GoDaddy-hosted Microsoft 365 Graph transport remains available
+  // only through explicit configuration (no implicit credential fallback).
   // Explicit Graph mode avoids SMTP password authentication and its retirement.
   if (process.env.LTC_MAIL_TRANSPORT === "graph") {
     return sendMicrosoftGraphMail(options);
