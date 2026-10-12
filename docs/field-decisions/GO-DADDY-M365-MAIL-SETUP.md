@@ -6,7 +6,7 @@
 
 ## Delivery behavior
 
-The visitor's completed Strategy, 3-stage checklist, and later original 18-page PDF each produce an automatic support copy to **daniel@scvisitingangels.com** under the same locally generated reference, such as \`LTC-123456ABCDEF\`.
+The visitor's completed Strategy, 3-stage checklist, and later original 18-page PDF each produce an automatic support copy to **daniel@scvisitingangels.com** under the same locally generated reference, such as `LTC-123456ABCDEF`.
 
 When the visitor explicitly emails their PDF:
 - To: visitor-entered recipient address(es).
@@ -25,13 +25,13 @@ A connected Microsoft Outlook plugin in ChatGPT is **not** a credential usable b
 ### One-time Microsoft 365 / GoDaddy administrator authorization
 
 1. In the GoDaddy [Email & Office Dashboard](https://email.godaddy.com/), sign in as an authorized Microsoft 365 administrator.
-2. Open Advanced Admin Centers / Microsoft Entra administration, if available in your GoDaddy-managed subscription. In Microsoft Entra, register a single-tenant application named e.g. **SC Visiting Angels LTC Portal Email**. **If app registration or admin consent is unavailable**, stop and request the necessary administrative support from GoDaddy rather than weakening existing tenant security.
+2. Open the [Microsoft Entra admin center](https://entra.microsoft.com/) directly using the Microsoft 365 work account (this sign-in differs from the GoDaddy account-owner credentials). Navigate to **Entra ID → App registrations → New registration**. Register a **single-tenant** application named **SC Visiting Angels LTC Portal Email**. GoDaddy's Email & Office Dashboard → Admin → Advanced separately provides plan-dependent access to the Exchange, Teams, or SharePoint administration centers; that menu does **not** guarantee access to Entra app registrations. **If registration or Exchange application authorization is denied**, stop and seek authorized administrative help from GoDaddy, rather than weakening tenant security.
 3. Save the **Directory (tenant) ID** and **Application (client) ID**. Configure a certificate or a time-limited client secret under Certificates & secrets. The current adapter uses a client secret, not a user password; certificate credentials are an optional later improvement.
-4. Add Microsoft Graph **Application** permission \`Mail.Send\`; grant administrator consent. Application permissions can otherwise allow sending as any tenant user, so **restrict application mail-send access to the intended sending mailbox** using Exchange Online **RBAC for Applications**, and verify that scope before releasing the app.
-5. Confirm the app is authorized to send as the intended Microsoft 365 mailbox. Initial sending mailbox: \`daniel@scvisitingangels.com\`. This may be changed later to a licensed dedicated \`ltcportal@\` mailbox. The receiving office copy remains \`daniel@scvisitingangels.com\`.
+4. **Do not grant tenant-wide Microsoft Graph Application `Mail.Send` consent and assume Exchange RBAC narrows it.** Microsoft documents that Entra app permission grants and Exchange RBAC are **additive**. Preferred: an authorized Exchange admin configures **Exchange Online RBAC for Applications**, creates a resource scope restricted to the intended sending mailbox, establishes the Exchange service principal, and grants the scoped **`Application Mail.Send`** role. Verify with `Test-ServicePrincipalAuthorization` for the permitted sending mailbox and a second mailbox that must be denied. Ensure there is **no separate organization-wide Entra `Mail.Send` grant**, or the RBAC scope does not effectively restrict it. This requires the relevant Exchange administrator and Organization Management permissions. If GoDaddy restricts these settings, pause and request GoDaddy administrator assistance.
+5. Confirm the app is authorized to send as the intended Microsoft 365 mailbox. Initial sending mailbox: `daniel@scvisitingangels.com`. This may be changed later to a licensed dedicated `ltcportal@` mailbox. The receiving office copy remains `daniel@scvisitingangels.com`.
 6. Store these values as protected environment variables in the web application's **server host / secret manager**, never in GitHub, the browser, screenshots, or chat:
 
-    \`\`\`dotenv
+    ```dotenv
     LTC_MAIL_TRANSPORT=graph
     MS365_TENANT_ID=<directory-tenant-id>
     MS365_CLIENT_ID=<app-registration-client-id>
@@ -40,25 +40,25 @@ A connected Microsoft Outlook plugin in ChatGPT is **not** a credential usable b
 
     LTC_SUPPORT_EMAIL=daniel@scvisitingangels.com
     LTC_SUPPORT_COPY_ENABLED=true
-    \`\`\`
+    ```
 
-7. Restart only the **approved test/staging** instance after securely applying variables. No production change is authorized by this document.
+7. Only after the mailbox-scoped role is verified, restart the **approved test/staging** instance after securely applying variables. No production change is authorized by this document.
 
 ### What the code does
 
-- Requests a short-lived access token from \`https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token\` using \`https://graph.microsoft.com/.default\`.
-- Posts to \`https://graph.microsoft.com/v1.0/users/{sender}/sendMail\` with the exact \`toRecipients\`, \`bccRecipients\`, HTML summary, and approved PDF bytes (base64 encoded).
-- A \`202 Accepted\` means Graph accepted processing; **not** confirmation of inbox delivery. Microsoft 365/Exchange still applies throttling, message limits and policy controls.
+- Requests a short-lived access token from `https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token` using `https://graph.microsoft.com/.default`.
+- Posts to `https://graph.microsoft.com/v1.0/users/{sender}/sendMail` with the exact `toRecipients`, `bccRecipients`, HTML summary, and approved PDF bytes (base64 encoded).
+- A `202 Accepted` means Graph accepted processing; **not** confirmation of inbox delivery. Microsoft 365/Exchange still applies throttling, message limits and policy controls.
 - In-memory tokens are reused before expiry. No password SMTP fallback is attempted in Graph mode.
 - Standard single-call Graph attachment support currently caps file attachments at **3 MiB**. The original synthetic approved report was approximately 2.97 million bytes and was under this threshold. Verify representative report sizes before deployment. For larger attachments, a reviewed MIME or upload-session enhancement is needed; do not silently omit a PDF or claim success.
 
 ## Staging checks (no live delivery without credentials)
 
-\`\`\`powershell
+```powershell
 corepack pnpm build
 corepack pnpm exec vitest run ./server/_core/microsoftGraphMail.test.ts ./server/publicLtc.test.ts ./server/ltcOfficeSupport.test.ts
 node scripts/check-public-ltc-readiness.mjs
-\`\`\`
+```
 
 Once admin consent and environment configuration are complete, use **synthetic-only** policy and care data to:
 - Trigger Strategy creation; confirm the office receives the text, selected structured fields, 3-stage checklist and reference.
@@ -66,11 +66,11 @@ Once admin consent and environment configuration are complete, use **synthetic-o
 - Email a PDF to a **controlled test recipient other than the sending office mailbox**, and verify the visitor's copy and the office BCC. Compare the attachment hashes and reference number.
 - Confirm that Personal Additional Notes, a policy number, address, and other removed identifying fields were **not** sent.
 - Confirm failure behavior: missing admin consent, rejected message, changed sender, office-mailbox retention, and size limits.
-- Inspect inbox receipts and headers, not only a successful Graph \`202\`. The connected Outlook integration may be used to inspect the office inbox if explicitly requested.
+- Inspect inbox receipts and headers, not only a successful Graph `202`. The connected Outlook integration may be used to inspect the office inbox if explicitly requested.
 
 ## Optional legacy SMTP fallback (not recommended long term)
 
-GoDaddy documents \`smtp.office365.com\`, port \`587\`, STARTTLS. Existing \`LTC_MAIL_TRANSPORT=smtp\` still invokes Nodemailer, but password SMTP AUTH is in deprecation and may be disabled by tenant policy. GoDaddy documentation notes enabling SMTP Authentication can disable Microsoft Entra security defaults for the organization; **do not disable security defaults or MFA to get this portal working**.
+GoDaddy documents `smtp.office365.com`, port `587`, STARTTLS. Existing `LTC_MAIL_TRANSPORT=smtp` still invokes Nodemailer, but password SMTP AUTH is in deprecation and may be disabled by tenant policy. GoDaddy documentation notes enabling SMTP Authentication can disable Microsoft Entra security defaults for the organization; **do not disable security defaults or MFA to get this portal working**.
 
 ## Security, privacy and deployment prerequisites
 
