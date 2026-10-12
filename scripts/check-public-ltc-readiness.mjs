@@ -18,10 +18,25 @@ function check(id,ready,description){
 function present(key){return typeof env[key]==="string" && env[key].trim().length>0;}
 check("strategy_and_chat_ai",present("OPENAI_API_KEY")&&present("OPENAI_MODEL"),
   "Configure OPENAI_API_KEY and OPENAI_MODEL for Strategy and Support Chat");
-check("smtp_attachment_delivery",present("SMTP_HOST")&&present("SMTP_FROM"),
-  "Configure SMTP_HOST and SMTP_FROM for secure PDF attachment delivery");
-check("smtp_auth_pair",present("SMTP_USER")===present("SMTP_PASS"),
-  "SMTP_USER and SMTP_PASS must either both be set or both intentionally omitted");
+const mailTransport=env.LTC_MAIL_TRANSPORT || "smtp";
+check("mail_transport",["graph","smtp"].includes(mailTransport),
+  "Choose LTC_MAIL_TRANSPORT=graph (Microsoft 365 OAuth2) or smtp (legacy)");
+if(mailTransport==="graph"){
+  const uuid=value=>/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value||"");
+  check("microsoft365_oauth_config",
+    uuid(env.MS365_TENANT_ID)&&uuid(env.MS365_CLIENT_ID)&&
+      present("MS365_CLIENT_SECRET")&&!/^REPLACE|CHANGEME$/i.test(env.MS365_CLIENT_SECRET)&&
+      present("MS365_SENDER_EMAIL"),
+    "Configure valid MS365_TENANT_ID and MS365_CLIENT_ID GUIDs, MS365_CLIENT_SECRET and MS365_SENDER_EMAIL");
+  check("microsoft365_sender_email",
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(env.MS365_SENDER_EMAIL||""),
+    "The MS365_SENDER_EMAIL mailbox must be valid and authorized by Exchange RBAC / Mail.Send admin consent");
+}else{
+  check("smtp_attachment_delivery",present("SMTP_HOST")&&present("SMTP_FROM"),
+    "Configure SMTP_HOST and SMTP_FROM for secure PDF attachment delivery");
+  check("smtp_auth_pair",present("SMTP_USER")===present("SMTP_PASS"),
+    "SMTP_USER and SMTP_PASS must either both be set or both intentionally omitted");
+}
 check("public_https",!production || /^https:\/\//.test(env.APP_PUBLIC_URL||""),
   "Production APP_PUBLIC_URL must be an HTTPS URL");
 const chrome=env.CANONICAL_REPORT_CHROMIUM_PATH || env.CHROMIUM_EXECUTABLE_PATH ||
@@ -39,12 +54,13 @@ check("office_support_email",/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmail),
 const report={
   scope:"LTC Portal public branch only",
   production,
+  mailTransport,
   technicalPreflightPassed:checks.every(x=>x.status==="configured"),
   checks,
   officeSupportCopies:{enabled:supportCopyEnabled,addressWhenEnabled:supportCopyEnabled?supportEmail:null,
     note:"Support copies follow generated outputs, not unsent browser drafts. Visitor disclosure is required."},
   manualBeforeLaunch:[
-    "Test real SMTP delivery for Strategy creation, PDF download, and recipient PDF email with office BCC; verify inbox receipt of exact PDF and structured summary",
+    "Test a real Microsoft 365 delivery for Strategy creation, PDF download, and visitor email with office BCC; verify exact attachments and inbox receipt",
     "Have legal/privacy counsel evaluate HIPAA applicability, business associate agreements and AI/email provider retention",
     "Verify privacy terms, transport security, accessibility, logging, DNS, backups and incident response",
     "Test real Chrome and Edge flows plus accessible mobile behavior; test Safari/Firefox where supported",

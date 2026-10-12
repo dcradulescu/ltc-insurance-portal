@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { TRPCError } from "@trpc/server";
+import { sendMicrosoftGraphMail } from "./microsoftGraphMail";
 
 interface EmailOptions {
   to: string | string[];
@@ -14,8 +15,18 @@ export function escapeHtml(value: string) {
     .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
-/** Success means the SMTP server accepted every recipient, not inbox delivery. */
+/** Success means a transport accepted a message, not inbox delivery. */
 export async function sendEmail(options: EmailOptions) {
+  // GoDaddy-hosted Microsoft 365 supports the Graph OAuth 2.0 application flow.
+  // Explicit Graph mode avoids SMTP password authentication and its retirement.
+  if (process.env.LTC_MAIL_TRANSPORT === "graph") {
+    return sendMicrosoftGraphMail(options);
+  }
+  if (process.env.LTC_MAIL_TRANSPORT && process.env.LTC_MAIL_TRANSPORT !== "smtp") {
+    throw new TRPCError({
+      code:"PRECONDITION_FAILED",message:"Unsupported LTC email transport configuration.",
+    });
+  }
   if (!process.env.SMTP_HOST || !process.env.SMTP_FROM) {
     throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Email service is not configured. Please contact the office." });
   }

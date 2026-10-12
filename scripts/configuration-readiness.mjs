@@ -92,15 +92,33 @@ export function reviewConfiguration(env) {
   const ai = url('OPENAI_BASE_URL', env.OPENAI_BASE_URL ?? 'https://api.openai.com');
   if (ai && /\/v1\/?$/.test(ai.pathname)) error('OPENAI_BASE_URL', 'Remove the trailing /v1: the current adapter appends /v1/chat/completions.');
 
-  if (required('SMTP_HOST') && (reservedHost(env.SMTP_HOST) || /[\s/:]/.test(env.SMTP_HOST))) error('SMTP_HOST', 'Use the SMTP hostname, without a URL scheme, port, or placeholder domain.');
-  const smtpPort = integer('SMTP_PORT', '587', 1, 65535); boolean('SMTP_SECURE');
-  if (smtpPort === 465 && env.SMTP_SECURE !== 'true') warn('SMTP_SECURE', 'Port 465 is typically implicit TLS. Confirm the provider setting before sending.');
-  if (env.SMTP_USER || env.SMTP_PASS) { required('SMTP_USER'); required('SMTP_PASS'); }
-  else warn('SMTP authentication', 'No SMTP credentials are set. Confirm that the configured relay permits this application.');
-  mailbox('SMTP_FROM'); mailbox('NOTIFY_OWNER_EMAIL');
+  // Public LTC delivery can now use OAuth2 Microsoft Graph instead of SMTP password auth.
+  if (env.LTC_MAIL_TRANSPORT && !['graph','smtp'].includes(env.LTC_MAIL_TRANSPORT))
+    error('LTC_MAIL_TRANSPORT', 'Choose graph (recommended for Microsoft 365) or smtp.');
+  if (env.LTC_MAIL_TRANSPORT === 'graph') {
+    const uuid = value => /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(value||'');
+    for (const key of ['MS365_TENANT_ID','MS365_CLIENT_ID']) {
+      if(required(key) && !uuid(env[key]))error(key,'Use the exact Microsoft Entra GUID from the app registration.');
+    }
+    required('MS365_CLIENT_SECRET');
+    mailbox('MS365_SENDER_EMAIL');
+    warn('Microsoft Graph', 'Admin consent for Mail.Send, sender mailbox RBAC scope and actual 202 Accepted / inbox delivery must be verified.');
+  } else {
+    if (required('SMTP_HOST') && (reservedHost(env.SMTP_HOST) || /[\s/:]/.test(env.SMTP_HOST))) error('SMTP_HOST', 'Use the SMTP hostname, without a URL scheme, port, or placeholder domain.');
+    const smtpPort = integer('SMTP_PORT', '587', 1, 65535); boolean('SMTP_SECURE');
+    if (smtpPort === 465 && env.SMTP_SECURE !== 'true') warn('SMTP_SECURE', 'Port 465 is typically implicit TLS. Confirm the provider setting before sending.');
+    if (env.SMTP_USER || env.SMTP_PASS) { required('SMTP_USER'); required('SMTP_PASS'); }
+    else warn('SMTP authentication', 'No SMTP credentials are set. Confirm that the configured relay permits this application.');
+    mailbox('SMTP_FROM');
+  }
+  boolean('LTC_SUPPORT_COPY_ENABLED');
+  if (env.LTC_SUPPORT_COPY_ENABLED === 'false')
+    warn('LTC_SUPPORT_COPY_ENABLED', 'Support copies are disabled; this does not meet the approved LTC office-workflow requirement.');
+  if (env.LTC_SUPPORT_EMAIL) mailbox('LTC_SUPPORT_EMAIL');
+  mailbox('NOTIFY_OWNER_EMAIL');
   if (env.ZAPIER_WEBHOOK_URL) {
     url('ZAPIER_WEBHOOK_URL', env.ZAPIER_WEBHOOK_URL, { allowQuery: true });
-    warn('ZAPIER_WEBHOOK_URL', 'Explicit email requests prefer the webhook. Owner/contact notifications still require SMTP.');
+    warn('ZAPIER_WEBHOOK_URL', 'Legacy webhook delivery remains available on authenticated routes; anonymous LTC report delivery uses the selected Graph or SMTP transport.');
   }
   const smsKeys = ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_PHONE_NUMBER'];
   const smsConfigured = smsKeys.some(key => !!env[key]);
