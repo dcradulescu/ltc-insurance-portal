@@ -30,18 +30,21 @@ check("canonical_pdf_browser",existsSync(chrome),
   "A Chrome/Chromium executable must be available to render the 18-page approved PDF");
 check("canonical_pdf_lock",existsSync(resolve("report-templates","ltc-original-18.lock.json")),
   "The 18-page original report approval lock must be present");
-const bccOn=env.LTC_TEST_BCC_ENABLED==="true" ||
-  (!production && env.LTC_TEST_BCC_ENABLED!=="false");
+const supportCopyEnabled=env.LTC_SUPPORT_COPY_ENABLED!=="false";
+const supportEmail=env.LTC_SUPPORT_EMAIL?.trim() || "daniel@scvisitingangels.com";
+check("office_support_copy_enabled",supportCopyEnabled,
+  "Automatic support copies for generated Strategies, PDF downloads and emailed PDFs must be enabled");
+check("office_support_email",/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmail),
+  "Configure a valid LTC_SUPPORT_EMAIL for the Visiting Angels office copy");
 const report={
   scope:"LTC Portal public branch only",
   production,
   technicalPreflightPassed:checks.every(x=>x.status==="configured"),
   checks,
-  testingBcc:{enabled:bccOn,addressWhenEnabled:bccOn?"daniel@scvisitingangels.com":null,
-    note:bccOn?"Explicit sender disclosure is required; disable after testing":
-      "Enable LTC_TEST_BCC_ENABLED=true when performing the approved BCC delivery test"},
+  officeSupportCopies:{enabled:supportCopyEnabled,addressWhenEnabled:supportCopyEnabled?supportEmail:null,
+    note:"Support copies follow generated outputs, not unsent browser drafts. Visitor disclosure is required."},
   manualBeforeLaunch:[
-    "Test one controlled, real SMTP delivery and verify recipient plus BCC receipt; SMTP acceptance alone is insufficient",
+    "Test real SMTP delivery for Strategy creation, PDF download, and recipient PDF email with office BCC; verify inbox receipt of exact PDF and structured summary",
     "Have legal/privacy counsel evaluate HIPAA applicability, business associate agreements and AI/email provider retention",
     "Verify privacy terms, transport security, accessibility, logging, DNS, backups and incident response",
     "Test real Chrome and Edge flows plus accessible mobile behavior; test Safari/Firefox where supported",

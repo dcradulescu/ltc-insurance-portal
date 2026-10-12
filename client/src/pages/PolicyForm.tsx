@@ -1164,6 +1164,15 @@ export default function PolicyForm() {
                 <h3 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Roboto', sans-serif", color: '#454545' }}>Review & <span style={{ color: '#34B1C4' }}>Generate</span></h3>
                 <p className="text-base leading-relaxed" style={{ fontFamily: "'Open Sans', sans-serif", color: '#666666' }}>Take a moment to review your information below. You can go back to any step to make changes. Once you're satisfied, click "Generate Strategy" to create your personalized plan. You'll receive a downloadable PDF with your step-by-step checklist and next actions.</p>
               </div>
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <p className="text-sm text-blue-900">
+                  When you generate a Strategy or PDF, SC Visiting Angels receives a support copy
+                  of the generated results and your structured coverage and care selections to
+                  help answer questions. Drafts saved only in this browser and Additional Notes
+                  are not included in those support emails. Health and care selections may still
+                  be sensitive even without names or policy numbers.
+                </p>
+              </div>
               <div className="grid gap-4">
                 {[
                   { title: "LTC Insurance Company", items: [["Carrier", form.carrierName], ["Phone", form.carrierPhone], ["Fax", form.carrierFax], ["Address", form.carrierAddress]] },

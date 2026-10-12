@@ -1,4 +1,5 @@
 import { accountStorage } from "@/lib/accountStorage";
+import { getOrCreateLtcSupportReference } from "@/lib/ltcSupportReference";
 import { publicPolicyForService, sanitizePublicPolicy } from "@shared/publicLtcPolicy";
 import { validateLocalCareScenario } from "@/lib/localCareScenario";
 import { downloadPublicPdf } from "@/lib/downloadPublicPdf";
@@ -88,6 +89,7 @@ type PlanView = "written" | "timeline" | "checklist" | "financial" | "downloads"
 
 export default function Strategy() {
   const [, navigate] = useLocation();
+  const supportReference=useMemo(()=>getOrCreateLtcSupportReference(),[]);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [emailRecipients, setEmailRecipients] = useState<string[]>([""]);
   const [emailAcknowledged, setEmailAcknowledged] = useState(false);
@@ -144,6 +146,9 @@ export default function Strategy() {
   useEffect(() => { if (savedScenario) accountStorage.setItem("ltc_care_scenario",JSON.stringify(savedScenario)); },[savedScenario]);
   const generateMutation = trpc.publicLtc.generateStrategy.useMutation({
     onSuccess: data => {
+      if(data.supportCopyStatus && data.supportCopyStatus!=="accepted") {
+        toast.warning("The Strategy was generated, but the Visiting Angels support email was not confirmed.");
+      }
       const now = new Date().toISOString();
       setStrategy({
         id:1,policyId:1,createdAt:now,generatedAt:now,scheduleStartDate:now.slice(0,10),
@@ -268,7 +273,7 @@ export default function Strategy() {
       navigate("/policy-form");
       return;
     }
-    generateMutation.mutate({policy:publicPolicyForService(policy)});
+    generateMutation.mutate({policy:publicPolicyForService(policy),supportReference});
   };
   const toggleTask = (stage:"stage1Tasks"|"stage2Tasks"|"stage3Tasks",tasks:StrategyTask[],taskId:string) => {
     if (!strategy) return;
@@ -309,6 +314,8 @@ export default function Strategy() {
   };
 
   const buildReportPayload = () => ({
+    supportReference,
+    supportPolicy:publicPolicyForService(policy || {}),
     insuredName:"", insuredDob:"",insuredPhone:"",insuredEmail:"",insuredAddress:"",
     policyNumber:"",claimNumber:"",carrierName:policy?.carrierName || "",
     carrierPhone:policy?.carrierPhone || "",eliminationPeriod:policy?.eliminationPeriod || "",
@@ -334,7 +341,12 @@ export default function Strategy() {
     claimsFax:policy?.carrierFax || "",
   });
   const downloadPdfMutation = trpc.publicLtc.generatePdf.useMutation({
-    onSuccess: data => {downloadPublicPdf(data.pdfBase64);toast.success("18-page PDF ready.");},
+    onSuccess: data => {
+      downloadPublicPdf(data.pdfBase64,supportReference);
+      toast.success("18-page PDF ready.");
+      if(data.supportCopyStatus && data.supportCopyStatus!=="accepted")
+        toast.warning("The office support email was not confirmed. You can still use your PDF.");
+    },
     onError: error => toast.error("PDF generation failed: "+error.message),
   });
   const handleDownloadPDF = () => {
@@ -533,6 +545,10 @@ export default function Strategy() {
           </h1>
           <p className="text-white/70 max-w-xl text-base md:text-lg leading-relaxed">
             A step-by-step roadmap with interactive checklists, timelines, and tools to help you successfully navigate your long-term care insurance claim.
+          </p>
+          <p className="text-xs text-white/85 mt-3">
+            Support reference: <strong>{supportReference}</strong> — Visiting Angels receives a support copy
+            of generated Strategies and PDFs to help answer your questions.
           </p>
         </div>
       </section>
@@ -991,6 +1007,8 @@ export default function Strategy() {
                     </div>
 
                     <PdfDeliveryPanel
+                      supportReference={supportReference}
+                      supportPolicy={publicPolicyForService(policy || {})}
                       policyData={{
                         insuredName: "",
                         insuredDob: "",
@@ -1112,9 +1130,9 @@ export default function Strategy() {
                             <label className="flex gap-2 items-start text-xs text-slate-600">
                               <Checkbox checked={emailAcknowledged} onCheckedChange={v=>setEmailAcknowledged(Boolean(v))} />
                               <span>I understand that the report will be emailed to these recipients.
-                                {mailConfig.data?.testingBccEnabled
-                                  ? " During testing a hidden copy (BCC) will also go to " + mailConfig.data.testingBccAddress + "."
-                                  : " This is a secure email-service transfer rather than local-only processing."}</span>
+                                {mailConfig.data?.supportCopyEnabled
+                                  ? " Visiting Angels also receives a support copy to assist with later questions."
+                                  : " Email delivery uses a separate email service."}</span>
                             </label>
                             <Button onClick={handleSendEmail} disabled={emailMutation.isPending || !mailConfig.data} className="w-full">
                               {emailMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />} Send Strategy
@@ -1151,6 +1169,8 @@ export default function Strategy() {
               <h2 className="font-serif text-2xl font-bold text-foreground mb-3">Ready to Generate Your Strategy</h2>
               <p className="text-muted-foreground mb-8 max-w-md mx-auto text-sm">
                 We have your policy information. Click below to generate your personalized LTC insurance claim strategy.
+                Visiting Angels will automatically receive a copy of the generated Strategy and your structured
+                coverage and care selections to assist with questions.
               </p>
               <Button size="lg" onClick={handleGenerate} className="gap-2">
                 <Target className="w-4 h-4" /> Generate My Strategy

@@ -32,7 +32,8 @@ beforeEach(()=>{
 describe("anonymous LTC routes",()=>{
   it("exposes visitor-only BCC notice without an account",async()=>{
     const info=await appRouter.createCaller(ctx("203.0.113.16")).publicLtc.mailConfig();
-    expect(info).toHaveProperty("testingBccEnabled");
+    expect(info.supportCopyEnabled).toBe(true);
+    expect(info.officeName).toBe("SC Visiting Angels");
   });
   it("rejects identifying fields sent to the strategy route",async()=>{
     await expect(appRouter.createCaller(ctx("203.0.113.17")).publicLtc.generateStrategy({
@@ -49,6 +50,13 @@ describe("anonymous LTC routes",()=>{
     expect(result.stage2Tasks.length).toBeGreaterThan(0);
     expect(result.stage3Tasks.length).toBeGreaterThan(0);
     expect(result.content).toContain("Stage 1");
+    expect(result.supportCopyStatus).toBe("accepted");
+    expect(result.supportReference).toMatch(/^LTC-[A-F0-9]{12}$/);
+    const [office]=vi.mocked(mail.sendEmail).mock.calls[0];
+    expect(office.to).toBe("daniel@scvisitingangels.com");
+    expect(office.subject).toContain(result.supportReference);
+    expect(office.html).toContain("Generated claim checklist");
+    expect(office.html).toContain("Dementia");
   });
   it("does not transmit arbitrary claims notes or accidental identifiers to strategy AI",async()=>{
     await appRouter.createCaller(ctx("203.0.113.46")).publicLtc.generateStrategy({
@@ -72,6 +80,10 @@ describe("anonymous LTC routes",()=>{
       expect(safe[key as keyof typeof safe]).toBe("");
     }
     expect(result).not.toHaveProperty("url");
+    expect(result.supportCopyStatus).toBe("accepted");
+    const [office]=vi.mocked(mail.sendEmail).mock.calls[0];
+    expect(office.to).toBe("daniel@scvisitingangels.com");
+    expect(office.attachments?.[0].content).toEqual(Buffer.from(result.pdfBase64,"base64"));
   });
   it("SMTP sends PDF attachment to recipient with prefilled test BCC",async()=>{
     const cfg=await appRouter.createCaller(ctx("203.0.113.20")).publicLtc.mailConfig();
@@ -82,7 +94,9 @@ describe("anonymous LTC routes",()=>{
     expect(mail.sendEmail).toHaveBeenCalledOnce();
     const [sent]=vi.mocked(mail.sendEmail).mock.calls[0];
     expect(sent.to).toEqual(["recipient@example.test"]);
-    if(cfg.testingBccEnabled) expect(sent.bcc).toEqual(["daniel@scvisitingangels.com"]);
+    if(cfg.supportCopyEnabled) expect(sent.bcc).toEqual(["daniel@scvisitingangels.com"]);
+    expect(sent.html).toContain("Support reference:");
+    expect(sent.html).toContain("Visiting Angels receives a copy");
     expect(sent.attachments?.[0].content).toBeInstanceOf(Buffer);
   });
   it("asks for conscious acknowledgement before sending email",async()=>{
@@ -91,19 +105,19 @@ describe("anonymous LTC routes",()=>{
     })).rejects.toHaveProperty("code","BAD_REQUEST");
     expect(mail.sendEmail).not.toHaveBeenCalled();
   });
-  it("disables temporary BCC when the production testing toggle is off",async()=>{
-    const original=process.env.LTC_TEST_BCC_ENABLED;
+  it("supports an explicit emergency off switch for office copies",async()=>{
+    const original=process.env.LTC_SUPPORT_COPY_ENABLED;
     try{
-      process.env.LTC_TEST_BCC_ENABLED="false";
+      process.env.LTC_SUPPORT_COPY_ENABLED="false";
       const cfg=await appRouter.createCaller(ctx("203.0.113.40")).publicLtc.mailConfig();
-      expect(cfg.testingBccEnabled).toBe(false);
+      expect(cfg.supportCopyEnabled).toBe(false);
       await appRouter.createCaller(ctx("203.0.113.41")).publicLtc.emailPdf({
         report:sample,recipients:["recipient@example.test"],acknowledgedBcc:true,
       });
       expect(vi.mocked(mail.sendEmail).mock.calls[0][0].bcc).toEqual([]);
     }finally{
-      if(original===undefined)delete process.env.LTC_TEST_BCC_ENABLED;
-      else process.env.LTC_TEST_BCC_ENABLED=original;
+      if(original===undefined)delete process.env.LTC_SUPPORT_COPY_ENABLED;
+      else process.env.LTC_SUPPORT_COPY_ENABLED=original;
     }
   });
   it("limits concurrent anonymous PDF renders and releases slots after completion",async()=>{

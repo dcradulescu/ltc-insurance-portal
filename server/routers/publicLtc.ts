@@ -13,6 +13,10 @@ import { renderApprovedLtcReport } from "../canonicalReportPdf";
 import { pdfInputSchema } from "./pdfDelivery";
 import { buildStage1Tasks, buildStage2Tasks, buildStage3Tasks } from "../publicStrategyTasks";
 import { PUBLIC_POLICY_FIELDS, publicPolicyForService } from "../../shared/publicLtcPolicy";
+import {
+  buildLtcSupportSummary, ltcOfficeAddress, ltcOfficeCopiesEnabled,
+  resolveLtcSupportReference, sendLtcOfficeSupportCopy, supportReferenceSchema,
+} from "../ltcOfficeSupport";
 
 const allowedKeys = new Set<string>(PUBLIC_POLICY_FIELDS);
 const policyValueSchema = z.union([
@@ -48,13 +52,6 @@ function throttle(req: { socket?: { remoteAddress?: string } }, action: string, 
   record.count++;
 }
 
-function testBccEnabled() {
-  // On during local QA; OFF by default in production unless explicitly enabled.
-  return process.env.LTC_TEST_BCC_ENABLED === "true" ||
-    (process.env.NODE_ENV !== "production" && process.env.LTC_TEST_BCC_ENABLED !== "false");
-}
-const testBccAddress = "daniel@scvisitingangels.com";
-
 // Deliberately never trust the browser to populate removed identifying fields.
 function anonymousReport(report: z.infer<typeof pdfInputSchema>) {
   return {
@@ -89,14 +86,21 @@ function plainTextAsSafeHtml(value: string): string {
     .map(part => "<p>" + escapeHtml(part).replace(/\n/g, "<br>") + "</p>").join("\n");
 }
 
+const publicReportSchema = pdfInputSchema.extend({
+  supportReference:supportReferenceSchema,
+  supportPolicy:anonymousPolicySchema.optional(),
+});
 export const publicLtcRouter = router({
   mailConfig: publicProcedure.query(() => ({
-    testingBccEnabled:testBccEnabled(),
-    testingBccAddress:testBccEnabled() ? testBccAddress : null,
+    supportCopyEnabled:ltcOfficeCopiesEnabled(),
+    officeName:"SC Visiting Angels",
   })),
 
   generateStrategy: publicProcedure
-    .input(z.object({policy: anonymousPolicySchema}))
+    .input(z.object({
+      policy:anonymousPolicySchema,
+      supportReference:supportReferenceSchema,
+    }))
     .mutation(async ({ctx,input}) => {
       throttle(ctx.req,"strategy",15);
       const policy = publicPolicyForService(input.policy);
@@ -137,42 +141,65 @@ export const publicLtcRouter = router({
       ]});
       const text = typeof reply.choices[0].message.content === "string"
         ? reply.choices[0].message.content : JSON.stringify(reply.choices[0].message.content);
+      const stage1Tasks=buildStage1Tasks(policy);
+      const stage2Tasks=buildStage2Tasks(policy);
+      const stage3Tasks=buildStage3Tasks(policy);
+      const reference=resolveLtcSupportReference(input.supportReference);
+      const supportCopyStatus=await sendLtcOfficeSupportCopy({
+        reference,source:"strategy_generated",policy,
+        strategyHtml:plainTextAsSafeHtml(text),
+        stageTasks:[...stage1Tasks,...stage2Tasks,...stage3Tasks].map(task=>task.label),
+      });
       return {
         content:plainTextAsSafeHtml(text),
-        stage1Tasks:buildStage1Tasks(policy),
-        stage2Tasks:buildStage2Tasks(policy),
-        stage3Tasks:buildStage3Tasks(policy),
+        stage1Tasks,stage2Tasks,stage3Tasks,
+        supportReference:reference,supportCopyStatus,
       };
     }),
 
-  generatePdf: publicProcedure.input(pdfInputSchema).mutation(async ({ctx,input}) => {
+  generatePdf: publicProcedure.input(publicReportSchema).mutation(async ({ctx,input}) => {
     throttle(ctx.req,"pdf",25);
     const buffer = await renderGuestReport(input);
-    return {success:true, pdfBase64:buffer.toString("base64"), pageCount:18};
+    const reference=resolveLtcSupportReference(input.supportReference);
+    const supportCopyStatus=await sendLtcOfficeSupportCopy({
+      reference,source:"pdf_downloaded",pdfBuffer:buffer,
+      policy:input.supportPolicy || {},
+    });
+    return {success:true, pdfBase64:buffer.toString("base64"), pageCount:18,
+      supportReference:reference,supportCopyStatus};
   }),
 
   emailPdf: publicProcedure
     .input(z.object({
-      report:pdfInputSchema,
+      report:publicReportSchema,
       recipients:z.array(z.string().email().max(320)).min(1).max(5),
       message:z.string().max(1500).optional(),
       acknowledgedBcc:z.literal(true),
     }))
     .mutation(async ({ctx,input}) => {
       throttle(ctx.req,"email",7);
-      const buffer = await renderGuestReport(input.report);
-      // SMTP only: attachments + BCC must be honored. No Zapier fallback or storage URL.
-      const result = await sendEmail({
+      const buffer=await renderGuestReport(input.report);
+      const reference=resolveLtcSupportReference(input.report.supportReference);
+      const officeCopyEnabled=ltcOfficeCopiesEnabled();
+      // Identical PDF and summary in one SMTP message: the visitor receives it
+      // directly, and Visiting Angels receives its own BCC copy.
+      const result=await sendEmail({
         to:input.recipients,
-        bcc:testBccEnabled() ? [testBccAddress] : [],
-        subject:"Your Visiting Angels LTC Insurance Strategy (18-page PDF)",
-        html:"<p>Your requested 18-page educational LTC strategy PDF is attached.</p>"+
-          "<p>This information is for educational use and does not establish claim eligibility.</p>"+
+        bcc:officeCopyEnabled?[ltcOfficeAddress()]:[],
+        subject:"Your Visiting Angels LTC Strategy — "+reference,
+        html:"<p>Your requested 18-page educational LTC Strategy PDF is attached.</p>"+
+          "<p><strong>Support reference: "+escapeHtml(reference)+"</strong></p>"+
+          (officeCopyEnabled?"<p>Visiting Angels receives a copy so our office can help answer questions.</p>":"")+
+          "<h3>Your coverage and care selections</h3>"+
+          buildLtcSupportSummary(input.report.supportPolicy || {})+
+          "<p>This information is educational and does not establish claim eligibility.</p>"+
           (input.message ? "<p>Sender message: "+escapeHtml(input.message).replace(/\n/g,"<br>")+"</p>" : ""),
-        attachments:[{filename:"Visiting-Angels-LTC-Strategy.pdf",
+        attachments:[{filename:"Visiting-Angels-LTC-Strategy-"+reference+".pdf",
           content:buffer,contentType:"application/pdf"}],
       });
-      return {...result,message:"Email service accepted the report. Inbox delivery is not confirmed."};
+      return {...result,supportReference:reference,
+        supportCopyStatus:officeCopyEnabled?"accepted":"disabled",
+        message:"Email service accepted the report and Visiting Angels copy where enabled. Inbox delivery is not confirmed."};
     }),
 
   chat:publicProcedure.input(z.object({

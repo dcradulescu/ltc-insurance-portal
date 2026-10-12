@@ -88,10 +88,11 @@ export default function Terms() {
           <section className="bg-blue-50 border border-blue-200 rounded-xl p-6">
             <h2 className="text-lg font-bold text-blue-800 mb-3">🔒 Privacy & Data Use</h2>
             <p>
-              Policy Form answers and progress are saved on your device, not automatically shared with
-              SC Visiting Angels. If you request a Strategy, selected non-identifying coverage and care
-              details are processed by an AI service. PDF email and Support Chat require separate actions.
-              We do not sell your personal information to third parties.
+              Unsubmitted Policy Form drafts remain stored on your device. When you generate a Strategy
+              or PDF, selected coverage and care information may be processed by an AI or PDF service,
+              and a support copy of the completed output and structured selections is emailed to
+              SC Visiting Angels to help with follow-up questions. Optional personal notes remain local
+              unless you deliberately share them elsewhere. We do not sell this information for marketing.
             </p>
             <p className="mt-3">
               Browsing the portal does not enroll you in follow-up calls or messages. If you voluntarily

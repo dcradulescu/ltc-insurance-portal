@@ -37,7 +37,7 @@ export default function PrivacyPolicy() {
         <div className="container max-w-3xl">
           <p className="text-xs uppercase tracking-widest font-semibold mb-3" style={{ color: VA_TEAL, fontFamily: "'Open Sans', sans-serif" }}>Legal</p>
           <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: "'Roboto', sans-serif", color: '#ffffff' }}>Privacy Policy</h1>
-          <p className="text-white/85 text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>Effective Date: October 11, 2026 &nbsp;·&nbsp; Last Updated: October 11, 2026</p>
+          <p className="text-white/85 text-sm" style={{ fontFamily: "'Open Sans', sans-serif" }}>Effective Date: October 11, 2026 &nbsp;·&nbsp; Last Updated: October 12, 2026</p>
           <div className="flex items-center gap-3 mt-5">
             <div style={{ height: 2, width: 40, background: VA_TEAL }} />
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: VA_TEAL }} />
@@ -74,16 +74,17 @@ export default function PrivacyPolicy() {
               "Generate your educational LTC Strategy from non-identifying coverage and care selections",
               "Provide an AI support chat in response to questions you choose to submit",
               "Generate your original 18-page PDF when you request it",
-              "Email your PDF only to recipients you specify, with temporary testing BCC disclosed before submission",
+              "Provide Visiting Angels with an emailed support copy whenever you generate a Strategy or download a PDF, using an anonymous support reference",
+              "Email a requested PDF to your chosen recipients, with a disclosed Visiting Angels office copy of the same report and summary",
               "Respond to your voluntary Contact Us and Education page inquiries",
             ]} />
-            <P>Information entered in the public Policy Form is not automatically transmitted to our team, Zapier, or a claim management database. We do not sell this information for advertising.</P>
+            <P>Unsubmitted browser drafts are not automatically transmitted to our office. Completed Strategies and PDF downloads generate an office support email containing the output and selected coverage and care fields, but not Additional Notes. We do not send drafts to Zapier or a claim management database, or sell this information for advertising.</P>
           </Section>
 
           <Section title="3. Data Storage and Security">
             <P>Draft Policy Form answers, Additional Notes, care-calculator drafts, checklist progress, and strategy progress are stored automatically in your browser's persistent local storage. This storage is not an encrypted backup and can be accessible to others who use the same browser or device. We recommend using a private, password-protected device for health-related information.</P>
             <P>Progress normally returns when you revisit in the same browser. Clearing website data, private browsing, browser restrictions, or switching devices may erase or prevent restoration. The Clear All Data control deletes this public portal's locally stored drafts.</P>
-            <P>The public flow does not create a long-term server record of these drafts or completed PDFs. Strategy generation, PDF generation, and email delivery can temporarily process information on servers or service providers when you explicitly use those functions. Earlier authenticated portal records, if any, are not deleted or silently migrated by this change.</P>
+            <P>The public flow does not create a long-term claim database record of browser drafts or completed PDFs. Generating a Strategy or PDF triggers a support email to Visiting Angels, which may remain in the office mailbox and email provider's retained copies or delivery logs. Strategy generation, PDF rendering, and email delivery temporarily process relevant information on servers or service providers. Earlier authenticated portal records, if any, are not deleted or silently migrated.</P>
             <P>We use HTTPS for transmission where deployed securely. No method of electronic processing or storage is perfectly secure.</P>
           </Section>
 
@@ -94,7 +95,7 @@ export default function PrivacyPolicy() {
               "<strong>Infrastructure provider</strong> — hosts the website, processes temporary PDF rendering, and supports service security",
             ]} />
             <P>AI prompts and chat messages may be processed outside your browser. The portal does not automatically send your personal Additional Notes or your saved chat history with policy data. Do not type names, policy numbers, claim numbers or detailed private medical records into Support Chat.</P>
-            <P>When testing BCC is enabled, an additional copy of an emailed PDF is sent to daniel@scvisitingangels.com. This is disclosed in the sending interface. BCC recipients are hidden from other recipients, but are not hidden from the sender or the email service. Email providers and recipients may retain copies after sending.</P>
+            <P>Visiting Angels automatically receives an office email with the generated Strategy, checklist, or PDF and a summary of structured coverage selections when a visitor generates the relevant output. When you request email delivery, the office receives a BCC of the same email and PDF. An anonymous support reference helps match your report when you call. The office recipient is hidden from other email recipients but the office-copy process is disclosed on the portal. Messages can be retained by the office and email providers; missing traditional identifiers does not guarantee that health selections are de-identified under applicable law.</P>
           </Section>
 
           <Section title="5. Cookies and Session Data">

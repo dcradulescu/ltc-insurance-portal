@@ -27,15 +27,20 @@ async function mockPublicApi(page) {
     const body=request.postData() || "";
     apiCalls.push({name,body});
     let value;
-    if(name==="publicLtc.mailConfig")value={testingBccEnabled:true,testingBccAddress:"daniel@scvisitingangels.com"};
+    if(name==="publicLtc.mailConfig")value={supportCopyEnabled:true,officeName:"SC Visiting Angels"};
     else if(name==="publicLtc.generateStrategy")value={
       content:"<p>Step 1: Review the carrier benefits and cognitive impairment requirements.</p>",
       stage1Tasks:[{id:"s1-1",label:"Confirm carrier requirements",category:"carrier-contact",completed:false}],
       stage2Tasks:[{id:"s2-1",label:"Prepare claim paperwork",category:"claim-packet",completed:false}],
       stage3Tasks:[{id:"s3-1",label:"Track reimbursements",category:"ongoing",completed:false}],
+      supportReference:"LTC-123456ABCDEF",supportCopyStatus:"accepted",
     };
-    else if(name==="publicLtc.generatePdf")value={success:true,pageCount:18,pdfBase64:Buffer.from("%PDF-1.4\n%Synthetic browser smoke\n").toString("base64")};
-    else if(name==="publicLtc.emailPdf")value={success:true,status:"accepted",message:"Synthetic SMTP accepted. Inbox not confirmed."};
+    else if(name==="publicLtc.generatePdf")value={success:true,pageCount:18,
+      supportReference:"LTC-123456ABCDEF",supportCopyStatus:"accepted",
+      pdfBase64:Buffer.from("%PDF-1.4\n%Synthetic browser smoke\n").toString("base64")};
+    else if(name==="publicLtc.emailPdf")value={success:true,status:"accepted",
+      supportReference:"LTC-123456ABCDEF",supportCopyStatus:"accepted",
+      message:"Synthetic SMTP accepted. Inbox not confirmed."};
     else if(name==="publicLtc.chat")value={content:"Cognitive impairment may be an LTC benefit trigger; verify the policy's substantial supervision requirement."};
     else return route.continue();
     const isBatch=new URL(request.url()).searchParams.get("batch")==="1";
@@ -88,6 +93,10 @@ try{
   await page.getByText("Your Personalized Strategy",{exact:false}).first().waitFor();
   ensure(apiCalls.some(x=>x.name==="publicLtc.generateStrategy"),"Strategy API not called");
   const prompt=apiCalls.find(x=>x.name==="publicLtc.generateStrategy").body;
+  const supportRef=prompt.match(/LTC-[A-F0-9]{12}/)?.[0];
+  ensure(Boolean(supportRef),"Anonymous support reference missing from Strategy request");
+  ensure(await page.getByText(supportRef,{exact:false}).count()>0,
+    "Visitor cannot see the reference needed for phone support");
   ensure(!prompt.includes(syntheticSecret),"Personal notes were improperly transmitted to AI");
   ensure(!prompt.includes("insuredFullName"),"Insured name key transmitted to AI");
   await page.screenshot({path:screenshotName("ltc-full-strategy-desktop"),fullPage:true});
@@ -125,9 +134,11 @@ try{
   ensure(download.suggestedFilename().endsWith(".pdf"),"PDF download did not yield a named file");
   const pdfCall=apiCalls.find(c=>c.name==="publicLtc.generatePdf");
   ensure(Boolean(pdfCall),"Canonical PDF endpoint was not used for download");
+  ensure(pdfCall.body.includes(supportRef),"PDF and Strategy reference did not match");
+  ensure(download.suggestedFilename().includes(supportRef),"Downloaded PDF filename is missing the support reference");
   ensure(!pdfCall.body.includes(syntheticSecret),"Private notes included in PDF request");
   await page.getByRole("button",{name:"Email to Someone"}).click();
-  await page.getByText("daniel@scvisitingangels.com",{exact:false}).first().waitFor();
+  await page.getByText(/Visiting Angels also receives the same report/i).first().waitFor();
   const emailInputs=page.locator('input[type="email"]');
   await emailInputs.last().fill("synthetic-recipient@example.test");
   await page.getByText(/I understand this report will be emailed to the recipient/i).click();
@@ -136,8 +147,24 @@ try{
   const outgoing=apiCalls.find(c=>c.name==="publicLtc.emailPdf");
   ensure(Boolean(outgoing),"Email API not invoked");
   ensure(outgoing.body.includes("synthetic-recipient@example.test"),"Recipient not transmitted");
+  ensure(outgoing.body.includes(supportRef),"Emailed PDF reference did not match Strategy");
   ensure(!outgoing.body.includes(syntheticSecret),"Notes were transmitted in email PDF request");
   ensure(!outgoing.body.includes("PRIVATE-POLICY"),"Sensitive policy number was transmitted");
+
+  // The second email action on the original Send My Plan tab must deliver
+  // the same report context and support reference.
+  await page.getByRole("button",{name:"Send My Plan",exact:true}).click();
+  await page.getByRole("button",{name:/^Email Strategy/}).click();
+  const dialog=page.getByRole("dialog");
+  await dialog.getByRole("textbox",{name:"Email Address"}).fill("second-synthetic@example.test");
+  await dialog.getByText(/Visiting Angels also receives a support copy/i).click();
+  await dialog.getByRole("button",{name:"Send Strategy",exact:true}).click();
+  await dialog.waitFor({state:"hidden",timeout:10000});
+  const emailActions=apiCalls.filter(c=>c.name==="publicLtc.emailPdf");
+  ensure(emailActions.length===2,"Both public email actions must reach the approved delivery route");
+  ensure(emailActions[1].body.includes("second-synthetic@example.test"),"Second recipient missing");
+  ensure(emailActions[1].body.includes(supportRef),"Second email uses a different support reference");
+  ensure(!emailActions[1].body.includes(syntheticSecret),"Private notes in second email request");
 
   // Floating chat suggested prompts must send first click, no stale React state.
   await page.getByRole("button",{name:"Open LTC support chat"}).click();

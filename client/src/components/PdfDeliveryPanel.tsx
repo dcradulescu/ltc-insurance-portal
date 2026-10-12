@@ -11,6 +11,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { CareInputs } from "@shared/careCalculator";
 
 interface PdfDeliveryPanelProps {
+  supportReference?:string;
+  supportPolicy?:Record<string,string|boolean|string[]>;
   policyData: {
     // Insured
     insuredName: string;
@@ -435,7 +437,7 @@ function generatePdfDocument(data: PdfDeliveryPanelProps['policyData']): jsPDF {
   return doc;
 }
 
-export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
+export function PdfDeliveryPanel({ policyData, supportReference, supportPolicy }: PdfDeliveryPanelProps) {
   const [activeTab, setActiveTab] = useState<'download' | 'email'>('download');
   const [recipientEmail, setRecipientEmail] = useState('');
   const [acknowledgedBcc, setAcknowledgedBcc] = useState(false);
@@ -444,15 +446,19 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
   const mailConfig = trpc.publicLtc.mailConfig.useQuery(undefined,{retry:false});
   const safeReport = () => ({
-    ...policyData, insuredName:"", insuredDob:"", insuredPhone:"",
+    ...policyData,supportReference,supportPolicy,
+    insuredName:"", insuredDob:"", insuredPhone:"",
     insuredEmail:"", insuredAddress:"", policyNumber:"",
     claimNumber:"", caseManagerName:"",
   });
 
   const generatePdfMutation = trpc.publicLtc.generatePdf.useMutation({
     onSuccess: (data) => {
-      downloadPublicPdf(data.pdfBase64);
-      setStatus({ type: 'success', message: 'Your approved 18-page PDF has been generated.' });
+      downloadPublicPdf(data.pdfBase64,supportReference);
+      setStatus({ type: data.supportCopyStatus === "accepted" ? "success" : "error",
+        message: data.supportCopyStatus === "accepted"
+          ? "Your approved 18-page PDF was downloaded and the support email was accepted for delivery."
+          : "Your PDF was downloaded, but the office support email could not be confirmed." });
     },
     onError: (error) => setStatus({type:'error',message:'PDF generation failed: '+error.message}),
     onSettled: () => setLoading(false),
@@ -575,9 +581,9 @@ export function PdfDeliveryPanel({ policyData }: PdfDeliveryPanelProps) {
               <label className="flex items-start gap-2 text-xs text-gray-600">
                 <Checkbox checked={acknowledgedBcc} onCheckedChange={v => setAcknowledgedBcc(Boolean(v))} />
                 <span>I understand this report will be emailed to the recipient.
-                  {mailConfig.data?.testingBccEnabled
-                    ? " During testing a BCC copy also goes to " + mailConfig.data.testingBccAddress + "."
-                    : " Email delivery uses a secure email service."}
+                  {mailConfig.data?.supportCopyEnabled
+                    ? " Visiting Angels also receives the same report and a coverage summary to help answer questions."
+                    : " Email delivery uses a separate email service."}
                 </span>
               </label>
 

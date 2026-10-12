@@ -13,7 +13,7 @@ Date: 2026-10-11. Development branch: `feature/public-education-strategy-2026101
 | 16–18 | Insurance carrier address, phone, fax | **Keep** | Keep |
 | 19 | Diagnoses and cognitive impairment checkboxes | **Keep** | Keep |
 | 20 | Email Save & Return link | Remove | N/A |
-| 21 | PDF email | **Keep**: explicit email-service delivery; test BCC | Original approved 18-page report attached |
+| 21 | PDF email | **Keep**: explicit email-service delivery and ongoing disclosed Visiting Angels office copy | Original approved 18-page report attached |
 | 22 | Mandatory account registration / sign-in | Remove | N/A |
 | 23 | Insurance/medical document upload | Remove from public portal | N/A |
 | 24 | Contact Us form (voluntary name, email, phone, message) | **Keep** | N/A |
@@ -34,10 +34,10 @@ No other insurance financial/care inputs are to be removed without fresh approva
 - Local storage is **not encrypted**. A shared or compromised browser/device exposes the data. Private browsing, clearing site data, storage restrictions or changing browsers/devices can erase/lose progress. This is not cross-device sync.
 
 ## Explicit service exceptions
-- Strategy generation: sends a whitelist of non-identifying policy/carrier/care/diagnosis selections to an external AI service. Do **not** send local Additional Notes by default.
+- Strategy generation: sends a whitelist of non-identifying policy/carrier/care/diagnosis selections to an external AI service. Automatically sends the completed Strategy, generated checklist, and structured selections to the Visiting Angels support mailbox with the visitor's random support reference. Do **not** send browser-local Additional Notes or unsubmitted drafts.
 - Support Chat: transmits deliberately typed questions (and only its in-memory recent chat messages) to an AI service. Do not persist transcripts in the portal DB or automatically attach policy context. Inform users not to type identifiers.
-- PDF: render the approved 18 pages temporarily in server memory; download from transient base64, no portal object-storage URL.
-- Email PDF: explicit recipient input, acknowledgement, SMTP attachment. Temporary testing BCC `daniel@scvisitingangels.com`. Show BCC disclosure to sender; `LTC_TEST_BCC_ENABLED=true` enables it in any environment, whereas production defaults off. A successful SMTP acceptance is **not** proof of inbox receipt. Provider may retain message content/delivery logs.
+- PDF: render the approved 18 pages temporarily in server memory; download from transient base64, no portal object-storage URL. Every successful public PDF generation also attempts to email an identical PDF attachment and the matching structured support summary to Visiting Angels.
+- Email PDF: explicit recipient input and acknowledgement, identical SMTP PDF attachment to visitor and to Visiting Angels via BCC at `daniel@scvisitingangels.com` by default. The same email contains the support reference and structured answer summary, so the office sees the exact attachment the visitor sees. Display clear disclosure before the visitor requests an email. `LTC_SUPPORT_EMAIL` configures the office mailbox and `LTC_SUPPORT_COPY_ENABLED=false` is an explicit maintenance off switch; technical release preflight flags disabled copies as incomplete. SMTP acceptance is **not** proof of inbox receipt. Provider may retain message content/delivery logs.
 - Contact Us: retain voluntary contact form, separate from anonymous local policy state. Do not silently attach draft/diagnosis data.
 - Security/HIPAA: external providers, BAAs where legally necessary, SMTP, anti-abuse measures, legal privacy copy and operational logging require environment-appropriate validation **before public launch**. Code changes alone do not certify compliance.
 
@@ -45,7 +45,7 @@ No other insurance financial/care inputs are to be removed without fresh approva
 - H: backup/source intact; GitHub canonical development only on feature branch. Do not merge `main`, overwrite checkpoint, delete DB, destroy files, migrate, or deploy production without separate authorization.
 - Verified source-scope regression suite: 35 suites / 568 tests passed (2026-10-11). New public privacy tests added. Full legacy GitHub-only suite includes older incompatible tests and unrelated TypeScript errors.
 - Vite application build successful; original 18-page synthetic PDF rendered and validated against source fingerprint; sampled pages have blank identity fields. Desktop/mobile Chrome guest-access and save/restore smoke is available under local QA directory.
-- Browser tests and mocked mail tests are not a substitute for live SMTP and legal/operational compliance testing. Testing BCC remains environment configurable.
+- Browser tests and mocked mail tests are not a substitute for live SMTP and legal/operational compliance testing. Visiting Angels office copies remain configurable through LTC_SUPPORT_EMAIL and LTC_SUPPORT_COPY_ENABLED.
 
 ## Continuation verification and hardening (2026-10-11)
 - **586 tests across 38 active-source/public QA suites passed**. The locked original 18-page report and the financial calculation formulas remain unmodified.
@@ -57,3 +57,13 @@ No other insurance financial/care inputs are to be removed without fresh approva
 - Local `node scripts/check-public-ltc-readiness.mjs` reports missing `OPENAI_API_KEY`, `OPENAI_MODEL`, `SMTP_HOST`, `SMTP_FROM`. Chrome executable and canonical template lock are present. **No real AI, inbox delivery or testing BCC receipt has been verified.**
 - QA commands on an authorized environment: `corepack pnpm build`, existing active-source Vitest suite, `BASE_URL=http://127.0.0.1:5195 node scripts/anonymous-guest-browser.qa.mjs` (mock network), and `node scripts/check-public-ltc-readiness.mjs`. For cross-browser runs, set `CHROME_PATH` to Edge/Chromium and `LTC_QA_DIR` for screenshot output.
 - No production deployment, database deletion, Zapier disconnection, or irreversible changes to the saved rollback checkpoint are permitted without separate authorization.
+
+## 2026-10-12: Automatic Visiting Angels support copies for every generated output
+- The visitor's device gets a randomly generated and locally restored `LTC-XXXXXXXXXXXX` reference (48 bits of random data); it is shown on the Strategy screen and included in downloaded PDF filenames and emailed PDF subjects/filenames.
+- When a visitor clicks **Generate My Strategy**, the server generates the same text/checklist and emails the Strategy and structured policy/care selections to the Visiting Angels support address. The anonymous visitor still receives their Strategy even when the email is unavailable, with explicit support-copy failure status.
+- When a visitor **downloads a PDF**, the office receives the **exact same PDF buffer** as an SMTP attachment, with the reference and structured answer summary, provided SMTP delivery is available. The visitor's PDF download is not blocked by office email failure.
+- When a visitor **emails a PDF**, the existing delivery request sends an identical PDF attachment and readable structured answer summary in one message, with the visitor as To: recipient and Visiting Angels as BCC. Both parties can match the same support reference. The recipient is told on the portal that Visiting Angels receives a copy, but the BCC address is not displayed in the recipient list.
+- The default office destination is `daniel@scvisitingangels.com`; `LTC_SUPPORT_EMAIL` overrides it. Copies are enabled by default through `LTC_SUPPORT_COPY_ENABLED`, with an explicit emergency off switch. Readiness preflight flags disabled support copies, missing SMTP credentials, and missing AI credentials.
+- **Unsubmitted browser drafts, `additionalNotes`, arbitrary free-text entries, and AI chat transcripts are not replicated to the office.** The office summary selects structured policy and care answers only; the generated PDF or Strategy itself is also supplied. A caller can supply their reference to locate the matching emailed support copies. There is no remote-draft lookup account or permanent portal database.
+- Diagnoses, ADLs, care selections, policy provisions, and recipient email are still potentially sensitive even without formal name/DOB/policy-number fields. Visitor disclosures were updated. Legal/privacy review and appropriate agreements remain deployment prerequisites.
+- SMTP accepted status never establishes recipient inbox delivery. A controlled real-world recipient + office test remains necessary. Do not claim automatic support emails are functioning live until configured and delivered.
